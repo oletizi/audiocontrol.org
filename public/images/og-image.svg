@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#0a0a12"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ffff"/>
+      <stop offset="50%" style="stop-color:#00ff88"/>
+      <stop offset="100%" style="stop-color:#ffff00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Border glow effect -->
+  <rect x="40" y="40" width="1120" height="550" fill="none" stroke="#00ff88" stroke-width="4" opacity="0.5"/>
+
+  <!-- Pixel icon (scaled up) -->
+  <g transform="translate(200, 215) scale(12.5)">
+    <style>
+      .c { fill: #00ffff; }
+      .m { fill: #ff00ff; }
+      .g { fill: #00ff88; }
+      .y { fill: #ffff00; }
+      .d { fill: #334455; }
+    </style>
+    <rect x="4" y="1" width="1" height="1" class="g"/>
+    <rect x="5" y="1" width="1" height="1" class="g"/>
+    <rect x="6" y="1" width="1" height="1" class="g"/>
+    <rect x="7" y="1" width="1" height="1" class="g"/>
+    <rect x="3" y="2" width="1" height="1" class="g"/>
+    <rect x="8" y="2" width="1" height="1" class="g"/>
+    <rect x="3" y="3" width="1" height="1" class="g"/>
+    <rect x="5" y="3" width="1" height="1" class="c"/>
+    <rect x="6" y="3" width="1" height="1" class="c"/>
+    <rect x="8" y="3" width="1" height="1" class="g"/>
+    <rect x="3" y="4" width="1" height="1" class="g"/>
+    <rect x="5" y="4" width="1" height="1" class="c"/>
+    <rect x="6" y="4" width="1" height="1" class="c"/>
+    <rect x="8" y="4" width="1" height="1" class="g"/>
+    <rect x="4" y="5" width="1" height="1" class="g"/>
+    <rect x="5" y="5" width="1" height="1" class="g"/>
+    <rect x="6" y="5" width="1" height="1" class="g"/>
+    <rect x="7" y="5" width="1" height="1" class="g"/>
+    <rect x="1" y="7" width="1" height="1" class="d"/>
+    <rect x="4" y="7" width="1" height="1" class="c"/>
+    <rect x="8" y="7" width="1" height="1" class="c"/>
+    <rect x="12" y="7" width="1" height="1" class="c"/>
+    <rect x="15" y="7" width="1" height="1" class="d"/>
+    <rect x="1" y="8" width="1" height="1" class="d"/>
+    <rect x="3" y="8" width="1" height="1" class="c"/>
+    <rect x="4" y="8" width="1" height="1" class="c"/>
+    <rect x="7" y="8" width="1" height="1" class="c"/>
+    <rect x="8" y="8" width="1" height="1" class="c"/>
+    <rect x="9" y="8" width="1" height="1" class="c"/>
+    <rect x="11" y="8" width="1" height="1" class="c"/>
+    <rect x="12" y="8" width="1" height="1" class="c"/>
+    <rect x="15" y="8" width="1" height="1" class="d"/>
+    <rect x="0" y="9" width="1" height="1" class="d"/>
+    <rect x="1" y="9" width="1" height="1" class="d"/>
+    <rect x="2" y="9" width="1" height="1" class="c"/>
+    <rect x="3" y="9" width="1" height="1" class="c"/>
+    <rect x="4" y="9" width="1" height="1" class="c"/>
+    <rect x="6" y="9" width="1" height="1" class="c"/>
+    <rect x="7" y="9" width="1" height="1" class="c"/>
+    <rect x="8" y="9" width="1" height="1" class="c"/>
+    <rect x="9" y="9" width="1" height="1" class="c"/>
+    <rect x="10" y="9" width="1" height="1" class="c"/>
+    <rect x="12" y="9" width="1" height="1" class="c"/>
+    <rect x="13" y="9" width="1" height="1" class="c"/>
+    <rect x="14" y="9" width="1" height="1" class="c"/>
+    <rect x="15" y="9" width="1" height="1" class="d"/>
+    <rect x="0" y="10" width="1" height="1" class="m"/>
+    <rect x="1" y="10" width="1" height="1" class="c"/>
+    <rect x="2" y="10" width="1" height="1" class="c"/>
+    <rect x="3" y="10" width="1" height="1" class="c"/>
+    <rect x="4" y="10" width="1" height="1" class="c"/>
+    <rect x="5" y="10" width="1" height="1" class="c"/>
+    <rect x="6" y="10" width="1" height="1" class="c"/>
+    <rect x="7" y="10" width="1" height="1" class="c"/>
+    <rect x="8" y="10" width="1" height="1" class="c"/>
+    <rect x="9" y="10" width="1" height="1" class="c"/>
+    <rect x="10" y="10" width="1" height="1" class="c"/>
+    <rect x="11" y="10" width="1" height="1" class="c"/>
+    <rect x="12" y="10" width="1" height="1" class="c"/>
+    <rect x="13" y="10" width="1" height="1" class="c"/>
+    <rect x="14" y="10" width="1" height="1" class="c"/>
+    <rect x="15" y="10" width="1" height="1" class="m"/>
+    <rect x="0" y="11" width="1" height="1" class="m"/>
+    <rect x="1" y="11" width="1" height="1" class="m"/>
+    <rect x="3" y="11" width="1" height="1" class="c"/>
+    <rect x="4" y="11" width="1" height="1" class="c"/>
+    <rect x="5" y="11" width="1" height="1" class="c"/>
+    <rect x="7" y="11" width="1" height="1" class="c"/>
+    <rect x="8" y="11" width="1" height="1" class="c"/>
+    <rect x="9" y="11" width="1" height="1" class="c"/>
+    <rect x="11" y="11" width="1" height="1" class="c"/>
+    <rect x="12" y="11" width="1" height="1" class="c"/>
+    <rect x="13" y="11" width="1" height="1" class="c"/>
+    <rect x="14" y="11" width="1" height="1" class="m"/>
+    <rect x="15" y="11" width="1" height="1" class="m"/>
+    <rect x="0" y="12" width="1" height="1" class="y"/>
+    <rect x="1" y="12" width="1" height="1" class="y"/>
+    <rect x="4" y="12" width="1" height="1" class="c"/>
+    <rect x="8" y="12" width="1" height="1" class="c"/>
+    <rect x="12" y="12" width="1" height="1" class="c"/>
+    <rect x="14" y="12" width="1" height="1" class="y"/>
+    <rect x="15" y="12" width="1" height="1" class="y"/>
+    <rect x="0" y="13" width="1" height="1" class="y"/>
+    <rect x="1" y="13" width="1" height="1" class="y"/>
+    <rect x="14" y="13" width="1" height="1" class="y"/>
+    <rect x="15" y="13" width="1" height="1" class="y"/>
+    <rect x="1" y="14" width="1" height="1" class="y"/>
+    <rect x="2" y="14" width="1" height="1" class="y"/>
+    <rect x="13" y="14" width="1" height="1" class="y"/>
+    <rect x="14" y="14" width="1" height="1" class="y"/>
+    <rect x="2" y="15" width="1" height="1" class="y"/>
+    <rect x="3" y="15" width="1" height="1" class="y"/>
+    <rect x="4" y="15" width="1" height="1" class="y"/>
+    <rect x="5" y="15" width="1" height="1" class="y"/>
+    <rect x="6" y="15" width="1" height="1" class="y"/>
+    <rect x="7" y="15" width="1" height="1" class="y"/>
+    <rect x="8" y="15" width="1" height="1" class="y"/>
+    <rect x="9" y="15" width="1" height="1" class="y"/>
+    <rect x="10" y="15" width="1" height="1" class="y"/>
+    <rect x="11" y="15" width="1" height="1" class="y"/>
+    <rect x="12" y="15" width="1" height="1" class="y"/>
+    <rect x="13" y="15" width="1" height="1" class="y"/>
+    <rect x="14" y="15" width="1" height="1" class="y"/>
+  </g>
+
+  <!-- Text -->
+  <text x="480" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" fill="url(#textGrad)">audiocontrol.org</text>
+  <text x="480" y="360" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#666">Open source web interfaces for vintage</text>
+  <text x="480" y="400" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#666">samplers and synthesizers</text>
+</svg>
