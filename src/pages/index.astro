@@ -1,9 +1,12 @@
 ---
+import Layout from '../layouts/Layout.astro';
+
 interface Project {
   name: string;
   path: string;
   description: string;
   status: 'available' | 'coming-soon';
+  image?: string;
 }
 
 const projects: Project[] = [
@@ -12,6 +15,7 @@ const projects: Project[] = [
     path: '/s330',
     description: 'Web-based editor for the Roland S-330 12-bit sampler',
     status: 'available',
+    image: '/images/s330-screenshot.jpg',
   },
   {
     name: 'Akai S3000XL',
@@ -28,177 +32,111 @@ const projects: Project[] = [
 ];
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <meta name="description" content="Open source web interfaces for vintage samplers and synthesizers" />
-    <title>audiocontrol.org</title>
-    <style>
-      :root {
-        --bg: #0a0a0a;
-        --fg: #e0e0e0;
-        --accent: #4a9eff;
-        --muted: #666;
-        --card-bg: #141414;
-        --border: #2a2a2a;
-      }
+<Layout>
+  <h2>Projects</h2>
+  <div class="projects">
+    {projects.map((project) => (
+      project.status === 'available' ? (
+        <a href={project.path} class="project">
+          <div class="project-header">
+            <span class="project-name">{project.name}</span>
+            <span class="status-badge available">Available</span>
+          </div>
+          {project.image && (
+            <img src={project.image} alt={`${project.name} screenshot`} class="project-image" />
+          )}
+          <p class="project-description">{project.description}</p>
+        </a>
+      ) : (
+        <div class="project coming-soon">
+          <div class="project-header">
+            <span class="project-name">{project.name}</span>
+            <span class="status-badge coming-soon">Coming Soon</span>
+          </div>
+          {project.image && (
+            <img src={project.image} alt={`${project.name} screenshot`} class="project-image" />
+          )}
+          <p class="project-description">{project.description}</p>
+        </div>
+      )
+    ))}
+  </div>
+</Layout>
 
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
+<style>
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: var(--muted);
+  }
 
-      html {
-        font-family: system-ui, -apple-system, sans-serif;
-        background: var(--bg);
-        color: var(--fg);
-      }
+  .projects {
+    display: grid;
+    gap: 1rem;
+  }
 
-      body {
-        min-height: 100vh;
-        padding: 2rem;
-        max-width: 900px;
-        margin: 0 auto;
-      }
+  .project {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, background 0.2s;
+    overflow: hidden;
+  }
 
-      header {
-        margin-bottom: 3rem;
-      }
+  .project-image {
+    width: calc(100% + 3rem);
+    margin: 1rem -1.5rem;
+    display: block;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
 
-      h1 {
-        font-size: 2rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-      }
+  .project:not(.coming-soon):hover {
+    border-color: var(--accent);
+    background: #1a1a1a;
+  }
 
-      .tagline {
-        color: var(--muted);
-        font-size: 1.1rem;
-      }
+  .project.coming-soon {
+    opacity: 0.5;
+    cursor: default;
+  }
 
-      h2 {
-        font-size: 1.25rem;
-        font-weight: 500;
-        margin-bottom: 1rem;
-        color: var(--muted);
-      }
+  .project-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
 
-      .projects {
-        display: grid;
-        gap: 1rem;
-      }
+  .project-name {
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
 
-      .project {
-        display: block;
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 1.5rem;
-        text-decoration: none;
-        color: inherit;
-        transition: border-color 0.2s, background 0.2s;
-      }
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
 
-      .project:not(.coming-soon):hover {
-        border-color: var(--accent);
-        background: #1a1a1a;
-      }
+  .status-badge.available {
+    background: #1a3a1a;
+    color: #4ade80;
+  }
 
-      .project.coming-soon {
-        opacity: 0.5;
-        cursor: default;
-      }
+  .status-badge.coming-soon {
+    background: #2a2a1a;
+    color: #a0a060;
+  }
 
-      .project-header {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 0.5rem;
-      }
-
-      .project-name {
-        font-size: 1.25rem;
-        font-weight: 500;
-      }
-
-      .status-badge {
-        font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-
-      .status-badge.available {
-        background: #1a3a1a;
-        color: #4ade80;
-      }
-
-      .status-badge.coming-soon {
-        background: #2a2a1a;
-        color: #a0a060;
-      }
-
-      .project-description {
-        color: var(--muted);
-      }
-
-      footer {
-        margin-top: 4rem;
-        padding-top: 2rem;
-        border-top: 1px solid var(--border);
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-
-      footer a {
-        color: var(--accent);
-        text-decoration: none;
-      }
-
-      footer a:hover {
-        text-decoration: underline;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <h1>audiocontrol.org</h1>
-      <p class="tagline">Open source audio tools.</p>
-    </header>
-
-    <main>
-      <h2>Projects</h2>
-      <div class="projects">
-        {projects.map((project) => (
-          project.status === 'available' ? (
-            <a href={project.path} class="project">
-              <div class="project-header">
-                <span class="project-name">{project.name}</span>
-                <span class="status-badge available">Available</span>
-              </div>
-              <p class="project-description">{project.description}</p>
-            </a>
-          ) : (
-            <div class="project coming-soon">
-              <div class="project-header">
-                <span class="project-name">{project.name}</span>
-                <span class="status-badge coming-soon">Coming Soon</span>
-              </div>
-              <p class="project-description">{project.description}</p>
-            </div>
-          )
-        ))}
-      </div>
-    </main>
-
-    <footer>
-      <p><a href="https://github.com/oletizi/ol_dsp">GitHub</a></p>
-    </footer>
-  </body>
-</html>
+  .project-description {
+    color: var(--muted);
+  }
+</style>
