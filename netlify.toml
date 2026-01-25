@@ -1,0 +1,16 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Proxy S-330 editor to its dedicated Netlify app
+[[redirects]]
+  from = "/s330/*"
+  to = "https://s330.netlify.app/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/s330"
+  to = "https://s330.netlify.app"
+  status = 200
+  force = true
