@@ -10,5 +10,9 @@ export default defineConfig({
   site: 'https://audiocontrol.org',
   output: 'static',
   adapter: netlify(),
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      customPages: ['https://audiocontrol.org/s330'],
+    }),
+  ],
 });
