@@ -128,7 +128,12 @@ const jsonLd = {
       }
 
       header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
         margin-bottom: 3rem;
+        flex-wrap: wrap;
       }
 
       .header-link {
@@ -148,6 +153,82 @@ const jsonLd = {
       .tagline {
         color: var(--muted);
         font-size: 1rem;
+      }
+
+      .site-nav {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .nav-item {
+        position: relative;
+      }
+
+      .nav-button {
+        background: none;
+        border: none;
+        color: var(--muted);
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        transition: color 0.2s;
+        font-family: inherit;
+      }
+
+      .nav-button:hover {
+        color: var(--fg);
+      }
+
+      .nav-button::after {
+        content: ' ▾';
+        font-size: 0.7em;
+      }
+
+      .dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        min-width: 160px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-4px);
+        transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+        z-index: 100;
+      }
+
+      .nav-item:hover .dropdown,
+      .nav-item:focus-within .dropdown {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      .dropdown a {
+        display: block;
+        padding: 0.6rem 1rem;
+        color: var(--fg);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: background 0.15s;
+      }
+
+      .dropdown a:hover {
+        background: var(--border);
+      }
+
+      .dropdown a:first-child {
+        border-radius: 6px 6px 0 0;
+      }
+
+      .dropdown a:last-child {
+        border-radius: 0 0 6px 6px;
+      }
+
+      .dropdown a:only-child {
+        border-radius: 6px;
       }
 
       footer {
@@ -186,6 +267,20 @@ const jsonLd = {
           <p class="tagline">Open source audio tools.</p>
         </div>
       </a>
+      <nav class="site-nav">
+        <div class="nav-item">
+          <button class="nav-button">Docs</button>
+          <div class="dropdown">
+            <a href="/docs/roland/samplers/s-330/">Roland S-330</a>
+          </div>
+        </div>
+        <div class="nav-item">
+          <button class="nav-button">Editors</button>
+          <div class="dropdown">
+            <a href="/s330">Roland S-330</a>
+          </div>
+        </div>
+      </nav>
     </header>
 
     <main>
