@@ -1,10 +1,10 @@
 ---
 layout: ../../../../../layouts/DocsLayout.astro
-title: "Breathing New Life into the Roland S-330: A Modern Web-Based Editor"
-description: "A comprehensive guide to the Roland S-330 sampler and the open-source web editor that makes it accessible for modern workflows."
+title: "Roland S-330 Web Editor"
+description: "A guide to the Roland S-330 sampler and the open-source web editor for modern workflows."
 ---
 
-# Breathing New Life into the Roland S-330: A Modern Web-Based Editor
+# A Modern Web Editor for the S-330, Roland's Underdog 80's 12-bit Sampler
 
 The Roland S-330 is one of those pieces of vintage gear that punches well above its weight. Released in 1987, this compact 1U rack sampler packed serious sound-shaping capabilities into an affordable package. Nearly four decades later, its distinctive 12-bit character continues to attract musicians looking for that unmistakable late-80s sampling warmth. But there's been one persistent obstacle to truly unlocking its potential: the control hardware.
 
@@ -22,67 +22,63 @@ Despite its single rack unit size, the S-330 offered impressive specifications:
 - 8 individual outputs
 - Composite video output for external monitoring
 
-The S-330 shared its core sampling engine with the larger S-550, and its DNA would later appear in the W-30 sampling workstation. But what truly set the S-series apart was the graphical editing interface—displayed on an external video monitor and controlled via mouse or remote controller.
+The S-330 shared its sampling engine with the larger S-550, and the same architecture later appeared in the W-30 sampling workstation. The S-series distinguished itself through a graphical editing interface displayed on an external video monitor and controlled via mouse or remote controller.
 
-## The Control Problem
+## The Control Hardware Problem
 
-Roland designed the S-330 to be edited through an external display and pointing device. The sampler outputs a composite video signal showing detailed parameter screens, waveform displays, and graphical envelope editors. To navigate this interface, you needed one of several control options:
+Roland designed the S-330 for editing through an external display and pointing device. The sampler outputs a composite video signal showing parameter screens, waveform displays, and graphical envelope editors. Navigating this interface requires one of the following:
 
-**The Roland MU-1 Mouse**: An MSX-compatible mouse (actually manufactured by Mitsumi for the MSX home computer standard). These mice use a proprietary protocol incompatible with PC, Amiga, or Atari mice. Finding a working original today is difficult and expensive.
+**The Roland MU-1 Mouse**: An MSX-compatible mouse manufactured by Mitsumi for the MSX home computer standard. These mice use a proprietary protocol incompatible with PC, Amiga, or Atari mice. Working originals are rare and expensive.
 
-**The Roland RC-100 Remote Controller**: A dedicated control surface with buttons and a jog wheel mapped to sampler functions. The RC-100 is now extremely rare and commands collector prices when it surfaces.
+**The Roland RC-100 Remote Controller**: A dedicated control surface with buttons and a jog wheel mapped to sampler functions. The RC-100 is extremely rare.
 
-**MSX-Compatible Mice**: Some Philips MSX mice (like the SBC 3810) work, but the MSX computer standard faded into obscurity decades ago, making these increasingly hard to source.
+**MSX-Compatible Mice**: Some third-party MSX mice (such as the Philips SBC 3810) work, but the MSX computer standard has been obsolete for decades, making these difficult to find.
 
-Without these control devices, you're limited to the S-330's front panel—a small LCD and a handful of buttons that make detailed editing tedious at best and practically impossible at worst.
+Without compatible control hardware, editing is limited to the S-330's front panel—a small LCD and minimal buttons that make detailed parameter editing impractical.
 
-Various DIY solutions have emerged over the years: Arduino-based mouse emulators, PS/2 adapters, and Windows-based control software. But these require hardware builds, specific software setups, or dedicated computers.
+DIY solutions exist, including Arduino-based mouse emulators, PS/2 adapters, and Windows control software. These require hardware construction, specific software configurations, or dedicated computers.
 
-## A Modern Solution
+## The Web Editor Approach
 
-The S-330 Web Editor takes a different approach. Instead of emulating vintage hardware, it communicates directly with the sampler via MIDI System Exclusive messages—the same protocol Roland built into the S-330 for computer-based editing.
+The S-330 Web Editor communicates directly with the sampler via MIDI System Exclusive messages—the same protocol Roland included for computer-based editing. The editor runs in a web browser, requiring only a standard MIDI interface connection to the S-330.
 
-The editor runs entirely in your web browser. Connect your S-330 to your computer via any MIDI interface, open the editor, and you have full two-way communication with your sampler.
+![S-330 Web Editor screenshot](/images/s330-screenshot.jpg)
 
-### How It Works
+### Communication
 
-**MIDI SysEx Communication**: The S-330 supports extensive control via Roland's SysEx protocol. The editor reads and writes sampler parameters in real-time, with changes reflected immediately on both the hardware and the web interface.
+**MIDI SysEx**: The editor reads and writes sampler parameters in real-time using Roland's SysEx protocol. Changes appear immediately on both the hardware and the web interface.
 
-**Real-Time Sync**: Edit a parameter in the browser and it updates on the S-330. Change something on the hardware's front panel and the editor reflects it instantly. This bidirectional sync means you can use whichever control method suits the moment.
+**Bidirectional Sync**: Parameters edited in the browser update on the S-330, and changes made on the hardware's front panel are reflected in the editor.
 
-**Video Display Integration**: Connect a USB video capture device to the S-330's composite output and the editor displays the sampler's native screen alongside the modern editing interface. You get the best of both worlds: Roland's original graphical interface plus modern, responsive controls.
+**Video Display Integration**: A USB video capture device connected to the S-330's composite output allows the editor to display the sampler's native screen alongside the modern interface.
 
-**Virtual Front Panel**: The editor includes a virtual version of the S-330's front panel buttons. Navigate menus, adjust values, and access functions without touching the hardware—useful when the sampler is rack-mounted or across the room.
+**Virtual Front Panel**: The editor includes a virtual representation of the S-330's front panel buttons for menu navigation and parameter adjustment. Keyboard shortcuts allow navigation using arrow keys and function keys, making it possible to control the sampler's native UI without a mouse.
 
-### Editor Features
+### Editor Organization
 
-The web interface is organized around the S-330's core concepts:
+The interface loosely follows the S-330's organizational structure while taking advantage of the UX benefits afforded by modern web applications:
 
-**Patches**: The S-330 organizes sounds into patches, each containing up to 16 tone zones mapped across the keyboard. The patch editor provides a clear overview of your keyboard mappings with controls for each zone's key range, velocity response, and tone assignment.
+**Patches**: Each patch contains up to 16 tone zones mapped across the keyboard. The patch editor displays keyboard mappings with controls for key range, velocity response, and tone assignment.
 
-**Tones**: Each tone contains the actual sample parameters—the filter settings, envelopes, LFO configuration, and wave data references that define a sound. The tone editor presents these parameters with visual envelope displays and organized parameter groups.
+![Patch editor screenshot](/images/s330-patches.png)
 
-**Play Mode**: A performance-focused view for when you're using the S-330 as an instrument rather than programming sounds.
+**Tones**: Each tone contains sample parameters including filter settings, envelopes, LFO configuration, and wave data references. The tone editor presents these with visual envelope displays.
 
-## Getting Started
+![Tone editor screenshot](/images/s330-tones.png)
 
-Requirements are minimal:
+**Play Mode**: A performance view for using the S-330 as an instrument.
 
-1. A Roland S-330 sampler
-2. A MIDI interface connected to your computer
-3. A modern web browser with Web MIDI support (Chrome, Edge, or Opera)
-4. Optionally, a USB video capture device for display integration
+![Play mode screenshot](/images/s330-play.png)
 
-Visit the editor at [audiocontrol.org/s330](https://audiocontrol.org/s330), select your MIDI ports, and you're connected.
+## Requirements
 
-## The Sound Lives On
+- Roland S-330 sampler
+- MIDI interface connected to your computer
+- Web browser with Web MIDI support (Chrome, Edge, or Opera)
+- Optional: USB video capture device for display integration
 
-The S-330's 12-bit converters and resonant filters impart a character that modern samplers don't replicate. There's a reason these machines keep appearing in studios focused on lo-fi, trip-hop, ambient, and electronic music production. The slightly gritty conversion, the distinctive filter sweep, the way the envelopes shape transients—it's a sound that defined an era and remains musically relevant.
+The editor is available at [audiocontrol.org/s330](https://audiocontrol.org/s330).
 
-The challenge has always been accessibility. Great-sounding hardware is only useful if you can program it effectively. By removing the barrier of obsolete control hardware, the S-330 Web Editor makes this classic sampler practical to use in modern production workflows.
+## About the Project
 
-Your S-330 has been waiting. Now it's ready to work.
-
----
-
-*The S-330 Web Editor is an open-source project. The editor and supporting libraries are available on [GitHub](https://github.com/oletizi/ol_dsp).*
+The S-330 Web Editor is open source. The editor and supporting libraries are available on [GitHub](https://github.com/oletizi/ol_dsp).
