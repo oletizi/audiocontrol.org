@@ -34,6 +34,11 @@ This guide covers all features of the S-330 web editor. For background on the S-
 4. Open the editor at [audiocontrol.org/s330](/s330)
 5. Your browser may prompt for MIDI access permission—allow it
 
+<figure>
+  <img src="/images/s330-allow-midi.jpg" alt="Browser MIDI access permission dialog">
+  <figcaption>Allow MIDI access when prompted by your browser</figcaption>
+</figure>
+
 ### Enabling System Exclusive on the S-330
 
 The editor communicates with the S-330 via MIDI System Exclusive (SysEx) messages. You must enable SysEx reception on the sampler:
@@ -66,7 +71,19 @@ The editor communicates with the S-330 via MIDI System Exclusive (SysEx) message
 When the editor loads, you'll see a MIDI port selector in the header:
 
 1. Click the **Input** dropdown and select your MIDI interface's input port (receives data from S-330)
+
+<figure>
+  <img src="/images/s330-select-input.jpg" alt="MIDI input port dropdown showing available devices">
+  <figcaption>Select your MIDI interface from the Input dropdown</figcaption>
+</figure>
+
 2. Click the **Output** dropdown and select your MIDI interface's output port (sends data to S-330)
+
+<figure>
+  <img src="/images/s330-select-output.jpg" alt="MIDI output port dropdown showing available devices">
+  <figcaption>Select the same interface for the Output port</figcaption>
+</figure>
+
 3. Set the **Device ID** to match your S-330's device ID (check the MIDI-Message screen on the sampler—often 1)
 4. Click **Connect**
 
@@ -83,6 +100,11 @@ The editor has four main sections, accessible via the navigation tabs:
 - **Patches** — Patch parameters and tone mapping
 - **Tones** — Individual tone parameters (filter, envelopes, LFO, etc.)
 
+<figure>
+  <img src="/images/s330-play-page.jpg" alt="Play page showing performance settings">
+  <figcaption>The Play page provides quick access to performance settings</figcaption>
+</figure>
+
 ### Video Display Panel
 
 A floating panel in the corner displays video from a USB capture device. This lets you see the S-330's native screen alongside the web editor.
@@ -91,9 +113,26 @@ A floating panel in the corner displays video from a USB capture device. This le
 
 1. Connect a USB video capture device to the S-330's composite video output
 2. Click the camera icon to expand the video panel
+
+<figure>
+  <img src="/images/s330-video-button.jpg" alt="Camera icon button in corner of screen">
+  <figcaption>Click the camera icon to open the video panel</figcaption>
+</figure>
+
 3. Grant camera permission when prompted
+
+<figure>
+  <img src="/images/s330-enable-camera.jpg" alt="Enable Camera Access button in video panel">
+  <figcaption>Click Enable Camera Access to grant permission</figcaption>
+</figure>
+
 4. Select your capture device from the dropdown
 5. Click **Start**
+
+<figure>
+  <img src="/images/s330-video-display.jpg" alt="Video panel showing S-330 native display">
+  <figcaption>The video panel shows your S-330's native screen</figcaption>
+</figure>
 
 The panel can be:
 - **Dragged** by its header to reposition
@@ -103,6 +142,11 @@ The panel can be:
 ### Virtual Front Panel
 
 The video panel includes virtual front panel controls that send button press commands to the S-330 via SysEx:
+
+<figure>
+  <img src="/images/s330-front-panel.jpg" alt="Virtual front panel with function buttons and navigation controls">
+  <figcaption>Virtual front panel controls mirror the S-330's physical buttons</figcaption>
+</figure>
 
 **Function Buttons:**
 - **MODE** — Open the Mode menu
@@ -137,9 +181,19 @@ The S-330 organizes sounds into **patches**. Each patch contains:
 
 The Patches page shows all 32 patches (P01–P32) in two banks (A and B). Click a patch to select it for editing.
 
+<figure>
+  <img src="/images/s330-patches-page.jpg" alt="Patches page showing list of 32 patches">
+  <figcaption>The Patches page displays all patches with their names</figcaption>
+</figure>
+
 ### Patch Editor
 
 The patch editor displays all parameters on a single page:
+
+<figure>
+  <img src="/images/s330-patch-editor.jpg" alt="Patch editor showing all editable parameters">
+  <figcaption>The patch editor shows all parameters in an organized layout</figcaption>
+</figure>
 
 **Header:**
 - **Patch name** — Click to edit (up to 12 characters)
@@ -168,6 +222,11 @@ These activate depending on Key Mode:
 
 Click **Expand** to view and edit the keyboard-to-tone assignments for both layers. Each key (C-1 through G8) can be assigned to any of the 32 tones, or set to "OFF" (no sound).
 
+<figure>
+  <img src="/images/s330-tone-mapping.jpg" alt="Tone mapping section showing key-to-tone assignments">
+  <figcaption>Tone mapping lets you assign different tones across the keyboard</figcaption>
+</figure>
+
 ---
 
 ## Tones
@@ -185,6 +244,11 @@ Click a tone to select it for editing.
 ### Tone Editor
 
 The tone editor presents all parameters organized into logical groups:
+
+<figure>
+  <img src="/images/s330-tone-editor.jpg" alt="Tone editor showing organized parameter groups">
+  <figcaption>The tone editor organizes parameters into logical sections</figcaption>
+</figure>
 
 #### Basic Info
 
@@ -210,6 +274,11 @@ These control which portion of the sample memory is used:
 
 The S-330's resonant low-pass filter:
 
+<figure>
+  <img src="/images/s330-tvf-filter.jpg" alt="TVF filter section with envelope display">
+  <figcaption>The TVF section includes an interactive envelope editor</figcaption>
+</figure>
+
 | Parameter | Description |
 |-----------|-------------|
 | Enable | Turn filter on/off |
@@ -227,6 +296,11 @@ The S-330's resonant low-pass filter:
 An 8-stage envelope displayed as a draggable graph. Each point controls level; horizontal spacing represents time.
 
 #### LFO
+
+<figure>
+  <img src="/images/s330-lfo-pitch-tva.jpg" alt="LFO, Pitch, and TVA sections">
+  <figcaption>The LFO, Pitch, and TVA sections with all their parameters</figcaption>
+</figure>
 
 | Parameter | Description |
 |-----------|-------------|
