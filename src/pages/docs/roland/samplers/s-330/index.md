@@ -32,7 +32,17 @@ Roland designed the S-330 for editing through an external display and pointing d
 
 **The Roland MU-1 Mouse**: An MSX-compatible mouse manufactured by Mitsumi for the MSX home computer standard. These mice use a proprietary protocol incompatible with PC, Amiga, or Atari mice. Working originals are rare and expensive.
 
+<figure>
+  <img src="/images/mu-1.jpg" alt="Roland MU-1 Mouse">
+  <figcaption>Roland MU-1 Mouse</figcaption>
+</figure>
+
 **The Roland RC-100 Remote Controller**: A dedicated control surface with buttons and a jog wheel mapped to sampler functions. The RC-100 is extremely rare.
+
+<figure>
+  <img src="/images/rc-100.jpg" alt="Roland RC-100 Remote Controller">
+  <figcaption>Roland RC-100 Remote Controller</figcaption>
+</figure>
 
 **MSX-Compatible Mice**: Some third-party MSX mice (such as the Philips SBC 3810) work, but the MSX computer standard has been obsolete for decades, making these difficult to find.
 
@@ -44,7 +54,10 @@ DIY solutions exist, including Arduino-based mouse emulators, PS/2 adapters, and
 
 The S-330 Web Editor communicates directly with the sampler via MIDI System Exclusive messages—the same protocol Roland included for computer-based editing. The editor runs in a web browser, requiring only a standard MIDI interface connection to the S-330.
 
-![S-330 Web Editor screenshot](/images/s330-screenshot.jpg)
+<figure>
+  <img src="/images/s330-screenshot.jpg" alt="S-330 Web Editor">
+  <figcaption>audiocontrol.org S-330 Web Editor</figcaption>
+</figure>
 
 ### Communication
 
@@ -62,15 +75,24 @@ The interface loosely follows the S-330's organizational structure while taking 
 
 **Patches**: Each patch contains up to 16 tone zones mapped across the keyboard. The patch editor displays keyboard mappings with controls for key range, velocity response, and tone assignment.
 
-![Patch editor screenshot](/images/s330-patches.png)
+<figure>
+  <img src="/images/s330-patches.png" alt="Patch Editor">
+  <figcaption>audiocontrol.org S-330 Patch Editor</figcaption>
+</figure>
 
 **Tones**: Each tone contains sample parameters including filter settings, envelopes, LFO configuration, and wave data references. The tone editor presents these with visual envelope displays.
 
-![Tone editor screenshot](/images/s330-tones.png)
+<figure>
+  <img src="/images/s330-tones.png" alt="Tone Editor">
+  <figcaption>audiocontrol.org S-330 Tone Editor</figcaption>
+</figure>
 
 **Play Mode**: A performance view for using the S-330 as an instrument.
 
-![Play mode screenshot](/images/s330-play.png)
+<figure>
+  <img src="/images/s330-play.png" alt="Play Mode">
+  <figcaption>audiocontrol.org S-330 Play Mode</figcaption>
+</figure>
 
 ## Requirements
 
