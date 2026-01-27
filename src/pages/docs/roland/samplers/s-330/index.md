@@ -6,6 +6,8 @@ description: "A guide to the Roland S-330 sampler and the open-source web editor
 
 # A Modern Web Editor for the S-330, Roland's Underdog 80's 12-bit Sampler
 
+![Roland S-330](/images/s-330-feature.jpg)
+
 The Roland S-330 is one of those pieces of vintage gear that punches well above its weight. Released in 1987, this compact 1U rack sampler packed serious sound-shaping capabilities into an affordable package. Nearly four decades later, its distinctive 12-bit character continues to attract musicians looking for that unmistakable late-80s sampling warmth. But there's been one persistent obstacle to truly unlocking its potential: the control hardware.
 
 ## A Brief History
