@@ -39,6 +39,64 @@ This guide covers all features of the S-330 web editor. For background on the S-
   <figcaption>Allow MIDI access when prompted by your browser</figcaption>
 </figure>
 
+### Using Video Capture as a Display
+
+If you don't have a monitor connected to your S-330, you can use the web editor's video capture feature as a standalone display—even before enabling SysEx or connecting MIDI. This is a great way to see the S-330's native screen while you configure the sampler.
+
+#### S-330 Video Outputs
+
+The S-330 has two video output connectors:
+
+| Output | Signal Type | Notes |
+|--------|-------------|-------|
+| RGB (8-pin DIN) | TTL-level digital RGB at 15kHz | Non-standard signal; requires specialized converter for modern displays |
+| Composite (RCA) | Standard composite video | Works with any composite capture device; displays in black and white |
+
+For most users, the **composite output** is the practical choice. While it only displays in monochrome, it works with inexpensive USB capture devices and is perfectly readable for navigating the S-330's menus.
+
+#### Choosing a Capture Device
+
+Any USB video capture device with a composite (RCA) input will work. Look for:
+
+- **Composite video input** (yellow RCA jack)
+- **USB connection** to your computer
+- **UVC (USB Video Class) support** for plug-and-play compatibility with browsers
+
+Inexpensive capture devices are perfectly adequate for this purpose—you're displaying a 200-line monochrome screen, not capturing high-definition video. Even budget devices under $20 work well.
+
+**What you need:**
+- A USB composite video capture device
+- An RCA cable from the S-330's composite video output to the capture device
+
+**To use the video capture:**
+
+1. Open the editor at [audiocontrol.org/s330](/s330)
+2. Click the camera icon in the corner of the screen to open the video panel
+
+<figure>
+  <img src="/images/s330-video-button.jpg" alt="Camera icon button in corner of screen">
+  <figcaption>Click the camera icon to open the video panel</figcaption>
+</figure>
+
+3. Click **Enable Camera Access** and grant permission when prompted
+
+<figure>
+  <img src="/images/s330-enable-camera.jpg" alt="Enable Camera Access button in video panel">
+  <figcaption>Click Enable Camera Access to grant permission</figcaption>
+</figure>
+
+4. Select your USB capture device from the dropdown
+5. Click **Start**
+
+<figure>
+  <img src="/images/s330-video-display.jpg" alt="Video panel showing S-330 native display">
+  <figcaption>The video panel shows your S-330's native screen</figcaption>
+</figure>
+
+You'll now see your S-330's native display in the browser window. You can use this to navigate the sampler's menus with the physical front panel buttons—for example, to enable System Exclusive as described in the next section.
+
+**Tip:** You can collapse the virtual front panel controls if you only want the video display. The video panel can be dragged and resized to fit your workflow.
+
 ### Enabling System Exclusive on the S-330
 
 The editor communicates with the S-330 via MIDI System Exclusive (SysEx) messages. You must enable SysEx reception on the sampler:
@@ -111,28 +169,7 @@ A floating panel in the corner displays video from a USB capture device. This le
 
 **To set up video capture:**
 
-1. Connect a USB video capture device to the S-330's composite video output
-2. Click the camera icon to expand the video panel
-
-<figure>
-  <img src="/images/s330-video-button.jpg" alt="Camera icon button in corner of screen">
-  <figcaption>Click the camera icon to open the video panel</figcaption>
-</figure>
-
-3. Grant camera permission when prompted
-
-<figure>
-  <img src="/images/s330-enable-camera.jpg" alt="Enable Camera Access button in video panel">
-  <figcaption>Click Enable Camera Access to grant permission</figcaption>
-</figure>
-
-4. Select your capture device from the dropdown
-5. Click **Start**
-
-<figure>
-  <img src="/images/s330-video-display.jpg" alt="Video panel showing S-330 native display">
-  <figcaption>The video panel shows your S-330's native screen</figcaption>
-</figure>
+See [Using Video Capture as a Display](#using-video-capture-as-a-display) in the Getting Started section for step-by-step instructions with screenshots.
 
 The panel can be:
 - **Dragged** by its header to reposition
@@ -179,10 +216,17 @@ The S-330 organizes sounds into **patches**. Each patch contains:
 
 ### Patch List
 
-The Patches page shows all 32 patches (P01–P32) in two banks (A and B). Click a patch to select it for editing.
+The Patches page shows all 16 patches in two banks of 8: P11–P18 and P21–P28. Click a patch to select it for editing.
+
+**Loading Patch Banks:**
+
+The first bank (P11–P18) is automatically loaded when you connect. To load additional banks or refresh the data:
+
+- Click the **Load** button next to a bank to request that bank's data from the S-330
+- Use this to sync the web editor if you've made changes on the sampler's front panel
 
 <figure>
-  <img src="/images/s330-patches-page.jpg" alt="Patches page showing list of 32 patches">
+  <img src="/images/s330-patches-page.jpg" alt="Patches page showing list of patches">
   <figcaption>The Patches page displays all patches with their names</figcaption>
 </figure>
 
@@ -235,11 +279,18 @@ Each tone contains the actual sound parameters—the sample data references and 
 
 ### Tone List
 
-The Tones page shows all 32 tones (T01–T32). Tones are either:
+The Tones page shows all 32 tones in four banks of 8: T11–T18, T21–T28, T31–T38, and T41–T48. Tones are either:
 - **Original** — Contains actual wave data
 - **Sub** — References another tone's wave data but has independent parameters
 
 Click a tone to select it for editing.
+
+**Loading Tone Banks:**
+
+The first bank (T11–T18) is automatically loaded when you connect. To load additional banks or refresh the data:
+
+- Click the **Load** button next to a bank to request that bank's data from the S-330
+- Use this to sync the web editor if you've made changes on the sampler's front panel
 
 ### Tone Editor
 
