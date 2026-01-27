@@ -189,6 +189,53 @@ const tocHeadings = headings.filter(h => h.depth === 2);
     border: 1px solid var(--border);
   }
 
+  .docs-article :global(table) {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 1.5rem 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .docs-article :global(th),
+  .docs-article :global(td) {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .docs-article :global(th) {
+    font-weight: 600;
+    color: var(--fg);
+  }
+
+  .docs-article :global(tr:nth-child(even)) {
+    background: #1e1e1e;
+  }
+
+  .docs-article :global(tr:hover) {
+    background: rgba(74, 158, 255, 0.05);
+  }
+
+  .docs-article :global(tr:first-child th:first-child),
+  .docs-article :global(tr:first-child td:first-child) {
+    border-top-left-radius: 7px;
+  }
+
+  .docs-article :global(tr:first-child th:last-child),
+  .docs-article :global(tr:first-child td:last-child) {
+    border-top-right-radius: 7px;
+  }
+
+  .docs-article :global(tr:last-child td:first-child) {
+    border-bottom-left-radius: 7px;
+  }
+
+  .docs-article :global(tr:last-child td:last-child) {
+    border-bottom-right-radius: 7px;
+  }
+
   .docs-article :global(figure) {
     margin: 1.5rem 0;
   }
