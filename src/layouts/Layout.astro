@@ -75,6 +75,22 @@ const jsonLd = {
       gtag('config', 'G-2N7X29Y1RN');
     </script>
     <style>
+      @font-face {
+        font-family: 'Terminal Grotesque Open';
+        src: url('/fonts/terminal-grotesque-open.otf') format('opentype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Terminal Grotesque';
+        src: url('/fonts/terminal-grotesque.woff2') format('woff2');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+
       :root {
         --bg: #0a0a0a;
         --fg: #e0e0e0;
@@ -82,6 +98,12 @@ const jsonLd = {
         --muted: #666;
         --card-bg: #141414;
         --border: #2a2a2a;
+        --font-heading: 'Terminal Grotesque Open', system-ui, sans-serif;
+        --font-body: 'Terminal Grotesque', system-ui, sans-serif;
+      }
+
+      :global(h1), :global(h2), :global(h3), :global(h4), :global(h5), :global(h6) {
+        font-family: var(--font-heading);
       }
 
       *,
@@ -91,7 +113,8 @@ const jsonLd = {
       }
 
       html {
-        font-family: system-ui, -apple-system, sans-serif;
+        font-family: var(--font-body);
+        font-size: 1.8rem;
         background: var(--bg);
         color: var(--fg);
       }
