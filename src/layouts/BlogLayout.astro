@@ -1,0 +1,145 @@
+---
+import Layout from './Layout.astro';
+
+interface Props {
+  frontmatter?: {
+    title: string;
+    description?: string;
+    date?: string;
+    author?: string;
+  };
+  title?: string;
+  description?: string;
+  date?: string;
+  author?: string;
+}
+
+const { frontmatter, title: directTitle, description: directDescription, date: directDate, author: directAuthor } = Astro.props;
+const title = frontmatter?.title ?? directTitle ?? 'Blog';
+const description = frontmatter?.description ?? directDescription;
+const date = frontmatter?.date ?? directDate;
+const author = frontmatter?.author ?? directAuthor;
+---
+
+<Layout title={title} description={description}>
+  <article class="blog-article">
+    {date && <p class="post-meta">{date}{author && ` · ${author}`}</p>}
+    <slot />
+  </article>
+</Layout>
+
+<style>
+  .blog-article {
+    line-height: 1.7;
+  }
+
+  .post-meta {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .blog-article :global(h1) {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+  }
+
+  .blog-article :global(h2) {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--fg);
+  }
+
+  .blog-article :global(h3) {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--fg);
+  }
+
+  .blog-article :global(p) {
+    margin-bottom: 1.25rem;
+    color: var(--fg);
+  }
+
+  .blog-article :global(ul),
+  .blog-article :global(ol) {
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+  }
+
+  .blog-article :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .blog-article :global(strong) {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .blog-article :global(a) {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .blog-article :global(a:hover) {
+    text-decoration: underline;
+  }
+
+  .blog-article :global(hr) {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  .blog-article :global(em) {
+    color: var(--muted);
+  }
+
+  .blog-article :global(code) {
+    background: var(--card-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  .blog-article :global(pre) {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+  }
+
+  .blog-article :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+
+  .blog-article :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    border: 1px solid var(--border);
+  }
+
+  .blog-article :global(figure) {
+    margin: 1.5rem 0;
+  }
+
+  .blog-article :global(figure img) {
+    margin: 0 0 0.5rem 0;
+  }
+
+  .blog-article :global(figcaption) {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+</style>
