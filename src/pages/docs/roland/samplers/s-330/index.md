@@ -153,7 +153,7 @@ The status indicator turns green when connected. The editor will automatically r
 
 The editor has four main sections, accessible via the navigation tabs:
 
-- **Home** — Overview and connection status
+- **Connection** — Overview and connection status
 - **Play** — Performance mode settings
 - **Patches** — Patch parameters and tone mapping
 - **Tones** — Individual tone parameters (filter, envelopes, LFO, etc.)
