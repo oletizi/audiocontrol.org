@@ -34,13 +34,40 @@ This guide covers all features of the S-330 web editor. For background on the S-
 4. Open the editor at [audiocontrol.org/s330](/s330)
 5. Your browser may prompt for MIDI access permission—allow it
 
+### Enabling System Exclusive on the S-330
+
+The editor communicates with the S-330 via MIDI System Exclusive (SysEx) messages. You must enable SysEx reception on the sampler:
+
+1. Press **MODE** to open the Mode menu
+
+<figure>
+  <img src="/images/s330-native-midi-mode.jpg" alt="S-330 Mode menu with MIDI highlighted">
+  <figcaption>Select MIDI from the Mode menu</figcaption>
+</figure>
+
+2. Select **MIDI** from the menu
+3. Press **MENU** to see the MIDI options, then select **Message**
+
+<figure>
+  <img src="/images/s330-native-midi-menu.jpg" alt="S-330 MIDI menu showing Message option">
+  <figcaption>Choose Message from the MIDI menu</figcaption>
+</figure>
+
+4. Navigate to **Exclusive** and set it to **On** using INC/DEC
+5. Note the **Device ID** value—you'll need to match this in the web editor (default is usually 1)
+
+<figure>
+  <img src="/images/s330-native-sysex-on.jpg" alt="S-330 MIDI-Message screen with Exclusive On">
+  <figcaption>Enable Exclusive and note the Device ID</figcaption>
+</figure>
+
 ### Selecting MIDI Ports
 
 When the editor loads, you'll see a MIDI port selector in the header:
 
 1. Click the **Input** dropdown and select your MIDI interface's input port (receives data from S-330)
 2. Click the **Output** dropdown and select your MIDI interface's output port (sends data to S-330)
-3. Set the **Device ID** to match your S-330's device ID (default is 0, which matches most setups)
+3. Set the **Device ID** to match your S-330's device ID (check the MIDI-Message screen on the sampler—often 1)
 4. Click **Connect**
 
 The status indicator turns green when connected. The editor will automatically request the current patch and tone data from your S-330.
