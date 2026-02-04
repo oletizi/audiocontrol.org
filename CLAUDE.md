@@ -1,10 +1,6 @@
-# Claude AI Agent Guidelines for audiocontrol.org
+# audiocontrol.org
 
-This document provides guidelines for AI agents (including Claude Code) working on the audiocontrol.org website.
-
-## Overview
-
-audiocontrol.org is an Astro-based static site that serves as a hub for open source audio tools, particularly web interfaces for vintage samplers and synthesizers. The site is hosted on Netlify.
+Astro-based static site serving as the hub for audiocontrol projects. Hosted on Netlify.
 
 ## Project Structure
 
@@ -13,7 +9,7 @@ audiocontrol.org/
 ├── src/
 │   ├── components/     # Reusable Astro components
 │   ├── layouts/        # Page layouts
-│   └── pages/          # Route pages
+│   └── pages/          # Route pages (file-based routing)
 ├── public/             # Static assets (images, fonts, etc.)
 ├── astro.config.mjs    # Astro configuration
 ├── netlify.toml        # Netlify build and redirect config
@@ -23,20 +19,16 @@ audiocontrol.org/
 
 ## Core Requirements
 
-### Security - CRITICAL
+### Security
 
-- **NEVER hardcode secrets** (API keys, tokens, passwords) in code or config files
+- Never hardcode secrets (API keys, tokens, passwords) in code or config files
 - Use environment variables for sensitive data
-- Never commit `.env` files (already in .gitignore)
-- Google Analytics ID and similar public tracking IDs are acceptable in code
+- Never commit `.env` files
+- Public tracking IDs (e.g., Google Analytics) are acceptable in code
 
-### Astro Conventions
+### Error Handling
 
-- Follow standard Astro file and folder conventions
-- Use `.astro` files for pages and components
-- Use TypeScript for type safety
-- Keep styles scoped within components when possible
-- Use the `public/` directory for static assets
+Never implement fallbacks or use mock data outside of test code. Throw errors with descriptive messages instead. Fallbacks and mock data are bug factories.
 
 ### Code Quality
 
@@ -44,21 +36,26 @@ audiocontrol.org/
 - Prefer editing existing files over creating new ones
 - Keep components focused and reusable
 - Use semantic HTML for accessibility and SEO
+- Files must be under 300-500 lines — refactor larger files
 
 ### Repository Hygiene
 
 - Build artifacts go in `dist/` (gitignored)
 - Netlify artifacts go in `.netlify/` (gitignored)
-- Never bypass pre-commit or pre-push hooks - fix issues instead
-- Keep commits focused and use descriptive messages
+- Never bypass pre-commit or pre-push hooks — fix issues instead
+- Never commit temporary files or build artifacts
 
-## Development Patterns
+## Astro Conventions
+
+- Use `.astro` files for pages and components
+- Use TypeScript in frontmatter
+- Keep styles scoped within components when possible
+- Use the `public/` directory for static assets
 
 ### Component Structure
 
 ```astro
 ---
-// TypeScript frontmatter
 interface Props {
   title: string;
   description?: string;
@@ -73,54 +70,51 @@ const { title, description = 'Default description' } = Astro.props;
 </div>
 
 <style>
-  /* Scoped styles */
-  .component {
-    /* ... */
-  }
+  .component { /* scoped styles */ }
 </style>
 ```
 
-### Layout Usage
+## URL Convention for Editors
 
-```astro
----
-import Layout from '../layouts/Layout.astro';
----
+Editors are proxied from their dedicated Netlify apps using the path convention:
 
-<Layout title="Page Title" description="Page description for SEO">
-  <!-- Page content -->
-</Layout>
+```
+https://audiocontrol.org/<manufacturer>/<device>/editor
 ```
 
-### Adding New Projects
+| Editor       | URL Path              | Proxy Target                |
+| ------------ | --------------------- | --------------------------- |
+| Roland S-330 | `/roland/s330/editor` | `https://s330.netlify.app/` |
 
-Projects are defined in `src/pages/index.astro`. To add a new project:
+### Adding a New Editor
 
-1. Add the project to the `projects` array
-2. Set appropriate status ('available' or 'coming-soon')
-3. Add proxy redirects in `netlify.toml` if needed
-4. Update sitemap config in `astro.config.mjs` if proxied
+1. Add proxy redirect rules in `netlify.toml` (handle bare path, trailing slash, and splat)
+2. Update sitemap in `astro.config.mjs`
+3. Add project entry in `src/pages/index.astro`
+4. Create blog post and/or docs page as appropriate
 
 ## Netlify Configuration
 
-### Proxy Redirects
-
-Proxied apps (like /s330) are configured in `netlify.toml`:
+Proxy redirects in `netlify.toml`:
 
 ```toml
 [[redirects]]
-  from = "/app-path"
+  from = "/manufacturer/device/editor"
   to = "https://target-app.netlify.app/"
   status = 200
   force = true
 ```
 
-Remember to handle both trailing slash and non-trailing slash variants.
+Always handle bare path, trailing slash, and splat (`/*`) variants.
 
-### Build Settings
+## SEO Checklist
 
-- Build command: `npm run build`
-- Publish directory: `dist`
+When adding new pages:
+
+- Set appropriate `title` and `description` props
+- Ensure proper heading hierarchy (h1, h2, h3)
+- Add to sitemap if needed (check `astro.config.mjs`)
+- Use semantic HTML elements
 
 ## Common Commands
 
@@ -130,25 +124,20 @@ npm run build     # Build for production
 npm run preview   # Preview production build
 ```
 
-## SEO Checklist
+## Documentation Standards
 
-When adding new pages:
-
-- Set appropriate `title` and `description` props
-- Ensure proper heading hierarchy (h1 → h2 → h3)
-- Add to sitemap if needed (check `astro.config.mjs`)
-- Use semantic HTML elements
+- Don't call what you have built "production-ready"
+- Never specify project management goals in temporal terms — use milestone, sprint, phase
+- Never offer baseless projection statistics
+- Use GitHub links (not file paths) in issue descriptions
+- See [PROJECT-MANAGEMENT.md](./PROJECT-MANAGEMENT.md) for project management standards
 
 ## Critical Don'ts
 
-❌ **NEVER hardcode secrets** (API keys, tokens, passwords)
-❌ **NEVER bypass pre-commit/pre-push hooks** - fix issues instead
-❌ **NEVER commit build artifacts** outside gitignored directories
-❌ **NEVER commit `.env` files** or other secret-containing files
-
-## When in Doubt
-
-- Check existing components for patterns
-- Follow Astro documentation conventions
-- Prioritize simplicity and maintainability
-- Ask for clarification rather than guessing
+- Never hardcode secrets in code or config files
+- Never bypass pre-commit/pre-push hooks
+- Never commit build artifacts outside gitignored directories
+- Never commit `.env` files
+- Never implement fallbacks or mock data outside test code
+- Never add Claude attribution to git commits
+- Never call builds "production-ready"
