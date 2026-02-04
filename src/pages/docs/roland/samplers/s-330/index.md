@@ -10,7 +10,7 @@ This guide covers all features of the S-330 web editor. For background on the S-
 
 ## Quick Links
 
-- [Launch the S-330 Editor](/s330)
+- [Launch the S-330 Editor](/roland/s330/editor)
 - [GitHub Repository](https://github.com/oletizi/ol_dsp)
 
 ---
@@ -31,7 +31,7 @@ This guide covers all features of the S-330 web editor. For background on the S-
    - Interface MIDI OUT → S-330 MIDI IN
    - S-330 MIDI OUT → Interface MIDI IN
 3. Power on the S-330
-4. Open the editor at [audiocontrol.org/s330](/s330)
+4. Open the editor at [audiocontrol.org/roland/s330/editor](/roland/s330/editor)
 5. Your browser may prompt for MIDI access permission—allow it
 
 <figure>
@@ -70,7 +70,7 @@ Inexpensive capture devices are perfectly adequate for this purpose—you're dis
 
 **To use the video capture:**
 
-1. Open the editor at [audiocontrol.org/s330](/s330)
+1. Open the editor at [audiocontrol.org/roland/s330/editor](/roland/s330/editor)
 2. Click the camera icon in the corner of the screen to open the video panel
 
 <figure>

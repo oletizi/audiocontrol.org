@@ -12,7 +12,7 @@ export default defineConfig({
   adapter: netlify(),
   integrations: [
     sitemap({
-      customPages: ['https://audiocontrol.org/s330'],
+      customPages: ['https://audiocontrol.org/roland/s330/editor'],
     }),
   ],
 });

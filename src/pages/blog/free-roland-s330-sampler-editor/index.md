@@ -175,7 +175,7 @@ The S-330's native interface was well-designed for its era. The web editor doesn
 - Web browser with Web MIDI support (Chrome, Edge, or Opera)
 - Optional: USB video capture device for display integration
 
-The editor is available at [audiocontrol.org/s330](https://audiocontrol.org/s330).
+The editor is available at [audiocontrol.org/roland/s330/editor](https://audiocontrol.org/roland/s330/editor).
 
 ## About the Project
 
