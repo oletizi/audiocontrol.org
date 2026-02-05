@@ -21,8 +21,10 @@ Roland released the S-series in distinct generations:
 - [**S-550**](/roland/s550/) — the full-featured 2U rack sampler with expanded memory and RGB monitor output
 - [**S-330**](/roland/s330/) — the compact 1U rack sampler offering the same engine at a lower price
 
-**1989 — Expansion and evolution:**
+**1989 — The workstation:**
 - [**W-30**](/roland/w30/) — a sampling workstation packaging the 12-bit engine with a 61-key keyboard and sequencer
+
+**1990 — The 16-bit generation:**
 - [**S-770**](/roland/s770/) — the 16-bit flagship with stereo sampling, 24-voice polyphony, and digital I/O
 
 **Early 1990s — Budget 16-bit variants:**
@@ -37,7 +39,7 @@ The S-330, S-550, and W-30 all use the same 12-bit linear sampling engine. This 
 
 - **Identical sound character** — the same converters produce the same distinctive lo-fi warmth
 - **Compatible disk format** — sound libraries created on one device load on any of the three
-- **Same filter design** — resonant low-pass filter with 8-stage envelopes across all models
+- **Same filter design** — resonant low-pass filter with 4-stage envelopes (4 levels, 4 rates) across all models
 - **Same voice architecture** — 16-voice polyphony, 8-part multitimbral operation
 
 The 12-bit resolution gives these samplers their characteristic sound. At 30 kHz sample rate with 12-bit depth, the quantization adds a subtle grittiness and harmonic texture that distinguishes S-series recordings from cleaner 16-bit samplers. This wasn't a design goal — it was a limitation of affordable 1987 technology — but it became a valued sonic quality as tastes evolved.
@@ -87,9 +89,9 @@ The [S-770](/roland/s770/) represents Roland's leap to 16-bit sampling:
 
 - **16-bit resolution** at up to 48 kHz sample rate
 - **Stereo sampling**
-- **24-voice polyphony, 32-part multitimbral**
-- **Up to 16 MB of memory**
-- **Digital I/O** — AES/EBU and S/PDIF
+- **24-voice polyphony, 16-part multitimbral**
+- **Up to 18 MB of memory**
+- **Digital I/O** — S/PDIF (coaxial)
 - **SCSI** for hard drive storage
 
 The S-770 is a different beast from the 12-bit models. It's cleaner, more detailed, and more capable — but it lacks the characterful grit that draws people to the S-330 and S-550. The two generations serve different musical purposes, and neither is inherently superior.
@@ -140,7 +142,7 @@ The audiocontrol.org [S-330 web editor](/roland/s330/editor) bypasses the contro
 The editor provides:
 - **Patch editing** — keyboard mapping, key modes, tone assignment
 - **Tone editing** — filter, envelopes, LFO, wave points
-- **Interactive envelope editors** — drag points on 8-stage TVF and TVA envelopes
+- **Interactive envelope editors** — drag points on 4-stage TVF and TVA envelopes
 - **Real-time bidirectional sync** — changes in the browser update the hardware and vice versa
 - **Video display integration** — embed the S-330's native screen via USB capture device
 - **Virtual front panel** — replicate hardware button controls from the browser
@@ -170,7 +172,7 @@ For musicians and producers considering an S-series purchase:
 **Choose the [S-770](/roland/s770/) if:**
 - You want clean 16-bit sampling
 - You need stereo sampling capability
-- You require digital I/O (AES/EBU, S/PDIF)
+- You require digital I/O (S/PDIF)
 - Maximum polyphony and memory are important
 
 ## Related Content

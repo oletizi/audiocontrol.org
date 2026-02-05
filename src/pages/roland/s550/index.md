@@ -20,7 +20,7 @@ The Roland S-550 is the full-featured member of Roland's 12-bit S-series sampler
 | Multitimbral | 8 parts |
 | Max Sample Time | 28.8 seconds (at 15 kHz), expandable |
 | Memory | 512 KB, expandable to 2 MB |
-| Filter | Resonant low-pass, 8-stage envelope |
+| Filter | Resonant low-pass, 4-stage envelope (4 levels, 4 rates) |
 | LFO | Sine and peak-hold waveforms |
 | Outputs | 8 individual + stereo mix |
 | Display | Dedicated RGB monitor output (640x200) + composite |

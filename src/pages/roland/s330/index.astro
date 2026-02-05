@@ -14,7 +14,7 @@ const specs = [
   { label: 'Polyphony', value: '16 voices' },
   { label: 'Multitimbral', value: '8 parts' },
   { label: 'Max Sample Time', value: '28.8 seconds (at 15 kHz)' },
-  { label: 'Filter', value: 'Resonant low-pass, 8-stage envelope' },
+  { label: 'Filter', value: 'Resonant low-pass, 4-stage envelope (4 levels, 4 rates)' },
   { label: 'LFO', value: 'Sine and peak-hold waveforms' },
   { label: 'Outputs', value: '8 individual + stereo mix' },
   { label: 'Display', value: 'Composite video out for external monitor' },
@@ -25,7 +25,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Product',
   name: 'Roland S-330',
-  description: 'A 1U rack-mount 12-bit digital sampler released by Roland in 1987, featuring 16-voice polyphony, resonant low-pass filter with 8-stage envelopes, and a graphical editing interface via composite video output.',
+  description: 'A 1U rack-mount 12-bit digital sampler released by Roland in 1987, featuring 16-voice polyphony, resonant low-pass filter with multi-stage envelopes, and a graphical editing interface via composite video output.',
   brand: {
     '@type': 'Brand',
     name: 'Roland',
@@ -46,7 +46,7 @@ const jsonLd = {
     <p class="tagline">12-bit sampling character in a single rack unit</p>
     <p class="intro">
       Released in 1987, the Roland S-330 packs 16-voice polyphony, a resonant low-pass filter with
-      8-stage envelopes, and a graphical editing interface into an affordable 1U rack sampler. Its
+      multi-stage envelopes, and a graphical editing interface into an affordable 1U rack sampler. Its
       distinctive 12-bit sound continues to attract musicians seeking late-80s sampling warmth.
     </p>
   </section>

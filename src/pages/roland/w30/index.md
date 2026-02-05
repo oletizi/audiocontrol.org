@@ -19,7 +19,7 @@ The Roland W-30 is a sampling workstation that packages the 12-bit sampling engi
 | Polyphony | 16 voices |
 | Multitimbral | 8 parts |
 | Memory | 512 KB |
-| Filter | Resonant low-pass, 8-stage envelope |
+| Filter | Resonant low-pass, 4-stage envelope (4 levels, 4 rates) |
 | LFO | Sine and peak-hold waveforms |
 | Keyboard | 61 keys, velocity-sensitive |
 | Sequencer | 16-track, 50,000 note capacity |

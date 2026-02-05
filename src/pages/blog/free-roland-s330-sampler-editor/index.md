@@ -25,7 +25,7 @@ Despite its single rack unit size, the S-330 offered impressive specifications:
 - 16-voice polyphony with 8-part multitimbral operation
 - Variable sample rates from 15kHz to 30kHz at 12-bit resolution
 - Up to 28.8 seconds of sampling time
-- Powerful resonant low-pass filter with dedicated 8-stage envelopes
+- Powerful resonant low-pass filter with dedicated 4-stage envelopes (4 levels, 4 rates)
 - LFO with sine and peak-hold waveforms
 - 8 individual outputs
 - Composite video output for external monitoring
