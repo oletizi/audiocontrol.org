@@ -483,3 +483,11 @@ When the video panel and controls are expanded:
 The S-330 Web Editor is an open-source project developed as part of the [ol_dsp](https://github.com/oletizi/ol_dsp) audio tools collection.
 
 For bug reports and feature requests, please open an issue on [GitHub](https://github.com/oletizi/ol_dsp/issues).
+
+## See Also
+
+- [Roland S-330 Overview](/roland/s330/) — specs, accessories, related devices, and the web editor
+- [The Roland S-Series Samplers](/blog/roland-s-series-samplers/) — a guide to the full S-series lineup
+- [A Free Web Editor for the Roland S-330](/blog/free-roland-s330-sampler-editor/) — the original blog post about the editor
+- [Roland MU-1 Mouse Guide](/roland/s330/mu-1-mouse) — history and alternatives for the original mouse
+- [Roland RC-100 Remote Controller Guide](/roland/s330/rc-100) — the dedicated control surface

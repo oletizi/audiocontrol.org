@@ -1,0 +1,280 @@
+---
+import Layout from './Layout.astro';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  frontmatter?: {
+    title: string;
+    description?: string;
+  };
+  headings?: Heading[];
+  title?: string;
+  description?: string;
+}
+
+const { frontmatter, headings = [], title: directTitle, description: directDescription } = Astro.props;
+const title = frontmatter?.title ?? directTitle ?? 'Guide';
+const description = frontmatter?.description ?? directDescription;
+
+const tocHeadings = headings.filter(h => h.depth === 2);
+---
+
+<Layout title={title} description={description} type="article">
+  <div class="article-layout">
+    {tocHeadings.length > 0 && (
+      <aside class="toc">
+        <nav>
+          <div class="toc-header">In this article</div>
+          {tocHeadings.map(heading => (
+            <a href={`#${heading.slug}`} class="toc-link">{heading.text}</a>
+          ))}
+        </nav>
+      </aside>
+    )}
+    <article class="guide-article">
+      <slot />
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .article-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media (min-width: 1024px) {
+    .article-layout {
+      grid-template-columns: 200px 1fr;
+    }
+  }
+
+  .toc {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .toc {
+      display: block;
+      position: sticky;
+      top: 5rem;
+      align-self: start;
+      max-height: calc(100vh - 6rem);
+      overflow-y: auto;
+    }
+  }
+
+  .toc-header {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--fg);
+    margin-bottom: 1rem;
+  }
+
+  .toc-link {
+    display: block;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    padding: 0.4rem 0 0.4rem 0.75rem;
+    border-left: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .toc-link:hover,
+  .toc-link.active {
+    color: var(--fg);
+    border-left-color: var(--accent);
+  }
+
+  .guide-article {
+    line-height: 1.7;
+    min-width: 0;
+  }
+
+  .guide-article :global(h1) {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .guide-article :global(h2) {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--fg);
+  }
+
+  .guide-article :global(h3) {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--fg);
+  }
+
+  .guide-article :global(p) {
+    margin-bottom: 1.25rem;
+    color: var(--fg);
+  }
+
+  .guide-article :global(ul),
+  .guide-article :global(ol) {
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+  }
+
+  .guide-article :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .guide-article :global(strong) {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .guide-article :global(a) {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .guide-article :global(a:hover) {
+    text-decoration: underline;
+  }
+
+  .guide-article :global(hr) {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  .guide-article :global(em) {
+    color: var(--muted);
+  }
+
+  .guide-article :global(code) {
+    background: var(--card-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  .guide-article :global(pre) {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+  }
+
+  .guide-article :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+
+  .guide-article :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    border: 1px solid var(--border);
+  }
+
+  .guide-article :global(table) {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 1.5rem 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .guide-article :global(th),
+  .guide-article :global(td) {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .guide-article :global(th) {
+    font-weight: 600;
+    color: var(--fg);
+    background: #323232;
+  }
+
+  .guide-article :global(tr:nth-child(even)) {
+    background: #1e1e1e;
+  }
+
+  .guide-article :global(tr:hover) {
+    background: rgba(74, 158, 255, 0.05);
+  }
+
+  .guide-article :global(tr:first-child th:first-child),
+  .guide-article :global(tr:first-child td:first-child) {
+    border-top-left-radius: 7px;
+  }
+
+  .guide-article :global(tr:first-child th:last-child),
+  .guide-article :global(tr:first-child td:last-child) {
+    border-top-right-radius: 7px;
+  }
+
+  .guide-article :global(tr:last-child td:first-child) {
+    border-bottom-left-radius: 7px;
+  }
+
+  .guide-article :global(tr:last-child td:last-child) {
+    border-bottom-right-radius: 7px;
+  }
+
+  .guide-article :global(figure) {
+    margin: 1.5rem 0;
+  }
+
+  .guide-article :global(figure img) {
+    margin: 0 0 0.5rem 0;
+  }
+
+  .guide-article :global(figcaption) {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+</style>
+
+<script>
+  const tocLinks = document.querySelectorAll('.toc-link');
+  const headings = document.querySelectorAll('.guide-article h2');
+
+  if (tocLinks.length > 0 && headings.length > 0) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            tocLinks.forEach((link) => link.classList.remove('active'));
+            const activeLink = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
+            if (activeLink) {
+              activeLink.classList.add('active');
+            }
+          }
+        });
+      },
+      {
+        rootMargin: '-80px 0px -80% 0px',
+        threshold: 0
+      }
+    );
+
+    headings.forEach((heading) => observer.observe(heading));
+  }
+</script>

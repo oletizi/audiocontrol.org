@@ -30,7 +30,7 @@ Despite its single rack unit size, the S-330 offered impressive specifications:
 - 8 individual outputs
 - Composite video output for external monitoring
 
-The S-330 shared its sampling engine with the larger S-550, and the same architecture later appeared in the W-30
+The S-330 shared its sampling engine with the larger [S-550](/roland/s550/), and the same architecture later appeared in the [W-30](/roland/w30/)
 sampling workstation. The S-series distinguished itself through a graphical editing interface displayed on an external
 video monitor and controlled via mouse or remote controller.
 
@@ -40,7 +40,7 @@ Roland designed the S-330 for editing through an external display and pointing d
 video signal showing parameter screens, waveform displays, and graphical envelope editors. Navigating this interface
 requires one of the following:
 
-**The Roland MU-1 Mouse**: An MSX-compatible mouse manufactured by Mitsumi for the MSX home computer standard. These
+**The [Roland MU-1 Mouse](/roland/s330/mu-1-mouse)**: An MSX-compatible mouse manufactured by Mitsumi for the MSX home computer standard. These
 mice use a proprietary protocol incompatible with PC, Amiga, or Atari mice. Working originals are rare and expensive.
 
 <figure>
@@ -48,7 +48,7 @@ mice use a proprietary protocol incompatible with PC, Amiga, or Atari mice. Work
   <figcaption>Roland MU-1 Mouse</figcaption>
 </figure>
 
-**The Roland RC-100 Remote Controller**: A dedicated control surface with buttons and a jog wheel mapped to sampler
+**The [Roland RC-100 Remote Controller](/roland/s330/rc-100)**: A dedicated control surface with buttons and a jog wheel mapped to sampler
 functions. The RC-100 is extremely rare.
 
 <figure>
@@ -181,3 +181,13 @@ The editor is available at [audiocontrol.org/roland/s330/editor](https://audioco
 
 The S-330 Web Editor is open source. The editor and supporting libraries are available
 on [GitHub](https://github.com/oletizi/ol_dsp).
+
+## Related Content
+
+- [Roland S-330 Overview](/roland/s330/) — detailed specs, accessories, and the web editor
+- [The Roland S-Series Samplers](/blog/roland-s-series-samplers/) — a guide to the full S-series lineup
+- [Roland MU-1 Mouse Guide](/roland/s330/mu-1-mouse) — history, compatibility, and alternatives
+- [Roland RC-100 Remote Controller Guide](/roland/s330/rc-100) — the dedicated control surface
+- [Roland S-550](/roland/s550/) — the full-featured 12-bit rack sampler
+- [Roland W-30](/roland/w30/) — the S-series sampling workstation
+- [S-330 Web Editor Documentation](/docs/roland/samplers/s-330/) — setup and usage guide

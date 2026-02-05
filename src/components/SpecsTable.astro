@@ -1,0 +1,83 @@
+---
+interface SpecEntry {
+  label: string;
+  value: string;
+}
+
+interface Props {
+  specs: SpecEntry[];
+}
+
+const { specs } = Astro.props;
+---
+
+<table class="specs-table">
+  <tbody>
+    {specs.map(({ label, value }) => (
+      <tr>
+        <th>{label}</th>
+        <td>{value}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+<style>
+  .specs-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 1.5rem 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .specs-table th,
+  .specs-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .specs-table th {
+    font-weight: 600;
+    color: var(--fg);
+    white-space: nowrap;
+    width: 40%;
+  }
+
+  .specs-table td {
+    color: var(--muted);
+  }
+
+  .specs-table tr:nth-child(even) {
+    background: #1e1e1e;
+  }
+
+  .specs-table tr:hover {
+    background: rgba(74, 158, 255, 0.05);
+  }
+
+  .specs-table tr:first-child th,
+  .specs-table tr:first-child td {
+    border-top: none;
+  }
+
+  .specs-table tr:first-child th {
+    border-top-left-radius: 7px;
+  }
+
+  .specs-table tr:first-child td {
+    border-top-right-radius: 7px;
+  }
+
+  .specs-table tr:last-child th {
+    border-bottom-left-radius: 7px;
+    border-bottom: none;
+  }
+
+  .specs-table tr:last-child td {
+    border-bottom-right-radius: 7px;
+    border-bottom: none;
+  }
+</style>
