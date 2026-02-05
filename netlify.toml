@@ -2,6 +2,12 @@
   command = "npm run build"
   publish = "dist"
 
+# Sitemap alias
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/sitemap-index.xml"
+  status = 301
+
 # Proxy S-330 editor to its dedicated Netlify app
 [[redirects]]
   from = "/roland/s330/editor"
