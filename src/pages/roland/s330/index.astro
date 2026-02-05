@@ -1,0 +1,262 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import SpecsTable from '../../../components/SpecsTable.astro';
+import DeviceCard from '../../../components/DeviceCard.astro';
+
+const title = 'Roland S-330 Sampler — 12-Bit Sampling Character';
+const description = 'The Roland S-330 is a 1U rack-mount 12-bit sampler from 1987 with 16-voice polyphony, resonant filters, and a graphical editing interface. Explore specs, accessories, and the free web editor.';
+
+const specs = [
+  { label: 'Year', value: '1987' },
+  { label: 'Format', value: '1U rack-mount' },
+  { label: 'Resolution', value: '12-bit linear' },
+  { label: 'Sample Rates', value: '15 kHz / 30 kHz' },
+  { label: 'Polyphony', value: '16 voices' },
+  { label: 'Multitimbral', value: '8 parts' },
+  { label: 'Max Sample Time', value: '28.8 seconds (at 15 kHz)' },
+  { label: 'Filter', value: 'Resonant low-pass, 8-stage envelope' },
+  { label: 'LFO', value: 'Sine and peak-hold waveforms' },
+  { label: 'Outputs', value: '8 individual + stereo mix' },
+  { label: 'Display', value: 'Composite video out for external monitor' },
+  { label: 'Storage', value: '3.5" 2DD floppy disk' },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: 'Roland S-330',
+  description: 'A 1U rack-mount 12-bit digital sampler released by Roland in 1987, featuring 16-voice polyphony, resonant low-pass filter with 8-stage envelopes, and a graphical editing interface via composite video output.',
+  brand: {
+    '@type': 'Brand',
+    name: 'Roland',
+  },
+  category: 'Musical Instruments > Samplers',
+  releaseDate: '1987',
+};
+---
+
+<Layout title={title} description={description}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </Fragment>
+
+  <section class="hero">
+    <img src="/images/s-330-feature.jpg" alt="Roland S-330 sampler" class="hero-image" />
+    <h1>Roland S-330</h1>
+    <p class="tagline">12-bit sampling character in a single rack unit</p>
+    <p class="intro">
+      Released in 1987, the Roland S-330 packs 16-voice polyphony, a resonant low-pass filter with
+      8-stage envelopes, and a graphical editing interface into an affordable 1U rack sampler. Its
+      distinctive 12-bit sound continues to attract musicians seeking late-80s sampling warmth.
+    </p>
+  </section>
+
+  <section class="specs-section">
+    <h2>Specifications</h2>
+    <SpecsTable specs={specs} />
+  </section>
+
+  <section class="editor-section">
+    <h2>Free Web Editor</h2>
+    <p>
+      The audiocontrol.org web editor communicates directly with the S-330 via MIDI System Exclusive,
+      replacing the need for rare original control hardware. Edit patches, tones, envelopes, and
+      filters from any browser with Web MIDI support.
+    </p>
+    <a href="/roland/s330/editor" class="editor-cta">
+      <img src="/images/s330-screenshot.jpg" alt="Roland S-330 web editor interface" class="editor-screenshot" />
+      <span class="cta-label">Launch the S-330 Web Editor</span>
+    </a>
+    <p class="editor-links">
+      <a href="/docs/roland/samplers/s-330/">Read the editor documentation</a> or
+      <a href="/blog/free-roland-s330-sampler-editor/">learn more about the project</a>.
+    </p>
+  </section>
+
+  <section class="accessories-section">
+    <h2>Accessories</h2>
+    <p>
+      The S-330 was designed for editing through an external display and pointing device. These
+      original accessories are increasingly difficult to find, which is one reason the web editor
+      exists.
+    </p>
+    <div class="card-grid">
+      <DeviceCard
+        name="Roland MU-1 Mouse"
+        path="/roland/s330/mu-1-mouse"
+        description="MSX-compatible mouse used for navigating the S-330's graphical interface."
+        image="/images/mu-1.jpg"
+      />
+      <DeviceCard
+        name="Roland RC-100 Remote Controller"
+        path="/roland/s330/rc-100"
+        description="Dedicated control surface with buttons and jog wheel for sampler functions."
+        image="/images/rc-100.jpg"
+      />
+    </div>
+  </section>
+
+  <section class="related-section">
+    <h2>Related Devices</h2>
+    <p>
+      The S-330 belongs to Roland's S-series sampler family. These devices share architecture,
+      sound engines, and disk formats, forming an ecosystem of 12-bit sampling tools from the late 1980s.
+    </p>
+    <div class="card-grid">
+      <DeviceCard
+        name="Roland S-550"
+        path="/roland/s550/"
+        description="The S-330's larger sibling with expanded memory and dedicated monitor output."
+      />
+      <DeviceCard
+        name="Roland S-770"
+        path="/roland/s770/"
+        description="Roland's flagship 16-bit sampler that succeeded the S-series 12-bit line."
+      />
+      <DeviceCard
+        name="Roland W-30"
+        path="/roland/w30/"
+        description="A sampling workstation combining the S-330's engine with a keyboard and sequencer."
+      />
+    </div>
+  </section>
+
+  <section class="further-reading">
+    <h2>Further Reading</h2>
+    <ul>
+      <li><a href="/blog/roland-s-series-samplers/">The Roland S-Series Samplers: A Complete Guide</a></li>
+      <li><a href="/blog/free-roland-s330-sampler-editor/">A Free, Open Source Web Editor for the Roland S-330</a></li>
+      <li><a href="/docs/roland/samplers/s-330/">S-330 Web Editor Documentation</a></li>
+    </ul>
+  </section>
+</Layout>
+
+<style>
+  .hero {
+    margin-bottom: 3rem;
+  }
+
+  .hero-image {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.1;
+  }
+
+  .hero .tagline {
+    color: var(--muted);
+    font-size: 1.15rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .intro {
+    line-height: 1.7;
+    color: var(--fg);
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--fg);
+  }
+
+  section {
+    margin-bottom: 3rem;
+  }
+
+  section p {
+    line-height: 1.7;
+    color: var(--fg);
+    margin-bottom: 1rem;
+  }
+
+  .editor-cta {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, background 0.2s;
+    margin: 1.5rem 0;
+  }
+
+  .editor-cta:hover {
+    border-color: var(--accent);
+    background: #1a1a1a;
+  }
+
+  .editor-screenshot {
+    width: 100%;
+    display: block;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cta-label {
+    display: block;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--accent);
+  }
+
+  .editor-links {
+    font-size: 0.95rem;
+  }
+
+  .editor-links a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .editor-links a:hover {
+    text-decoration: underline;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .card-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .card-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .further-reading ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .further-reading li {
+    margin-bottom: 0.75rem;
+  }
+
+  .further-reading a {
+    color: var(--accent);
+    text-decoration: none;
+    line-height: 1.5;
+  }
+
+  .further-reading a:hover {
+    text-decoration: underline;
+  }
+</style>

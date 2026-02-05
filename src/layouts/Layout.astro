@@ -6,19 +6,21 @@ interface Props {
   description?: string;
   image?: string;
   type?: 'website' | 'article';
+  jsonLd?: Record<string, unknown>;
 }
 
 const {
   title = 'audiocontrol.org',
   description = 'Open source web interfaces for vintage samplers and synthesizers.',
   image = '/images/og-image.png',
-  type = 'website'
+  type = 'website',
+  jsonLd: customJsonLd,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const imageURL = new URL(image, Astro.site);
 
-const jsonLd = {
+const defaultJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'audiocontrol.org',
@@ -29,6 +31,8 @@ const jsonLd = {
     'https://github.com/oletizi/ol_dsp'
   ]
 };
+
+const jsonLd = customJsonLd ?? defaultJsonLd;
 ---
 
 <html lang="en">
@@ -367,6 +371,16 @@ const jsonLd = {
           <button class="nav-button">Blog</button>
           <div class="dropdown">
             <a href="/blog/free-roland-s330-sampler-editor/">Roland S-330 Editor</a>
+            <a href="/blog/roland-s-series-samplers/">Roland S-Series Samplers</a>
+          </div>
+        </div>
+        <div class="nav-item">
+          <button class="nav-button">Hardware</button>
+          <div class="dropdown">
+            <a href="/roland/s330/">Roland S-330</a>
+            <a href="/roland/s550/">Roland S-550</a>
+            <a href="/roland/s770/">Roland S-770</a>
+            <a href="/roland/w30/">Roland W-30</a>
           </div>
         </div>
         <div class="nav-item">

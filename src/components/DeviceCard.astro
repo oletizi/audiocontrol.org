@@ -1,0 +1,60 @@
+---
+interface Props {
+  name: string;
+  path: string;
+  description: string;
+  image?: string;
+}
+
+const { name, path, description, image } = Astro.props;
+---
+
+<a href={path} class="device-card">
+  {image && (
+    <img src={image} alt={name} class="device-card-image" />
+  )}
+  <div class="device-card-body">
+    <h3 class="device-card-name">{name}</h3>
+    <p class="device-card-description">{description}</p>
+  </div>
+</a>
+
+<style>
+  .device-card {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, background 0.2s;
+    overflow: hidden;
+  }
+
+  .device-card:hover {
+    border-color: var(--accent);
+    background: #1a1a1a;
+  }
+
+  .device-card-image {
+    width: 100%;
+    display: block;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .device-card-body {
+    padding: 1rem 1.25rem;
+  }
+
+  .device-card-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+
+  .device-card-description {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+</style>
