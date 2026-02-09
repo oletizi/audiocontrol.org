@@ -15,4 +15,9 @@ export default defineConfig({
       customPages: ['https://audiocontrol.org/roland/s330/editor'],
     }),
   ],
+  vite: {
+    server: {
+      allowedHosts: ['orion-m4'],
+    },
+  },
 });
