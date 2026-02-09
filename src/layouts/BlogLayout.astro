@@ -12,25 +12,59 @@ interface Props {
     title: string;
     description?: string;
     date?: string;
+    datePublished?: string;
+    dateModified?: string;
     author?: string;
   };
   headings?: Heading[];
   title?: string;
   description?: string;
   date?: string;
+  datePublished?: string;
+  dateModified?: string;
   author?: string;
 }
 
-const { frontmatter, headings = [], title: directTitle, description: directDescription, date: directDate, author: directAuthor } = Astro.props;
+const { frontmatter, headings = [], title: directTitle, description: directDescription, date: directDate, datePublished: directDatePublished, dateModified: directDateModified, author: directAuthor } = Astro.props;
 const title = frontmatter?.title ?? directTitle ?? 'Blog';
 const description = frontmatter?.description ?? directDescription;
 const date = frontmatter?.date ?? directDate;
-const author = frontmatter?.author ?? directAuthor;
+const datePublished = frontmatter?.datePublished ?? directDatePublished;
+const dateModified = frontmatter?.dateModified ?? directDateModified ?? datePublished;
+const author = frontmatter?.author ?? directAuthor ?? 'audiocontrol.org';
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const blogPostingJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description: description,
+  datePublished: datePublished,
+  dateModified: dateModified,
+  author: {
+    '@type': 'Person',
+    name: author,
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'audiocontrol.org',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://audiocontrol.org/favicon.svg',
+    },
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': canonicalURL.toString(),
+  },
+  image: 'https://audiocontrol.org/images/og-image.png',
+};
 
 const tocHeadings = headings.filter(h => h.depth === 2);
 ---
 
-<Layout title={title} description={description}>
+<Layout title={title} description={description} type="article" jsonLd={blogPostingJsonLd}>
   <div class="article-layout">
     {tocHeadings.length > 0 && (
       <aside class="toc">

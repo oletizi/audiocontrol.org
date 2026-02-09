@@ -3,6 +3,9 @@ layout: ../../../layouts/BlogLayout.astro
 title: "The Roland S-Series Samplers: A Complete Guide to the S-330, S-550, S-770, and W-30"
 description: "A comprehensive guide to Roland's S-series sampler family — from the affordable S-330 to the flagship S-770, including the W-30 workstation, original accessories, and modern editing tools."
 date: "February 2025"
+datePublished: "2025-02-15"
+dateModified: "2025-02-15"
+author: "Orion Letizi"
 ---
 
 # The Roland S-Series Samplers: From 12-Bit Character to 16-Bit Clarity

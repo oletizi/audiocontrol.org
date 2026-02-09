@@ -104,3 +104,63 @@ https://audiocontrol.org/<manufacturer>/<device>/editor
 ## Linking
 
 Use GitHub URLs (not file paths) when referencing code or documentation in issues. GitHub links are portable and accessible without a local clone.
+
+---
+
+## Asana for SEO & Engagement
+
+SEO and engagement tasks are tracked in Asana (not GitHub). These tasks involve community outreach, search engine optimization, analytics, and other non-code work.
+
+**Project:** AudioControl (in the "My Company" workspace)
+
+### Board Sections
+
+| Section       | Purpose                                      |
+| ------------- | -------------------------------------------- |
+| INBOUND       | New tasks to be triaged                      |
+| MILESTONES    | Weekly milestone parent tasks by workstream  |
+| SCHEDULED     | Tasks planned for execution                  |
+| IN PROGRESS   | Currently being worked on                    |
+| COMPLETE      | Finished tasks                               |
+| CANCELLED     | Tasks no longer needed                       |
+
+### Weekly Milestones
+
+Each workstream (SEO, Content, etc.) has a weekly milestone task in the MILESTONES section.
+
+**Naming format:** `[Workstream] YYYY-MM-DD Milestone`
+
+**Examples:**
+- `[SEO] 2026-02-13 Milestone`
+- `[Content] 2026-02-14 Milestone`
+
+**Milestone task requirements:**
+- The task description contains the goals and scope for that week's work on the workstream
+- Subtasks represent discrete, assignable work packets
+- Each subtask is also added to the project independently (so it appears in board views and can be scheduled/assigned)
+
+### Subtask Naming
+
+**Format:** `[Workstream] Short action description`
+
+**Examples:**
+- `[SEO] Set up Google Search Console`
+- `[SEO] Fix homepage title tag`
+- `[Content] Write blog post about S-330 MIDI implementation`
+
+### Creating Subtasks
+
+When creating subtasks for a milestone:
+
+1. Create the task with the milestone as `parent`
+2. Also specify `project_id` so the task appears independently in the project
+3. Include a clear description of the work to be done
+4. Subtasks inherit the workstream tag from their parent milestone
+
+### Workflow
+
+1. **Planning:** Create or update weekly milestone with description of goals
+2. **Breakdown:** Create subtasks for each discrete work packet
+3. **Scheduling:** Move subtasks to SCHEDULED when ready to work
+4. **Execution:** Move to IN PROGRESS when starting work
+5. **Completion:** Move to COMPLETE when done; mark milestone complete when all subtasks are done

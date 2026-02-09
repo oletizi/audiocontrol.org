@@ -3,6 +3,9 @@ layout: ../../../layouts/BlogLayout.astro
 title: "A Free, Open Source Web Editor for the Roland S-330 Sampler"
 description: "A guide to the Roland S-330 sampler and the open-source web editor for modern workflows."
 date: "January 2025"
+datePublished: "2025-01-15"
+dateModified: "2025-01-15"
+author: "Orion Letizi"
 ---
 
 # A Modern Web Editor for the S-330, Roland's Underdog 80's 12-bit Sampler
