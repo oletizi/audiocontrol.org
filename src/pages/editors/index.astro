@@ -7,6 +7,7 @@ interface Editor {
   status: 'available' | 'coming-soon';
   slug?: string;
   tags?: string[];
+  image?: string;
 }
 
 const editors: Editor[] = [
@@ -16,6 +17,7 @@ const editors: Editor[] = [
     status: "available",
     slug: "/roland/s330/editor",
     tags: ["Roland", "S-330", "Web MIDI"],
+    image: "/images/s330-screenshot.png",
   },
   {
     name: "Akai S3000XL Editor",
@@ -53,6 +55,11 @@ const editors: Editor[] = [
       editor.status === 'available' ? (
         <a href={editor.slug} class="editor-card">
           <article class="editor-card-inner">
+            {editor.image && (
+              <div class="editor-card-image">
+                <img src={editor.image} alt="" loading="lazy" />
+              </div>
+            )}
             <div class="editor-card-content">
               <div class="editor-card-header">
                 <h3 class="editor-card-title">{editor.name}</h3>
@@ -156,6 +163,24 @@ const editors: Editor[] = [
     display: flex;
     flex-direction: column;
     height: 100%;
+  }
+
+  .editor-card-image {
+    width: 100%;
+    height: 10rem;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .editor-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .editor-card:not(.coming-soon):hover .editor-card-image img {
+    transform: scale(1.05);
   }
 
   .editor-card-content {

@@ -7,6 +7,7 @@ interface Project {
   description: string;
   status: 'available' | 'coming-soon';
   href?: string;
+  image?: string;
 }
 
 const projects: Project[] = [
@@ -15,6 +16,7 @@ const projects: Project[] = [
     description: 'Web-based editor for the Roland S-330 12-bit sampler',
     status: 'available',
     href: '/roland/s330/editor',
+    image: '/images/s330-screenshot.png',
   },
   {
     name: 'Akai S3000XL',
@@ -44,6 +46,7 @@ const projects: Project[] = [
           description={project.description}
           status={project.status}
           href={project.href}
+          image={project.image}
         />
       ))}
     </div>
