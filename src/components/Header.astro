@@ -31,9 +31,20 @@
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
-    padding: 1.25rem 0;
+    padding-bottom: 2rem;
     margin-bottom: 2rem;
-    border-bottom: 1px solid hsl(var(--border));
+    position: relative;
+  }
+
+  .site-header::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    width: 100vw;
+    height: 1px;
+    background: hsl(var(--border));
   }
 
   .header-brand {
