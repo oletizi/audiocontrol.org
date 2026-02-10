@@ -74,7 +74,7 @@ const projects: Project[] = [
     font-size: 1.25rem;
     font-weight: 500;
     margin-bottom: 1rem;
-    color: var(--muted);
+    color: hsl(var(--muted-foreground));
   }
 
   .projects {
@@ -84,13 +84,13 @@ const projects: Project[] = [
 
   .project {
     display: block;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
     border-radius: 8px;
     padding: 1.5rem;
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.2s, background 0.2s;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.3s;
     overflow: hidden;
   }
 
@@ -98,13 +98,14 @@ const projects: Project[] = [
     width: calc(100% + 3rem);
     margin: 1rem -1.5rem;
     display: block;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
+    border-top: 1px solid hsl(var(--border));
+    border-bottom: 1px solid hsl(var(--border));
   }
 
   .project:not(.coming-soon):hover {
-    border-color: var(--accent);
-    background: #1a1a1a;
+    border-color: hsl(var(--primary) / 0.5);
+    background: hsl(var(--card-hover));
+    box-shadow: var(--card-glow-hover);
   }
 
   .project.coming-soon {
@@ -133,16 +134,16 @@ const projects: Project[] = [
   }
 
   .status-badge.available {
-    background: #1a3a1a;
-    color: #4ade80;
+    background: hsl(var(--badge-available-bg));
+    color: hsl(var(--badge-available));
   }
 
   .status-badge.coming-soon {
-    background: #2a2a1a;
-    color: #a0a060;
+    background: hsl(var(--badge-coming-bg));
+    color: hsl(var(--badge-coming));
   }
 
   .project-description {
-    color: var(--muted);
+    color: hsl(var(--muted-foreground));
   }
 </style>

@@ -1,5 +1,6 @@
 ---
 import Logo from '../components/Logo.astro';
+import '../styles/design-tokens.css';
 
 interface Props {
   title?: string;
@@ -47,6 +48,11 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
     <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -80,38 +86,6 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
     </script>
     <style>
       @font-face {
-        font-family: 'Terminal Grotesque Open';
-        src: url('/fonts/terminal-grotesque-open.otf') format('opentype');
-        font-weight: normal;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      @font-face {
-        font-family: 'Inter';
-        src: url('/fonts/inter-thin.woff2') format('woff2');
-        font-weight: 100;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      @font-face {
-        font-family: 'Inter';
-        src: url('/fonts/inter-extralight.woff2') format('woff2');
-        font-weight: 200;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      @font-face {
-        font-family: 'Inter';
-        src: url('/fonts/inter-light.woff2') format('woff2');
-        font-weight: 300;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      @font-face {
         font-family: 'Inter';
         src: url('/fonts/inter-regular.woff2') format('woff2');
         font-weight: 400;
@@ -143,33 +117,6 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
         font-display: swap;
       }
 
-      @font-face {
-        font-family: 'Inter';
-        src: url('/fonts/inter-extrabold.woff2') format('woff2');
-        font-weight: 800;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      @font-face {
-        font-family: 'Inter';
-        src: url('/fonts/inter-black.woff2') format('woff2');
-        font-weight: 900;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      :root {
-        --bg: #0a0a0a;
-        --fg: #e0e0e0;
-        --accent: #4a9eff;
-        --muted: #666;
-        --card-bg: #141414;
-        --border: #2a2a2a;
-        --font-heading: 'Terminal Grotesque Open', system-ui, sans-serif;
-        --font-body: 'Inter', system-ui, sans-serif;
-      }
-
       :global(h1), :global(h2), :global(h3), :global(h4), :global(h5), :global(h6) {
         font-family: var(--font-heading);
       }
@@ -183,8 +130,8 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
       html {
         font-family: var(--font-body);
         font-size: 16px;
-        background: var(--bg);
-        color: var(--fg);
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
       }
 
       body {
@@ -227,12 +174,12 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
         flex-wrap: wrap;
         position: sticky;
         top: 0;
-        background: rgba(10, 10, 10, 0.6);
+        background: hsl(var(--background) / 0.8);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         padding: 1rem 0;
         z-index: 100;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid hsl(var(--border));
       }
 
       .header-link {
@@ -250,7 +197,7 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
       }
 
       .tagline {
-        color: var(--muted);
+        color: hsl(var(--muted-foreground));
         font-size: 1rem;
       }
 
@@ -266,7 +213,7 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
       .nav-button {
         background: none;
         border: none;
-        color: var(--muted);
+        color: hsl(var(--muted-foreground));
         font-size: 0.9rem;
         padding: 0.5rem 0.75rem;
         cursor: pointer;
@@ -275,7 +222,7 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
       }
 
       .nav-button:hover {
-        color: var(--fg);
+        color: hsl(var(--foreground));
       }
 
       .nav-button::after {
@@ -287,8 +234,8 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
         position: absolute;
         top: 100%;
         left: 0;
-        background: var(--card-bg);
-        border: 1px solid var(--border);
+        background: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
         border-radius: 6px;
         min-width: 160px;
         opacity: 0;
@@ -308,14 +255,14 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
       .dropdown a {
         display: block;
         padding: 0.6rem 1rem;
-        color: var(--fg);
+        color: hsl(var(--foreground));
         text-decoration: none;
         font-size: 0.9rem;
         transition: background 0.15s;
       }
 
       .dropdown a:hover {
-        background: var(--border);
+        background: hsl(var(--border));
       }
 
       .dropdown a:first-child {
@@ -333,7 +280,7 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
       footer {
         margin-top: 4rem;
         padding-top: 2rem;
-        border-top: 1px solid var(--border);
+        border-top: 1px solid hsl(var(--border));
       }
 
       .footer-content {
@@ -357,21 +304,21 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
       .footer-nav-section h3 {
         font-size: 0.875rem;
         font-weight: 600;
-        color: var(--fg);
+        color: hsl(var(--foreground));
         margin: 0 0 0.5rem 0;
         text-transform: uppercase;
         letter-spacing: 0.05em;
       }
 
       .footer-nav-section a {
-        color: var(--muted);
+        color: hsl(var(--muted-foreground));
         text-decoration: none;
         font-size: 0.875rem;
         transition: color 0.2s;
       }
 
       .footer-nav-section a:hover {
-        color: var(--fg);
+        color: hsl(var(--foreground));
       }
 
       .footer-bottom {
@@ -381,7 +328,7 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
         flex-wrap: wrap;
         gap: 1rem;
         padding-top: 1.5rem;
-        border-top: 1px solid var(--border);
+        border-top: 1px solid hsl(var(--border));
       }
 
       .social-links {
@@ -390,12 +337,12 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
       }
 
       .social-links a {
-        color: var(--muted);
+        color: hsl(var(--muted-foreground));
         transition: color 0.2s;
       }
 
       .social-links a:hover {
-        color: var(--fg);
+        color: hsl(var(--foreground));
       }
 
       .social-links svg {
@@ -404,7 +351,7 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
       }
 
       .copyright {
-        color: var(--muted);
+        color: hsl(var(--muted-foreground));
         font-size: 0.875rem;
         margin: 0;
       }
