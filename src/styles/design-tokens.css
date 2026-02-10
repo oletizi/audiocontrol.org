@@ -14,8 +14,8 @@
   --muted-foreground: 215 12% 48%;
 
   /* Accent colors */
-  --primary: 4 70% 62%;           /* Coral */
-  --accent: 174 60% 46%;          /* Teal */
+  --primary: 174 60% 46%;         /* Teal */
+  --accent: 4 70% 62%;            /* Coral */
 
   /* Border colors */
   --border: 220 15% 20%;
