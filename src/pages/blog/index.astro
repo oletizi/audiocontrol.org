@@ -1,0 +1,231 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+interface BlogPost {
+  title: string;
+  description: string;
+  date: string;
+  datePublished: string;
+  slug: string;
+  image?: string;
+  tags?: string[];
+}
+
+const blogPosts: BlogPost[] = [
+  {
+    title: "What's New in the Roland S-330 Web Editor: February 2026",
+    description: "Real-time hardware sync, integrated video capture, debug tools, and quality-of-life improvements for the free S-330 sampler editor.",
+    date: "February 2026",
+    datePublished: "2026-02-09",
+    slug: "roland-s330-sampler-editor-feb-2026-update",
+    tags: ["Roland", "S-330", "Release"],
+  },
+  {
+    title: "The Roland S-Series Samplers: A Complete Guide",
+    description: "A comprehensive guide to Roland's S-series sampler family — from the affordable S-330 to the flagship S-770, including the W-30 workstation.",
+    date: "February 2025",
+    datePublished: "2025-02-15",
+    slug: "roland-s-series-samplers",
+    image: "/images/s-330-feature.jpg",
+    tags: ["Roland", "S-330", "S-550", "S-770"],
+  },
+  {
+    title: "A Free, Open Source Web Editor for the Roland S-330 Sampler",
+    description: "A guide to the Roland S-330 sampler and the open-source web editor for modern workflows.",
+    date: "January 2025",
+    datePublished: "2025-01-15",
+    slug: "free-roland-s330-sampler-editor",
+    image: "/images/s-330-feature.jpg",
+    tags: ["Roland", "S-330", "Open Source"],
+  },
+];
+
+const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+};
+---
+
+<Layout
+  title="Blog — audiocontrol.org"
+  description="Articles about vintage samplers, synthesizers, and open source audio tools."
+  image="/images/og/index.png"
+>
+  <section class="blog-header">
+    <h2 class="section-label">Blog</h2>
+    <div class="section-line"></div>
+  </section>
+
+  <div class="blog-grid">
+    {blogPosts.map((post) => (
+      <a href={`/blog/${post.slug}/`} class="blog-card">
+        <article class="blog-card-inner">
+          {post.image && (
+            <div class="blog-card-image">
+              <img src={post.image} alt="" loading="lazy" />
+            </div>
+          )}
+          <div class="blog-card-content">
+            <div class="blog-card-header">
+              <h3 class="blog-card-title">{post.title}</h3>
+              <time class="blog-card-date" datetime={post.datePublished}>
+                {formatDate(post.datePublished)}
+              </time>
+            </div>
+            <p class="blog-card-description">{post.description}</p>
+            {post.tags && post.tags.length > 0 && (
+              <div class="blog-card-tags">
+                {post.tags.map((tag, i) => (
+                  <span class="tag" key={i}>{tag}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </article>
+      </a>
+    ))}
+  </div>
+</Layout>
+
+<style>
+  .blog-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .section-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 0.5rem 0;
+  }
+
+  .section-line {
+    height: 1px;
+    width: 6rem;
+    background: linear-gradient(to right, hsl(var(--accent) / 0.4), transparent);
+  }
+
+  .blog-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 1024px) {
+    .blog-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .blog-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--card-glow);
+  }
+
+  .blog-card:hover {
+    box-shadow: var(--card-glow-hover);
+    text-decoration: none;
+  }
+
+  .blog-card:hover .blog-card-title {
+    color: hsl(var(--primary));
+  }
+
+  .blog-card:hover .blog-card-image img {
+    transform: scale(1.05);
+  }
+
+  .blog-card-inner {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100%;
+  }
+
+  .blog-card-image {
+    width: 100%;
+    height: 11rem;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .blog-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .blog-card-content {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .blog-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .blog-card-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+    transition: color 0.2s ease;
+    line-height: 1.4;
+  }
+
+  .blog-card-date {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .blog-card-description {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+    flex: 1;
+  }
+
+  .blog-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .tag:last-child {
+    margin-right: 0;
+  }
+</style>

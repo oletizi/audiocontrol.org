@@ -1,0 +1,174 @@
+---
+/**
+ * Header component for the palette redesign
+ * Features pixel art logo, styled title, and navigation
+ * Sticky header that compresses on scroll
+ */
+import Logo from './Logo.astro';
+---
+
+<div class="header-wrapper">
+  <header class="site-header site-container">
+    <a href="/" class="header-brand" aria-label="audiocontrol.org home">
+      <div class="header-logo" aria-hidden="true">
+        <Logo variant="icon" />
+      </div>
+      <div class="header-text">
+        <h1 class="site-title">audiocontrol<span class="org">.org</span></h1>
+        <p class="tagline">Open source audio tools.</p>
+      </div>
+    </a>
+
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="/blog/" class="nav-link">Blog</a>
+      <a href="/hardware/" class="nav-link">Hardware</a>
+      <a href="/docs/" class="nav-link">Docs</a>
+      <a href="/editors/" class="nav-link">Editors</a>
+    </nav>
+  </header>
+</div>
+
+<script>
+  const headerWrapper = document.querySelector('.header-wrapper');
+
+  const handleScroll = () => {
+    if (window.scrollY > 10) {
+      headerWrapper?.classList.add('scrolled');
+    } else {
+      headerWrapper?.classList.remove('scrolled');
+    }
+  };
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll();
+</script>
+
+<style>
+  .header-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: hsl(var(--background) / 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .header-wrapper.scrolled .site-header {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .header-wrapper.scrolled .tagline {
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    transition: padding 0.2s ease;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .header-brand:hover {
+    text-decoration: none;
+  }
+
+  .header-brand:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 4px;
+    border-radius: 0.25rem;
+  }
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .header-logo :global(.logo-icon-only) {
+    display: inline-flex;
+  }
+
+  .header-logo :global(.icon) {
+    width: 32px;
+    height: 32px;
+  }
+
+  .header-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .site-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0;
+    color: hsl(var(--foreground));
+    letter-spacing: -0.025em;
+  }
+
+  .org {
+    color: hsl(var(--primary));
+  }
+
+  .tagline {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    transition: opacity 0.2s ease, height 0.2s ease;
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .nav-link {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .nav-link:hover {
+    color: hsl(var(--foreground));
+    text-decoration: none;
+  }
+
+  .nav-link:focus-visible {
+    color: hsl(var(--foreground));
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 4px;
+    border-radius: 0.125rem;
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 640px) {
+    .site-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .site-nav {
+      display: none;
+    }
+  }
+</style>

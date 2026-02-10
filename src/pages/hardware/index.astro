@@ -1,0 +1,233 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+interface Device {
+  name: string;
+  description: string;
+  year: string;
+  format: string;
+  slug: string;
+  image?: string;
+  tags?: string[];
+}
+
+const devices: Device[] = [
+  {
+    name: "Roland S-330",
+    description: "1U rack-mount 12-bit sampler with 16-voice polyphony, resonant filters, and graphical editing via external monitor.",
+    year: "1987",
+    format: "1U Rack",
+    slug: "/roland/s330/",
+    image: "/images/s-330-feature.jpg",
+    tags: ["12-bit", "Rack", "S-Series"],
+  },
+  {
+    name: "Roland S-550",
+    description: "Full-featured 2U rack sampler with expanded memory, RGB monitor output, and the same 12-bit sound engine as the S-330.",
+    year: "1987",
+    format: "2U Rack",
+    slug: "/roland/s550/",
+    tags: ["12-bit", "Rack", "S-Series"],
+  },
+  {
+    name: "Roland S-770",
+    description: "Roland's flagship 16-bit stereo sampler with 24-voice polyphony, S/PDIF digital I/O, and high-resolution color display.",
+    year: "1990",
+    format: "3U Rack",
+    slug: "/roland/s770/",
+    tags: ["16-bit", "Rack", "S-Series"],
+  },
+  {
+    name: "Roland W-30",
+    description: "Sampling workstation combining the S-330's 12-bit engine with a 61-key keyboard and built-in sequencer.",
+    year: "1989",
+    format: "Workstation",
+    slug: "/roland/w30/",
+    tags: ["12-bit", "Keyboard", "S-Series"],
+  },
+];
+---
+
+<Layout
+  title="Hardware — audiocontrol.org"
+  description="Vintage samplers and synthesizers supported by audiocontrol.org open source editors."
+  image="/images/og/index.png"
+>
+  <section class="hardware-header">
+    <h2 class="section-label">Hardware</h2>
+    <div class="section-line"></div>
+  </section>
+
+  <div class="hardware-grid">
+    {devices.map((device) => (
+      <a href={device.slug} class="hardware-card">
+        <article class="hardware-card-inner">
+          {device.image && (
+            <div class="hardware-card-image">
+              <img src={device.image} alt="" loading="lazy" />
+            </div>
+          )}
+          <div class="hardware-card-content">
+            <div class="hardware-card-header">
+              <h3 class="hardware-card-title">{device.name}</h3>
+              <span class="hardware-card-year">{device.year}</span>
+            </div>
+            <p class="hardware-card-format">{device.format}</p>
+            <p class="hardware-card-description">{device.description}</p>
+            {device.tags && device.tags.length > 0 && (
+              <div class="hardware-card-tags">
+                {device.tags.map((tag, i) => (
+                  <span class="tag" key={i}>{tag}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </article>
+      </a>
+    ))}
+  </div>
+</Layout>
+
+<style>
+  .hardware-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .section-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 0.5rem 0;
+  }
+
+  .section-line {
+    height: 1px;
+    width: 6rem;
+    background: linear-gradient(to right, hsl(var(--accent) / 0.4), transparent);
+  }
+
+  .hardware-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 1024px) {
+    .hardware-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .hardware-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--card-glow);
+  }
+
+  .hardware-card:hover {
+    box-shadow: var(--card-glow-hover);
+    text-decoration: none;
+  }
+
+  .hardware-card:hover .hardware-card-title {
+    color: hsl(var(--primary));
+  }
+
+  .hardware-card:hover .hardware-card-image img {
+    transform: scale(1.05);
+  }
+
+  .hardware-card-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .hardware-card-image {
+    width: 100%;
+    height: 11rem;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .hardware-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .hardware-card-content {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hardware-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .hardware-card-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+    transition: color 0.2s ease;
+    line-height: 1.4;
+  }
+
+  .hardware-card-year {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .hardware-card-format {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: hsl(var(--primary));
+    margin: 0 0 0.75rem 0;
+  }
+
+  .hardware-card-description {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+    flex: 1;
+  }
+
+  .hardware-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+  }
+</style>

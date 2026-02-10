@@ -1,37 +1,35 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
 
 interface Project {
   name: string;
-  path: string;
   description: string;
   status: 'available' | 'coming-soon';
+  href?: string;
   image?: string;
 }
 
 const projects: Project[] = [
   {
     name: 'Roland S-330',
-    path: '/roland/s330/editor',
     description: 'Web-based editor for the Roland S-330 12-bit sampler',
     status: 'available',
+    href: '/roland/s330/editor',
     image: '/images/s330-screenshot.png',
   },
   {
     name: 'Akai S3000XL',
-    path: '/s3000xl',
     description: 'Web-based editor for the Akai S3000XL sampler',
     status: 'coming-soon',
   },
   {
     name: 'Akai S5000',
-    path: '/s5000',
     description: 'Web-based editor for the Akai S5000/S6000 samplers',
     status: 'coming-soon',
   },
   {
     name: 'Roland JV-1080',
-    path: '/jv1080',
     description: 'Web-based editor for the Roland JV-1080 synthesizer module',
     status: 'coming-soon',
   },
@@ -39,110 +37,45 @@ const projects: Project[] = [
 ---
 
 <Layout title="audiocontrol.org — Free Web Editors for Vintage Roland & Akai Samplers and Synthesizers" image="/images/og/index.png">
-  <h2>Projects</h2>
-  <div class="projects">
-    {projects.map((project) => (
-      project.status === 'available' ? (
-        <a href={project.path} class="project">
-          <div class="project-header">
-            <span class="project-name">{project.name}</span>
-            <span class="status-badge available">Available</span>
-          </div>
-          {project.image && (
-            <img src={project.image} alt={`${project.name} screenshot`} class="project-image" />
-          )}
-          <p class="project-description">{project.description}</p>
-        </a>
-      ) : (
-        <div class="project coming-soon">
-          <div class="project-header">
-            <span class="project-name">{project.name}</span>
-            <span class="status-badge coming-soon">Coming Soon</span>
-          </div>
-          {project.image && (
-            <img src={project.image} alt={`${project.name} screenshot`} class="project-image" />
-          )}
-          <p class="project-description">{project.description}</p>
-        </div>
-      )
-    ))}
-  </div>
+  <section class="projects-section">
+    <h2 class="section-title">Projects</h2>
+    <div class="projects-grid">
+      {projects.map((project) => (
+        <ProjectCard
+          name={project.name}
+          description={project.description}
+          status={project.status}
+          href={project.href}
+          image={project.image}
+        />
+      ))}
+    </div>
+  </section>
 </Layout>
 
 <style>
-  h2 {
-    font-size: 1.25rem;
-    font-weight: 500;
-    margin-bottom: 1rem;
-    color: var(--muted);
+  .projects-section {
+    margin-top: 1rem;
   }
 
-  .projects {
+  .section-title {
+    font-family: var(--font-heading);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 1.5rem;
+  }
+
+  .projects-grid {
     display: grid;
     gap: 1rem;
   }
 
-  .project {
-    display: block;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.5rem;
-    text-decoration: none;
-    color: inherit;
-    transition: border-color 0.2s, background 0.2s;
-    overflow: hidden;
-  }
-
-  .project-image {
-    width: calc(100% + 3rem);
-    margin: 1rem -1.5rem;
-    display: block;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .project:not(.coming-soon):hover {
-    border-color: var(--accent);
-    background: #1a1a1a;
-  }
-
-  .project.coming-soon {
-    opacity: 0.5;
-    cursor: default;
-  }
-
-  .project-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .project-name {
-    font-size: 1.25rem;
-    font-weight: 500;
-  }
-
-  .status-badge {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .status-badge.available {
-    background: #1a3a1a;
-    color: #4ade80;
-  }
-
-  .status-badge.coming-soon {
-    background: #2a2a1a;
-    color: #a0a060;
-  }
-
-  .project-description {
-    color: var(--muted);
+  @media (min-width: 640px) {
+    .projects-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
 </style>
