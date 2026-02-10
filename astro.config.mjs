@@ -29,6 +29,7 @@ export default defineConfig({
   integrations: [
     sitemap({
       customPages: ['https://audiocontrol.org/roland/s330/editor'],
+      filter: (page) => !page.includes('/og-preview'),
       serialize(item) {
         const path = new URL(item.url).pathname;
         const lastmod = lastModified[path];
