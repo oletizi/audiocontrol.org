@@ -1,17 +1,17 @@
 ---
 /**
  * Header component for the palette redesign
- * Features animated dot indicators, styled title, and navigation
+ * Features pixel art logo, styled title, and navigation
  * Sticky header that compresses on scroll
  */
+import Logo from './Logo.astro';
 ---
 
 <div class="header-wrapper">
   <header class="site-header site-container">
     <a href="/" class="header-brand" aria-label="audiocontrol.org home">
-      <div class="logo-dots" aria-hidden="true">
-        <span class="dot dot-primary"></span>
-        <span class="dot dot-accent"></span>
+      <div class="header-logo" aria-hidden="true">
+        <Logo variant="icon" />
       </div>
       <div class="header-text">
         <h1 class="site-title">audiocontrol<span class="org">.org</span></h1>
@@ -92,35 +92,19 @@
     border-radius: 0.25rem;
   }
 
-  .logo-dots {
+  .header-logo {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
+    flex-shrink: 0;
   }
 
-  .dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    animation: pulse-glow 2s ease-in-out infinite;
+  .header-logo :global(.logo-icon-only) {
+    display: inline-flex;
   }
 
-  .dot-primary {
-    background: hsl(var(--primary));
-  }
-
-  .dot-accent {
-    background: hsl(var(--accent));
-    animation-delay: 0.5s;
-  }
-
-  @keyframes pulse-glow {
-    0%, 100% {
-      opacity: 0.4;
-    }
-    50% {
-      opacity: 1;
-    }
+  .header-logo :global(.icon) {
+    width: 32px;
+    height: 32px;
   }
 
   .header-text {
