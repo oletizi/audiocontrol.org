@@ -1,0 +1,232 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+interface Editor {
+  name: string;
+  description: string;
+  status: 'available' | 'coming-soon';
+  slug?: string;
+  tags?: string[];
+}
+
+const editors: Editor[] = [
+  {
+    name: "Roland S-330 Editor",
+    description: "Web-based patch editor for the Roland S-330 12-bit sampler. Edit tones, patches, and performance settings directly in your browser via Web MIDI.",
+    status: "available",
+    slug: "/roland/s330/editor",
+    tags: ["Roland", "S-330", "Web MIDI"],
+  },
+  {
+    name: "Akai S3000XL Editor",
+    description: "Web-based editor for the Akai S3000XL sampler. Edit programs, keygroups, and samples via MIDI.",
+    status: "coming-soon",
+    tags: ["Akai", "S3000XL"],
+  },
+  {
+    name: "Akai S5000 Editor",
+    description: "Web-based editor for the Akai S5000/S6000 series samplers.",
+    status: "coming-soon",
+    tags: ["Akai", "S5000", "S6000"],
+  },
+  {
+    name: "Roland JV-1080 Editor",
+    description: "Web-based patch editor for the Roland JV-1080 synthesizer module.",
+    status: "coming-soon",
+    tags: ["Roland", "JV-1080"],
+  },
+];
+---
+
+<Layout
+  title="Editors — audiocontrol.org"
+  description="Free, open source web-based editors for vintage samplers and synthesizers."
+  image="/images/og/index.png"
+>
+  <section class="editors-header">
+    <h2 class="section-label">Editors</h2>
+    <div class="section-line"></div>
+  </section>
+
+  <div class="editors-grid">
+    {editors.map((editor) => (
+      editor.status === 'available' ? (
+        <a href={editor.slug} class="editor-card">
+          <article class="editor-card-inner">
+            <div class="editor-card-content">
+              <div class="editor-card-header">
+                <h3 class="editor-card-title">{editor.name}</h3>
+                <span class="status-badge available">Available</span>
+              </div>
+              <p class="editor-card-description">{editor.description}</p>
+              {editor.tags && editor.tags.length > 0 && (
+                <div class="editor-card-tags">
+                  {editor.tags.map((tag, i) => (
+                    <span class="tag" key={i}>{tag}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </article>
+        </a>
+      ) : (
+        <div class="editor-card coming-soon">
+          <article class="editor-card-inner">
+            <div class="editor-card-content">
+              <div class="editor-card-header">
+                <h3 class="editor-card-title">{editor.name}</h3>
+                <span class="status-badge coming-soon">Coming Soon</span>
+              </div>
+              <p class="editor-card-description">{editor.description}</p>
+              {editor.tags && editor.tags.length > 0 && (
+                <div class="editor-card-tags">
+                  {editor.tags.map((tag, i) => (
+                    <span class="tag" key={i}>{tag}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </article>
+        </div>
+      )
+    ))}
+  </div>
+</Layout>
+
+<style>
+  .editors-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .section-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 0.5rem 0;
+  }
+
+  .section-line {
+    height: 1px;
+    width: 6rem;
+    background: linear-gradient(to right, hsl(var(--accent) / 0.4), transparent);
+  }
+
+  .editors-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 1024px) {
+    .editors-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .editor-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--card-glow);
+  }
+
+  .editor-card:not(.coming-soon):hover {
+    box-shadow: var(--card-glow-hover);
+    text-decoration: none;
+  }
+
+  .editor-card:not(.coming-soon):hover .editor-card-title {
+    color: hsl(var(--primary));
+  }
+
+  .editor-card.coming-soon {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .editor-card-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .editor-card-content {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .editor-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .editor-card-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+    transition: color 0.2s ease;
+    line-height: 1.4;
+  }
+
+  .status-badge {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.625rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .status-badge.available {
+    background: hsl(var(--badge-available-bg));
+    color: hsl(var(--badge-available));
+  }
+
+  .status-badge.coming-soon {
+    background: hsl(var(--badge-coming-bg));
+    color: hsl(var(--badge-coming));
+  }
+
+  .editor-card-description {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+    flex: 1;
+  }
+
+  .editor-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+  }
+</style>
