@@ -54,14 +54,17 @@ const Tag = isAvailable ? 'a' : 'div';
     cursor: pointer;
   }
 
-  .project-card.is-available:hover {
+  .project-card.is-available:hover,
+  .project-card.is-available:focus-visible {
     border-color: hsl(var(--primary) / 0.5);
     background: hsl(var(--card-hover));
     box-shadow: var(--card-glow-hover);
     transform: translateY(-2px);
+    outline: none;
   }
 
-  .project-card.is-available:hover .card-arrow {
+  .project-card.is-available:hover .card-arrow,
+  .project-card.is-available:focus-visible .card-arrow {
     opacity: 1;
     transform: translateX(0);
   }
