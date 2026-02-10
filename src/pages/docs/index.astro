@@ -1,0 +1,174 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+interface DocEntry {
+  title: string;
+  description: string;
+  slug: string;
+  category: string;
+  tags?: string[];
+}
+
+const docs: DocEntry[] = [
+  {
+    title: "Roland S-330 Web Editor Guide",
+    description: "Complete documentation for the S-330 web editor including setup, MIDI configuration, and feature reference.",
+    slug: "/docs/roland/samplers/s-330/",
+    category: "Editor Guide",
+    tags: ["Roland", "S-330", "Editor"],
+  },
+];
+---
+
+<Layout
+  title="Documentation — audiocontrol.org"
+  description="Documentation and guides for audiocontrol.org open source audio tools."
+  image="/images/og/index.png"
+>
+  <section class="docs-header">
+    <h2 class="section-label">Documentation</h2>
+    <div class="section-line"></div>
+  </section>
+
+  <div class="docs-grid">
+    {docs.map((doc) => (
+      <a href={doc.slug} class="docs-card">
+        <article class="docs-card-inner">
+          <div class="docs-card-content">
+            <div class="docs-card-header">
+              <h3 class="docs-card-title">{doc.title}</h3>
+              <span class="docs-card-category">{doc.category}</span>
+            </div>
+            <p class="docs-card-description">{doc.description}</p>
+            {doc.tags && doc.tags.length > 0 && (
+              <div class="docs-card-tags">
+                {doc.tags.map((tag, i) => (
+                  <span class="tag" key={i}>{tag}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </article>
+      </a>
+    ))}
+  </div>
+</Layout>
+
+<style>
+  .docs-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .section-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 0.5rem 0;
+  }
+
+  .section-line {
+    height: 1px;
+    width: 6rem;
+    background: linear-gradient(to right, hsl(var(--accent) / 0.4), transparent);
+  }
+
+  .docs-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 1024px) {
+    .docs-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .docs-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--card-glow);
+  }
+
+  .docs-card:hover {
+    box-shadow: var(--card-glow-hover);
+    text-decoration: none;
+  }
+
+  .docs-card:hover .docs-card-title {
+    color: hsl(var(--primary));
+  }
+
+  .docs-card-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .docs-card-content {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .docs-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .docs-card-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+    transition: color 0.2s ease;
+    line-height: 1.4;
+  }
+
+  .docs-card-category {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: hsl(var(--primary));
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .docs-card-description {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+    flex: 1;
+  }
+
+  .docs-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+  }
+</style>
