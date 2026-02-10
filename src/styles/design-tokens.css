@@ -28,7 +28,7 @@
   --badge-coming-bg: 220 15% 18%;
 
   /* Typography */
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  --font-mono: "JetBrains Mono", monospace;
   --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-heading: var(--font-mono);
 
