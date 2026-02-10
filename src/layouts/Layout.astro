@@ -142,13 +142,6 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
         width: 100%;
       }
 
-      .site-container {
-        width: 100%;
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 2rem;
-      }
-
       h1, h2, p {
         margin: 0;
       }
@@ -165,9 +158,9 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
     <slot name="head" />
   </head>
   <body>
-    <div class="site-container">
-      <Header />
+    <Header />
 
+    <div class="site-container">
       <main>
         <slot />
       </main>

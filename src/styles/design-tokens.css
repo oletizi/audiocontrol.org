@@ -4,6 +4,10 @@
  */
 
 :root {
+  /* Layout */
+  --container-max-width: 1400px;
+  --container-padding: 2rem;
+
   /* Background colors */
   --background: 220 20% 10%;
   --card: 220 18% 13%;
@@ -35,6 +39,15 @@
   /* Glow effects */
   --card-glow: 0 0 0 1px hsl(var(--border)), 0 8px 32px -8px hsl(0 0% 0% / 0.5);
   --card-glow-hover: 0 0 0 1px hsl(var(--primary) / 0.3), 0 8px 40px -8px hsl(var(--primary) / 0.15);
+}
+
+/* Shared container class - used by header and main content for consistent alignment */
+.site-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: var(--container-padding);
 }
 
 /* Glow utility classes */

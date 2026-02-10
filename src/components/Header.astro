@@ -2,49 +2,74 @@
 /**
  * Header component for the palette redesign
  * Features animated dot indicators, styled title, and navigation
+ * Sticky header that compresses on scroll
  */
 ---
 
-<header class="site-header">
-  <a href="/" class="header-brand" aria-label="audiocontrol.org home">
-    <div class="logo-dots" aria-hidden="true">
-      <span class="dot dot-primary"></span>
-      <span class="dot dot-accent"></span>
-    </div>
-    <div class="header-text">
-      <h1 class="site-title">audiocontrol<span class="org">.org</span></h1>
-      <p class="tagline">Open source audio tools.</p>
-    </div>
-  </a>
+<div class="header-wrapper">
+  <header class="site-header site-container">
+    <a href="/" class="header-brand" aria-label="audiocontrol.org home">
+      <div class="logo-dots" aria-hidden="true">
+        <span class="dot dot-primary"></span>
+        <span class="dot dot-accent"></span>
+      </div>
+      <div class="header-text">
+        <h1 class="site-title">audiocontrol<span class="org">.org</span></h1>
+        <p class="tagline">Open source audio tools.</p>
+      </div>
+    </a>
 
-  <nav class="site-nav" aria-label="Main navigation">
-    <a href="/blog/" class="nav-link">Blog</a>
-    <a href="/hardware/" class="nav-link">Hardware</a>
-    <a href="/docs/" class="nav-link">Docs</a>
-    <a href="/editors/" class="nav-link">Editors</a>
-  </nav>
-</header>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="/blog/" class="nav-link">Blog</a>
+      <a href="/hardware/" class="nav-link">Hardware</a>
+      <a href="/docs/" class="nav-link">Docs</a>
+      <a href="/editors/" class="nav-link">Editors</a>
+    </nav>
+  </header>
+</div>
+
+<script>
+  const headerWrapper = document.querySelector('.header-wrapper');
+
+  const handleScroll = () => {
+    if (window.scrollY > 10) {
+      headerWrapper?.classList.add('scrolled');
+    } else {
+      headerWrapper?.classList.remove('scrolled');
+    }
+  };
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll();
+</script>
 
 <style>
+  .header-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: hsl(var(--background));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .header-wrapper.scrolled .site-header {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .header-wrapper.scrolled .tagline {
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+
   .site-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
-    padding-bottom: 2rem;
-    margin-bottom: 2rem;
-    position: relative;
-  }
-
-  .site-header::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 0;
-    width: 100vw;
-    height: 1px;
-    background: hsl(var(--border));
+    transition: padding 0.2s ease;
   }
 
   .header-brand {
@@ -119,6 +144,7 @@
     font-size: 0.75rem;
     color: hsl(var(--muted-foreground));
     margin: 0;
+    transition: opacity 0.2s ease, height 0.2s ease;
   }
 
   .site-nav {
