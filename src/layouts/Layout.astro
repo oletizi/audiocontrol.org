@@ -1,6 +1,7 @@
 ---
-import Logo from '../components/Logo.astro';
 import '../styles/design-tokens.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 
 interface Props {
   title?: string;
@@ -165,288 +166,24 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
         margin: 0;
       }
 
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 2rem;
-        flex-wrap: wrap;
-        position: sticky;
-        top: 0;
-        background: hsl(var(--background) / 0.8);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        padding: 1rem 0;
-        z-index: 100;
-        border-bottom: 1px solid hsl(var(--border));
-      }
-
-      .header-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 1.25rem;
+      a {
+        color: hsl(var(--primary));
         text-decoration: none;
-        color: inherit;
       }
 
-      .header-text h1 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-      }
-
-      .tagline {
-        color: hsl(var(--muted-foreground));
-        font-size: 1rem;
-      }
-
-      .site-nav {
-        display: flex;
-        gap: 0.5rem;
-      }
-
-      .nav-item {
-        position: relative;
-      }
-
-      .nav-button {
-        background: none;
-        border: none;
-        color: hsl(var(--muted-foreground));
-        font-size: 0.9rem;
-        padding: 0.5rem 0.75rem;
-        cursor: pointer;
-        transition: color 0.2s;
-        font-family: inherit;
-      }
-
-      .nav-button:hover {
-        color: hsl(var(--foreground));
-      }
-
-      .nav-button::after {
-        content: ' ▾';
-        font-size: 0.7em;
-      }
-
-      .dropdown {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        background: hsl(var(--card));
-        border: 1px solid hsl(var(--border));
-        border-radius: 6px;
-        min-width: 160px;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-4px);
-        transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
-        z-index: 100;
-      }
-
-      .nav-item:hover .dropdown,
-      .nav-item:focus-within .dropdown {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-      }
-
-      .dropdown a {
-        display: block;
-        padding: 0.6rem 1rem;
-        color: hsl(var(--foreground));
-        text-decoration: none;
-        font-size: 0.9rem;
-        transition: background 0.15s;
-      }
-
-      .dropdown a:hover {
-        background: hsl(var(--border));
-      }
-
-      .dropdown a:first-child {
-        border-radius: 6px 6px 0 0;
-      }
-
-      .dropdown a:last-child {
-        border-radius: 0 0 6px 6px;
-      }
-
-      .dropdown a:only-child {
-        border-radius: 6px;
-      }
-
-      footer {
-        margin-top: 4rem;
-        padding-top: 2rem;
-        border-top: 1px solid hsl(var(--border));
-      }
-
-      .footer-content {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-      }
-
-      .footer-nav {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 2rem;
-      }
-
-      .footer-nav-section {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .footer-nav-section h3 {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: hsl(var(--foreground));
-        margin: 0 0 0.5rem 0;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-
-      .footer-nav-section a {
-        color: hsl(var(--muted-foreground));
-        text-decoration: none;
-        font-size: 0.875rem;
-        transition: color 0.2s;
-      }
-
-      .footer-nav-section a:hover {
-        color: hsl(var(--foreground));
-      }
-
-      .footer-bottom {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 1rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid hsl(var(--border));
-      }
-
-      .social-links {
-        display: flex;
-        gap: 1rem;
-      }
-
-      .social-links a {
-        color: hsl(var(--muted-foreground));
-        transition: color 0.2s;
-      }
-
-      .social-links a:hover {
-        color: hsl(var(--foreground));
-      }
-
-      .social-links svg {
-        width: 24px;
-        height: 24px;
-      }
-
-      .copyright {
-        color: hsl(var(--muted-foreground));
-        font-size: 0.875rem;
-        margin: 0;
+      a:hover {
+        text-decoration: underline;
       }
     </style>
     <slot name="head" />
   </head>
   <body>
-    <header>
-      <a href="/" class="header-link">
-        <Logo variant="icon" />
-        <div class="header-text">
-          <h1>audiocontrol.org</h1>
-          <p class="tagline">Open source audio tools.</p>
-        </div>
-      </a>
-      <nav class="site-nav">
-        <div class="nav-item">
-          <button class="nav-button">Blog</button>
-          <div class="dropdown">
-            <a href="/blog/roland-s330-sampler-editor-feb-2026-update/">S-330 Editor: February 2026</a>
-            <a href="/blog/free-roland-s330-sampler-editor/">Roland S-330 Editor</a>
-            <a href="/blog/roland-s-series-samplers/">Roland S-Series Samplers</a>
-          </div>
-        </div>
-        <div class="nav-item">
-          <button class="nav-button">Hardware</button>
-          <div class="dropdown">
-            <a href="/roland/s330/">Roland S-330</a>
-            <a href="/roland/s550/">Roland S-550</a>
-            <a href="/roland/s770/">Roland S-770</a>
-            <a href="/roland/w30/">Roland W-30</a>
-          </div>
-        </div>
-        <div class="nav-item">
-          <button class="nav-button">Docs</button>
-          <div class="dropdown">
-            <a href="/docs/roland/samplers/s-330/">Roland S-330</a>
-          </div>
-        </div>
-        <div class="nav-item">
-          <button class="nav-button">Editors</button>
-          <div class="dropdown">
-            <a href="/roland/s330/editor">Roland S-330</a>
-          </div>
-        </div>
-      </nav>
-    </header>
+    <Header />
 
     <main>
       <slot />
     </main>
 
-    <footer>
-      <div class="footer-content">
-        <nav class="footer-nav">
-          <div class="footer-nav-section">
-            <h3>Blog</h3>
-            <a href="/blog/roland-s330-sampler-editor-feb-2026-update/">S-330 Editor: February 2026</a>
-            <a href="/blog/free-roland-s330-sampler-editor/">Roland S-330 Editor</a>
-            <a href="/blog/roland-s-series-samplers/">Roland S-Series Samplers</a>
-          </div>
-          <div class="footer-nav-section">
-            <h3>Hardware</h3>
-            <a href="/roland/s330/">Roland S-330</a>
-            <a href="/roland/s550/">Roland S-550</a>
-            <a href="/roland/s770/">Roland S-770</a>
-            <a href="/roland/w30/">Roland W-30</a>
-          </div>
-          <div class="footer-nav-section">
-            <h3>Resources</h3>
-            <a href="/docs/roland/samplers/s-330/">S-330 Documentation</a>
-            <a href="/roland/s330/editor">S-330 Editor</a>
-          </div>
-        </nav>
-        <div class="footer-bottom">
-          <div class="social-links">
-            <a href="https://github.com/audiocontrol-org" aria-label="GitHub">
-              <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
-              </svg>
-            </a>
-            <a href="https://www.youtube.com/channel/UC-R2BUyyETyQDePk2KlxHJw" aria-label="YouTube">
-              <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-              </svg>
-            </a>
-            <a href="https://discord.gg/VcYVYw74" aria-label="Discord">
-              <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.947 2.418-2.157 2.418z"/>
-              </svg>
-            </a>
-          </div>
-          <p class="copyright">&copy; 2025 audiocontrol.org. Open source audio tools.</p>
-        </div>
-      </div>
-    </footer>
+    <Footer />
   </body>
 </html>
