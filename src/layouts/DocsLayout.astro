@@ -21,10 +21,15 @@ const { frontmatter, headings = [], title: directTitle, description: directDescr
 const title = frontmatter?.title ?? directTitle ?? 'Documentation';
 const description = frontmatter?.description ?? directDescription;
 
+// Generate OG image path from URL: /docs/roland/samplers/s-330/ → /images/og/docs-roland-samplers-s-330.png
+const pathSegments = Astro.url.pathname.split('/').filter(Boolean);
+const ogImageSlug = pathSegments.join('-');
+const ogImage = `/images/og/${ogImageSlug}.png`;
+
 const tocHeadings = headings.filter(h => h.depth === 2);
 ---
 
-<Layout title={title} description={description}>
+<Layout title={title} description={description} image={ogImage}>
   <div class="article-layout">
     {tocHeadings.length > 0 && (
       <aside class="toc">

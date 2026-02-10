@@ -1,0 +1,109 @@
+---
+// OG Image Preview Page - for development only
+// Access at http://localhost:4321/og-preview/
+
+const pages = [
+  { path: '/', title: 'Homepage', image: '/images/og/index.png' },
+  { path: '/blog/free-roland-s330-sampler-editor/', title: 'Blog: S-330 Editor', image: '/images/og/blog-free-roland-s330-sampler-editor.png' },
+  { path: '/blog/roland-s-series-samplers/', title: 'Blog: S-Series Guide', image: '/images/og/blog-roland-s-series-samplers.png' },
+  { path: '/blog/roland-s330-sampler-editor-feb-2026-update/', title: 'Blog: Feb 2026 Update', image: '/images/og/blog-roland-s330-sampler-editor-feb-2026-update.png' },
+  { path: '/roland/s330/', title: 'Roland S-330', image: '/images/og/roland-s330.png' },
+  { path: '/roland/s550/', title: 'Roland S-550', image: '/images/og/roland-s550.png' },
+  { path: '/roland/s770/', title: 'Roland S-770', image: '/images/og/roland-s770.png' },
+  { path: '/roland/w30/', title: 'Roland W-30', image: '/images/og/roland-w30.png' },
+  { path: '/roland/s330/mu-1-mouse/', title: 'MU-1 Mouse', image: '/images/og/roland-s330-mu-1-mouse.png' },
+  { path: '/roland/s330/rc-100/', title: 'RC-100', image: '/images/og/roland-s330-rc-100.png' },
+  { path: '/docs/roland/samplers/s-330/', title: 'S-330 Docs', image: '/images/og/docs-roland-samplers-s-330.png' },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>OG Image Preview</title>
+    <meta name="robots" content="noindex" />
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        font-family: system-ui, sans-serif;
+        background: #1a1a1a;
+        color: #e0e0e0;
+        padding: 2rem;
+        margin: 0;
+      }
+      h1 {
+        margin-bottom: 2rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 2rem;
+      }
+      .card {
+        background: #2a2a2a;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #3a3a3a;
+      }
+      .card-image {
+        width: 100%;
+        aspect-ratio: 1200 / 630;
+        object-fit: cover;
+        display: block;
+        border-bottom: 1px solid #3a3a3a;
+      }
+      .card-content {
+        padding: 1rem;
+      }
+      .card-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      .card-url {
+        font-size: 0.85rem;
+        color: #888;
+        word-break: break-all;
+      }
+      .card-url a {
+        color: #4a9eff;
+        text-decoration: none;
+      }
+      .card-url a:hover {
+        text-decoration: underline;
+      }
+      .preview-label {
+        font-size: 0.75rem;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+      }
+      .twitter-style {
+        border-radius: 16px;
+        max-width: 500px;
+      }
+      .twitter-style .card-image {
+        border-radius: 16px 16px 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>OG Image Preview</h1>
+    <p style="color: #888; margin-bottom: 2rem;">Preview how pages will appear when shared on social media. Images are 1200x630px.</p>
+
+    <div class="grid">
+      {pages.map(page => (
+        <div class="card">
+          <img src={page.image} alt={page.title} class="card-image" />
+          <div class="card-content">
+            <div class="card-title">{page.title}</div>
+            <div class="card-url">
+              <a href={page.path}>{page.path}</a>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </body>
+</html>
