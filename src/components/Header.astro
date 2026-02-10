@@ -1,0 +1,138 @@
+---
+/**
+ * Header component for the palette redesign
+ * Features animated dot indicators, styled title, and navigation
+ */
+---
+
+<header class="site-header">
+  <a href="/" class="header-brand">
+    <div class="logo-dots">
+      <span class="dot dot-1"></span>
+      <span class="dot dot-2"></span>
+      <span class="dot dot-3"></span>
+    </div>
+    <div class="header-text">
+      <h1 class="site-title">audiocontrol<span class="org">.org</span></h1>
+      <p class="tagline">Open source audio tools</p>
+    </div>
+  </a>
+
+  <nav class="site-nav">
+    <a href="/blog/roland-s330-sampler-editor-feb-2026-update/" class="nav-link">Blog</a>
+    <a href="/roland/s330/" class="nav-link">Hardware</a>
+    <a href="/docs/roland/samplers/s-330/" class="nav-link">Docs</a>
+    <a href="/roland/s330/editor" class="nav-link nav-link-primary">Editors</a>
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .logo-dots {
+    display: flex;
+    gap: 0.375rem;
+  }
+
+  .dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    background: hsl(var(--accent));
+  }
+
+  .dot-1 {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .dot-2 {
+    background: hsl(var(--primary));
+    animation: pulse-glow 2s ease-in-out infinite 0.3s;
+  }
+
+  .dot-3 {
+    animation: pulse-glow 2s ease-in-out infinite 0.6s;
+  }
+
+  .header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .site-title {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .org {
+    color: hsl(var(--primary));
+  }
+
+  .tagline {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .site-nav {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .nav-link {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    transition: color 0.2s, background-color 0.2s;
+  }
+
+  .nav-link:hover {
+    color: hsl(var(--foreground));
+    background: hsl(var(--border));
+  }
+
+  .nav-link-primary {
+    color: hsl(var(--primary));
+  }
+
+  .nav-link-primary:hover {
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.1);
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 640px) {
+    .site-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .site-nav {
+      flex-wrap: wrap;
+    }
+  }
+</style>

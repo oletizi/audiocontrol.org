@@ -1,0 +1,126 @@
+---
+/**
+ * ProjectCard component for displaying project entries
+ * Features status badges and hover glow effects
+ */
+
+interface Props {
+  name: string;
+  description: string;
+  status: 'available' | 'coming-soon';
+  href?: string;
+}
+
+const { name, description, status, href } = Astro.props;
+
+const isAvailable = status === 'available';
+const Tag = isAvailable ? 'a' : 'div';
+---
+
+<Tag
+  class:list={['project-card', { 'is-available': isAvailable, 'is-coming-soon': !isAvailable }]}
+  href={isAvailable ? href : undefined}
+>
+  <div class="card-header">
+    <h3 class="card-title">{name}</h3>
+    <span class:list={['status-badge', status]}>
+      {isAvailable ? 'Available' : 'Coming Soon'}
+    </span>
+  </div>
+  <p class="card-description">{description}</p>
+  {isAvailable && (
+    <span class="card-arrow">→</span>
+  )}
+</Tag>
+
+<style>
+  .project-card {
+    display: block;
+    position: relative;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition:
+      border-color 0.3s ease,
+      background-color 0.3s ease,
+      box-shadow 0.3s ease,
+      transform 0.2s ease;
+  }
+
+  .project-card.is-available {
+    cursor: pointer;
+  }
+
+  .project-card.is-available:hover {
+    border-color: hsl(var(--primary) / 0.5);
+    background: hsl(var(--card-hover));
+    box-shadow: var(--card-glow-hover);
+    transform: translateY(-2px);
+  }
+
+  .project-card.is-available:hover .card-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .project-card.is-coming-soon {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-title {
+    font-family: var(--font-heading);
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .status-badge {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .status-badge.available {
+    background: hsl(var(--badge-available-bg));
+    color: hsl(var(--badge-available));
+  }
+
+  .status-badge.coming-soon {
+    background: hsl(var(--badge-coming-bg));
+    color: hsl(var(--badge-coming));
+  }
+
+  .card-description {
+    font-size: 0.9375rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .card-arrow {
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateX(-0.5rem) translateY(-50%);
+    font-size: 1.25rem;
+    color: hsl(var(--primary));
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+</style>
