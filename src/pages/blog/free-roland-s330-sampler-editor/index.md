@@ -183,10 +183,11 @@ The editor is available at [audiocontrol.org/roland/s330/editor](https://audioco
 ## About the Project
 
 The S-330 Web Editor is open source. The editor and supporting libraries are available
-on [GitHub](https://github.com/oletizi/ol_dsp).
+on [GitHub](https://github.com/audiocontrol-org/audiocontrol).
 
 ## Related Content
 
+- [What's New in the S-330 Editor](/blog/roland-s330-sampler-editor-feb-2026-update/) — February 2026 update
 - [Roland S-330 Overview](/roland/s330/) — detailed specs, accessories, and the web editor
 - [The Roland S-Series Samplers](/blog/roland-s-series-samplers/) — a guide to the full S-series lineup
 - [Roland MU-1 Mouse Guide](/roland/s330/mu-1-mouse) — history, compatibility, and alternatives

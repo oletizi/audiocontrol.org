@@ -11,7 +11,7 @@ This guide covers all features of the S-330 web editor. For background on the S-
 ## Quick Links
 
 - [Launch the S-330 Editor](/roland/s330/editor)
-- [GitHub Repository](https://github.com/oletizi/ol_dsp)
+- [GitHub Repository](https://github.com/audiocontrol-org/audiocontrol)
 
 ---
 
@@ -71,11 +71,11 @@ Inexpensive capture devices are perfectly adequate for this purpose—you're dis
 **To use the video capture:**
 
 1. Open the editor at [audiocontrol.org/roland/s330/editor](/roland/s330/editor)
-2. Click the camera icon in the corner of the screen to open the video panel
+2. Click the video toggle tab on the left edge of the screen to open the video drawer
 
 <figure>
-  <img src="/images/s330-video-button.jpg" alt="Camera icon button in corner of screen">
-  <figcaption>Click the camera icon to open the video panel</figcaption>
+  <img src="/images/s330-video-button.jpg" alt="Video toggle tab on left edge of screen">
+  <figcaption>Click the video toggle tab to open the video drawer</figcaption>
 </figure>
 
 3. Click **Enable Camera Access** and grant permission when prompted
@@ -95,7 +95,7 @@ Inexpensive capture devices are perfectly adequate for this purpose—you're dis
 
 You'll now see your S-330's native display in the browser window. You can use this to navigate the sampler's menus with the physical front panel buttons—for example, to enable System Exclusive as described in the next section.
 
-**Tip:** You can collapse the virtual front panel controls if you only want the video display. The video panel can be dragged and resized to fit your workflow.
+**Tip:** Drag the right edge of the video drawer to resize it. The drawer remembers its width between sessions.
 
 ### Enabling System Exclusive on the S-330
 
@@ -163,18 +163,18 @@ The editor has four main sections, accessible via the navigation tabs:
   <figcaption>The Play page provides quick access to performance settings</figcaption>
 </figure>
 
-### Video Display Panel
+### Video Display Drawer
 
-A floating panel in the corner displays video from a USB capture device. This lets you see the S-330's native screen alongside the web editor.
+A slide-out drawer on the left side displays video from a USB capture device. This lets you see the S-330's native screen alongside the web editor.
 
 **To set up video capture:**
 
 See [Using Video Capture as a Display](#using-video-capture-as-a-display) in the Getting Started section for step-by-step instructions with screenshots.
 
-The panel can be:
-- **Dragged** by its header to reposition
-- **Resized** by dragging the corner handle
-- **Collapsed** to save screen space
+The drawer can be:
+- **Opened/closed** by clicking the video toggle tab on the left edge
+- **Resized** by dragging the right edge of the drawer
+- The main content area shifts right when the drawer is open
 
 ### Virtual Front Panel
 
@@ -262,14 +262,22 @@ These activate depending on Key Mode:
 - **V-Sw Thresh** — Velocity threshold for switching between layers
 - **V-Mix Ratio** — Balance between layers in V-Mix mode
 
-**Tone Mapping:**
+**Tone Zone Editor:**
 
-Click **Expand** to view and edit the keyboard-to-tone assignments for both layers. Each key (C-1 through G8) can be assigned to any of the 32 tones, or set to "OFF" (no sound).
+The zone editor displays keyboard-to-tone assignments as visual horizontal bars. Each zone represents a contiguous range of keys mapped to a single tone.
 
 <figure>
-  <img src="/images/s330-tone-mapping.jpg" alt="Tone mapping section showing key-to-tone assignments">
-  <figcaption>Tone mapping lets you assign different tones across the keyboard</figcaption>
+  <img src="/images/s330-tone-mapping.jpg" alt="Zone editor showing keyboard-to-tone assignments">
+  <figcaption>The zone editor displays tone assignments as horizontal bars</figcaption>
 </figure>
+
+To edit zones:
+1. Click a zone bar to select it for editing
+2. Use the dropdowns to change the tone assignment, start key, or end key
+3. Click **Learn** next to a key field, then play a note on your MIDI controller to set that key
+4. Click **Apply** to confirm changes or **Cancel** to discard them
+5. Click **+ Add Zone** to create a new zone in an unassigned range
+6. Click **Delete** to remove the selected zone
 
 ---
 
@@ -478,16 +486,39 @@ When the video panel and controls are expanded:
 
 ---
 
+## Build Info and Debugging
+
+The editor includes built-in tools to help diagnose issues.
+
+**Build Info Button:**
+
+Click the commit hash button in the header (next to the MIDI status) to open a modal with:
+- **Info tab** — Build time, git commit, branch, and commit date
+- **Logs tab** — Captured console errors, warnings, and log messages
+
+**Reporting Issues:**
+
+When you encounter a problem:
+1. Open the build info modal
+2. Switch to the **Logs** tab to see any captured errors
+3. Click **Copy for Issue** to copy the environment info and logs to your clipboard
+4. Click **Open Issue** to go directly to GitHub with your environment pre-filled
+
+This makes it easy to include all relevant debugging information in bug reports.
+
+---
+
 ## About
 
-The S-330 Web Editor is an open-source project developed as part of the [ol_dsp](https://github.com/oletizi/ol_dsp) audio tools collection.
+The S-330 Web Editor is an open-source project developed as part of the [audiocontrol](https://github.com/audiocontrol-org/audiocontrol) audio tools collection.
 
-For bug reports and feature requests, please open an issue on [GitHub](https://github.com/oletizi/ol_dsp/issues).
+For bug reports and feature requests, please open an issue on [GitHub](https://github.com/audiocontrol-org/audiocontrol/issues).
 
 ## See Also
 
 - [Roland S-330 Overview](/roland/s330/) — specs, accessories, related devices, and the web editor
 - [The Roland S-Series Samplers](/blog/roland-s-series-samplers/) — a guide to the full S-series lineup
 - [A Free Web Editor for the Roland S-330](/blog/free-roland-s330-sampler-editor/) — the original blog post about the editor
+- [What's New in the S-330 Editor](/blog/roland-s330-sampler-editor-feb-2026-update/) — February 2026 update
 - [Roland MU-1 Mouse Guide](/roland/s330/mu-1-mouse) — history and alternatives for the original mouse
 - [Roland RC-100 Remote Controller Guide](/roland/s330/rc-100) — the dedicated control surface
