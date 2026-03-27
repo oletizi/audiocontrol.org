@@ -18,6 +18,7 @@ const lastModified = {
   '/roland/s330/mu-1-mouse/': '2025-01-15',
   '/roland/s330/rc-100/': '2025-01-15',
   '/roland/s550/': '2025-01-15',
+  '/roland/s550/editor': '2026-03-27',
   '/roland/s770/': '2025-01-15',
   '/roland/w30/': '2025-01-15',
 };
@@ -28,7 +29,10 @@ export default defineConfig({
   adapter: netlify(),
   integrations: [
     sitemap({
-      customPages: ['https://audiocontrol.org/roland/s330/editor'],
+      customPages: [
+        'https://audiocontrol.org/roland/s330/editor',
+        'https://audiocontrol.org/roland/s550/editor',
+      ],
       filter: (page) => !page.includes('/og-preview'),
       serialize(item) {
         const path = new URL(item.url).pathname;

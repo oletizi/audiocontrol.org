@@ -26,3 +26,22 @@
   to = "https://s330.netlify.app/:splat"
   status = 200
   force = true
+
+# Proxy S-550 editor to S-330 Netlify app (S-550 ≈ 2x S-330)
+[[redirects]]
+  from = "/roland/s550/editor"
+  to = "https://s330.netlify.app/"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/roland/s550/editor/"
+  to = "https://s330.netlify.app/"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/roland/s550/editor/*"
+  to = "https://s330.netlify.app/:splat"
+  status = 200
+  force = true
