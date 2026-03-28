@@ -27,21 +27,21 @@
   status = 200
   force = true
 
-# Proxy S-550 editor to S-330 Netlify app (S-550 ≈ 2x S-330)
+# Proxy S-550 editor to Roland S-series Netlify app
 [[redirects]]
   from = "/roland/s550/editor"
-  to = "https://s330.netlify.app/"
+  to = "https://roland-sxx0-editor.netlify.app/"
   status = 200
   force = true
 
 [[redirects]]
   from = "/roland/s550/editor/"
-  to = "https://s330.netlify.app/"
+  to = "https://roland-sxx0-editor.netlify.app/"
   status = 200
   force = true
 
 [[redirects]]
   from = "/roland/s550/editor/*"
-  to = "https://s330.netlify.app/:splat"
+  to = "https://roland-sxx0-editor.netlify.app/:splat"
   status = 200
   force = true
