@@ -8,22 +8,22 @@
   to = "/sitemap-index.xml"
   status = 301
 
-# Proxy S-330 editor to its dedicated Netlify app
+# Proxy Roland S-series editor to its dedicated Netlify app
 [[redirects]]
   from = "/roland/s330/editor"
-  to = "https://s330.netlify.app/"
+  to = "https://roland-sxx0-editor.netlify.app/"
   status = 200
   force = true
 
 [[redirects]]
   from = "/roland/s330/editor/"
-  to = "https://s330.netlify.app/"
+  to = "https://roland-sxx0-editor.netlify.app/"
   status = 200
   force = true
 
 [[redirects]]
   from = "/roland/s330/editor/*"
-  to = "https://s330.netlify.app/:splat"
+  to = "https://roland-sxx0-editor.netlify.app/:splat"
   status = 200
   force = true
 
