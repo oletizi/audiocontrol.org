@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/BlogLayout.astro
 title: "Reverse-Engineering the Akai S3000XL MIDI-over-SCSI Protocol: An Odyssey"
-description: "How a failed attempt to run Akai's MESA II in a Mac OS 9 emulator led us through 44 disproven theories, a month of debugging, and ultimately to a standalone 68k emulator that cracked the protocol in four hours."
+description: "How a failed attempt to run Akai's MESA II in a Mac OS 9 emulator led us through 38 disproven theories in five days of intense debugging, and ultimately to a standalone 68k emulator that cracked the protocol in four hours."
 date: "April 2026"
 datePublished: "2026-04-07"
 dateModified: "2026-04-07"
@@ -14,7 +14,7 @@ The Akai S3000XL is a professional 16-bit sampler from the mid-1990s. Like most 
 
 We're building [audiocontrol](https://audiocontrol.org) -- open-source web-based editors for vintage samplers. Instead of squinting at an LCD, you connect to your sampler from a browser and edit everything visually. We've already shipped editors for Roland's S-330 and S-550 samplers, and the S3000XL editor is in active development.
 
-What followed was a month-long odyssey through Mac OS 9 emulation, PowerPC binary reverse-engineering, 44 disproven theories, and ultimately a pivot that cracked the entire protocol in a single evening.
+What followed was a five-day odyssey through Mac OS 9 emulation, PowerPC binary reverse-engineering, 38 disproven theories, and ultimately a pivot that cracked the entire protocol in a single evening.
 
 ## The Setup
 
@@ -90,9 +90,9 @@ MESA II's SCSI Plug uses a mechanism called Mixed Mode -- a bridge between Mac O
 
 Except in SheepShaver, it doesn't.
 
-## Act II: Forty-Four Theories
+## Act II: Thirty-Eight Theories
 
-What followed was a sustained campaign of investigation, hypothesis, and refutation. We documented every theory with a letter.
+What followed was a sustained campaign of investigation, hypothesis, and refutation. We documented every theory with a letter -- A through Z, then when we ran out of letters, AA through AL: 38 in total.
 
 **Theory A** (Gestalt timing): Maybe SheepShaver reports the wrong machine type. Checked -- the native value passes the Plug's sanity check fine.
 
@@ -120,7 +120,7 @@ We tried patching the per-opcode dispatch table in RAM at the correct address (0
 
 This is an architectural conflict. SheepShaver's emulation model is fundamentally incompatible with Mixed Mode's exception-based A-line dispatch. Fixing one breaks the other.
 
-After Theory AL, we stopped. Forty-four theories tested and disproven. The fundamental issue requires rewriting SheepShaver's Mixed Mode Manager -- not a weekend project.
+After Theory AL, we stopped. Thirty-eight theories tested and disproven. The fundamental issue requires rewriting SheepShaver's Mixed Mode Manager -- not a weekend project.
 
 ## Act III: The Pivot
 
@@ -134,7 +134,7 @@ The question was no longer "how do we make MESA II run?" It was "do we even need
 
 ### The SCSI Plug Harness
 
-The idea was radical in its simplicity: don't emulate Mac OS 9. Don't emulate SheepShaver. Just emulate the 68k CPU.
+If we can't get all of MESA II runnning, maybe we can just get the SCSI part of it to work in a bespoke runtime harness: don't emulate Mac OS 9. Don't hack SheepShaver. Just emulate the 68k CPU.
 
 We built the `mesa-plug-harness` -- a standalone program that:
 
@@ -184,28 +184,28 @@ The MIDI-over-SCSI protocol is elegant. Four vendor-specific SCSI commands wrap 
 
 A critical detail from the Plug analysis: the flag byte in CDB `0x0C` (byte 5) must be `0x00` for sends, not `0x80`. And the device requires a drain-before-send pattern -- you must poll and read any leftover data from previous transfers before sending a new command, or the response buffers get corrupted.
 
-### The MESA II Discovery
+### RSPACK Works After All
 
-The most important finding from the MESA II binary analysis wasn't about MIDI-over-SCSI at all. We found this string in the Sampler Editor module:
+Remember the problem that started this whole odyssey? We couldn't receive sample waveform data over SCSI. Our earlier analysis of the MESA II Sampler Editor binary had found the string "Sample data can only be transferred if you are using SCSI" and we'd concluded that MESA used native SCSI block reads for sample data, not SysEx. We'd also failed to get Akai's RSPACK opcode to return data through our bridge.
 
-> "Sample data can only be transferred if you are using SCSI to communicate with the sampler. You are currently using MIDI."
+The harness proved us wrong. RSPACK -- Akai's proprietary opcode for requesting sample waveform data -- works perfectly over SCSI MIDI. The `s3k-client` downloads full samples via RSPACK, decodes the 7-bit SDS encoding, and produces bit-perfect WAV files. The issue with our earlier attempts wasn't the protocol; it was the flag byte. CDB byte 5 must be `0x80` when you expect a reply (telling the device to buffer its response for the poll/read channel) and `0x00` for fire-and-forget sends. We'd been sending `0x00` for everything.
 
-MESA II doesn't transfer sample waveform data via SysEx. Not via standard MIDI SDS, not via Akai's proprietary RSPACK. It reads and writes sample data directly from the Akai-formatted SCSI disks using native SCSI READ and WRITE commands. "SCSI" in that error message means block-level SCSI disk I/O, not the SysEx-over-SCSI channel.
-
-This explained why we couldn't receive SDS Data Packets over SCSI -- the S3000XL firmware simply doesn't route them through the SCSI response buffer. It was never designed to. MESA II never needed it to.
+The drain-before-send pattern was the other missing piece. Leftover SDS packets from prior transfers corrupt subsequent commands. The Plug polls and reads any pending data before every new SysEx send. Without this, sample header reads after an upload return garbage.
 
 ### The Engineering Lesson
 
-The month we spent fighting SheepShaver wasn't wasted time. It taught us the shape of the problem: the Plug's function signatures, the CDB structure, the trap calling conventions. Without that deep binary analysis, the four-hour harness implementation wouldn't have been possible.
+The days we spent fighting SheepShaver weren't wasted time. They taught us the shape of the problem: the Plug's function signatures, the CDB structure, the trap calling conventions. Without that deep binary analysis, the four-hour harness implementation wouldn't have been possible.
 
-But the real lesson is about knowing when to pivot. We spent weeks trying to make an entire operating system emulator do something its architecture fundamentally couldn't support. The solution was to throw away everything except the 12KB binary we actually needed and build a minimal harness around it.
+But the real lesson is about knowing when to pivot. We spent days trying to make an entire operating system emulator do something its architecture fundamentally couldn't support. The solution was to throw away everything except the 12KB binary we actually needed and build a minimal harness around it.
 
 Sometimes the best engineering is knowing what to subtract.
 
 ## What's Next
 
-The complete MIDI-over-SCSI protocol is now implemented in the [audiocontrol](https://github.com/audiocontrol-org/audiocontrol) web editor. The S3000XL editor can read and write programs, keygroups, and sample headers over SCSI via the Raspberry Pi bridge.
+The complete MIDI-over-SCSI protocol -- including bidirectional sample waveform transfer via RSPACK -- is now implemented in the [audiocontrol](https://github.com/audiocontrol-org/audiocontrol) web editor. The S3000XL editor can read and write programs, keygroups, sample headers, and audio data over SCSI via the Raspberry Pi bridge.
 
-For sample waveform data, we're following MESA II's lead: reading and writing directly to Akai-formatted SCSI disks over the network. The Pi serves the disk images, our browser-based Akai disk format parser reads the blocks, and the editor's disk browser lets you move samples between the Akai disks and your browser library. No SDS needed.
+We're also building a disk browser that reads Akai-formatted SCSI disks over the network using native SCSI READ/WRITE block commands -- the same approach MESA II uses for bulk disk operations. This gives us two complementary paths: RSPACK for live sample transfer, and block I/O for browsing and managing disk contents.
 
-The `s3k-client` CLI tool from the harness project is [available on GitHub](https://github.com/audiocontrol-org/scsi2pi). It's a complete standalone Akai S3000XL client that talks to real hardware over SCSI-over-network. If you have a PiSCSI board and an Akai sampler, you can use it today.
+If you ever need to understand the Akai S3000XL MIDI-over-SCSI protocol, the [mesa-plug-harness](https://github.com/audiocontrol-org/mesa-plug-harness) repo is a good reference implementation and starting point. The `s3k-client` CLI tool included in it is a complete standalone S3000XL client that reads and writes programs, samples, and audio data over SCSI.
+
+We're hoping to contribute our scsi2pi extensions (the `SCSI_EXEC` and `MIDI_*` protobuf operations) back to the [upstream project](https://www.scsi2pi.net/), and to package the Rust HTTP-to-SCSI bridge in a way that makes it easy for anyone with a PiSCSI in their sampler or vintage computing rig to do SCSI over the network from modern hardware.
