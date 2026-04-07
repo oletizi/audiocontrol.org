@@ -59,6 +59,8 @@ The system has three layers:
 
 The bridge can execute generic SCSI commands, which means you can read and write disk blocks on any SCSI device on the bus. Got a vintage Mac hard drive you want to image? An old SCSI MO drive with irreplaceable data? Send a SCSI READ(10) from your laptop and get the raw blocks back over HTTP.
 
+We took this a step further: we wrote a network SCSI backend for [SheepShaver](https://sheepshaver.cebix.net/) (a PowerPC Mac emulator) that forwards SCSI commands to the bridge over TCP. The result: Mac OS 9 running in a Docker container on an Apple Silicon Mac can mount SCSI disks connected to a Raspberry Pi on the other side of the network. Real SCSI commands -- INQUIRY, READ, WRITE -- traveling over WiFi. Mac OS sees real hard drives on its desktop. Reads and writes survive reboots.
+
 This is how our [browser-based Akai disk browser](https://github.com/audiocontrol-org/audiocontrol) works -- it sends SCSI READ commands over HTTP, gets raw disk blocks back, and parses the Akai filesystem format entirely in the browser. No special drivers, no SCSI card, no vintage Mac required.
 
 ### Talk to any SCSI device
