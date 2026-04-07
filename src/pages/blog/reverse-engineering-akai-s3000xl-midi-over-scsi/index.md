@@ -32,6 +32,38 @@ The solution is a Raspberry Pi with a [PiSCSI](https://github.com/PiSCSI/piscsi)
 
 On the Pi, we run a small open-source bridge daemon we built called [scsi-midi-bridge](https://github.com/audiocontrol-org/audiocontrol/tree/main/services/scsi-midi-bridge). It translates between HTTP (which a browser can speak) and the SCSI bus (which the sampler speaks). The browser-based editor sends a request like "give me the list of programs on the sampler," the bridge daemon converts it into the right SCSI command, sends it down the SCSI bus, reads the response, and sends it back to the browser.
 
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Your Laptop                                                    │
+│  ┌───────────────────────────────────────────┐                  │
+│  │  Browser                                  │                  │
+│  │  audiocontrol.org/akai/s3000xl/editor     │                  │
+│  └─────────────────────┬─────────────────────┘                  │
+└────────────────────────┼────────────────────────────────────────┘
+                         │ HTTP / WebSocket
+                         │ over WiFi
+┌────────────────────────┼────────────────────────────────────────┐
+│  Raspberry Pi          │                                        │
+│  ┌─────────────────────▼─────────────────────┐                  │
+│  │  scsi-midi-bridge (Rust daemon, port 7033)│                  │
+│  └─────────────────────┬─────────────────────┘                  │
+│                        │ Protobuf (TCP, port 6868)              │
+│  ┌─────────────────────▼─────────────────────┐                  │
+│  │  scsi2pi / s2p (SCSI bus controller)      │                  │
+│  └─────────────────────┬─────────────────────┘                  │
+│                        │ GPIO                                   │
+│  ┌─────────────────────▼─────────────────────┐                  │
+│  │  PiSCSI board (SCSI HAT)                  │                  │
+│  └─────────────────────┬─────────────────────┘                  │
+└────────────────────────┼────────────────────────────────────────┘
+                         │ 50-pin SCSI ribbon cable
+┌────────────────────────┼────────────────────────────────────────┐
+│  ┌─────────────────────▼─────────────────────┐                  │
+│  │  Akai S3000XL Sampler (SCSI ID 6)         │                  │
+│  └───────────────────────────────────────────┘                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ### What Worked and What Didn't
 
 We'd built the bridge and gotten reads working -- the browser editor could fetch program names, sample headers, and keygroup data from the sampler over SCSI. But two things were broken: writes didn't seem to persist when we read the values back, and we couldn't receive sample waveform data at all. The sampler simply wasn't sending it through the SCSI response channel.
