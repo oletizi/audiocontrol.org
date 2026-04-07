@@ -115,7 +115,6 @@ The bridge daemon started as a single-purpose tool for our sampler editor, but i
 - A Raspberry Pi (3B+ or newer recommended)
 - A [PiSCSI board](https://github.com/PiSCSI/piscsi) (also known as RaSCSI) -- the HAT that adds a 50-pin SCSI connector to the Pi
 - A SCSI ribbon cable to connect the Pi to your vintage hardware
-- A SCSI terminator (if the Pi is at the end of the SCSI chain)
 
 **Software:**
 - Our [fork of scsi2pi](https://github.com/audiocontrol-org/scsi2pi) with the extended protobuf API (we're working on upstreaming these changes)
