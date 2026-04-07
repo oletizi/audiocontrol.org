@@ -1,6 +1,6 @@
 ---
 layout: ../../../layouts/BlogLayout.astro
-title: "SCSI Over WiFi: Talking to Vintage Hardware from a Modern Browser"
+title: "SCSI Over WiFi: Talking to Vintage Hardware from Your Phone"
 description: "An open-source Raspberry Pi bridge that lets you send SCSI commands to vintage samplers and computers over HTTP and WebSocket -- no SCSI card required."
 date: "April 2026"
 datePublished: "2026-04-07"
@@ -8,7 +8,7 @@ dateModified: "2026-04-07"
 author: "Orion Letizi"
 ---
 
-# SCSI Over WiFi: Talking to Vintage Hardware from a Modern Browser
+# SCSI Over WiFi: Talking to Vintage Hardware from Your Phone
 
 If you own vintage SCSI hardware -- an Akai sampler, a Roland sampler, an old Mac, a SCSI hard drive -- you know the pain. Modern computers haven't had SCSI ports in twenty years. To connect to your gear, you need vintage Macs, SCSI-to-USB adapters (which are flaky and expensive), or elaborate workarounds involving floppy disks and prayer.
 
@@ -51,13 +51,22 @@ The system has three layers:
 
 **[scsi2pi](https://www.scsi2pi.net/)** is the excellent open-source SCSI emulator for Raspberry Pi. It emulates SCSI hard drives, CD-ROMs, and other devices. It also exposes a protobuf API on port 6868 for programmatic control. We've extended it with the ability to execute arbitrary SCSI commands on the bus -- so the Pi can act as a SCSI initiator, sending commands to any device on the bus, not just emulating devices for other hosts.
 
-**[scsi-midi-bridge](https://github.com/audiocontrol-org/audiocontrol/tree/main/services/scsi-midi-bridge)** is our Rust daemon that translates between HTTP (which anything on your network can speak) and scsi2pi's protobuf API (which requires a direct TCP connection to the Pi). It's a thin, fast translation layer. The daemon runs on the Pi alongside scsi2pi and adds about 3MB of memory overhead.
+**[scsi-midi-bridge](https://github.com/audiocontrol-org/audiocontrol/tree/main/services/scsi-midi-bridge)** is our Rust daemon that translates between HTTP (which anything on your network can speak) and scsi2pi's protobuf API (which requires a direct TCP connection to the Pi). It's a thin, fast translation layer that runs on the Pi alongside scsi2pi.
 
 ## What Can You Do With It?
 
-### Check if your device is alive
+### Read and write SCSI disks over the network
+
+The bridge can execute generic SCSI commands, which means you can read and write disk blocks on any SCSI device on the bus. Got a vintage Mac hard drive you want to image? An old SCSI MO drive with irreplaceable data? Send a SCSI READ(10) from your laptop and get the raw blocks back over HTTP.
+
+This is how our [browser-based Akai disk browser](https://github.com/audiocontrol-org/audiocontrol) works -- it sends SCSI READ commands over HTTP, gets raw disk blocks back, and parses the Akai filesystem format entirely in the browser. No special drivers, no SCSI card, no vintage Mac required.
+
+### Talk to any SCSI device
+
+Any SCSI command you can construct, you can send. INQUIRY to identify a device. TEST UNIT READY to check if it's online. READ CAPACITY to find out how big a disk is. Vendor-specific commands for devices with proprietary protocols. If it speaks SCSI, the bridge can reach it.
 
 ```bash
+# Check if the bridge and your device are alive
 curl http://your-pi:7033/status
 ```
 
@@ -70,9 +79,9 @@ curl http://your-pi:7033/status
 }
 ```
 
-### Send MIDI SysEx to an Akai sampler over SCSI
+### Send MIDI to an Akai sampler at SCSI speed
 
-The Akai S3000XL (and S5000, S6000, and other S-series samplers) supports MIDI over SCSI -- standard MIDI SysEx messages transmitted over the SCSI bus at megabytes per second instead of MIDI's 31.25 kilobaud. The bridge daemon speaks this protocol natively.
+This is the use case we built the bridge for. The Akai S3000XL (and other S-series samplers) supports MIDI over SCSI -- standard MIDI SysEx messages transmitted over the SCSI bus at megabytes per second instead of MIDI's 31.25 kilobaud. The bridge daemon speaks this protocol natively.
 
 ```bash
 # Request the list of resident sample names (Akai RSLIST command)
@@ -90,25 +99,13 @@ curl -X POST http://your-pi:7033/sds/send \
 
 That response is the sampler's complete sample list, arriving over WiFi in milliseconds instead of the seconds it would take over a MIDI cable.
 
-### Stream bidirectional SysEx over WebSocket
-
-For operations that require back-and-forth handshaking -- like transferring audio samples using the MIDI Sample Dump Standard -- the bridge provides a WebSocket endpoint:
-
-```
-ws://your-pi:7033/sds/stream
-```
-
-Messages are JSON frames with a `type` field (`"sysex"`) and a `data` field (byte array). The WebSocket stays open for the duration of the transfer, handling the ACK/NAK handshake at SCSI speed.
-
-### Read and write SCSI disk blocks
-
-The bridge can also execute generic SCSI commands, which means you can read and write disk blocks on any SCSI device on the bus. This is how our [browser-based Akai disk browser](https://github.com/audiocontrol-org/audiocontrol) reads the contents of Akai-formatted SCSI disks -- sending SCSI READ(10) commands over HTTP and parsing the Akai filesystem format in the browser.
+For operations that require back-and-forth handshaking -- like transferring audio samples -- the bridge also provides a WebSocket endpoint (`ws://your-pi:7033/sds/stream`) for low-latency bidirectional streaming.
 
 ## Why We Built This
 
 We're building [audiocontrol](https://audiocontrol.org) -- open-source web-based editors for vintage samplers. Our [Roland S-330 editor](https://audiocontrol.org/roland/s330/editor) and [S-550 editor](https://audiocontrol.org/roland/s550/editor) communicate over MIDI, but when we started building the Akai S3000XL editor, we needed something faster. MIDI transfers about 3 kilobytes per second. SCSI transfers megabytes per second. For loading multi-sample instruments with dozens of audio files, that's the difference between minutes and seconds.
 
-The bridge daemon started as a single-purpose tool for our editor, but it's really a general-purpose SCSI-over-HTTP gateway. Anything that can make an HTTP request can now talk to anything on a SCSI bus.
+The bridge daemon started as a single-purpose tool for our sampler editor, but it's really a general-purpose SCSI-over-HTTP gateway. Anything that can make an HTTP request can now talk to anything on a SCSI bus.
 
 ## What You Need
 
