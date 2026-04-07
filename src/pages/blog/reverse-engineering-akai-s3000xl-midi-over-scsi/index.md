@@ -30,7 +30,7 @@ The problem is that modern computers don't have SCSI ports. Nobody has for twent
 
 The solution is a Raspberry Pi with a [PiSCSI](https://github.com/PiSCSI/piscsi) board -- a hat that gives the Pi a 50-pin SCSI connector. The Pi runs [scsi2pi](https://www.scsi2pi.net/), software that emulates SCSI hard drives, serves disk images to the sampler, and can send raw SCSI commands on the bus. We connect the Pi to the sampler's SCSI port with a ribbon cable, and the Pi connects to the network over WiFi.
 
-On the Pi, a small bridge daemon translates between HTTP (which a browser can speak) and the SCSI bus (which the sampler speaks). The browser-based editor sends a request like "give me the list of programs on the sampler," the bridge daemon converts it into the right SCSI command, sends it down the SCSI bus, reads the response, and sends it back to the browser.
+On the Pi, we run a small open-source bridge daemon we built called [scsi-midi-bridge](https://github.com/audiocontrol-org/audiocontrol/tree/main/services/scsi-midi-bridge). It translates between HTTP (which a browser can speak) and the SCSI bus (which the sampler speaks). The browser-based editor sends a request like "give me the list of programs on the sampler," the bridge daemon converts it into the right SCSI command, sends it down the SCSI bus, reads the response, and sends it back to the browser.
 
 ### What Worked and What Didn't
 
