@@ -10,6 +10,8 @@ author: "Orion Letizi"
 
 # SCSI Over WiFi: Talking to Vintage Hardware from Your Phone
 
+<img src="/images/scsi-over-wifi.png" alt="SCSI Over WiFi — Talking to Vintage Hardware from Your Phone" />
+
 If you own vintage SCSI hardware -- an Akai sampler, a Roland sampler, an old Mac, a SCSI hard drive -- you know the pain. Modern computers haven't had SCSI ports in twenty years. To connect to your gear, you need vintage Macs, SCSI-to-USB adapters (which are flaky and expensive), or elaborate workarounds involving floppy disks and prayer.
 
 We built an open-source bridge that solves this. A Raspberry Pi with a [PiSCSI](https://github.com/PiSCSI/piscsi) board sits on the SCSI bus next to your vintage hardware. A small Rust daemon on the Pi exposes the SCSI bus over HTTP and WebSocket. Any device on your WiFi network -- a laptop, a phone, a browser -- can send SCSI commands to your vintage gear as easily as making an API call.
