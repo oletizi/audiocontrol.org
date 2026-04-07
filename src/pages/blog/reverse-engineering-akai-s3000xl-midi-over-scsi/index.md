@@ -10,15 +10,31 @@ author: "Orion Letizi"
 
 # Reverse-Engineering the Akai S3000XL MIDI-over-SCSI Protocol
 
-The Akai S3000XL is a professional 16-bit sampler from the mid-1990s. It communicates over MIDI for parameter editing and over SCSI for fast sample data transfer. We're building [audiocontrol](https://audiocontrol.org), a set of open-source web-based editors for vintage samplers, and we needed to understand exactly how the S3000XL's MIDI-over-SCSI protocol works so our browser-based editor could talk to the sampler at SCSI speed instead of MIDI's glacial 31.25 kbaud.
+The Akai S3000XL is a professional 16-bit sampler from the mid-1990s. Like most hardware samplers of its era, you edit it by scrolling through pages of tiny text on a backlit LCD, navigating with a data wheel and a handful of buttons. Every parameter change is a multi-step menu dive. It's powerful, but painfully slow to work with.
+
+We're building [audiocontrol](https://audiocontrol.org) -- open-source web-based editors for vintage samplers. Instead of squinting at an LCD, you connect to your sampler from a browser and edit everything visually. We've already shipped editors for Roland's S-330 and S-550 samplers, and the S3000XL editor is in active development.
 
 What followed was a month-long odyssey through Mac OS 9 emulation, PowerPC binary reverse-engineering, 44 disproven theories, and ultimately a pivot that cracked the entire protocol in a single evening.
 
 ## The Setup
 
-The S3000XL supports "MIDI via SCSI" -- standard MIDI SysEx messages transmitted over the SCSI bus instead of a MIDI cable. The payload is byte-for-byte identical; only the physical transport changes. A Raspberry Pi running [scsi2pi](https://www.scsi2pi.net/) with a PiSCSI board gives the sampler a SCSI bus, and our Rust bridge daemon on the Pi exposes it over HTTP/WebSocket so a browser can reach it over WiFi.
+### Two Ways to Talk to a Sampler
 
-We'd already built the bridge and gotten reads working -- we could fetch program names, sample headers, and keygroup data from the sampler over SCSI. But writes weren't persisting on readback, and we couldn't receive sample waveform data at all. The SDS Data Packets simply never arrived through the SCSI response buffer.
+The S3000XL supports two communication interfaces. **MIDI** is the standard one -- a 5-pin DIN cable carrying messages at 31.25 kilobaud. That's fast enough for parameter editing (changing a filter cutoff, renaming a program), but agonizingly slow for transferring audio. Loading a one-second sample over MIDI takes about 25 seconds.
+
+The S3000XL also has a **SCSI** port -- the same parallel bus interface that 1990s Macs used for hard drives. SCSI transfers data at megabytes per second, orders of magnitude faster than MIDI. The sampler supports "MIDI via SCSI": standard MIDI messages transmitted over the SCSI bus instead of a MIDI cable. The payload is byte-for-byte identical; only the physical transport changes.
+
+The problem is that modern computers don't have SCSI ports. Nobody has for twenty years.
+
+### A Raspberry Pi on the SCSI Bus
+
+The solution is a Raspberry Pi with a [PiSCSI](https://github.com/PiSCSI/piscsi) board -- a hat that gives the Pi a 50-pin SCSI connector. The Pi runs [scsi2pi](https://www.scsi2pi.net/), software that emulates SCSI hard drives, serves disk images to the sampler, and can send raw SCSI commands on the bus. We connect the Pi to the sampler's SCSI port with a ribbon cable, and the Pi connects to the network over WiFi.
+
+On the Pi, a small bridge daemon translates between HTTP (which a browser can speak) and the SCSI bus (which the sampler speaks). The browser-based editor sends a request like "give me the list of programs on the sampler," the bridge daemon converts it into the right SCSI command, sends it down the SCSI bus, reads the response, and sends it back to the browser.
+
+### What Worked and What Didn't
+
+We'd built the bridge and gotten reads working -- the browser editor could fetch program names, sample headers, and keygroup data from the sampler over SCSI. But two things were broken: writes didn't seem to persist when we read the values back, and we couldn't receive sample waveform data at all. The sampler simply wasn't sending it through the SCSI response channel.
 
 We needed to see how Akai's own software did it. Enter MESA II.
 
