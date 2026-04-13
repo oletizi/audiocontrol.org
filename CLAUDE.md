@@ -130,6 +130,7 @@ npm run preview   # Preview production build
 - Never specify project management goals in temporal terms — use milestone, sprint, phase
 - Never offer baseless projection statistics
 - Use GitHub links (not file paths) in issue descriptions
+- Do not embed editorial text in generated feature images or OG images; generated text is not editable. Keep text in page content or HTML/CSS overlays instead.
 - See [PROJECT-MANAGEMENT.md](./PROJECT-MANAGEMENT.md) for project management standards
 
 ## Critical Don'ts

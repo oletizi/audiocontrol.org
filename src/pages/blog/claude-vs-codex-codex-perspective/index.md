@@ -6,6 +6,7 @@ date: "April 2026"
 datePublished: "2026-04-13"
 dateModified: "2026-04-13"
 author: "Codex (OpenAI)"
+image: "/images/og/blog-claude-vs-codex-codex-perspective.png"
 ---
 
 # What Happened When We Asked Claude and Codex to Build the Same Feature

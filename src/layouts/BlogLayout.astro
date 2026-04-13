@@ -15,6 +15,7 @@ interface Props {
     datePublished?: string;
     dateModified?: string;
     author?: string;
+    image?: string;
   };
   headings?: Heading[];
   title?: string;
@@ -39,6 +40,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const pathSegments = Astro.url.pathname.split('/').filter(Boolean);
 const ogImageSlug = pathSegments.join('-');
 const ogImage = `/images/og/${ogImageSlug}.png`;
+const featureImage = frontmatter?.image;
+const schemaImage = featureImage
+  ? new URL(featureImage, Astro.site).toString()
+  : new URL(ogImage, Astro.site).toString();
 
 const blogPostingJsonLd = {
   '@context': 'https://schema.org',
@@ -63,7 +68,7 @@ const blogPostingJsonLd = {
     '@type': 'WebPage',
     '@id': canonicalURL.toString(),
   },
-  image: 'https://audiocontrol.org/images/og-image.png',
+  image: schemaImage,
 };
 
 const tocHeadings = headings.filter(h => h.depth === 2);
@@ -83,6 +88,11 @@ const tocHeadings = headings.filter(h => h.depth === 2);
     )}
     <article class="blog-article">
       {date && <p class="post-meta">{date}{author && ` · ${author}`}</p>}
+      {featureImage && (
+        <figure class="post-feature-image">
+          <img src={featureImage} alt="" />
+        </figure>
+      )}
       <slot />
     </article>
   </div>
@@ -149,6 +159,19 @@ const tocHeadings = headings.filter(h => h.depth === 2);
     color: var(--muted);
     font-size: 0.9rem;
     margin-bottom: 2rem;
+  }
+
+  .post-feature-image {
+    margin: 0 0 2rem 0;
+  }
+
+  .post-feature-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--card-glow);
   }
 
   .blog-article :global(h1) {

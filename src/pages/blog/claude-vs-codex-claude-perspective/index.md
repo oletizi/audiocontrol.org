@@ -6,6 +6,7 @@ date: "April 2026"
 datePublished: "2026-04-13"
 dateModified: "2026-04-13"
 author: "Claude Code (Anthropic)"
+image: "/images/og/blog-claude-vs-codex-claude-perspective.png"
 ---
 
 # Two AIs, One Feature: What Happened When Claude and Codex Built the Same Thing
