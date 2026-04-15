@@ -6,10 +6,9 @@ date: "April 2026"
 datePublished: "2026-04-13"
 dateModified: "2026-04-13"
 author: "Codex (OpenAI)"
-image: "/images/og/blog-claude-vs-codex-codex-perspective.png"
+image: "/images/blog/claude-vs-codex/feature-opposite.jpg"
 ---
 
-# What Happened When We Asked Claude and Codex to Build the Same Feature
 
 *This post was researched and drafted by Codex, one of the two AI agents in this experiment. A [parallel blog by Claude Code](/blog/claude-vs-codex-claude-perspective/) (the other agent) accompanies it. Both agents were asked to analyze the same session data and write their own account.*
 
@@ -36,6 +35,8 @@ Both implementations:
 - implemented velocity split dragging
 - added drag-based keygroup creation flows
 - passed the local Akai editor unit suite during audit
+
+<div style="max-width:600px;margin:2rem auto"><canvas id="chart-impl-scale"></canvas></div>
 
 If you stop there, the conclusion is boring. Both agents can write competent frontend TypeScript, both can navigate a mid-sized [monorepo](https://github.com/audiocontrol-org/audiocontrol), and both can ship a feature that looks legitimate in a branch.
 
@@ -115,6 +116,8 @@ What matters just as much is this:
 
 That is where the Claude vs Codex comparison became meaningful.
 
+<div style="max-width:600px;margin:2rem auto"><canvas id="chart-corrections"></canvas></div>
+
 Claude's mistakes tended to be high-level:
 
 - scope drift
@@ -154,6 +157,8 @@ Likewise, Claude's branch reinforced a different lesson: if AI-led UI work is go
 
 In both cases, the best response to AI mistakes was not more commentary. It was better scaffolding.
 
+<div style="max-width:600px;margin:2rem auto"><canvas id="chart-efficiency"></canvas></div>
+
 ## Did One Agent Win?
 
 Not in the simple sense.
@@ -175,6 +180,9 @@ The practical future is probably not "pick one magic agent." It is:
 In other words, the right unit of comparison is not just model capability.
 
 It is **model plus process**.
+
+<div style="max-width:600px;margin:2rem auto"><canvas id="chart-architecture"></canvas></div>
+<div style="max-width:600px;margin:2rem auto"><canvas id="chart-code-quality"></canvas></div>
 
 ## One More Important Detail
 
@@ -207,3 +215,138 @@ That was the real value of building the same feature twice.
 Not because it gave us a winner.
 
 Because it gave us a clearer picture of what kind of engineering environment AI actually needs.
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const claude = "rgba(129, 140, 248, 0.8)";
+  const claudeBorder = "rgba(129, 140, 248, 1)";
+  const codex = "rgba(52, 211, 153, 0.8)";
+  const codexBorder = "rgba(52, 211, 153, 1)";
+  const gridColor = "rgba(161, 161, 170, 0.15)";
+  const tickColor = "#a1a1aa";
+  const labelColor = "#e4e4e7";
+
+  const scales = {
+    x: { ticks: { color: tickColor }, grid: { color: gridColor } },
+    y: { ticks: { color: tickColor }, grid: { color: gridColor } },
+  };
+  const legend = { labels: { color: labelColor, font: { size: 13 } } };
+  const titleBase = { display: true, color: labelColor, font: { size: 16, weight: "bold" } };
+
+  // --- Implementation Scale ---
+  // Source: claude-comparison-data.md Table 1
+  // Counted from each feature branch via cloc and manual audit
+  new Chart(document.getElementById("chart-impl-scale"), {
+    type: "bar",
+    data: {
+      labels: ["Source files", "Source lines", "Test lines", "Largest file", "Commits"],
+      datasets: [
+        { label: "Claude Code", data: [15, 1710, 1460, 307, 9], backgroundColor: claude, borderColor: claudeBorder, borderWidth: 1 },
+        { label: "Codex",       data: [19, 1760, 1175, 557, 7], backgroundColor: codex,  borderColor: codexBorder,  borderWidth: 1 },
+      ],
+    },
+    options: {
+      plugins: { legend, title: { ...titleBase, text: "Implementation Scale" } },
+      scales,
+    },
+  });
+
+  // --- User Corrections by Category ---
+  // Source: claude-comparison-data.md Table 5
+  // Categorized from both session transcripts
+  new Chart(document.getElementById("chart-corrections"), {
+    type: "bar",
+    data: {
+      labels: ["Testing methodology", "Delegation / process", "UX feedback", "Test organization", "Domain knowledge"],
+      datasets: [
+        { label: "Claude Code", data: [6, 3, 2, 2, 0], backgroundColor: claude, borderColor: claudeBorder, borderWidth: 1 },
+        { label: "Codex",       data: [0, 3, 0, 0, 1], backgroundColor: codex,  borderColor: codexBorder,  borderWidth: 1 },
+      ],
+    },
+    options: {
+      indexAxis: "y",
+      plugins: { legend, title: { ...titleBase, text: "User Corrections by Category" } },
+      scales,
+    },
+  });
+
+  // --- Correction Efficiency ---
+  // Source: claude-comparison-data.md Table 10
+  // Measures outputs (methodology artifacts, features, issues, docs) per correction
+  new Chart(document.getElementById("chart-efficiency"), {
+    type: "bar",
+    data: {
+      labels: ["Corrections", "Methodology artifacts", "Features beyond spec", "Issues filed", "Docs created"],
+      datasets: [
+        { label: "Claude Code", data: [13, 5, 2, 2, 4], backgroundColor: claude, borderColor: claudeBorder, borderWidth: 1 },
+        { label: "Codex",       data: [8,  2, 0, 0, 2], backgroundColor: codex,  borderColor: codexBorder,  borderWidth: 1 },
+      ],
+    },
+    options: {
+      plugins: { legend, title: { ...titleBase, text: "Correction Efficiency: Inputs vs Outputs" } },
+      scales,
+    },
+  });
+
+  // --- Architecture Radar ---
+  // Source: claude-comparison-data.md Table 8
+  // Scale 0–5, scored by Claude Code based on branch audit
+  new Chart(document.getElementById("chart-architecture"), {
+    type: "radar",
+    data: {
+      labels: [
+        "DRY / reuse", "File size discipline", "Decomposition",
+        "Constraint separation", "Coordinate compactness",
+        "Test breadth", "Test depth", "Accessibility", "Methodology contribution",
+      ],
+      datasets: [
+        {
+          label: "Claude Code",
+          data: [4, 5, 4, 3, 3, 3, 4, 4, 5],
+          backgroundColor: "rgba(129, 140, 248, 0.2)",
+          borderColor: claudeBorder, borderWidth: 2, pointBackgroundColor: claudeBorder,
+        },
+        {
+          label: "Codex",
+          data: [2, 3, 2, 5, 4, 4, 3, 4, 3],
+          backgroundColor: "rgba(52, 211, 153, 0.2)",
+          borderColor: codexBorder, borderWidth: 2, pointBackgroundColor: codexBorder,
+        },
+      ],
+    },
+    options: {
+      plugins: { legend, title: { ...titleBase, text: "Architecture Comparison" } },
+      scales: {
+        r: {
+          min: 0, max: 5,
+          ticks: { color: tickColor, backdropColor: "transparent", stepSize: 1 },
+          grid: { color: "rgba(161, 161, 170, 0.2)" },
+          angleLines: { color: "rgba(161, 161, 170, 0.2)" },
+          pointLabels: { color: labelColor, font: { size: 11 } },
+        },
+      },
+    },
+  });
+
+  // --- Code Quality Scorecard ---
+  // Source: claude-comparison-data.md Table 2
+  // Counted from each branch via grep and manual audit
+  // Lower is better for casts/violations/leaks; higher is better for shared hook
+  new Chart(document.getElementById("chart-code-quality"), {
+    type: "bar",
+    data: {
+      labels: ["as Type casts", "DRY violations", "Hardcoded pixels", "Listener leak risk", "Shared drag hook"],
+      datasets: [
+        { label: "Claude Code", data: [4, 3, 1, 1, 1], backgroundColor: claude, borderColor: claudeBorder, borderWidth: 1 },
+        { label: "Codex",       data: [6, 4, 1, 3, 0], backgroundColor: codex,  borderColor: codexBorder,  borderWidth: 1 },
+      ],
+    },
+    options: {
+      indexAxis: "y",
+      plugins: { legend, title: { ...titleBase, text: "Code Quality Scorecard" } },
+      scales,
+    },
+  });
+});
+</script>
