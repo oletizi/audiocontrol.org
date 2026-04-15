@@ -74,7 +74,7 @@ const blogPostingJsonLd = {
 const tocHeadings = headings.filter(h => h.depth === 2);
 ---
 
-<Layout title={title} description={description} image={ogImage} type="article" jsonLd={blogPostingJsonLd}>
+<Layout title={title} description={description} image={featureImage ?? ogImage} type="article" jsonLd={blogPostingJsonLd}>
   <div class="article-layout">
     {tocHeadings.length > 0 && (
       <aside class="toc">
