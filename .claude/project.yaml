@@ -1,0 +1,98 @@
+name: audiocontrol-org
+description: Astro static site for audiocontrol projects — hub for editors, blog, and docs
+version: 1.0.0
+type: website
+
+metadata:
+  created: 2025-01-15
+  team_size: small
+  complexity: moderate
+  domain: web-publishing
+
+technology_stack:
+  languages:
+    - typescript
+    - javascript
+  frameworks:
+    - astro
+    - netlify
+  build_tools:
+    - npm
+    - typescript
+    - astro
+  testing:
+    - vitest
+    - playwright
+
+agents:
+  - id: project-orchestrator
+    role: Project Planning and Feature Infrastructure
+    priority: essential
+    focus:
+      - Feature planning and PRD creation
+      - Workplan creation and task decomposition
+      - GitHub issue management
+      - Branch, worktree, and docs directory setup
+
+  - id: feature-orchestrator
+    role: Implementation Delegation and Phase Management
+    priority: essential
+    focus:
+      - Implementation delegation to sub-agents
+      - Workplan progress tracking
+      - PR delivery
+
+  - id: typescript-pro
+    role: TypeScript Expert
+    priority: essential
+    focus:
+      - Type safety and strict mode
+      - Astro component logic
+      - Build configuration
+
+  - id: code-reviewer
+    role: Code Quality Guardian
+    priority: essential
+    focus:
+      - Code reviews and best practices
+      - Security review
+      - Performance review
+
+  - id: documentation-engineer
+    role: Documentation Specialist
+    priority: high
+    focus:
+      - Feature docs (PRDs, workplans)
+      - Blog content
+      - SEO content
+
+  - id: codebase-auditor
+    role: Codebase Health Monitor
+    priority: high
+    focus:
+      - DRY violations
+      - Guideline adherence
+      - Dead code detection
+
+  - id: architect-reviewer
+    role: Architecture Reviewer
+    priority: high
+    focus:
+      - Site structure and component design
+      - Layout and routing patterns
+      - Dependency management
+
+workflows:
+  feature_development:
+    trigger: new_feature
+    agents:
+      - project-orchestrator
+      - feature-orchestrator
+      - typescript-pro
+      - documentation-engineer
+
+settings:
+  code_review: enabled
+  auto_testing: enabled
+  documentation_required: true
+  type_checking: strict

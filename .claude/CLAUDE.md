@@ -2,6 +2,64 @@
 
 Astro-based static site serving as the hub for audiocontrol projects. Hosted on Netlify.
 
+## Session Lifecycle
+
+### Starting a Session
+
+1. Read the feature workplan and latest journal entry
+2. Check open GitHub issues for the feature
+3. Review DEVELOPMENT-NOTES.md for past session corrections
+4. Report context to the user and confirm the session goal
+5. Do NOT start coding until the user confirms
+
+Use `/session-start` to automate this, or `/feature-pickup` to resume a feature.
+
+### Ending a Session
+
+1. Update the feature README.md status table
+2. Update workplan.md (check off completed acceptance criteria)
+3. Write a DEVELOPMENT-NOTES.md entry (see template below)
+4. Comment on or close GitHub issues as appropriate
+5. Commit all documentation changes
+
+Use `/session-end` to automate this.
+
+### Project Management
+
+See [PROJECT-MANAGEMENT.md](../PROJECT-MANAGEMENT.md) for standards. Use `/feature-help` to see the full feature lifecycle.
+
+Feature documentation lives in `docs/1.0/<status>/<slug>/`:
+- `001-IN-PROGRESS/` — active development
+- `003-COMPLETE/` — merged and shipped
+
+Each feature directory contains: `prd.md`, `workplan.md`, `README.md`, and optionally `implementation-summary.md`.
+
+### Before Committing — Review Checklist
+
+- [ ] Workplan updated with completed acceptance criteria?
+- [ ] Could this task have been delegated to a sub-agent?
+- [ ] No ad-hoc test infrastructure left behind?
+- [ ] No fabricated claims (all data verified from source)?
+- [ ] Documentation updated if behavior changed?
+- [ ] No secrets, `.env` files, or build artifacts staged?
+- [ ] Commit message is descriptive and has no Claude attribution?
+
+## Sub-Agent Delegation
+
+Delegate tasks to specialized agents when appropriate:
+
+| Task Type | Agent |
+|-----------|-------|
+| Feature planning, PRD creation, branch/worktree setup | project-orchestrator |
+| Implementation delegation, workplan tracking, PR delivery | feature-orchestrator |
+| Code quality review, best practices | code-reviewer |
+| Feature docs, blog content, SEO content | documentation-engineer |
+| TypeScript logic, Astro component code | typescript-pro |
+| Codebase health, DRY violations, guideline adherence | codebase-auditor |
+| Site structure, component design | architect-reviewer |
+
+Always instruct agents to **use the Write/Edit tool to persist all changes to disk**.
+
 ## Project Structure
 
 ```text
@@ -11,6 +69,9 @@ audiocontrol.org/
 │   ├── layouts/        # Page layouts
 │   └── pages/          # Route pages (file-based routing)
 ├── public/             # Static assets (images, fonts, etc.)
+├── docs/               # Feature documentation (PRDs, workplans)
+├── test/               # Test files (integration, e2e)
+├── scripts/            # Build/utility scripts
 ├── astro.config.mjs    # Astro configuration
 ├── netlify.toml        # Netlify build and redirect config
 ├── package.json
@@ -119,9 +180,12 @@ When adding new pages:
 ## Common Commands
 
 ```bash
-npm run dev       # Start development server
-npm run build     # Build for production
-npm run preview   # Preview production build
+npm run dev            # Start development server
+npm run build          # Build for production
+npm run preview        # Preview production build
+npm test               # Run unit tests (vitest)
+npm run test:integration  # Run integration tests
+npm run test:e2e       # Run e2e tests (playwright)
 ```
 
 ## Documentation Standards
@@ -131,7 +195,38 @@ npm run preview   # Preview production build
 - Never offer baseless projection statistics
 - Use GitHub links (not file paths) in issue descriptions
 - Do not embed editorial text in generated feature images or OG images; generated text is not editable. Keep text in page content or HTML/CSS overlays instead.
-- See [PROJECT-MANAGEMENT.md](./PROJECT-MANAGEMENT.md) for project management standards
+- See [PROJECT-MANAGEMENT.md](../PROJECT-MANAGEMENT.md) for project management standards
+
+## Development Journal Format
+
+Each session gets an entry in `DEVELOPMENT-NOTES.md`:
+
+```markdown
+## YYYY-MM-DD: [Session Title]
+### Feature: [feature-slug]
+### Worktree: audiocontrol.org-[slug]
+
+**Goal:** [What we set out to do]
+
+**Accomplished:**
+- [What was done]
+
+**Didn't Work:**
+- [What failed and why]
+
+**Course Corrections:**
+- [PROCESS] [Description of correction]
+- [UX] [Description of correction]
+- [COMPLEXITY] [Description of correction]
+
+**Quantitative:**
+- Messages: ~N
+- Commits: N
+- Corrections: N
+
+**Insights:**
+- [What was learned]
+```
 
 ## Critical Don'ts
 
@@ -140,5 +235,5 @@ npm run preview   # Preview production build
 - Never commit build artifacts outside gitignored directories
 - Never commit `.env` files
 - Never implement fallbacks or mock data outside test code
-- Never add Claude attribution to git commits
+- Never add Claude attribution to git commits or PR descriptions
 - Never call builds "production-ready"

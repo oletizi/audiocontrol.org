@@ -62,15 +62,39 @@ For simple sites like this, milestones are optional for isolated changes. Use th
 
 ---
 
+## Feature Lifecycle
+
+Features follow a status-directory lifecycle managed by Claude Code skills:
+
+```
+/feature-define    Interview to capture problem, scope, approach, tasks
+/feature-setup     Create branch, worktree, and docs from definition
+/feature-issues    Create GitHub issues from workplan
+/feature-implement Execute workplan tasks via sub-agents
+/feature-review    Code review of recent changes
+/feature-ship      Verify acceptance criteria, run tests, create PR
+/feature-complete  Move docs to 003-COMPLETE, update ROADMAP, close issues
+/feature-teardown  Remove worktree and branch
+```
+
+Run `/feature-help` to see the full lifecycle and current state.
+
 ## Feature Documentation
 
-For non-trivial features (new editor integrations, major redesigns), create a workplan:
+For non-trivial features, create a feature directory with status tracking:
 
 ```
-docs/<feature-slug>/
-├── prd.md          # What and why
-└── workplan.md     # How (implementation plan with GitHub issue links)
+docs/1.0/<status>/<feature-slug>/
+├── prd.md                    # What and why
+├── workplan.md               # How (implementation plan with GitHub issue links)
+├── README.md                 # Status table, links, overview
+└── implementation-summary.md # Post-completion report (optional)
 ```
+
+| Status | Directory | Meaning |
+|--------|-----------|---------|
+| In Progress | `docs/1.0/001-IN-PROGRESS/<slug>/` | Active development |
+| Complete | `docs/1.0/003-COMPLETE/<slug>/` | Merged and shipped |
 
 For simple changes (bug fixes, copy edits, minor styling), an issue description is sufficient.
 
