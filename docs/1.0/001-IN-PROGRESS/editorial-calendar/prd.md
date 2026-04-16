@@ -14,11 +14,11 @@ Content creation for audiocontrol.org is ad hoc with no schedule, no procedure, 
 ## Acceptance Criteria
 
 - A markdown-based editorial calendar (`docs/editorial-calendar.md`) tracks content through stages: idea, planned, drafting, review, published
-- A Claude Code skill (`/editorial`) manages the calendar: add topics, move through stages, show status
+- A set of Claude Code skills (`/editorial-*`) manage the calendar: add topics, move through stages, show status — one skill per action, composed like UNIX tools
 - Topic suggestions are driven by analytics data (search opportunities, content gaps, striking-distance queries from the `/analytics` skill)
 - Post scaffolding is automated: creating a directory, index.md with frontmatter, and a GitHub issue from a calendar entry
 - Published posts are tracked with publish date and linked to analytics performance
-- A feedback loop: `/editorial` can pull analytics for published posts and flag underperformers or suggest updates
+- A feedback loop: `/editorial-performance` can pull analytics for published posts and flag underperformers or suggest updates
 - Calendar entries distinguish between analytics-suggested and manually added topics
 
 ## Out of Scope
@@ -31,17 +31,20 @@ Content creation for audiocontrol.org is ad hoc with no schedule, no procedure, 
 
 ## Technical Approach
 
-### Skill Commands
+### Skills
 
-| Command | Description |
-|---------|-------------|
-| `suggest` | Pull analytics, identify content opportunities, add to Ideas |
-| `add <title>` | Manually add an entry to Ideas |
-| `plan <slug>` | Move from Ideas to Planned, set target keywords |
-| `draft <slug>` | Scaffold blog post and move to Drafting |
-| `publish <slug>` | Mark as Published with date |
-| `review` | Show calendar status across all stages |
-| `performance` | Pull analytics for published posts, flag underperformers |
+Each editorial action is a separate Claude Code skill, composed like UNIX tools. `/editorial-help` describes how they work together.
+
+| Skill | Phase | Description |
+|-------|-------|-------------|
+| `/editorial-help` | 1 | Show the editorial workflow and calendar status |
+| `/editorial-add` | 1 | Add an entry to the Ideas stage |
+| `/editorial-plan` | 1 | Move an entry to Planned, set target keywords |
+| `/editorial-review` | 1 | Show calendar status across all stages |
+| `/editorial-draft` | 2 | Scaffold blog post directory and move to Drafting |
+| `/editorial-publish` | 2 | Mark entry as Published with date, close GitHub issue |
+| `/editorial-suggest` | 3 | Pull analytics, identify content opportunities |
+| `/editorial-performance` | 3 | Pull analytics for published posts, flag underperformers |
 
 ### Calendar Format
 
@@ -49,8 +52,8 @@ Structured markdown file with tables per stage. Each entry includes: title, slug
 
 ### Analytics Integration
 
-- `suggest` invokes the analytics report script from automated-analytics and parses search opportunities and content gaps
-- `performance` invokes analytics for specific published post URLs and compares against expectations
+- `/editorial-suggest` invokes the analytics report script from automated-analytics and parses search opportunities and content gaps
+- `/editorial-performance` invokes analytics for specific published post URLs and compares against expectations
 - Calendar tracks which entries are analytics-suggested vs manually added
 
 ### Dependencies
