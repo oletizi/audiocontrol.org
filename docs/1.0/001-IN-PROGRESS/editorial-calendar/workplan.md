@@ -59,13 +59,13 @@
 
 **Deliverable:** `/editorial-draft` creates a ready-to-write blog post with all boilerplate
 
-- [ ] Create `/editorial-draft` skill: create blog post directory and index.md with frontmatter
-- [ ] Generate frontmatter from calendar entry metadata (title, description, target keywords)
-- [ ] Create a GitHub issue for the post with acceptance criteria
-- [ ] Move calendar entry to Drafting stage with link to issue
-- [ ] Create `/editorial-publish` skill: update calendar with publish date, close GitHub issue
-- [ ] Implement scaffold.ts library for post scaffolding
-- [ ] Follow existing blog post conventions from workflow-playbooks.md
+- [x] Create `/editorial-draft` skill: create blog post directory and index.md with frontmatter
+- [x] Generate frontmatter from calendar entry metadata (title, description, target keywords)
+- [x] Create a GitHub issue for the post with acceptance criteria
+- [x] Move calendar entry to Drafting stage with link to issue
+- [x] Create `/editorial-publish` skill: update calendar with publish date, close GitHub issue
+- [x] Implement scaffold.ts library for post scaffolding
+- [x] Follow existing blog post conventions from workflow-playbooks.md
 
 **Acceptance Criteria:**
 - `/editorial-draft post-slug` creates `src/pages/blog/<slug>/index.md` with correct frontmatter

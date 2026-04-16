@@ -14,5 +14,9 @@ export {
   writeCalendar,
   addEntry,
   planEntry,
+  draftEntry,
+  publishEntry,
   findEntry,
 } from './calendar.js';
+
+export { scaffoldBlogPost, type ScaffoldResult } from './scaffold.js';

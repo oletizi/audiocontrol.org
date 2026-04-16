@@ -262,6 +262,42 @@ export function planEntry(
   return entry;
 }
 
+/** Move an entry to the Drafting stage and record its GitHub issue. */
+export function draftEntry(
+  calendar: EditorialCalendar,
+  slug: string,
+  issueNumber: number,
+): CalendarEntry {
+  const entry = calendar.entries.find((e) => e.slug === slug);
+  if (!entry) {
+    throw new Error(`No calendar entry found with slug: ${slug}`);
+  }
+  if (entry.stage !== 'Planned') {
+    throw new Error(
+      `Entry "${slug}" is in stage "${entry.stage}" — must be in Planned to draft`,
+    );
+  }
+  entry.stage = 'Drafting';
+  entry.issueNumber = issueNumber;
+  return entry;
+}
+
+/** Mark an entry as Published with today's date. */
+export function publishEntry(
+  calendar: EditorialCalendar,
+  slug: string,
+  datePublished?: string,
+): CalendarEntry {
+  const entry = calendar.entries.find((e) => e.slug === slug);
+  if (!entry) {
+    throw new Error(`No calendar entry found with slug: ${slug}`);
+  }
+  entry.stage = 'Published';
+  entry.datePublished =
+    datePublished ?? new Date().toISOString().slice(0, 10);
+  return entry;
+}
+
 /** Find an entry by slug. */
 export function findEntry(
   calendar: EditorialCalendar,
