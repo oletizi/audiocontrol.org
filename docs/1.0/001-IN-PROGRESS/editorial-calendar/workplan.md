@@ -5,6 +5,15 @@
 **Milestone:** Editorial Calendar
 **GitHub Issue:** oletizi/audiocontrol.org#29
 
+## GitHub Tracking
+
+| Phase | Issue |
+|-------|-------|
+| Parent | oletizi/audiocontrol.org#29 |
+| Phase 1: Calendar Structure & Basic Management | oletizi/audiocontrol.org#40 |
+| Phase 2: Post Scaffolding | oletizi/audiocontrol.org#41 |
+| Phase 3: Analytics Integration | oletizi/audiocontrol.org#42 |
+
 ## Files Affected
 
 - `docs/editorial-calendar.md` — the calendar itself
