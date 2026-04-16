@@ -20,3 +20,10 @@ export {
 } from './calendar.js';
 
 export { scaffoldBlogPost, type ScaffoldResult } from './scaffold.js';
+
+export {
+  getContentSuggestions,
+  getPostPerformance,
+  type ContentSuggestion,
+  type PostPerformance,
+} from './suggest.js';

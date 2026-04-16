@@ -77,14 +77,16 @@
 
 **Deliverable:** Virtuous feedback loop — analytics drives topic suggestions and flags posts needing updates
 
-- [ ] Create `/editorial-suggest` skill: invoke analytics report, parse search opportunities and content gaps
-- [ ] Present suggestions to user with source data (impressions, position, CTR gap)
-- [ ] Allow user to accept suggestions into the Ideas stage (via `/editorial-add`)
-- [ ] Create `/editorial-performance` skill: pull analytics for published posts
-- [ ] Flag underperforming posts (declining traffic, high impressions but low CTR)
-- [ ] Surface "update recommended" entries with specific improvement suggestions
-- [ ] Implement suggest.ts library for analytics integration
-- [ ] Track analytics-suggested vs manually added entries in the calendar
+- [x] Create `/editorial-suggest` skill: invoke analytics report, parse search opportunities and content gaps
+- [x] Present suggestions to user with source data (impressions, position, CTR gap)
+- [x] Allow user to accept suggestions into the Ideas stage (via `/editorial-add`)
+- [x] Create `/editorial-performance` skill: pull analytics for published posts
+- [x] Flag underperforming posts (declining traffic, high impressions but low CTR)
+- [x] Surface "update recommended" entries with specific improvement suggestions
+- [x] Implement suggest.ts library for analytics integration
+- [x] Track analytics-suggested vs manually added entries in the calendar
+
+**Note:** Skills and library are implemented. Analytics functions throw descriptive errors until the automated-analytics feature (oletizi/audiocontrol.org#30) provides the data pipeline. The `source` field on CalendarEntry distinguishes `analytics` vs `manual` entries.
 
 **Acceptance Criteria:**
 - `/editorial-suggest` shows content opportunities derived from analytics data
