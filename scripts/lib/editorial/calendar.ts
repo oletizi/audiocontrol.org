@@ -21,8 +21,8 @@
  *
  * ## Published
  *
- * | Slug | Title | Description | Keywords | Published | Issue | Source |
- * |------|-------|-------------|----------|-----------|-------|--------|
+ * | Slug | Title | Description | Keywords | Source | Published | Issue |
+ * |------|-------|-------------|----------|--------|-----------|-------|
  * ```
  *
  * Published entries have two extra columns: Published (date) and Issue (#number).
@@ -65,6 +65,10 @@ function isSeparator(line: string): boolean {
   return /^\|[\s:-]+\|/.test(line);
 }
 
+function isStage(name: string): name is Stage {
+  return (STAGES as readonly string[]).includes(name);
+}
+
 function parseEntries(lines: string[], stage: Stage): CalendarEntry[] {
   const entries: CalendarEntry[] = [];
 
@@ -91,7 +95,7 @@ function parseEntries(lines: string[], stage: Stage): CalendarEntry[] {
         targetKeywords: cells[3]
           ? cells[3].split(',').map((k) => k.trim()).filter(Boolean)
           : [],
-        source: (cells[4] === 'analytics' ? 'analytics' : 'manual') as CalendarEntry['source'],
+        source: cells[4] === 'analytics' ? 'analytics' : 'manual',
       };
 
       // Published stage has extra columns
@@ -134,7 +138,7 @@ export function parseCalendar(markdown: string): EditorialCalendar {
     if (stageMatch) {
       flushStage();
       const name = stageMatch[1].trim();
-      currentStage = STAGES.includes(name as Stage) ? (name as Stage) : null;
+      currentStage = isStage(name) ? name : null;
     } else if (currentStage) {
       stageLines.push(line);
     }
@@ -234,6 +238,13 @@ export function addEntry(
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
+  const existing = calendar.entries.find((e) => e.slug === slug);
+  if (existing) {
+    throw new Error(
+      `Entry with slug "${slug}" already exists in stage "${existing.stage}"`,
+    );
+  }
+
   const entry: CalendarEntry = {
     slug,
     title,
@@ -256,6 +267,11 @@ export function planEntry(
   const entry = calendar.entries.find((e) => e.slug === slug);
   if (!entry) {
     throw new Error(`No calendar entry found with slug: ${slug}`);
+  }
+  if (entry.stage !== 'Ideas') {
+    throw new Error(
+      `Entry "${slug}" is in stage "${entry.stage}" — must be in Ideas to plan`,
+    );
   }
   entry.stage = 'Planned';
   entry.targetKeywords = keywords;
