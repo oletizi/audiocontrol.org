@@ -5,6 +5,16 @@
 **Milestone:** Automated Analytics
 **GitHub Issue:** oletizi/audiocontrol.org#30
 
+## GitHub Tracking
+
+| Phase | Issue |
+|-------|-------|
+| Parent | oletizi/audiocontrol.org#30 |
+| Phase 1: GA4 Data Pipeline | oletizi/audiocontrol.org#36 |
+| Phase 2: Search Console Integration | oletizi/audiocontrol.org#37 |
+| Phase 3: Actionable Report & Recommendations | oletizi/audiocontrol.org#38 |
+| Phase 4: Analytics Claude Code Skill | oletizi/audiocontrol.org#39 |
+
 ## Files Affected
 
 - `scripts/analytics-report.ts` — main entry point script
