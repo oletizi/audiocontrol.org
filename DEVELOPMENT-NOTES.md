@@ -4,6 +4,42 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-15: Editorial Calendar — Full Implementation (Phases 1-3)
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar
+
+**Goal:** Implement all three phases of the editorial calendar feature: calendar structure, post scaffolding, and analytics integration.
+
+**Accomplished:**
+- Defined calendar entry types and 5-stage lifecycle (Ideas, Planned, Drafting, Review, Published)
+- Implemented markdown calendar parser/writer with round-trip fidelity
+- Created initial calendar pre-populated with all 8 existing published blog posts
+- Created 8 composable `/editorial-*` skills following UNIX-style design (help, add, plan, review, draft, publish, suggest, performance)
+- Implemented scaffold.ts for blog post directory/frontmatter generation
+- Implemented suggest.ts with analytics integration types (throws until #30 is ready)
+- Updated PRD from monolithic `/editorial` to composable `/editorial-*` skill design
+- All phases marked complete; Phase 3 blocked on automated-analytics (#30) for live data
+
+**Didn't Work:**
+- N/A
+
+**Course Corrections:**
+- [PROCESS] User redirected from implementing skills immediately to updating PRD/workplan first — design before code
+- [PROCESS] User requested composable `/editorial-*` skills instead of monolithic `/editorial` — better matches existing `/feature-*` pattern
+
+**Quantitative:**
+- Messages: ~15
+- Commits: 3 (one per phase)
+- Corrections: 2
+- Files created: 12
+
+**Insights:**
+- The UNIX-style composable skill pattern (small, focused, composable) is a strong fit for editorial workflows — each skill does one thing and the user chains them
+- Designing the skill interface (SKILL.md) before the library code would have been more efficient — we built the library first and then pivoted the skill design
+- Phase 3 analytics integration is cleanly separable: types and skill definitions are ready, only the data pipeline is missing
+
+---
+
 ## 2026-04-15: Infrastructure Port — Project Management & Agent Process
 ### Feature: infrastructure
 
