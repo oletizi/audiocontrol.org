@@ -17,7 +17,7 @@ import {
 } from '../../scripts/lib/editorial/index.js';
 import {
   auditCrossLinks,
-  extractBlogLinksFromDescription,
+  extractAudioControlLinksFromText,
   extractYouTubeLinksFromMarkdown,
   slugFromBlogUrl,
 } from '../../scripts/lib/editorial/crosslinks.js';
@@ -185,22 +185,24 @@ Again: https://youtu.be/abcdefghijk
   });
 });
 
-describe('extractBlogLinksFromDescription', () => {
-  it('extracts audiocontrol.org/blog/ URLs', () => {
+describe('extractAudioControlLinksFromText', () => {
+  it('extracts any audiocontrol.org URL', () => {
     const desc = `
 Full article: https://audiocontrol.org/blog/scsi-over-wifi-raspberry-pi-bridge/
 
-Also see: https://www.audiocontrol.org/blog/roland-s-series-samplers
+Try the tool: https://audiocontrol.org/roland/s330/editor
+
+Also: https://www.audiocontrol.org/blog/roland-s-series-samplers
 `;
-    const urls = extractBlogLinksFromDescription(desc);
-    expect(urls).toHaveLength(2);
+    const urls = extractAudioControlLinksFromText(desc);
+    expect(urls).toHaveLength(3);
     expect(urls).toContain('https://audiocontrol.org/blog/scsi-over-wifi-raspberry-pi-bridge/');
+    expect(urls).toContain('https://audiocontrol.org/roland/s330/editor');
     expect(urls).toContain('https://www.audiocontrol.org/blog/roland-s-series-samplers');
   });
 
-  it('ignores audiocontrol.org URLs that are not /blog/', () => {
-    const desc = 'https://audiocontrol.org/roland/s330/editor';
-    expect(extractBlogLinksFromDescription(desc)).toEqual([]);
+  it('returns empty when no audiocontrol.org URLs are present', () => {
+    expect(extractAudioControlLinksFromText('no links here')).toEqual([]);
   });
 });
 
@@ -242,6 +244,7 @@ describe('auditCrossLinks', () => {
       fetchBlogMarkdown: (slug) => blogBodies[slug] ?? null,
       fetchVideoDescription: async () =>
         'Read more at https://audiocontrol.org/blog/s330-post/',
+      fetchToolPage: async () => null,
     });
     const postAudit = report.entries.find((a) => a.entry.slug === 's330-post');
     const videoAudit = report.entries.find((a) => a.entry.slug === 's330-video');
@@ -256,6 +259,7 @@ describe('auditCrossLinks', () => {
       calendar,
       fetchBlogMarkdown: (slug) => blogBodies[slug] ?? null,
       fetchVideoDescription: async () => 'No blog links here.',
+      fetchToolPage: async () => null,
     });
     const videoAudit = report.entries.find((a) => a.entry.slug === 's330-video');
     // The blog post links TO the video but the video does NOT link BACK to the post.
@@ -268,6 +272,7 @@ describe('auditCrossLinks', () => {
       calendar,
       fetchBlogMarkdown: () => null,
       fetchVideoDescription: async () => '',
+      fetchToolPage: async () => null,
     });
     const postAudit = report.entries.find((a) => a.entry.slug === 's330-post');
     expect(postAudit?.errors.length).toBeGreaterThan(0);
@@ -294,6 +299,7 @@ describe('auditCrossLinks', () => {
       calendar: cal,
       fetchBlogMarkdown: () => null,
       fetchVideoDescription: async () => '',
+      fetchToolPage: async () => null,
     });
     const toolAudit = report.entries.find((a) => a.entry.slug === 's330-editor');
     expect(toolAudit?.outbound).toEqual([]);
@@ -321,6 +327,7 @@ describe('auditCrossLinks', () => {
       calendar: cal,
       fetchBlogMarkdown: () => null,
       fetchVideoDescription: async () => '',
+      fetchToolPage: async () => null,
     });
     expect(report.entries[0].errors.join(' ')).toMatch(/no contentUrl/);
   });
