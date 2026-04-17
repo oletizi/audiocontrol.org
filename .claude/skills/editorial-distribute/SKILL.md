@@ -14,10 +14,17 @@ Prompt the user one field at a time (do NOT expect positional arguments):
 
 1. **Slug** — the post being shared. Offer a list of Published entries as a hint if the user doesn't know the slug.
 2. **Platform** — one of `reddit`, `youtube`, `linkedin`, `instagram`. Reject any other value.
-3. **URL** — the full URL where the post was shared (e.g. the Reddit thread, YouTube video, LinkedIn post).
-4. **Notes** — optional free-form context (e.g. `r/synthdiy`, `personal channel`). Blank is fine.
+3. **Channel** — sub-channel within the platform:
+   - Reddit: subreddit in `r/name` form (e.g. `r/synthdiy`)
+   - YouTube: channel handle
+   - LinkedIn: company/page slug, or `personal` for your profile
+   - Optional — blank is fine if the share has no sub-channel identity
+4. **URL** — the full URL where the post was shared (e.g. the Reddit thread, YouTube video, LinkedIn post).
+5. **Notes** — optional free-form context. Blank is fine.
 
-If the user provides all four as a single argument string, parse it and skip the prompts. Otherwise ask each missing field.
+If the user provides all fields as a single argument string, parse it and skip the prompts. Otherwise ask each missing field.
+
+For Reddit specifically: `/editorial-reddit-sync` will pick up new submissions from the API automatically, so you often don't need to run this skill manually for Reddit shares. Use it for YouTube, LinkedIn, Instagram, or when you're backfilling.
 
 ## Steps
 
@@ -28,9 +35,9 @@ If the user provides all four as a single argument string, parse it and skip the
 3. **Validate the platform**: must be one of `reddit`, `youtube`, `linkedin`, `instagram`
 4. **Collect remaining fields** via prompts (URL, optional notes)
 5. **Default the share date** to today (YYYY-MM-DD). Allow the user to override if they're backfilling.
-6. **Append the record** to the `## Distribution` section:
+6. **Append the record** to the `## Distribution` section. The writer handles the column layout automatically — if any record now uses a channel, a `Channel` column appears in the table:
    ```
-   | slug | platform | url | YYYY-MM-DD | notes |
+   | slug | platform | url | YYYY-MM-DD | r/channel | notes |
    ```
 7. **Write the calendar**: Write `docs/editorial-calendar.md` with the new row appended
 8. **Report**: Confirm the record was added and show the row

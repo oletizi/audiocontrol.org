@@ -27,6 +27,16 @@ export {
 export { scaffoldBlogPost, type ScaffoldResult } from './scaffold.js';
 
 export {
+  channelsPath,
+  readChannels,
+  getChannelsForTopics,
+  normalizeChannel,
+  diffShared,
+  alreadyShared,
+  type ChannelEntry,
+} from './channels.js';
+
+export {
   getContentSuggestions,
   getPostPerformance,
   getSocialReferrals,

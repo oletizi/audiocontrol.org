@@ -162,36 +162,33 @@
 **Core (data model + curated opportunities):**
 
 - [x] Extend `types.ts` with `channel?: string` on DistributionRecord and `topics?: string[]` on CalendarEntry
-- [ ] Extend `calendar.ts` parser/writer:
-  - Distribution section gains a `Channel` column (optional — omit when no record in the section uses it, for cleaner diffs)
-  - Calendar entry tables gain an optional Topics column following Keywords, rendered only when any entry in the stage has topics
-- [ ] Add a new `channels.ts` library module — loads `docs/editorial-channels.json`, exposes `getChannelsForTopics(topics: string[]): Map<Platform, string[]>` and `diffShared(candidates, recorded)` that filters out already-shared channels using normalized case-insensitive subreddit comparison
-- [ ] Update `/editorial-distribute` skill to prompt for channel after platform
-- [ ] Update `/editorial-social-review` skill to show per-post subreddit count when that post has reddit distributions
-- [ ] Update `/editorial-add` / `/editorial-plan` prompts to collect topics (optional) at plan time
-- [ ] Update `/editorial-help` to cover the new skills
+- [x] Extend `calendar.ts` parser/writer — header-driven, Channel column on Distribution, Topics column on stages (both optional, emitted only when any row uses them)
+- [x] Add `channels.ts` library module — `readChannels`, `getChannelsForTopics`, `normalizeChannel`, `diffShared`, `alreadyShared` with case-insensitive subreddit normalization
+- [x] Update `/editorial-distribute` skill to prompt for channel after platform
+- [x] Update `/editorial-social-review` skill to show per-post subreddit count when that post has reddit distributions
+- [x] Update `/editorial-plan` prompt to collect topics (optional) at plan time
+- [x] Update `/editorial-help` to cover the new skills
 
 **Tier 1 — Reddit API read-only sync:**
 
-- [ ] Add `scripts/lib/reddit/auth.ts` — loads `~/.config/audiocontrol/reddit.json` (client_id, client_secret, username, password for a script-app OAuth flow), exchanges for a bearer token, caches it
-- [ ] Add `scripts/lib/reddit/client.ts` — minimal Reddit API wrapper with `getUserSubmissions(username, limit)` returning `{permalink, subreddit, url, createdUtc, title}`
-- [ ] Create `/editorial-reddit-sync` skill — fetches user submissions, filters to ones whose `url` or `selftext` references `audiocontrol.org/blog/<slug>/`, extracts slug, upserts DistributionRecords (platform=reddit, channel=r/<subreddit>, url=permalink, dateShared=createdUtc date)
-- [ ] Dedup on (slug, platform, channel, url) so repeated syncs are idempotent
-- [ ] Document reddit.json credential setup in CONTENT-CALENDAR.md (how to create a Reddit script app)
+- [x] Add `scripts/lib/reddit/auth.ts` — script-app OAuth (password grant), in-memory token cache
+- [x] Add `scripts/lib/reddit/client.ts` — `getUserSubmissions` with pagination
+- [x] Create `/editorial-reddit-sync` skill — pulls submissions, matches by URL, upserts DistributionRecords idempotently
+- [x] Dedup on (slug, platform, normalized channel, url) so repeated syncs are idempotent
+- [x] Document reddit.json credential setup in CONTENT-CALENDAR.md
 
 **Tier 2 — Subreddit enrichment:**
 
-- [ ] Extend `scripts/lib/reddit/client.ts` with `getSubredditInfo(name)` hitting `/r/<name>/about.json` → `{subscribers, activeUsers, over18, publicDescription, submissionType, wikiEnabled, selfPromoHints}`
-- [ ] `selfPromoHints` extracted heuristically from the subreddit's public description / rules JSON (substring match for "self-promo", "promotion", "1 in 10", etc.); not authoritative, just a signal
-- [ ] Create `/editorial-reddit-opportunities <slug>` — reads topics, consults curated map, subtracts already-distributed subreddits using case-insensitive channel comparison, enriches remaining candidates with `getSubredditInfo`, reports the gap with subscriber count + self-promo hint
+- [x] Extend `scripts/lib/reddit/client.ts` with `getSubredditInfo(name)` — subscribers, active users, self-promo hints extracted heuristically
+- [x] Create `/editorial-reddit-opportunities <slug>` — already-shared (do-not-duplicate) + unshared candidates enriched with live metadata
 
 **Tests:**
 
-- [ ] Channel round-trip in Distribution parser/writer
-- [ ] Topics round-trip in stage tables
-- [ ] `getChannelsForTopics` + `diffShared` with case-insensitive matching
-- [ ] Backwards-compat parsing of pre-Phase-5 Distribution rows (no Channel column)
-- [ ] Reddit client: mock fetch for `getUserSubmissions` and `getSubredditInfo` in tests (tests use fixture responses; real API calls happen only from skills)
+- [x] Channel round-trip in Distribution parser/writer
+- [x] Topics round-trip in stage tables
+- [x] `getChannelsForTopics`, `diffShared`, `alreadyShared` with case-insensitive matching
+- [x] Backwards-compat parsing of pre-Phase-5 Distribution rows (no Channel column) and pre-Phase-5 stage tables (no Topics column)
+- [x] `normalizeChannel` across various URL/slug forms
 
 **Acceptance Criteria:**
 - `/editorial-distribute` captures a channel (e.g. `r/synthdiy`) as a first-class field, not free-text notes

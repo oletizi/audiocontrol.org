@@ -58,8 +58,17 @@ The editorial workflow is managed through composable Claude Code skills — one 
 
 | Skill | Purpose |
 |-------|---------|
-| `/editorial-distribute` | Record that a published post was shared on Reddit / YouTube / LinkedIn / Instagram |
-| `/editorial-social-review` | Show a matrix of published posts vs platforms |
+| `/editorial-distribute` | Record that a published post was shared on Reddit / YouTube / LinkedIn / Instagram (captures sub-channel e.g. subreddit) |
+| `/editorial-social-review` | Matrix of published posts vs platforms — subreddit count for the Reddit column |
+
+### Reddit cross-posting
+
+| Skill | Purpose |
+|-------|---------|
+| `/editorial-reddit-sync` | Pull recent Reddit submissions via the API and upsert DistributionRecords automatically |
+| `/editorial-reddit-opportunities <slug>` | Show which subreddits a post has already been shared to (don't duplicate) and unshared candidates enriched with live metadata |
+
+Reddit credentials live at `~/.config/audiocontrol/reddit.json`. See [Reddit Setup](#reddit-setup) below.
 
 ### Status and help
 
@@ -97,6 +106,49 @@ The editorial workflow is managed through composable Claude Code skills — one 
 # See metrics for all published posts
 # Posts needing attention are flagged with specific recommendations
 ```
+
+### Cross-posting to Reddit without duplicating
+
+```
+/editorial-reddit-sync
+# Pulls your recent Reddit submissions, matches them to blog posts by URL,
+# and upserts DistributionRecords automatically. Run this before the
+# opportunities skill to make sure it has a current view.
+
+/editorial-reddit-opportunities claude-vs-codex-claude-perspective
+# Shows: "Already shared to: r/ClaudeAI (2026-04-15) — DO NOT DUPLICATE"
+# Then: unshared candidates with subscriber counts and self-promo hints
+```
+
+## Reddit Setup
+
+The Reddit integration needs a Reddit "script" app and a local credentials file.
+
+1. Go to https://www.reddit.com/prefs/apps and click **create another app**
+2. Choose type **script**
+3. Set the redirect URI to `http://localhost:8080` (unused for script apps; required by the form)
+4. After creation, note the **client ID** (string under the app name, next to "personal use script") and the **secret**
+5. Create `~/.config/audiocontrol/reddit.json`:
+   ```json
+   {
+     "clientId": "...",
+     "clientSecret": "...",
+     "username": "your-reddit-username",
+     "password": "your-reddit-password",
+     "userAgent": "audiocontrol.org:editorial-sync:v1 (by /u/your-reddit-username)"
+   }
+   ```
+6. Verify with `/editorial-reddit-sync` — it should list your recent submissions and report any that matched blog posts
+
+**Security:** the file contains your Reddit password. Keep it out of version control (gitignored by default — it lives outside the repo). Rotate the password if leaked.
+
+**Rate limits:** Reddit allows 60 requests per minute with a User-Agent. Our skills stay well under that. Avoid running `/editorial-reddit-sync` in a tight loop.
+
+## Curated cross-posting map
+
+`docs/editorial-channels.json` maps topic tags to recommended distribution channels (subreddits today; room for other platforms later). Edit this file directly to add topics or update subreddits. Each entry can carry an optional `note` with community rules or submission hints.
+
+The `/editorial-reddit-opportunities` skill reads this file, collects candidates for a post's topics, subtracts already-shared subreddits (case-insensitive comparison — `r/SynthDIY` and `/r/synthdiy` match), enriches remaining candidates with subscriber count from Reddit's API, and reports the gap.
 
 ## Analytics Integration
 
