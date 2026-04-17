@@ -24,9 +24,12 @@ If the file is missing, the skill throws with a clear error telling the user how
 
 1. **Fetch submissions**: call `getUserSubmissions(undefined, 200)` from `scripts/lib/reddit/client.ts` — reads the username from config and returns up to 200 of the user's most recent submissions. No authentication step.
 3. **Read the calendar** via `readCalendar(process.cwd())`.
-4. **Match each submission to a blog post**: a submission matches a Published entry if its `url` field contains `audiocontrol.org/blog/<slug>/` or if its `selftext` links to that path. Extract the slug from the URL.
+4. **Match each submission to a Published calendar entry**:
+   - **Blog match**: submission `url` or `selftext` contains `audiocontrol.org/blog/<slug>/` where `<slug>` exists as a Published blog entry. Extract the slug from the URL.
+   - **YouTube match**: submission `url` is a YouTube URL (watch/shorts/youtu.be) whose video ID matches the `contentUrl` of a Published YouTube entry. Use `extractVideoId` from `scripts/lib/youtube/client.ts` to normalize both sides.
+   - A submission may match at most one entry. Prefer blog match if both somehow apply. Unmatched submissions are reported but not recorded.
 5. **Build DistributionRecord for each match**:
-   - `slug`: extracted slug
+   - `slug`: the matched entry's slug (blog slug, or YouTube entry slug)
    - `platform`: `reddit`
    - `channel`: the submission's `subreddit` field (already canonical `r/<name>`)
    - `url`: the submission's `permalink` (the reddit.com thread URL)
