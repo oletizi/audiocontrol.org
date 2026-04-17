@@ -171,7 +171,7 @@ export async function auditCrossLinks(
           outbound.push({ url, resolvedSlug, resolved: resolvedSlug !== null });
         }
       }
-    } else if (effectiveContentType(entry) === 'youtube') {
+    } else if (entryType === 'youtube') {
       if (!entry.contentUrl) {
         errors.push(`YouTube entry ${entry.slug} has no contentUrl`);
       } else {
@@ -179,8 +179,9 @@ export async function auditCrossLinks(
         try {
           desc = await fetchVideoDescription(entry.contentUrl);
         } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
           errors.push(
-            `fetching description for ${entry.slug}: ${(err as Error).message}`,
+            `fetching description for ${entry.slug}: ${message}`,
           );
         }
         if (desc !== null) {
