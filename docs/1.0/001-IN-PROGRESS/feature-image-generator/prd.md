@@ -27,11 +27,13 @@ This feature adds AI-generated backgrounds (via DALL-E 3 and FLUX) and wraps the
 - Claude Code `/feature-image` skill that reads page frontmatter and drives the pipeline
 - Provider comparison workflow (generate from both, pick the best)
 
-### In Scope (Extended — Phases 6-10)
+### In Scope (Extended — Phases 6-11)
 
 - Astro dev-only preview gallery for interactive prompt + filter iteration, with persistent log of attempts
+- Two-way async workflow pipeline between Claude Code skills and the gallery (agent enqueues → user iterates → user decides → agent applies)
 - Expanded filter library: analog-display (chromatic aberration, bloom, lens distortion), 8-bit (dither, posterize, gradient-map), cinematic (letterbox, light-leak, halftone), and utility (sharpen, contrast, threshold, invert, duotone) primitives
 - New presets combining the new primitives (e.g., `vhs`, `8-bit`, `cinematic`, `monitor`)
+- Prompt template library with fitness-ranked selection, lineage tracking, and "save as template" / fork mechanics — cultivates a shared visual identity by artificial selection over time
 
 ### Out of Scope
 

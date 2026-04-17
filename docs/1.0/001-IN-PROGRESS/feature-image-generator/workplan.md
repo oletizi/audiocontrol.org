@@ -226,6 +226,54 @@ Filter and prompt iteration is currently CLI-driven and one-shot. A web UI with 
 - [ ] All filters from Phases 7-10 appear in the gallery filter selector
 - [ ] Documentation lists every filter with parameters and a short example
 
+## Phase 11: Prompt Library & Fitness-Ranked Selection (#63)
+
+**Deliverable:** A curated library of prompt templates with fitness scores, lineage, and selection mechanisms that let a shared visual identity evolve over time instead of being reinvented per post.
+
+### Motivation
+
+Every generation right now starts from either a hand-typed prompt or one the agent proposes from scratch. Reusable, on-brand prompts decay as session memory fades. This phase establishes a persistent, ranked library of templates that seeds every new workflow and lets good prompts be cultivated by artificial selection: rate generations, fitness rolls up to templates, forking creates variants, low-fitness templates get deprioritized.
+
+### Concepts
+
+- **Template** — a named prompt with metadata (description, tags, default preset/provider, link to parent template, back-references to successful generations)
+- **Fitness** — rolling aggregate of 1-5 user scores on generations that used the template (with a usage-count minimum to discount tiny-sample winners)
+- **Lineage** — `parent` field on each template; supports a visible tree view of how the library evolved
+- **Selection pressure** — gallery and `/feature-image-blog` weight suggestions by fitness × recency; low-fitness templates archive but stay forkable
+
+### Tasks
+
+- [ ] Define template schema (`scripts/feature-image/templates.ts`): `{ slug, name, description, tags, prompt, preset?, provider?, parent?, archived?, examples: logEntryId[] }`
+- [ ] Store library at `docs/feature-image-prompts.yaml` (hand-editable, checked in)
+- [ ] Add `rating` field (1-5) to `LogEntry` schema; extend `POST /api/dev/feature-image/log` to accept rating updates
+- [ ] Compute template fitness: `avg(ratings of generations that used this template, weighted by recency)` with a minimum usage count before a template can appear in the default picker
+- [ ] API endpoints: `GET /api/dev/feature-image/templates`, `POST /api/dev/feature-image/templates` (create/update/fork/archive)
+- [ ] Gallery UI:
+  - Template picker dropdown on the generate form (pre-fills prompt + preset + provider)
+  - Star-rating widget on each history entry (1-5)
+  - "Save as template" action on an approved entry (creates a new library entry; user names it)
+  - "Fork this template" action on a template (clones with parent reference; opens for edit)
+  - Template list view with fitness scores and lineage indicators
+- [ ] Skill `/feature-image-prompts` — list templates by tag / fitness / lineage
+- [ ] Update `/feature-image-blog` to auto-suggest top-N templates matching the post's tags (auto-tag derived from blog index `tags: []`, user can override)
+- [ ] Seed library from the three applied generations on main (agent-workflow, claude-vs-codex-claude / -codex, reverse-engineering) with initial fitness derived from their approval status
+
+### Acceptance Criteria
+
+- [ ] `docs/feature-image-prompts.yaml` exists with ≥3 seed templates referencing real log entries
+- [ ] Gallery template picker pre-fills the form; submitting the form records which template was used so its fitness can update
+- [ ] Rating a generation updates the corresponding template's fitness
+- [ ] Forking a template creates a new one with `parent` set; parent chain is visible in the template list
+- [ ] `/feature-image-blog` suggests matching templates from the library when tags overlap
+- [ ] Archiving a template hides it from default suggestions but it stays forkable
+
+### Deferred to Future Phases
+
+- AI-assisted crossover (Claude combines two templates into a new one)
+- Pairwise tournament UI (user picks between two generations; ELO-style rating)
+- Auto-archival when fitness drops below threshold for N consecutive generations
+- Per-site-section template sets (e.g., different libraries for blog vs. device pages)
+
 ## File Structure
 
 ```
