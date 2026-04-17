@@ -81,6 +81,37 @@
 - [ ] Default provider recommendation is documented
 - [ ] Skill definition includes usage examples and prompt guidance
 
+## Phase 5: Post-Processing Filter Pipeline (#47)
+
+**Deliverable:** Composable filter pipeline that applies a consistent visual style to AI-generated images
+
+### Motivation
+
+AI-generated backgrounds vary widely in mood, palette, and grain even with carefully tuned prompts. A deterministic post-processing pipeline gives every site image a cohesive look without forcing the prompt to do all the work. It also lets us combine wildly different prompts (geometric, photographic, pixel-art) into a unified visual brand.
+
+### Tasks
+
+- [ ] Define `Filter` interface (`scripts/feature-image/filters/types.ts`)
+- [ ] Implement primitive filters using sharp:
+  - [ ] `scanlines` — composite horizontal CRT scanline overlay
+  - [ ] `vignette` — radial darkening toward edges
+  - [ ] `grain` — film grain noise overlay
+  - [ ] `grade` — color grading toward teal/amber palette via `linear()`/`modulate()`
+  - [ ] `chromatic-aberration` — slight RGB channel offset
+- [ ] Implement filter chain executor (apply N filters in order)
+- [ ] Add named presets: `retro-crt`, `subtle`, `none`
+- [ ] CLI flags: `--filters scanlines,vignette` and `--preset retro-crt`
+- [ ] Skill: pick preset based on page topic or accept override
+- [ ] Document presets with example before/after images
+
+### Acceptance Criteria
+
+- [ ] Each primitive filter is independently invocable and tested
+- [ ] At least one named preset exists and produces a visually consistent result across 3+ different source images
+- [ ] CLI supports both ad-hoc filter chains and named presets
+- [ ] Generated images for 3 different blog posts share visual identity when same preset is applied
+- [ ] `--preset none` (or omitting filters) bypasses post-processing entirely
+
 ## File Structure
 
 ```
@@ -89,6 +120,14 @@ scripts/feature-image/
 ├── providers/
 │   ├── dalle.ts      # DALL-E 3 implementation
 │   └── flux.ts       # FLUX implementation
+├── filters/          # Phase 5: post-processing filters
+│   ├── types.ts      # Filter interface
+│   ├── scanlines.ts
+│   ├── vignette.ts
+│   ├── grain.ts
+│   ├── grade.ts
+│   ├── chromatic-aberration.ts
+│   └── presets.ts    # Named filter chains
 ├── overlay.ts        # Text overlay compositing
 └── cli.ts            # CLI entry point
 

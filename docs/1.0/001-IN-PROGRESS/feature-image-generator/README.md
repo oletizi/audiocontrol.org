@@ -22,3 +22,4 @@ Automates the creation of feature images for blog posts, pages, and social media
 | 2. Text Overlay & Compositing | #33 | Complete |
 | 3. Claude Code Skill | #34 | Complete |
 | 4. Bake-off & Polish | #35 | Not Started |
+| 5. Post-Processing Filter Pipeline | #47 | Not Started |
