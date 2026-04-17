@@ -6,6 +6,8 @@ export interface ScanlinesOptions {
   opacity?: number;
   /** Height of one scanline cycle in pixels (line + gap) */
   cycle?: number;
+  /** Thickness of the dark line within the cycle, in pixels */
+  lineHeight?: number;
 }
 
 /**
@@ -14,6 +16,7 @@ export interface ScanlinesOptions {
 export function scanlines(opts: ScanlinesOptions = {}): Filter {
   const opacity = opts.opacity ?? 0.35;
   const cycle = opts.cycle ?? 3;
+  const lineHeight = opts.lineHeight ?? 1;
 
   return {
     name: 'scanlines',
@@ -28,7 +31,7 @@ export function scanlines(opts: ScanlinesOptions = {}): Filter {
       const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <pattern id="lines" patternUnits="userSpaceOnUse" width="${cycle}" height="${cycle}">
-      <rect width="${cycle}" height="1" fill="rgba(0,0,0,${opacity})"/>
+      <rect width="${cycle}" height="${lineHeight}" fill="rgba(0,0,0,${opacity})"/>
     </pattern>
   </defs>
   <rect width="100%" height="100%" fill="url(#lines)"/>

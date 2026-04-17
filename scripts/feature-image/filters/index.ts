@@ -3,10 +3,11 @@ import { scanlines } from './scanlines.js';
 import { vignette } from './vignette.js';
 import { grain } from './grain.js';
 import { grade } from './grade.js';
+import { phosphor } from './phosphor.js';
 
 export type { Filter } from './types.js';
 export { applyFilters } from './types.js';
-export { scanlines, vignette, grain, grade };
+export { scanlines, vignette, grain, grade, phosphor };
 
 /**
  * Registry of named filters with default options.
@@ -17,6 +18,7 @@ export const FILTER_REGISTRY: Record<string, () => Filter> = {
   vignette: () => vignette(),
   grain: () => grain(),
   grade: () => grade(),
+  phosphor: () => phosphor(),
 };
 
 /**
@@ -31,11 +33,12 @@ export const PRESETS: Record<string, Filter[]> = {
     grain({ amount: 0.04 }),
   ],
 
-  // Retro CRT: scanlines + vignette + grain + cool grade
+  // Retro CRT: phosphor blur + thick scanlines + vignette + grain + cool grade
   'retro-crt': [
     grade({ saturation: 0.9, channelMultipliers: [0.95, 1.0, 1.05] }),
+    phosphor({ sigma: 1.4 }),
     vignette({ amount: 0.55, innerStop: 0.5 }),
-    scanlines({ opacity: 0.3, cycle: 3 }),
+    scanlines({ opacity: 0.4, cycle: 5, lineHeight: 2 }),
     grain({ amount: 0.06 }),
   ],
 
@@ -50,10 +53,11 @@ export const PRESETS: Record<string, Filter[]> = {
     grain({ amount: 0.05 }),
   ],
 
-  // Heavy CRT — more aggressive scanlines and grain for stylized shots
+  // Heavy CRT — pronounced phosphor bloom, thick scanlines, heavy vignette
   'heavy-crt': [
     grade({ saturation: 1.05 }),
-    scanlines({ opacity: 0.5, cycle: 4 }),
+    phosphor({ sigma: 2.0 }),
+    scanlines({ opacity: 0.55, cycle: 6, lineHeight: 3 }),
     vignette({ amount: 0.7, innerStop: 0.45 }),
     grain({ amount: 0.1 }),
   ],
