@@ -1,5 +1,6 @@
 import { writeFileSync, readFileSync, mkdirSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
+import { homedir } from 'os';
 import { fileURLToPath } from 'url';
 import { parseArgs } from 'util';
 import type { ImageProvider, ProviderName, OutputFormat } from './types.js';
@@ -10,6 +11,24 @@ import { compositeImage } from './overlay.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, '..', '..');
+
+/** Load API keys from ~/.config/audiocontrol/ if env vars aren't already set. */
+function loadApiKeysFromConfig(): void {
+  const configDir = join(homedir(), '.config', 'audiocontrol');
+  const keyFiles: Array<[string, string]> = [
+    ['OPENAI_API_KEY', 'openai-key.txt'],
+    ['BFL_API_KEY', 'flux-key.txt'],
+  ];
+  for (const [envVar, fileName] of keyFiles) {
+    if (process.env[envVar]) continue;
+    const keyPath = join(configDir, fileName);
+    if (existsSync(keyPath)) {
+      process.env[envVar] = readFileSync(keyPath, 'utf-8').trim();
+    }
+  }
+}
+
+loadApiKeysFromConfig();
 
 function createProvider(name: ProviderName): ImageProvider {
   switch (name) {
