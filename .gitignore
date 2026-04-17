@@ -30,3 +30,6 @@ public/images/generated/
 
 # feature-image preview gallery iteration history
 .feature-image-history.jsonl
+
+# feature-image workflow pipeline between skills and the gallery
+.feature-image-pipeline.jsonl

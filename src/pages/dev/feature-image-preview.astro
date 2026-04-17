@@ -83,15 +83,38 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     #status { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; min-height: 1.5em; color: #a0aab4; }
     #status.working { color: #2fb8a8; }
     #status.error { color: #e47373; }
+    .workflow-panel { background: #1c2028; border: 1px solid #2a3038; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
+    .workflow-panel h3 { margin: 0 0 0.75rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #2fb8a8; }
+    .workflow-panel.empty h3 { color: #6b7280; }
+    .workflow-item { border-left: 3px solid #2a3038; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; background: #141820; border-radius: 0 4px 4px 0; cursor: pointer; transition: border-color 0.15s; }
+    .workflow-item:hover { border-left-color: #2fb8a8; }
+    .workflow-item.active { border-left-color: #2fb8a8; background: rgba(47, 184, 168, 0.08); }
+    .workflow-item .wf-title { font-weight: 600; font-size: 0.9rem; }
+    .workflow-item .wf-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .workflow-item .wf-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .workflow-item .wf-actions button { padding: 0.3rem 0.6rem; font-size: 0.7rem; }
+    .workflow-item.decided { border-left-color: #5fd1a3; }
+    .workflow-item.applied { border-left-color: #6b7280; opacity: 0.6; }
+    .active-wf-banner { background: rgba(47, 184, 168, 0.1); border: 1px solid #2fb8a8; border-radius: 4px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+    .active-wf-banner button { background: transparent; color: #a0aab4; border: 1px solid #2a3038; padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+    .active-wf-banner button:hover { color: #c4ced8; }
+    .submit-decision { background: #5fd1a3 !important; color: #0a0c10 !important; }
+    .submit-decision:hover { background: #7adcb4 !important; }
   </style>
 </head>
 <body>
   <h1>feature-image preview</h1>
-  <p class="hint">Dev-only gallery for iterating on prompts and filters. Each generation is logged to <code>.feature-image-history.jsonl</code>.</p>
+  <p class="hint">Dev-only gallery for iterating on prompts and filters. Generation log: <code>.feature-image-history.jsonl</code>. Workflow pipeline: <code>.feature-image-pipeline.jsonl</code>.</p>
+
+  <section class="workflow-panel" id="workflow-panel">
+    <h3>Pending workflows</h3>
+    <div id="workflow-list">Loading…</div>
+  </section>
 
   <div class="layout">
     <section>
       <h2>Generate</h2>
+      <div id="active-wf-banner" style="display: none;"></div>
       <form id="gen-form">
         <label>
           <span>Prompt</span>
@@ -156,6 +179,185 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     const genBtn = document.getElementById('gen-btn');
     const statusEl = document.getElementById('status');
     const galleryEl = document.getElementById('gallery');
+    const workflowListEl = document.getElementById('workflow-list');
+    const workflowPanelEl = document.getElementById('workflow-panel');
+    const activeBannerEl = document.getElementById('active-wf-banner');
+
+    let activeWorkflow = null;  // the currently-selected workflow item
+    let allWorkflows = [];      // cached list
+
+    async function fetchWorkflows() {
+      const res = await fetch('/api/dev/feature-image/workflow');
+      if (!res.ok) throw new Error(`workflow fetch failed: ${res.status}`);
+      return (await res.json()).items;
+    }
+
+    function renderWorkflowItem(item) {
+      const div = document.createElement('div');
+      div.className = 'workflow-item ' + item.state;
+      if (activeWorkflow && activeWorkflow.id === item.id) div.classList.add('active');
+      const postLine = item.context.postPath
+        ? `<span><strong>post:</strong> ${escapeHtml(item.context.postPath)}</span>`
+        : '';
+      const titleLine = item.context.title ? `<div class="wf-title">${escapeHtml(item.context.title)}</div>` : '<div class="wf-title"><em>untitled workflow</em></div>';
+      let actions = '';
+      if (item.state === 'open') {
+        actions = `
+          <button type="button" data-act="activate">${activeWorkflow && activeWorkflow.id === item.id ? 'Deactivate' : 'Activate'}</button>
+          <button type="button" class="secondary" data-act="cancel">Cancel</button>
+        `;
+      } else if (item.state === 'decided') {
+        actions = `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #5fd1a3;">awaiting /feature-image-apply</span>`;
+      } else if (item.state === 'applied') {
+        actions = `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #6b7280;">applied</span>`;
+      }
+      div.innerHTML = `
+        ${titleLine}
+        <div class="wf-meta">
+          <span>${escapeHtml(item.state)}</span>
+          <span>${escapeHtml(item.id.slice(0, 8))}</span>
+          ${postLine}
+        </div>
+        <div class="wf-actions">${actions}</div>
+      `;
+      div.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const act = btn.dataset.act;
+          if (act === 'activate') toggleActivate(item);
+          else if (act === 'cancel') cancelWorkflow(item);
+        });
+      });
+      return div;
+    }
+
+    function toggleActivate(item) {
+      if (activeWorkflow && activeWorkflow.id === item.id) {
+        activeWorkflow = null;
+      } else {
+        activeWorkflow = item;
+        prefillFromWorkflow(item);
+      }
+      renderWorkflowPanel();
+      renderActiveBanner();
+      refreshGallery();  // re-render to show/hide per-entry decision buttons
+    }
+
+    function prefillFromWorkflow(item) {
+      const ctx = item.context;
+      if (ctx.suggestedPrompt) document.getElementById('prompt').value = ctx.suggestedPrompt;
+      if (ctx.title) document.getElementById('title').value = ctx.title;
+      if (ctx.description) document.getElementById('subtitle').value = ctx.description;
+      if (ctx.suggestedPreset) {
+        const presetSel = document.getElementById('preset');
+        if ([...presetSel.options].some(o => o.value === ctx.suggestedPreset)) {
+          presetSel.value = ctx.suggestedPreset;
+        }
+      }
+    }
+
+    async function cancelWorkflow(item) {
+      if (!confirm(`Cancel workflow for ${item.context.postPath || item.id.slice(0, 8)}?`)) return;
+      try {
+        const res = await fetch('/api/dev/feature-image/workflow', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'cancel', id: item.id }),
+        });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        if (activeWorkflow && activeWorkflow.id === item.id) activeWorkflow = null;
+        await refreshWorkflows();
+      } catch (err) {
+        alert(`Failed to cancel: ${err.message}`);
+      }
+    }
+
+    function renderWorkflowPanel() {
+      const open = allWorkflows.filter(w => w.state === 'open');
+      const decided = allWorkflows.filter(w => w.state === 'decided');
+      workflowListEl.innerHTML = '';
+      if (open.length === 0 && decided.length === 0) {
+        workflowPanelEl.classList.add('empty');
+        workflowListEl.innerHTML = '<p class="hint" style="margin: 0;">No pending workflows. Invoke <code>/feature-image-blog &lt;post-path&gt;</code> in Claude Code to start one.</p>';
+        return;
+      }
+      workflowPanelEl.classList.remove('empty');
+      if (open.length > 0) {
+        const h = document.createElement('div');
+        h.style.cssText = 'font-family: "JetBrains Mono", monospace; font-size: 0.7rem; color: #a0aab4; margin-bottom: 0.4rem;';
+        h.textContent = 'OPEN — click Activate to start working on one';
+        workflowListEl.appendChild(h);
+        for (const item of open) workflowListEl.appendChild(renderWorkflowItem(item));
+      }
+      if (decided.length > 0) {
+        const h = document.createElement('div');
+        h.style.cssText = 'font-family: "JetBrains Mono", monospace; font-size: 0.7rem; color: #5fd1a3; margin: 0.75rem 0 0.4rem;';
+        h.textContent = 'DECIDED — waiting for agent to apply';
+        workflowListEl.appendChild(h);
+        for (const item of decided) workflowListEl.appendChild(renderWorkflowItem(item));
+      }
+    }
+
+    function renderActiveBanner() {
+      if (!activeWorkflow) {
+        activeBannerEl.style.display = 'none';
+        return;
+      }
+      activeBannerEl.style.display = 'flex';
+      activeBannerEl.className = 'active-wf-banner';
+      const title = activeWorkflow.context.title || activeWorkflow.context.postPath || activeWorkflow.id.slice(0, 8);
+      activeBannerEl.innerHTML = `
+        <span><strong>Active workflow:</strong> ${escapeHtml(title)} <span style="color:#6b7280">(${activeWorkflow.id.slice(0,8)})</span></span>
+        <button type="button" id="deactivate-btn">Deactivate</button>
+      `;
+      document.getElementById('deactivate-btn').addEventListener('click', () => {
+        activeWorkflow = null;
+        renderWorkflowPanel();
+        renderActiveBanner();
+        refreshGallery();
+      });
+    }
+
+    async function refreshWorkflows() {
+      try {
+        allWorkflows = await fetchWorkflows();
+        if (activeWorkflow) {
+          const current = allWorkflows.find(w => w.id === activeWorkflow.id);
+          if (!current || current.state !== 'open') activeWorkflow = null;
+        }
+        renderWorkflowPanel();
+        renderActiveBanner();
+      } catch (err) {
+        workflowListEl.innerHTML = `<div class="err">Could not load workflows: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    async function submitDecision(entryId) {
+      if (!activeWorkflow) return;
+      const notes = prompt('Optional notes for this decision:', '') || undefined;
+      try {
+        const res = await fetch('/api/dev/feature-image/workflow', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            action: 'decide',
+            id: activeWorkflow.id,
+            logEntryId: entryId,
+            userNotes: notes,
+          }),
+        });
+        if (!res.ok) {
+          const j = await res.json().catch(() => ({}));
+          throw new Error(j.error || `status ${res.status}`);
+        }
+        activeWorkflow = null;
+        await refreshWorkflows();
+        await refreshGallery();
+        alert('Decision submitted. Run /feature-image-apply in Claude Code to apply it.');
+      } catch (err) {
+        alert(`Failed to submit decision: ${err.message}`);
+      }
+    }
 
     async function fetchLog() {
       const res = await fetch('/api/dev/feature-image/log');
@@ -199,6 +401,10 @@ const filterNames = Object.keys(FILTER_REGISTRY);
 
       const notes = entry.notes ? `<div style="font-size: 0.85rem; margin-top: 0.5rem; color: #a0aab4; font-style: italic;">${escapeHtml(entry.notes)}</div>` : '';
 
+      const decisionBtn = activeWorkflow && entry.status !== 'rejected' && (entry.outputs.composited.length > 0 || entry.outputs.filtered.length > 0)
+        ? `<button type="button" class="submit-decision" data-action="decide">Submit for workflow ${activeWorkflow.id.slice(0,8)}</button>`
+        : '';
+
       div.innerHTML = `
         ${error}
         ${title}
@@ -213,6 +419,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         </div>
         ${notes}
         <div class="row-actions">
+          ${decisionBtn}
           <button type="button" data-status="approved" class="secondary">Approve</button>
           <button type="button" data-status="rejected" class="secondary">Reject</button>
           <button type="button" data-action="note" class="secondary">Edit note</button>
@@ -227,6 +434,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
           if (newStatus) return updateStatus(entry.id, newStatus);
           if (action === 'note') return editNote(entry);
           if (action === 'copy') return copyAsInput(entry);
+          if (action === 'decide') return submitDecision(entry.id);
         });
       });
 
@@ -339,7 +547,11 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       }
     });
 
+    refreshWorkflows();
     refreshGallery();
+
+    // Auto-refresh workflows every 5 seconds so new items enqueued by the agent appear
+    setInterval(refreshWorkflows, 5000);
   </script>
 </body>
 </html>
