@@ -16,6 +16,7 @@ interface Props {
     dateModified?: string;
     author?: string;
     image?: string;
+    socialImage?: string;
   };
   headings?: Heading[];
   title?: string;
@@ -36,14 +37,14 @@ const author = frontmatter?.author ?? directAuthor ?? 'audiocontrol.org';
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-// Generate OG image path from URL: /blog/my-post/ → /images/og/blog-my-post.png
+// Generate auto-discovered OG image path from URL: /blog/my-post/ → /images/og/blog-my-post.png
 const pathSegments = Astro.url.pathname.split('/').filter(Boolean);
 const ogImageSlug = pathSegments.join('-');
-const ogImage = `/images/og/${ogImageSlug}.png`;
+const autoOgImage = `/images/og/${ogImageSlug}.png`;
+// `image` is for inline display only. `socialImage` overrides the OG/sharing image.
 const featureImage = frontmatter?.image;
-const schemaImage = featureImage
-  ? new URL(featureImage, Astro.site).toString()
-  : new URL(ogImage, Astro.site).toString();
+const socialImage = frontmatter?.socialImage ?? autoOgImage;
+const schemaImage = new URL(socialImage, Astro.site).toString();
 
 const blogPostingJsonLd = {
   '@context': 'https://schema.org',
@@ -74,7 +75,7 @@ const blogPostingJsonLd = {
 const tocHeadings = headings.filter(h => h.depth === 2);
 ---
 
-<Layout title={title} description={description} image={featureImage ?? ogImage} type="article" jsonLd={blogPostingJsonLd}>
+<Layout title={title} description={description} image={socialImage} type="article" jsonLd={blogPostingJsonLd}>
   <div class="article-layout">
     {tocHeadings.length > 0 && (
       <aside class="toc">
@@ -169,6 +170,9 @@ const tocHeadings = headings.filter(h => h.depth === 2);
     display: block;
     width: 100%;
     height: auto;
+    aspect-ratio: 21 / 10;
+    object-fit: cover;
+    object-position: center;
     border-radius: 12px;
     border: 1px solid var(--border);
     box-shadow: var(--card-glow);
