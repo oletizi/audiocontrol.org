@@ -44,8 +44,11 @@ export {
 
 export {
   extractYouTubeLinksFromMarkdown,
-  extractBlogLinksFromDescription,
+  extractAudioControlLinksFromText,
+  extractAudioControlLinksFromMarkdown,
+  extractLinksFromHtml,
   slugFromBlogUrl,
+  canonicalizeUrl,
   auditCrossLinks,
   type OutboundLink,
   type EntryAudit,
