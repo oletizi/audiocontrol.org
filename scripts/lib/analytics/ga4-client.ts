@@ -156,6 +156,67 @@ function mergeWithTrends(
   });
 }
 
+/** One (page, referrer source) row from GA4 with per-row traffic metrics. */
+export interface Ga4PageReferralRow {
+  pagePath: string;
+  sessionSource: string;
+  sessions: number;
+  screenPageViews: number;
+}
+
+/**
+ * Fetch traffic broken down by pagePath + sessionSource.
+ *
+ * This is what enables per-post social referral attribution — GA4 attributes
+ * sessions to the source that brought the user to the page, which remains
+ * reliable even when the Referer header is stripped (unlike Umami's
+ * referrer metric).
+ */
+export async function fetchPageReferrals(
+  range: DateRange,
+  serviceAccountPath?: string,
+): Promise<Ga4PageReferralRow[]> {
+  const propertyId = loadPropertyId();
+  const accessToken = await getAccessToken([GA4_SCOPE], serviceAccountPath);
+  const url = `${GA4_API_BASE}/properties/${propertyId}:runReport`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      dateRanges: [{ startDate: range.startDate, endDate: range.endDate }],
+      dimensions: [{ name: "pagePath" }, { name: "sessionSource" }],
+      metrics: [{ name: "sessions" }, { name: "screenPageViews" }],
+      orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+      limit: 1000,
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(
+      `GA4 API error ${response.status}: ${response.statusText}\n${body}`,
+    );
+  }
+
+  const data = (await response.json()) as Ga4RunReportResponse;
+  const rows = data.rows ?? [];
+
+  return rows.map((row) => {
+    const dims = row.dimensionValues ?? [];
+    const mets = row.metricValues ?? [];
+    return {
+      pagePath: dims[0]?.value ?? "",
+      sessionSource: dims[1]?.value ?? "",
+      sessions: Number(mets[0]?.value ?? 0),
+      screenPageViews: Number(mets[1]?.value ?? 0),
+    };
+  });
+}
+
 /** Build a GA4 content scorecard with trends */
 export async function buildGa4Scorecard(
   dateRange: DateRange,

@@ -32,5 +32,5 @@ export {
   getSocialReferrals,
   type ContentSuggestion,
   type PostPerformance,
-  type SocialReferralSummary,
+  type SocialReferral,
 } from './suggest.js';

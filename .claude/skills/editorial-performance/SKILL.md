@@ -20,8 +20,8 @@ Pull analytics for published posts and flag those needing attention.
    - High impressions but low CTR (title/description needs improvement)
    - High bounce rate (content or UX issue)
    - Striking-distance rankings (could be boosted with updates)
-5. **Fetch social referrals**: Call `getSocialReferrals()` from `scripts/lib/editorial/suggest.ts` for a site-wide breakdown of traffic from Reddit, YouTube, LinkedIn, and Instagram
-6. **Report**: Show a performance table, a social referrals summary, and recommendations:
+5. **Fetch social referrals**: Call `getSocialReferrals(publishedEntries)` from `scripts/lib/editorial/suggest.ts` to break out per-post traffic from Reddit, YouTube, LinkedIn, and Instagram
+6. **Report**: Show a performance table, a per-post social referrals table, and recommendations:
    ```
    Published Posts Performance:
 
@@ -30,17 +30,17 @@ Pull analytics for published posts and flag those needing attention.
    | free-roland-s330-sampler-editor | 1,200 | 3,400 | 4.2% | 6.1 | OK |
    | scsi-over-wifi-raspberry-pi-bridge | 80 | 900 | 0.8% | 14.3 | Needs Update |
 
-   Social Referrals (site-wide pageviews from each platform):
+   Social Referrals (sessions per post per platform):
 
-   | Platform | Pageviews |
-   |----------|-----------|
-   | reddit | 0 |
-   | linkedin | 0 |
+   | Post | Reddit | YouTube | LinkedIn | Instagram |
+   |------|--------|---------|----------|-----------|
+   | claude-vs-codex-claude-perspective | 42 | — | 11 | — |
+   | scsi-over-wifi-raspberry-pi-bridge | 7 | — | — | — |
 
    Recommendations:
    - scsi-over-wifi-raspberry-pi-bridge: High impressions but low CTR — consider updating title and meta description
    ```
-   If no social referrals are recorded in the window, show `(no social referrer traffic in window — many platforms strip the Referer header)`.
+   Omit rows with zero social sessions across all four platforms. If no post had any social sessions in the window, report `(no social session traffic attributed in window)`.
 
 ## Implementation
 
@@ -51,11 +51,11 @@ The `getPostPerformance()` function in `scripts/lib/editorial/suggest.ts` handle
 - Sorts results with underperformers first
 
 The `getSocialReferrals()` function in the same file handles step 5:
-- Calls Umami's `/metrics?type=referrer` endpoint
-- Maps referrer hostnames to `reddit`, `youtube`, `linkedin`, or `instagram`
-- Returns a site-wide pageview count per platform for platforms with ≥1 referrer
+- Queries GA4 with `pagePath` + `sessionSource` dimensions (via `fetchPageReferrals`)
+- Maps `sessionSource` values to `reddit`, `youtube`, `linkedin`, or `instagram`
+- Returns one record per (slug, platform) pair with ≥1 session — posts with no social traffic produce no records
 
-**Known limitation (tracked for GA4 migration):** Per-post attribution is not currently available. Umami's `url` filter on the referrer endpoint is ignored on this instance, so `getSocialReferrals` can only report site-wide numbers. Social platforms also frequently strip the Referer header, so counts are typically low regardless of actual share traffic. Moving this to GA4's `pagePath` + `sessionSource` dimensions will restore per-post attribution.
+GA4 is used (rather than Umami) because social platforms typically strip the Referer header, and GA4's session-source attribution remains reliable in that case.
 
 ## Important
 

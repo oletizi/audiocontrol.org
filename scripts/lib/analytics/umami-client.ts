@@ -125,43 +125,6 @@ function toPageMetrics(metrics: UmamiExpandedMetric[]): PageMetrics[] {
   }));
 }
 
-/**
- * One row from Umami's /metrics?type=referrer endpoint.
- * Umami returns `{x, y}` pairs where x is the dimension value (hostname)
- * and y is the count. The meaning of y depends on Umami version — on our
- * instance it appears to be the pageview count.
- */
-export interface UmamiReferrerMetric {
-  /** Referrer hostname as recorded by Umami */
-  x: string;
-  /** Count of pageviews attributed to this referrer */
-  y: number;
-}
-
-/**
- * Fetch site-wide referrer traffic.
- *
- * Note: Umami accepts a `url` query parameter here, but on the instance
- * we target it is silently ignored — the same response is returned for any
- * `url` value, including nonexistent paths. That means this endpoint cannot
- * be used for per-page referrer attribution on this Umami version. Kept as
- * a shared building block; callers must not assume per-page filtering.
- */
-export async function fetchReferrers(
-  apiKey: string,
-  baseUrl: string,
-  websiteId: string,
-  range: DateRange,
-): Promise<UmamiReferrerMetric[]> {
-  const config: UmamiClientConfig = { apiKey, baseUrl, websiteId };
-  return umamiGet<UmamiReferrerMetric[]>(config, "/metrics", {
-    startAt: toStartOfDay(range.startDate),
-    endAt: toEndOfDay(range.endDate),
-    type: "referrer",
-    limit: 100,
-  });
-}
-
 /** Build a complete content scorecard */
 export async function buildContentScorecard(
   apiKey: string,

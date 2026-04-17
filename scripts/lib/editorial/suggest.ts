@@ -14,7 +14,7 @@ import {
   buildSearchPerformance,
   buildContentFunnel,
   generateRecommendations,
-  fetchReferrers,
+  fetchPageReferrals,
 } from '../analytics/index.js';
 import type {
   AnalyticsReport,
@@ -226,41 +226,53 @@ export async function getPostPerformance(
 }
 
 // ---------------------------------------------------------------------------
-// Social referrals (site-wide, via Umami)
+// Social referrals (per-post, via GA4 sessionSource)
 // ---------------------------------------------------------------------------
 
-/**
- * Site-wide traffic to the site from one social platform over the reporting
- * window. Per-post attribution is not available from this data source — see
- * the note on fetchReferrers() in umami-client.
- */
-export interface SocialReferralSummary {
+/** Traffic from one social platform to one published post over the window. */
+export interface SocialReferral {
+  slug: string;
   platform: Platform;
+  sessions: number;
   pageviews: number;
 }
 
-/** Hostname patterns mapping Umami referrer values to our tracked platforms. */
-const PLATFORM_HOST_PATTERNS: Record<Platform, RegExp[]> = {
-  reddit: [/(^|\.)reddit\.com$/i, /(^|\.)redd\.it$/i, /^out\.reddit\.com$/i],
-  youtube: [/(^|\.)youtube\.com$/i, /(^|\.)youtu\.be$/i],
-  linkedin: [/(^|\.)linkedin\.com$/i, /(^|\.)lnkd\.in$/i],
-  instagram: [/(^|\.)instagram\.com$/i, /^l\.instagram\.com$/i],
+/**
+ * Patterns matching GA4 `sessionSource` values to our tracked platforms.
+ *
+ * GA4 normalizes a lot of sources to short tokens (e.g. `reddit`, `linkedin`,
+ * `youtube`), but some still appear as full hostnames (e.g. `out.reddit.com`,
+ * `l.instagram.com`). Match both shapes.
+ */
+const PLATFORM_SOURCE_PATTERNS: Record<Platform, RegExp[]> = {
+  reddit: [
+    /^reddit$/i,
+    /^(.+\.)?reddit\.com$/i,
+    /^(.+\.)?redd\.it$/i,
+    /^out\.reddit\.com$/i,
+  ],
+  youtube: [
+    /^youtube$/i,
+    /^(.+\.)?youtube\.com$/i,
+    /^(.+\.)?youtu\.be$/i,
+  ],
+  linkedin: [
+    /^linkedin$/i,
+    /^(.+\.)?linkedin\.com$/i,
+    /^(.+\.)?lnkd\.in$/i,
+  ],
+  instagram: [
+    /^instagram$/i,
+    /^(.+\.)?instagram\.com$/i,
+    /^l\.instagram\.com$/i,
+  ],
 };
 
-function extractHost(referrerValue: string): string {
-  const value = (referrerValue ?? '').trim();
-  if (!value) return '';
-  try {
-    const u = new URL(value.startsWith('http') ? value : `https://${value}`);
-    return u.hostname.toLowerCase();
-  } catch {
-    return value.toLowerCase();
-  }
-}
-
-function classifyReferrer(host: string): Platform | null {
+function classifySource(sessionSource: string): Platform | null {
+  const value = (sessionSource ?? '').trim().toLowerCase();
+  if (!value) return null;
   for (const platform of PLATFORMS) {
-    if (PLATFORM_HOST_PATTERNS[platform].some((p) => p.test(host))) {
+    if (PLATFORM_SOURCE_PATTERNS[platform].some((p) => p.test(value))) {
       return platform;
     }
   }
@@ -268,35 +280,45 @@ function classifyReferrer(host: string): Platform | null {
 }
 
 /**
- * Return site-wide pageviews from each tracked social platform.
+ * Return per-post traffic from each tracked social platform, using GA4's
+ * `sessionSource` dimension combined with `pagePath`.
  *
- * This is site-level, not per-post — Umami's `/metrics?type=referrer`
- * endpoint does not honor the `url` filter on our instance. Only platforms
- * that produced at least one referrer pageview in the window appear in the
- * result.
- *
- * Per-post attribution will move to GA4 in a follow-up.
+ * One record is emitted per (slug, platform) pair with ≥1 session in the
+ * window. Posts with no social referrals produce no records.
  */
 export async function getSocialReferrals(
+  publishedEntries: CalendarEntry[],
   days: number = 30,
-): Promise<SocialReferralSummary[]> {
-  const apiKey = loadApiKey();
-  const baseUrl = getBaseUrl();
-  const websiteId = getWebsiteId();
+): Promise<SocialReferral[]> {
   const dateRange = computeDateRange(days);
+  const rows = await fetchPageReferrals(dateRange);
 
-  const referrers = await fetchReferrers(apiKey, baseUrl, websiteId, dateRange);
+  const slugToPath = new Map(
+    publishedEntries.map((e) => [e.slug, `/blog/${e.slug}/`]),
+  );
+  const pathToSlug = new Map(
+    [...slugToPath].map(([slug, path]) => [path, slug]),
+  );
 
-  const byPlatform = new Map<Platform, number>();
-  for (const r of referrers) {
-    const host = extractHost(r.x);
-    const platform = classifyReferrer(host);
+  type Bucket = { sessions: number; pageviews: number };
+  const agg = new Map<string, Bucket>(); // key: `${slug}|${platform}`
+
+  for (const row of rows) {
+    const slug = pathToSlug.get(row.pagePath);
+    if (!slug) continue;
+    const platform = classifySource(row.sessionSource);
     if (!platform) continue;
-    byPlatform.set(platform, (byPlatform.get(platform) ?? 0) + r.y);
+    const key = `${slug}|${platform}`;
+    const cur = agg.get(key) ?? { sessions: 0, pageviews: 0 };
+    cur.sessions += row.sessions;
+    cur.pageviews += row.screenPageViews;
+    agg.set(key, cur);
   }
 
-  return [...byPlatform].map(([platform, pageviews]) => ({
-    platform,
-    pageviews,
-  }));
+  const results: SocialReferral[] = [];
+  for (const [key, bucket] of agg) {
+    const [slug, platform] = key.split('|') as [string, Platform];
+    results.push({ slug, platform, ...bucket });
+  }
+  return results;
 }
