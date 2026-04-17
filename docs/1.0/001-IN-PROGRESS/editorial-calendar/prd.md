@@ -26,6 +26,25 @@ Content creation for audiocontrol.org is ad hoc with no schedule, no procedure, 
 - **Social distribution tracking**: recording where published posts have been shared (Reddit, YouTube, LinkedIn, Instagram) and surfacing that data in the calendar
 - **Social referral analytics**: reporting how much traffic each post receives from each social platform, derived from Umami/GA4 referrer data
 
+## In Scope (Phase 5 addition)
+
+- **Sub-channel tracking**: each `DistributionRecord` carries a channel (e.g. subreddit `r/synthdiy`, YouTube channel name, LinkedIn page) so coverage can be tracked below the platform level
+- **Cross-posting opportunities**: a curated `topic → channels` map plus a skill that diffs recorded distributions against the map for a given post, surfacing unshared relevant channels
+- **Reddit API read-only sync (Tier 1)**: `/editorial-reddit-sync` pulls the user's own Reddit submissions via Reddit's public `.json` endpoints (no OAuth, no credentials — just the username in a one-line config file) and upserts DistributionRecords automatically, so the calendar stays in sync with reality without manual entry
+- **Subreddit enrichment (Tier 2)**: opportunity reports include live subscriber count and self-promo hints pulled from `/r/<sub>/about.json`
+- **Reddit-first scope**: the curated map ships with subreddits first; the data model supports any platform but automation and enrichment target Reddit only
+
+## In Scope (Phase 6 addition)
+
+- **YouTube videos as first-class calendar entries**: videos go through the same Ideas → Planned → Drafting → Review → Published lifecycle as blog posts. `CalendarEntry` gains a `contentType` discriminator (`blog` | `youtube`) and a `contentUrl` for content that doesn't live at `/blog/<slug>/`
+- **YouTube metadata via Data API v3**: small client that fetches video title, description, and channel given a video ID or URL. Authenticated with a single API key in `~/.config/audiocontrol/youtube.json`. No OAuth — the key has read-only access to public data
+- **Cross-link audit**: a new skill `/editorial-cross-link-review` that verifies bidirectional linking between blog posts and YouTube videos. For each calendar entry, it extracts outbound links from the content (blog MD or YouTube description) and flags missing reciprocal links
+- **Reddit sync improvement**: when a Reddit submission links to a YouTube URL that matches a known YouTube calendar entry, record it as a distribution of that video. Closes the gap observed during the first live `/editorial-reddit-sync` run (6 S-330 editor video shares that had nowhere to attach)
+
+## Deferred Scope
+
+- **Reddit auto-posting (Tier 3)**: programmatically submitting link posts to subreddits. Documented in detail in the [workplan](./workplan.md#deferred-tier-3--auto-posting-to-reddit). Deferred indefinitely — operational risk (bot bans, spam filters), per-subreddit rule complexity, and limited value-add over manual posting outweigh the automation benefit. A clipboard-helper alternative is proposed there if partial automation becomes interesting later.
+
 ## Out of Scope
 
 - External tools (Notion, Google Sheets, CMS)
@@ -50,6 +69,11 @@ Each editorial action is a separate Claude Code skill, composed like UNIX tools.
 | `/editorial-publish` | 2 | Mark entry as Published with date, close GitHub issue |
 | `/editorial-suggest` | 3 | Pull analytics, identify content opportunities |
 | `/editorial-performance` | 3 | Pull analytics for published posts, flag underperformers |
+| `/editorial-distribute` | 4 | Record that a published post was shared on a platform + channel |
+| `/editorial-social-review` | 4 | Show matrix of published posts × platforms |
+| `/editorial-reddit-sync` | 5 | Pull user Reddit submissions via API, upsert DistributionRecords |
+| `/editorial-reddit-opportunities` | 5 | For a published post, list relevant subreddits not yet distributed to, enriched with live subreddit metadata |
+| `/editorial-cross-link-review` | 6 | Audit bidirectional linking between blog posts and YouTube videos, flag missing reciprocal links |
 
 ### Calendar Format
 

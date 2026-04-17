@@ -28,6 +28,12 @@ export interface CalendarEntry {
   stage: Stage;
   /** Target SEO keywords (set when moving to Planned) */
   targetKeywords: string[];
+  /**
+   * Coarse topic tags used for cross-posting opportunity lookup.
+   * Distinct from targetKeywords — these map to channels in
+   * `editorial-channels.json`, not to SEO targets.
+   */
+  topics?: string[];
   /** ISO date string (YYYY-MM-DD) when published, if applicable */
   datePublished?: string;
   /** GitHub issue number, if one has been created */
@@ -47,11 +53,16 @@ export interface DistributionRecord {
   slug: string;
   /** Which platform the post was shared on */
   platform: Platform;
+  /**
+   * Sub-channel within the platform — e.g. subreddit (`r/synthdiy`),
+   * YouTube channel handle, LinkedIn page. Normalized on comparison.
+   */
+  channel?: string;
   /** URL of the share (e.g. the Reddit thread, YouTube video) */
   url: string;
   /** ISO date string (YYYY-MM-DD) when the share was made */
   dateShared: string;
-  /** Optional free-form context, e.g. "r/synthdiy" */
+  /** Optional free-form context */
   notes?: string;
 }
 

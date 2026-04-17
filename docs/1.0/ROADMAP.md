@@ -31,11 +31,11 @@ _None._
 
 | Feature | Description | Branch |
 |---------|-------------|--------|
+| [editorial-calendar](001-IN-PROGRESS/editorial-calendar/) | Phases 1-4 shipped; Phase 5 (subreddit tracking + cross-posting opportunities) in progress | `feature/editorial-calendar` |
 | [seo-roland-s-series](001-IN-PROGRESS/seo-roland-s-series/) | SEO improvements for Roland S-series pages | `feature/seo-roland-s-series` |
 
 ### 003-COMPLETE
 
 | Feature | Description |
 |---------|-------------|
-| [editorial-calendar](003-COMPLETE/editorial-calendar/) | Structured content calendar with analytics-driven suggestions and GA4-backed social distribution tracking |
 | [palette-redesign](003-COMPLETE/palette-redesign/) | Dark theme redesign with coral/teal accents and card-based layout |

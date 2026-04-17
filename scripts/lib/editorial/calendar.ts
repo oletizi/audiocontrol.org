@@ -76,45 +76,68 @@ function isPlatform(value: string): value is Platform {
   return (PLATFORMS as readonly string[]).includes(value);
 }
 
+/** Build a column-name → index map from a table header row. */
+function indexColumns(headerLine: string): Map<string, number> {
+  const map = new Map<string, number>();
+  parseRow(headerLine).forEach((name, idx) => {
+    map.set(name.trim().toLowerCase(), idx);
+  });
+  return map;
+}
+
+/** Get the trimmed value from a row by column name, or undefined. */
+function col(
+  cells: string[],
+  cols: Map<string, number>,
+  name: string,
+): string | undefined {
+  const idx = cols.get(name);
+  if (idx === undefined) return undefined;
+  const value = cells[idx];
+  if (value === undefined) return undefined;
+  const trimmed = value.trim();
+  return trimmed === '' ? undefined : trimmed;
+}
+
 function parseEntries(lines: string[], stage: Stage): CalendarEntry[] {
   const entries: CalendarEntry[] = [];
 
-  // Find the header row — first table row after the stage heading
   let i = 0;
-  while (i < lines.length && !lines[i].startsWith('|')) {
-    i++;
-  }
+  while (i < lines.length && !lines[i].startsWith('|')) i++;
   if (i >= lines.length) return entries;
 
-  // Skip header row and separator
-  i++; // header
-  if (i < lines.length && isSeparator(lines[i])) i++; // separator
+  const cols = indexColumns(lines[i]);
+  i++; // skip header
+  if (i < lines.length && isSeparator(lines[i])) i++;
 
-  // Parse data rows
   while (i < lines.length && lines[i].startsWith('|')) {
     const cells = parseRow(lines[i]);
-    if (cells.length >= 5) {
+    const slug = col(cells, cols, 'slug');
+    const title = col(cells, cols, 'title');
+    if (slug && title) {
       const entry: CalendarEntry = {
-        slug: cells[0],
-        title: cells[1],
-        description: cells[2],
+        slug,
+        title,
+        description: col(cells, cols, 'description') ?? '',
         stage,
-        targetKeywords: cells[3]
-          ? cells[3].split(',').map((k) => k.trim()).filter(Boolean)
-          : [],
-        source: cells[4] === 'analytics' ? 'analytics' : 'manual',
+        targetKeywords: (col(cells, cols, 'keywords') ?? '')
+          .split(',')
+          .map((k) => k.trim())
+          .filter(Boolean),
+        source: col(cells, cols, 'source') === 'analytics' ? 'analytics' : 'manual',
       };
 
-      // Published stage has extra columns
-      if (stage === 'Published' && cells.length >= 6) {
-        const dateVal = cells[5];
-        if (dateVal) entry.datePublished = dateVal;
+      const topics = col(cells, cols, 'topics');
+      if (topics) {
+        entry.topics = topics.split(',').map((t) => t.trim()).filter(Boolean);
       }
 
-      // Issue column — last column for Drafting/Review/Published
-      const issueIdx = stage === 'Published' ? 6 : 5;
-      if (cells.length > issueIdx && cells[issueIdx]) {
-        const match = cells[issueIdx].match(/#?(\d+)/);
+      const published = col(cells, cols, 'published');
+      if (published) entry.datePublished = published;
+
+      const issue = col(cells, cols, 'issue');
+      if (issue) {
+        const match = issue.match(/#?(\d+)/);
         if (match) entry.issueNumber = parseInt(match[1], 10);
       }
 
@@ -132,19 +155,28 @@ function parseDistributions(lines: string[]): DistributionRecord[] {
   while (i < lines.length && !lines[i].startsWith('|')) i++;
   if (i >= lines.length) return records;
 
-  i++; // header
+  const cols = indexColumns(lines[i]);
+  i++; // skip header
   if (i < lines.length && isSeparator(lines[i])) i++;
 
   while (i < lines.length && lines[i].startsWith('|')) {
     const cells = parseRow(lines[i]);
-    if (cells.length >= 4 && isPlatform(cells[1])) {
+    const slug = col(cells, cols, 'slug');
+    const platformValue = col(cells, cols, 'platform');
+    const url = col(cells, cols, 'url');
+    const dateShared = col(cells, cols, 'shared');
+
+    if (slug && platformValue && url && dateShared && isPlatform(platformValue)) {
       const rec: DistributionRecord = {
-        slug: cells[0],
-        platform: cells[1],
-        url: cells[2],
-        dateShared: cells[3],
+        slug,
+        platform: platformValue,
+        url,
+        dateShared,
       };
-      if (cells.length > 4 && cells[4]) rec.notes = cells[4];
+      const channel = col(cells, cols, 'channel');
+      if (channel) rec.channel = channel;
+      const notes = col(cells, cols, 'notes');
+      if (notes) rec.notes = notes;
       records.push(rec);
     }
     i++;
@@ -212,32 +244,33 @@ function escapeCell(value: string): string {
 
 function renderStageTable(entries: CalendarEntry[], stage: Stage): string {
   const lines: string[] = [];
+  const hasIssue = entries.some((e) => e.issueNumber !== undefined);
+  const hasTopics = entries.some(
+    (e) => e.topics !== undefined && e.topics.length > 0,
+  );
+  const isPublished = stage === 'Published';
 
-  if (stage === 'Published') {
-    lines.push('| Slug | Title | Description | Keywords | Source | Published | Issue |');
-    lines.push('|------|-------|-------------|----------|--------|-----------|-------|');
-    for (const e of entries) {
-      const kw = e.targetKeywords.join(', ');
-      const issue = e.issueNumber ? `#${e.issueNumber}` : '';
-      lines.push(
-        `| ${escapeCell(e.slug)} | ${escapeCell(e.title)} | ${escapeCell(e.description)} | ${escapeCell(kw)} | ${e.source} | ${e.datePublished ?? ''} | ${issue} |`,
-      );
-    }
-  } else {
-    const hasIssue = entries.some((e) => e.issueNumber !== undefined);
-    if (hasIssue) {
-      lines.push('| Slug | Title | Description | Keywords | Source | Issue |');
-      lines.push('|------|-------|-------------|----------|--------|-------|');
-    } else {
-      lines.push('| Slug | Title | Description | Keywords | Source |');
-      lines.push('|------|-------|-------------|----------|--------|');
-    }
-    for (const e of entries) {
-      const kw = e.targetKeywords.join(', ');
-      const issue = e.issueNumber ? `#${e.issueNumber}` : '';
-      const row = `| ${escapeCell(e.slug)} | ${escapeCell(e.title)} | ${escapeCell(e.description)} | ${escapeCell(kw)} | ${e.source} |`;
-      lines.push(hasIssue ? `${row} ${issue} |` : row);
-    }
+  const headers: string[] = ['Slug', 'Title', 'Description', 'Keywords'];
+  if (hasTopics) headers.push('Topics');
+  headers.push('Source');
+  if (isPublished) headers.push('Published');
+  if (hasIssue || isPublished) headers.push('Issue');
+
+  lines.push(`| ${headers.join(' | ')} |`);
+  lines.push(`|${headers.map(() => '------').join('|')}|`);
+
+  for (const e of entries) {
+    const row: string[] = [
+      escapeCell(e.slug),
+      escapeCell(e.title),
+      escapeCell(e.description),
+      escapeCell(e.targetKeywords.join(', ')),
+    ];
+    if (hasTopics) row.push(escapeCell((e.topics ?? []).join(', ')));
+    row.push(e.source);
+    if (isPublished) row.push(e.datePublished ?? '');
+    if (hasIssue || isPublished) row.push(e.issueNumber ? `#${e.issueNumber}` : '');
+    lines.push(`| ${row.join(' | ')} |`);
   }
 
   return lines.join('\n');
@@ -245,12 +278,27 @@ function renderStageTable(entries: CalendarEntry[], stage: Stage): string {
 
 function renderDistributionTable(records: DistributionRecord[]): string {
   const lines: string[] = [];
-  lines.push('| Slug | Platform | URL | Shared | Notes |');
-  lines.push('|------|----------|-----|--------|-------|');
+  const hasChannel = records.some(
+    (r) => r.channel !== undefined && r.channel !== '',
+  );
+
+  const headers: string[] = ['Slug', 'Platform', 'URL', 'Shared'];
+  if (hasChannel) headers.push('Channel');
+  headers.push('Notes');
+
+  lines.push(`| ${headers.join(' | ')} |`);
+  lines.push(`|${headers.map(() => '------').join('|')}|`);
+
   for (const r of records) {
-    lines.push(
-      `| ${escapeCell(r.slug)} | ${r.platform} | ${escapeCell(r.url)} | ${r.dateShared} | ${escapeCell(r.notes ?? '')} |`,
-    );
+    const row: string[] = [
+      escapeCell(r.slug),
+      r.platform,
+      escapeCell(r.url),
+      r.dateShared,
+    ];
+    if (hasChannel) row.push(escapeCell(r.channel ?? ''));
+    row.push(escapeCell(r.notes ?? ''));
+    lines.push(`| ${row.join(' | ')} |`);
   }
   return lines.join('\n');
 }

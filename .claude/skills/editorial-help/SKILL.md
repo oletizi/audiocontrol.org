@@ -28,8 +28,12 @@ Show the editorial content lifecycle and current calendar status. Do NOT modify 
 - `/editorial-performance` — Show metrics and social referral traffic for published posts
 
 **Distribution skills (Phase 4):**
-- `/editorial-distribute` — Record that a published post was shared on Reddit / YouTube / LinkedIn / Instagram
-- `/editorial-social-review` — Matrix of published posts vs platforms (shared / not shared)
+- `/editorial-distribute` — Record that a published post was shared on Reddit / YouTube / LinkedIn / Instagram (captures sub-channel e.g. subreddit)
+- `/editorial-social-review` — Matrix of published posts vs platforms (subreddit count for Reddit)
+
+**Reddit cross-posting skills (Phase 5):**
+- `/editorial-reddit-sync` — Pull recent submissions from Reddit API and upsert distribution records automatically
+- `/editorial-reddit-opportunities <slug>` — Show already-shared subreddits (don't duplicate) and unshared candidates with subscriber counts
 
 **Status skills:**
 - `/editorial-review` — Show calendar status across all stages

@@ -58,8 +58,17 @@ The editorial workflow is managed through composable Claude Code skills — one 
 
 | Skill | Purpose |
 |-------|---------|
-| `/editorial-distribute` | Record that a published post was shared on Reddit / YouTube / LinkedIn / Instagram |
-| `/editorial-social-review` | Show a matrix of published posts vs platforms |
+| `/editorial-distribute` | Record that a published post was shared on Reddit / YouTube / LinkedIn / Instagram (captures sub-channel e.g. subreddit) |
+| `/editorial-social-review` | Matrix of published posts vs platforms — subreddit count for the Reddit column |
+
+### Reddit cross-posting
+
+| Skill | Purpose |
+|-------|---------|
+| `/editorial-reddit-sync` | Pull recent Reddit submissions via the API and upsert DistributionRecords automatically |
+| `/editorial-reddit-opportunities <slug>` | Show which subreddits a post has already been shared to (don't duplicate) and unshared candidates enriched with live metadata |
+
+Reddit credentials live at `~/.config/audiocontrol/reddit.json`. See [Reddit Setup](#reddit-setup) below.
 
 ### Status and help
 
@@ -97,6 +106,43 @@ The editorial workflow is managed through composable Claude Code skills — one 
 # See metrics for all published posts
 # Posts needing attention are flagged with specific recommendations
 ```
+
+### Cross-posting to Reddit without duplicating
+
+```
+/editorial-reddit-sync
+# Pulls your recent Reddit submissions, matches them to blog posts by URL,
+# and upserts DistributionRecords automatically. Run this before the
+# opportunities skill to make sure it has a current view.
+
+/editorial-reddit-opportunities claude-vs-codex-claude-perspective
+# Shows: "Already shared to: r/ClaudeAI (2026-04-15) — DO NOT DUPLICATE"
+# Then: unshared candidates with subscriber counts and self-promo hints
+```
+
+## Reddit Setup
+
+One-line config file — no Reddit app, no OAuth, no credentials.
+
+Create `~/.config/audiocontrol/reddit.json`:
+
+```json
+{ "username": "your-reddit-username" }
+```
+
+That's it. Run `/editorial-reddit-sync` — it reads your public submissions via Reddit's `.json` endpoints using a User-Agent derived from your username.
+
+**Why no auth?** Reddit's public data (your submissions, subreddit metadata) is accessible without OAuth by appending `.json` to any reddit.com URL. For periodic personal sync this works great and eliminates the password/2FA/app-registration friction of OAuth.
+
+**Rate limits:** unauthenticated requests are limited to roughly 10/min. A full sync of your submissions is ~1-3 requests; keep sync frequency to hourly or less. If you start running into 429s, we can switch to OAuth — but probably you won't.
+
+**What's not available:** posting, voting, private drafts, saved items. Reading public subreddits and a user's public submissions is all this tool needs.
+
+## Curated cross-posting map
+
+`docs/editorial-channels.json` maps topic tags to recommended distribution channels (subreddits today; room for other platforms later). Edit this file directly to add topics or update subreddits. Each entry can carry an optional `note` with community rules or submission hints.
+
+The `/editorial-reddit-opportunities` skill reads this file, collects candidates for a post's topics, subtracts already-shared subreddits (case-insensitive comparison — `r/SynthDIY` and `/r/synthdiy` match), enriches remaining candidates with subscriber count from Reddit's API, and reports the gap.
 
 ## Analytics Integration
 

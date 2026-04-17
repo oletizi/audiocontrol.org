@@ -1,0 +1,77 @@
+{
+  "_comment": "Curated map of topic tags to recommended distribution channels. Used by /editorial-reddit-opportunities to suggest where to cross-post. Add topics to CalendarEntry.topics to opt a post in. Entries here are hints — verify each subreddit's current rules before posting.",
+  "topics": {
+    "samplers": {
+      "reddit": [
+        { "channel": "r/synthdiy", "note": "DIY and hardware-forward; cite sources" },
+        { "channel": "r/vintagesynths", "note": "gear-focused; link directly OK" },
+        { "channel": "r/synthesizers", "note": "large general sub; self-promo limited" },
+        { "channel": "r/WeAreTheMusicMakers", "note": "no direct self-promo; use Feedback Friday" }
+      ]
+    },
+    "vintage-hardware": {
+      "reddit": [
+        { "channel": "r/VintageObsession" },
+        { "channel": "r/vintagesynths" },
+        { "channel": "r/retrocomputing" },
+        { "channel": "r/vintagecomputing" }
+      ]
+    },
+    "scsi": {
+      "reddit": [
+        { "channel": "r/retrocomputing" },
+        { "channel": "r/vintagecomputing" },
+        { "channel": "r/beos", "note": "tangential — only if BeOS relevant" },
+        { "channel": "r/classicmac" }
+      ]
+    },
+    "roland": {
+      "reddit": [
+        { "channel": "r/synthesizers", "note": "self-promo limited" },
+        { "channel": "r/Roland" },
+        { "channel": "r/vintagesynths" }
+      ]
+    },
+    "akai": {
+      "reddit": [
+        { "channel": "r/akai_mpc" },
+        { "channel": "r/vintagesynths" },
+        { "channel": "r/synthdiy" }
+      ]
+    },
+    "ai-agents": {
+      "reddit": [
+        { "channel": "r/ClaudeAI" },
+        { "channel": "r/LocalLLaMA", "note": "research-leaning; no bare promo" },
+        { "channel": "r/artificial" },
+        { "channel": "r/ChatGPTCoding" },
+        { "channel": "r/cursor" }
+      ]
+    },
+    "claude": {
+      "reddit": [
+        { "channel": "r/ClaudeAI" },
+        { "channel": "r/Anthropic" }
+      ]
+    },
+    "home-studio": {
+      "reddit": [
+        { "channel": "r/WeAreTheMusicMakers", "note": "no direct self-promo; Feedback Friday only" },
+        { "channel": "r/homestudios" },
+        { "channel": "r/audioengineering", "note": "technical; no beginner questions" }
+      ]
+    },
+    "programming": {
+      "reddit": [
+        { "channel": "r/programming", "note": "strict mods; high quality bar" },
+        { "channel": "r/webdev" }
+      ]
+    },
+    "reverse-engineering": {
+      "reddit": [
+        { "channel": "r/ReverseEngineering", "note": "academic tone preferred" },
+        { "channel": "r/retrocomputing" }
+      ]
+    }
+  }
+}
