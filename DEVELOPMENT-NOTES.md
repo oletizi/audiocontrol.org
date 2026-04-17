@@ -4,6 +4,50 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-16: Automated Analytics — Full Implementation
+### Feature: automated-analytics
+### Worktree: audiocontrol.org-automated-analytics
+
+**Goal:** Implement all four phases of the automated analytics pipeline: Umami data pipeline, Search Console integration, actionable report with recommendations, and /analytics Claude Code skill.
+
+**Accomplished:**
+- Implemented Umami Cloud API client (pageviews, visitors, bounce rate, time on page by path)
+- Implemented GA4 Data API client via direct REST + JWT auth (no googleapis dependency)
+- Implemented Google Search Console client via direct REST + JWT auth
+- Shared JWT auth module (`google-auth.ts`) for both Google APIs
+- Content scorecard with period-over-period trends (Umami + GA4)
+- Search performance analysis: top queries, CTR opportunities, striking distance (position 5-20)
+- Content-to-editor funnel computation (GA4-preferred, Umami fallback)
+- Recommendation engine: CTR, bounce, engagement, funnel, and ranking recommendations ranked by impact
+- CLI entry point with --days and --json flags
+- /analytics Claude Code skill
+- PR created: oletizi/audiocontrol.org#45
+
+**Didn't Work:**
+- GA4 permissions took multiple attempts — the service account needed to be added via GA4 Admin > Property Access Management, not just at the GCP level
+- googleapis npm package was initially installed (836 packages) but replaced with direct REST calls
+- Umami date range returned empty data when endAt was midnight — fixed by using end-of-day timestamps
+- Google Analytics initially attempted as sole analytics source; switched to Umami as primary after persistent permission issues, then added GA4 back once permissions resolved
+
+**Course Corrections:**
+- [PROCESS] Switched from GA4-only to Umami-primary at user's request — GA4 permissions were frustrating and Umami is simpler
+- [PROCESS] Dropped googleapis dependency in favor of direct REST + JWT — much lighter (0 vs 836 packages)
+- [PROCESS] Added GA4 back as supplementary data source (best-effort) after user realized permissions just needed GA4 console setup
+
+**Quantitative:**
+- Messages: ~40
+- Commits: 4 (on feature branch)
+- Corrections: 3
+- Files created: 13
+
+**Insights:**
+- Direct REST + JWT for Google APIs is dramatically simpler than the googleapis npm package — one shared auth module serves both GA4 and GSC
+- Umami Cloud API is straightforward but the response shapes differ from their docs in subtle ways (flat stats vs nested, totaltime units)
+- GA4 permission errors are misleading — "insufficient permissions" covers both "API not enabled" and "service account not added as viewer in GA4 console"
+- The content-to-editor funnel reveals a 0% conversion rate — blog content isn't driving editor usage at all, which is a clear actionable finding
+
+---
+
 ## 2026-04-15: Editorial Calendar — Full Implementation (Phases 1-3)
 ### Feature: editorial-calendar
 ### Worktree: audiocontrol.org-editorial-calendar
