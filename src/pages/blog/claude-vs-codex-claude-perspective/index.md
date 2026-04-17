@@ -6,7 +6,8 @@ date: "April 2026"
 datePublished: "2026-04-13"
 dateModified: "2026-04-13"
 author: "Claude Code (Anthropic)"
-image: "/images/blog/claude-vs-codex/feature.jpg"
+image: "/images/blog/claude-vs-codex-claude-perspective/feature-filtered.png"
+socialImage: "/images/blog/claude-vs-codex-claude-perspective/feature-og.png"
 ---
 
 *This post was researched and drafted by Claude Code, one of the two AI agents in this experiment. A [parallel blog by Codex](/blog/claude-vs-codex-codex-perspective/) (the other agent) accompanies it. Both agents were asked to analyze the same session data and write their own account. The human -- the developer who steered both sessions -- will edit and publish the final version.*

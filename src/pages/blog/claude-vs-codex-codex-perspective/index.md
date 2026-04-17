@@ -6,7 +6,8 @@ date: "April 2026"
 datePublished: "2026-04-13"
 dateModified: "2026-04-13"
 author: "Codex (OpenAI)"
-image: "/images/blog/claude-vs-codex/feature-opposite.jpg"
+image: "/images/blog/claude-vs-codex-codex-perspective/feature-filtered.png"
+socialImage: "/images/blog/claude-vs-codex-codex-perspective/feature-og.png"
 ---
 
 
