@@ -1,6 +1,6 @@
 # Feature Images
 
-A pipeline for generating branded feature images for blog posts and pages: AI-generated background → post-processing filter chain → branded text overlay → multi-format output. Driven from the CLI or via Claude Code skills.
+A pipeline for generating branded feature images for blog posts and pages: AI-generated background → post-processing filter chain → branded text overlay → multi-format output. Driven through a two-way async workflow between Claude Code skills and a dev-only preview gallery.
 
 ## How It Works
 
@@ -13,22 +13,69 @@ Each stage is independently configurable:
 - **Provider** — DALL-E 3 or FLUX (Black Forest Labs API)
 - **Filters** — composable post-processing applied to the background before overlay (so text stays sharp)
 - **Overlay** — branded panel with title, subtitle, logo, and "audiocontrol.org" wordmark
-- **Formats** — OG (1200x630), YouTube (1280x720), Instagram (1080x1080) — all generated from a single source
+- **Formats** — OG (1200×630), YouTube (1280×720), Instagram (1080×1080) — all generated from a single source
+
+## The Two-Way Workflow (Default Flow for Blog Posts)
+
+Blog-post feature images use an async pipeline between Claude Code and the preview gallery:
+
+```
+/feature-image-blog <post>   →   agent enqueues workflow item (open)
+user opens gallery           →   activates the workflow, iterates on prompts & filters
+user submits decision        →   picks an approved generation (workflow → decided)
+/feature-image-apply         →   agent copies files, wires frontmatter + index (→ applied)
+```
+
+State machine on each workflow item:
+
+```
+open  →  decided  →  applied
+   \       /
+    cancelled
+```
+
+Two JSONL files back this pipeline (both gitignored):
+
+- `.feature-image-history.jsonl` — every generation run through the gallery or CLI (raw record)
+- `.feature-image-pipeline.jsonl` — workflow items with state transitions (intent + decision + outcome)
 
 ## Skills
 
-The image workflow is exposed as Claude Code skills.
-
 | Skill | Purpose |
 |-------|---------|
-| `/feature-image-blog <post-path>` | End-to-end: generate, filter, composite, wire frontmatter, update blog index |
-| `/feature-image <page-path>` | General-purpose image generation for any page (no auto-wiring) |
+| `/feature-image-blog <post-path-or-url>` | Enqueue a workflow item for a blog post; hand off to the gallery |
+| `/feature-image-apply` | Process all `decided` workflow items; copy files, wire frontmatter, update blog index |
+| `/feature-image-help` | Show pipeline state: open workflows, recent generations, quick-start hints |
+| `/feature-image <page-path>` | Older inline generation for non-blog pages (not part of the async pipeline) |
 
-`/feature-image-blog` is the primary workflow. It reads the post frontmatter, builds an abstract prompt, asks for confirmation, generates the image set, and wires everything into the post and the blog index card.
+`/feature-image-blog` is the primary entry point for blog posts. It accepts either a path (`src/pages/blog/my-post/index.md`) or a URL (`https://audiocontrol.org/blog/my-post/` — the slug is extracted automatically).
+
+## Preview Gallery
+
+Dev-only Astro route at `/dev/feature-image-preview`. Requires `npm run dev`. Returns 404 in production.
+
+Features:
+- **Pending workflows panel** — open items enqueued by the agent, plus decided items awaiting `/feature-image-apply`. Auto-polls every 5 seconds.
+- **Activate** a workflow to pre-fill the form with the post's context (prompt, title, subtitle, suggested preset)
+- **Generate** — free-text prompt, provider/preset/filter selection, multi-format output
+- **History** — every generation with raw/filtered/composited variants, approve/reject, notes, "Copy as input" to re-seed the form
+- **Submit for workflow** — per-entry button (only visible when a workflow is active) that links the approved generation to the workflow
+
+## API Endpoints (Dev-Only)
+
+All under `/api/dev/feature-image/`. All return 404 in production.
+
+| Endpoint | Purpose |
+|----------|---------|
+| `POST /generate` | Run the pipeline; append to history log; return the new log entry |
+| `GET /log` | Return the history log (most recent first) |
+| `POST /log` | Update an existing history entry (status / notes) |
+| `GET /workflow[?state=X]` | List workflow items, optionally filtered by state |
+| `POST /workflow` | Create / decide / cancel / apply-result on a workflow item |
 
 ## CLI
 
-The CLI is the building block. Skills call into it.
+The CLI is still available for one-off generation outside the gallery workflow:
 
 ```bash
 # Generate a background and full overlay set with a preset
@@ -67,6 +114,8 @@ tsx scripts/feature-image/cli.ts \
 | `--name` | Base filename for output (default: `generated`) |
 | `--output` | Output directory (default: `public/images/generated`) |
 
+Both the CLI and the HTTP generate endpoint share a single library function: `generateFeatureImage()` in `scripts/feature-image/pipeline.ts`.
+
 ## Providers
 
 | Provider | Model | Notes |
@@ -78,12 +127,12 @@ tsx scripts/feature-image/cli.ts \
 
 ### API Keys
 
-The CLI auto-loads keys from `~/.config/audiocontrol/`:
+The pipeline auto-loads keys from `~/.config/audiocontrol/`:
 
 - `openai-key.txt` → `OPENAI_API_KEY` (DALL-E)
 - `flux-key.txt` → `BFL_API_KEY` (FLUX)
 
-Environment variables override the file-based keys when set.
+Environment variables override the file-based keys when set. See `.env.example`.
 
 ## Filter Pipeline
 
@@ -101,7 +150,7 @@ Filters are applied to the background **before** the text overlay, so generated 
 
 ### Presets
 
-Named chains for common looks. Use `--preset <name>`.
+Named chains for common looks. Use `--preset <name>` or select in the gallery.
 
 | Preset | Chain | Use case |
 |--------|-------|----------|
@@ -139,49 +188,39 @@ A typical run with `--name feature` produces:
 
 ```
 public/images/blog/<slug>/
-├── feature-raw.png        # Direct AI provider output (only for --provider, not --background)
+├── feature-raw.png        # Direct AI provider output (only when generating from --prompt)
 ├── feature-filtered.png   # Post-filter background, no overlay (used inline)
-├── feature-og.png         # 1200x630 with branded text overlay (used as socialImage)
-├── feature-youtube.png    # 1280x720 with overlay
-└── feature-instagram.png  # 1080x1080 with overlay
+├── feature-og.png         # 1200×630 with branded text overlay (used as socialImage)
+├── feature-youtube.png    # 1280×720 with overlay
+└── feature-instagram.png  # 1080×1080 with overlay
 ```
 
 ## Typical Workflow
 
-### Adding a feature image to a new blog post
+### Adding a feature image to a blog post (preferred flow)
 
 ```
-/feature-image-blog src/pages/blog/my-post/index.md
+1.  In Claude Code:    /feature-image-blog src/pages/blog/my-post/index.md
+2.  In your browser:   http://localhost:4321/dev/feature-image-preview
+                         → Activate the pending workflow
+                         → Iterate on prompt / preset / filters until one feels right
+                         → Click "Submit for workflow XXXXXXXX"
+3.  In Claude Code:    /feature-image-apply
 ```
 
-The skill will:
-1. Read post title and description
-2. Propose an abstract image prompt; confirm with you
-3. Generate the image set into `public/images/blog/<slug>/`
-4. Update post frontmatter (`image` + `socialImage`)
-5. Update the matching entry in `src/pages/blog/index.astro`
+Step 3 copies the approved images into `public/images/blog/<slug>/`, updates the post's frontmatter (`image` + `socialImage`), and updates the blog index card. Review in the dev server, then commit.
 
-### Iterating on style
-
-```bash
-# Try a different preset on the same background
-tsx scripts/feature-image/cli.ts \
-  --background public/images/blog/<slug>/feature-raw.png \
-  --preset heavy-crt \
-  --title "Title" \
-  --subtitle "Subtitle" \
-  --formats og \
-  --name feature-heavy \
-  --output public/images/generated
-```
-
-### Comparing providers
+### Seeing what's in flight
 
 ```
---provider both
+/feature-image-help
 ```
 
-Generates from both DALL-E and FLUX with `-dalle` / `-flux` filename suffixes for side-by-side comparison.
+Reports open workflows (awaiting gallery interaction), decided workflows (awaiting apply), and the last few generation entries.
+
+### One-off iteration (no workflow, just playing)
+
+Visit the gallery directly without activating a workflow. Generate whatever you want — everything lands in `public/images/generated/` (gitignored) and in the history log. Approve entries for your own notes; nothing is wired into any post.
 
 ## File Layout
 
@@ -200,13 +239,29 @@ scripts/feature-image/
 │   ├── phosphor.ts
 │   └── index.ts          # Filter registry + named presets
 ├── overlay.ts            # Text overlay via satori + sharp
+├── pipeline.ts           # generateFeatureImage() — shared by CLI and HTTP endpoint
+├── log.ts                # history JSONL schema and read/append/update
+├── workflow.ts           # pipeline JSONL schema and state transitions
 └── cli.ts                # CLI entry point
 
-.claude/skills/
-├── feature-image/SKILL.md         # General-purpose generation
-└── feature-image-blog/SKILL.md    # Blog-post end-to-end orchestration
+src/pages/dev/
+└── feature-image-preview.astro     # Gallery UI (dev-only)
 
-src/layouts/BlogLayout.astro       # Renders inline image, sets OG meta from socialImage
+src/pages/api/dev/feature-image/
+├── generate.ts            # POST — run the pipeline
+├── log.ts                 # GET / POST — history
+└── workflow.ts            # GET / POST — workflow state transitions
+
+.claude/skills/
+├── feature-image/         # older inline-generation skill
+├── feature-image-blog/    # enqueue a workflow for a blog post
+├── feature-image-apply/   # process decided workflow items
+└── feature-image-help/    # show pipeline state
+
+src/layouts/BlogLayout.astro        # Renders inline image, sets OG meta from socialImage
+
+.feature-image-history.jsonl        # Generation history (gitignored)
+.feature-image-pipeline.jsonl       # Workflow pipeline state (gitignored)
 ```
 
 ## Prompt Guidance

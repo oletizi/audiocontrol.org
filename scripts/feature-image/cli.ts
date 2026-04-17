@@ -1,45 +1,13 @@
-import { writeFileSync, readFileSync, mkdirSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { homedir } from 'os';
+import { join, dirname, isAbsolute } from 'path';
 import { fileURLToPath } from 'url';
 import { parseArgs } from 'util';
-import type { ImageProvider, ProviderName, OutputFormat } from './types.js';
-import { OUTPUT_FORMATS } from './types.js';
-import { DalleProvider } from './providers/dalle.js';
-import { FluxProvider } from './providers/flux.js';
-import { compositeImage } from './overlay.js';
-import { applyFilters, resolveFilters, resolvePreset, PRESETS } from './filters/index.js';
-import type { Filter } from './filters/index.js';
+import { PRESETS } from './filters/index.js';
+import { generateFeatureImage, loadApiKeysFromConfig } from './pipeline.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, '..', '..');
 
-/** Load API keys from ~/.config/audiocontrol/ if env vars aren't already set. */
-function loadApiKeysFromConfig(): void {
-  const configDir = join(homedir(), '.config', 'audiocontrol');
-  const keyFiles: Array<[string, string]> = [
-    ['OPENAI_API_KEY', 'openai-key.txt'],
-    ['BFL_API_KEY', 'flux-key.txt'],
-  ];
-  for (const [envVar, fileName] of keyFiles) {
-    if (process.env[envVar]) continue;
-    const keyPath = join(configDir, fileName);
-    if (existsSync(keyPath)) {
-      process.env[envVar] = readFileSync(keyPath, 'utf-8').trim();
-    }
-  }
-}
-
 loadApiKeysFromConfig();
-
-function createProvider(name: ProviderName): ImageProvider {
-  switch (name) {
-    case 'dalle':
-      return new DalleProvider();
-    case 'flux':
-      return new FluxProvider();
-  }
-}
 
 function printUsage(): void {
   console.log(`
@@ -72,19 +40,6 @@ Options:
 `);
 }
 
-function parseFormats(formatStr: string): OutputFormat[] {
-  const names = formatStr.split(',').map(s => s.trim());
-  const formats: OutputFormat[] = [];
-  for (const name of names) {
-    const found = OUTPUT_FORMATS.find(f => f.name === name);
-    if (!found) {
-      throw new Error(`Unknown format "${name}". Valid formats: ${OUTPUT_FORMATS.map(f => f.name).join(', ')}`);
-    }
-    formats.push(found);
-  }
-  return formats;
-}
-
 async function main(): Promise<void> {
   const { values } = parseArgs({
     options: {
@@ -110,121 +65,41 @@ async function main(): Promise<void> {
     return;
   }
 
-  const hasTitle = !!values.title;
-  const hasBackground = !!values.background;
-  const hasPrompt = !!values.prompt;
-
-  if (!hasPrompt && !hasBackground) {
+  if (!values.prompt && !values.background) {
     console.error('Error: either --prompt or --background is required\n');
     printUsage();
     process.exit(1);
   }
 
-  const providerArg = values.provider as string;
-  if (!['dalle', 'flux', 'both'].includes(providerArg)) {
-    console.error(`Error: --provider must be "dalle", "flux", or "both" (got "${providerArg}")\n`);
-    printUsage();
-    process.exit(1);
+  const outputArg = values.output as string;
+  const outputDir = isAbsolute(outputArg) ? outputArg : join(rootDir, outputArg);
+  const backgroundPathArg = values.background;
+  const backgroundPath = backgroundPathArg
+    ? (isAbsolute(backgroundPathArg) ? backgroundPathArg : join(rootDir, backgroundPathArg))
+    : undefined;
+
+  const result = await generateFeatureImage({
+    prompt: values.prompt,
+    backgroundPath,
+    provider: values.provider as 'dalle' | 'flux' | 'both',
+    width: parseInt(values.width as string, 10),
+    height: parseInt(values.height as string, 10),
+    preset: values.preset,
+    filters: values.filters,
+    title: values.title,
+    subtitle: values.subtitle,
+    outputDir,
+    baseName: values.name as string,
+    formats: values.formats as string,
+  });
+
+  if (result.filtersApplied.length > 0) {
+    console.log(`Filters: ${result.filtersApplied.join(' → ')}`);
   }
-
-  const outputDir = join(rootDir, values.output as string);
-  if (!existsSync(outputDir)) {
-    mkdirSync(outputDir, { recursive: true });
-  }
-
-  const width = parseInt(values.width as string, 10);
-  const height = parseInt(values.height as string, 10);
-  const baseName = values.name as string;
-  const outputFormats = parseFormats(values.formats as string);
-
-  // Resolve filter chain
-  let filters: Filter[] = [];
-  if (values.preset) {
-    filters = resolvePreset(values.preset as string);
-  } else if (values.filters) {
-    filters = resolveFilters(values.filters as string);
-  }
-  if (filters.length > 0) {
-    console.log(`Filters: ${filters.map(f => f.name).join(' → ')}`);
-  }
-
-  // Resolve background image(s)
-  const backgrounds: Array<{ name: string; buffer: Buffer }> = [];
-
-  if (hasBackground) {
-    // Use existing background file
-    const bgPath = values.background as string;
-    if (!existsSync(bgPath)) {
-      console.error(`Error: background file not found: ${bgPath}`);
-      process.exit(1);
-    }
-    backgrounds.push({ name: '', buffer: readFileSync(bgPath) });
-  } else {
-    // Generate background(s) from AI
-    const prompt = values.prompt as string;
-    const providerNames: ProviderName[] = providerArg === 'both'
-      ? ['dalle', 'flux']
-      : [providerArg as ProviderName];
-
-    for (const providerName of providerNames) {
-      console.log(`\nGenerating background with ${providerName}...`);
-      const provider = createProvider(providerName);
-      const result = await provider.generate({ prompt, width, height });
-
-      const suffix = providerNames.length > 1 ? `-${providerName}` : '';
-      backgrounds.push({ name: suffix, buffer: result.buffer });
-
-      // Save raw background
-      const rawPath = join(outputDir, `${baseName}${suffix}-raw.png`);
-      writeFileSync(rawPath, result.buffer);
-      console.log(`  Raw background: ${rawPath} (${result.width}x${result.height})`);
-    }
-  }
-
-  // Apply filters to backgrounds (before overlay so text stays sharp)
-  if (filters.length > 0) {
-    for (const bg of backgrounds) {
-      const before = bg.buffer;
-      bg.buffer = await applyFilters(before, filters);
-
-      const suffix = bg.name ? bg.name : '';
-      const filteredPath = join(outputDir, `${baseName}${suffix}-filtered.png`);
-      writeFileSync(filteredPath, bg.buffer);
-      console.log(`  Filtered background: ${filteredPath}`);
-    }
-  }
-
-  if (!hasTitle) {
-    if (hasBackground && filters.length === 0) {
-      console.log('No --title and no --filters specified. Nothing to do.');
-    }
-    console.log('\nDone!');
-    return;
-  }
-
-  // Overlay mode: composite text onto each background in each format
-  const title = values.title as string;
-  const subtitle = values.subtitle;
-
-  for (const bg of backgrounds) {
-    for (const format of outputFormats) {
-      const suffix = bg.name ? `${bg.name}` : '';
-      const outputPath = join(outputDir, `${baseName}${suffix}-${format.name}.png`);
-
-      console.log(`  Compositing ${format.name} (${format.width}x${format.height})...`);
-      const result = await compositeImage({
-        title,
-        subtitle,
-        backgroundBuffer: bg.buffer,
-        format,
-      });
-
-      writeFileSync(outputPath, result);
-      console.log(`  Saved: ${outputPath}`);
-    }
-  }
-
-  console.log('\nDone!');
+  for (const path of result.raw) console.log(`  Raw background: ${path}`);
+  for (const path of result.filtered) console.log(`  Filtered background: ${path}`);
+  for (const c of result.composited) console.log(`  Saved ${c.format}: ${c.path}`);
+  console.log(`\nDone in ${result.durationMs}ms.`);
 }
 
 main().catch((error: Error) => {

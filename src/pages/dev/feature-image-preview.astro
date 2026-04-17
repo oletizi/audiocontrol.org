@@ -1,0 +1,557 @@
+---
+export const prerender = false;
+
+import { PRESETS, FILTER_REGISTRY } from '../../../scripts/feature-image/filters/index.js';
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+
+const presets = Object.keys(PRESETS);
+const filterNames = Object.keys(FILTER_REGISTRY);
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Feature Image Preview — dev</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: #141820;
+      color: #c4ced8;
+      font-family: 'Inter', system-ui, sans-serif;
+      line-height: 1.5;
+    }
+    h1, h2 { font-family: 'JetBrains Mono', monospace; }
+    h1 { margin-top: 0; color: #2fb8a8; }
+    h2 { color: #c4ced8; margin-top: 2rem; }
+    .layout { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; max-width: 1800px; margin: 0 auto; }
+    @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
+    form { display: flex; flex-direction: column; gap: 1rem; }
+    label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: #a0aab4; }
+    label span { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    input, select, textarea {
+      font: inherit;
+      background: #1c2028;
+      color: #e0e6ed;
+      border: 1px solid #2a3038;
+      border-radius: 4px;
+      padding: 0.5rem 0.75rem;
+    }
+    textarea { min-height: 8rem; resize: vertical; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+    input:focus, select:focus, textarea:focus { outline: 1px solid #2fb8a8; border-color: #2fb8a8; }
+    button {
+      font: inherit;
+      font-family: 'JetBrains Mono', monospace;
+      background: #2fb8a8;
+      color: #0a0c10;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button:not(:disabled):hover { background: #3fcdbc; }
+    .filter-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+    .filter-list label { flex-direction: row; align-items: center; gap: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-transform: none; letter-spacing: 0; }
+    .filter-list input[type=checkbox] { width: auto; }
+    .hint { color: #6b7280; font-size: 0.8rem; }
+    .err { color: #e47373; background: rgba(228, 115, 115, 0.1); padding: 0.75rem; border-radius: 4px; font-size: 0.85rem; }
+    .gallery-item { border: 1px solid #2a3038; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: #1c2028; }
+    .gallery-item img { max-width: 100%; border-radius: 4px; display: block; }
+    .gallery-item .meta { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #6b7280; }
+    .gallery-item .meta strong { color: #c4ced8; font-weight: 500; }
+    .gallery-item .status { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.7rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+    .status.generated { background: #2a3038; color: #a0aab4; }
+    .status.approved { background: #1e3a32; color: #5fd1a3; }
+    .status.rejected { background: #3a1e1e; color: #e47373; }
+    .row-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    .row-actions button { padding: 0.4rem 0.75rem; font-size: 0.75rem; }
+    .row-actions button.secondary { background: #2a3038; color: #c4ced8; }
+    .row-actions button.secondary:hover { background: #3a4048; }
+    .notes { width: 100%; margin-top: 0.5rem; }
+    .gallery-item .variants { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
+    .gallery-item .variants figure { margin: 0; }
+    .gallery-item .variants figcaption { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; }
+    #status { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; min-height: 1.5em; color: #a0aab4; }
+    #status.working { color: #2fb8a8; }
+    #status.error { color: #e47373; }
+    .workflow-panel { background: #1c2028; border: 1px solid #2a3038; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
+    .workflow-panel h3 { margin: 0 0 0.75rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #2fb8a8; }
+    .workflow-panel.empty h3 { color: #6b7280; }
+    .workflow-item { border-left: 3px solid #2a3038; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; background: #141820; border-radius: 0 4px 4px 0; cursor: pointer; transition: border-color 0.15s; }
+    .workflow-item:hover { border-left-color: #2fb8a8; }
+    .workflow-item.active { border-left-color: #2fb8a8; background: rgba(47, 184, 168, 0.08); }
+    .workflow-item .wf-title { font-weight: 600; font-size: 0.9rem; }
+    .workflow-item .wf-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .workflow-item .wf-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .workflow-item .wf-actions button { padding: 0.3rem 0.6rem; font-size: 0.7rem; }
+    .workflow-item.decided { border-left-color: #5fd1a3; }
+    .workflow-item.applied { border-left-color: #6b7280; opacity: 0.6; }
+    .active-wf-banner { background: rgba(47, 184, 168, 0.1); border: 1px solid #2fb8a8; border-radius: 4px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+    .active-wf-banner button { background: transparent; color: #a0aab4; border: 1px solid #2a3038; padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+    .active-wf-banner button:hover { color: #c4ced8; }
+    .submit-decision { background: #5fd1a3 !important; color: #0a0c10 !important; }
+    .submit-decision:hover { background: #7adcb4 !important; }
+  </style>
+</head>
+<body>
+  <h1>feature-image preview</h1>
+  <p class="hint">Dev-only gallery for iterating on prompts and filters. Generation log: <code>.feature-image-history.jsonl</code>. Workflow pipeline: <code>.feature-image-pipeline.jsonl</code>.</p>
+
+  <section class="workflow-panel" id="workflow-panel">
+    <h3>Pending workflows</h3>
+    <div id="workflow-list">Loading…</div>
+  </section>
+
+  <div class="layout">
+    <section>
+      <h2>Generate</h2>
+      <div id="active-wf-banner" style="display: none;"></div>
+      <form id="gen-form">
+        <label>
+          <span>Prompt</span>
+          <textarea id="prompt" name="prompt" placeholder="Abstract geometric structure, teal and amber, dark moody background, no text, no words, no letters, no typography"></textarea>
+        </label>
+
+        <label>
+          <span>Provider</span>
+          <select id="provider" name="provider">
+            <option value="flux" selected>flux</option>
+            <option value="dalle">dalle</option>
+            <option value="both">both</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Preset</span>
+          <select id="preset" name="preset">
+            <option value="">(none)</option>
+            {presets.map(name => <option value={name}>{name}</option>)}
+          </select>
+          <span class="hint">Overrides the filter checkboxes below when set.</span>
+        </label>
+
+        <label>
+          <span>Filters (used if Preset is blank)</span>
+          <div class="filter-list">
+            {filterNames.map(name => (
+              <label><input type="checkbox" name="filters" value={name} />{name}</label>
+            ))}
+          </div>
+        </label>
+
+        <label>
+          <span>Title (optional)</span>
+          <input type="text" id="title" name="title" />
+        </label>
+
+        <label>
+          <span>Subtitle (optional)</span>
+          <input type="text" id="subtitle" name="subtitle" />
+        </label>
+
+        <label>
+          <span>Formats (when title is set)</span>
+          <input type="text" id="formats" name="formats" value="og" placeholder="og,youtube,instagram" />
+        </label>
+
+        <button type="submit" id="gen-btn">Generate</button>
+        <div id="status"></div>
+      </form>
+    </section>
+
+    <section>
+      <h2>History</h2>
+      <div id="gallery">Loading…</div>
+    </section>
+  </div>
+
+  <script>
+    const form = document.getElementById('gen-form');
+    const genBtn = document.getElementById('gen-btn');
+    const statusEl = document.getElementById('status');
+    const galleryEl = document.getElementById('gallery');
+    const workflowListEl = document.getElementById('workflow-list');
+    const workflowPanelEl = document.getElementById('workflow-panel');
+    const activeBannerEl = document.getElementById('active-wf-banner');
+
+    let activeWorkflow = null;  // the currently-selected workflow item
+    let allWorkflows = [];      // cached list
+
+    async function fetchWorkflows() {
+      const res = await fetch('/api/dev/feature-image/workflow');
+      if (!res.ok) throw new Error(`workflow fetch failed: ${res.status}`);
+      return (await res.json()).items;
+    }
+
+    function renderWorkflowItem(item) {
+      const div = document.createElement('div');
+      div.className = 'workflow-item ' + item.state;
+      if (activeWorkflow && activeWorkflow.id === item.id) div.classList.add('active');
+      const postLine = item.context.postPath
+        ? `<span><strong>post:</strong> ${escapeHtml(item.context.postPath)}</span>`
+        : '';
+      const titleLine = item.context.title ? `<div class="wf-title">${escapeHtml(item.context.title)}</div>` : '<div class="wf-title"><em>untitled workflow</em></div>';
+      let actions = '';
+      if (item.state === 'open') {
+        actions = `
+          <button type="button" data-act="activate">${activeWorkflow && activeWorkflow.id === item.id ? 'Deactivate' : 'Activate'}</button>
+          <button type="button" class="secondary" data-act="cancel">Cancel</button>
+        `;
+      } else if (item.state === 'decided') {
+        actions = `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #5fd1a3;">awaiting /feature-image-apply</span>`;
+      } else if (item.state === 'applied') {
+        actions = `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #6b7280;">applied</span>`;
+      }
+      div.innerHTML = `
+        ${titleLine}
+        <div class="wf-meta">
+          <span>${escapeHtml(item.state)}</span>
+          <span>${escapeHtml(item.id.slice(0, 8))}</span>
+          ${postLine}
+        </div>
+        <div class="wf-actions">${actions}</div>
+      `;
+      div.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const act = btn.dataset.act;
+          if (act === 'activate') toggleActivate(item);
+          else if (act === 'cancel') cancelWorkflow(item);
+        });
+      });
+      return div;
+    }
+
+    function toggleActivate(item) {
+      if (activeWorkflow && activeWorkflow.id === item.id) {
+        activeWorkflow = null;
+      } else {
+        activeWorkflow = item;
+        prefillFromWorkflow(item);
+      }
+      renderWorkflowPanel();
+      renderActiveBanner();
+      refreshGallery();  // re-render to show/hide per-entry decision buttons
+    }
+
+    function prefillFromWorkflow(item) {
+      const ctx = item.context;
+      if (ctx.suggestedPrompt) document.getElementById('prompt').value = ctx.suggestedPrompt;
+      if (ctx.title) document.getElementById('title').value = ctx.title;
+      if (ctx.description) document.getElementById('subtitle').value = ctx.description;
+      if (ctx.suggestedPreset) {
+        const presetSel = document.getElementById('preset');
+        if ([...presetSel.options].some(o => o.value === ctx.suggestedPreset)) {
+          presetSel.value = ctx.suggestedPreset;
+        }
+      }
+    }
+
+    async function cancelWorkflow(item) {
+      if (!confirm(`Cancel workflow for ${item.context.postPath || item.id.slice(0, 8)}?`)) return;
+      try {
+        const res = await fetch('/api/dev/feature-image/workflow', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'cancel', id: item.id }),
+        });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        if (activeWorkflow && activeWorkflow.id === item.id) activeWorkflow = null;
+        await refreshWorkflows();
+      } catch (err) {
+        alert(`Failed to cancel: ${err.message}`);
+      }
+    }
+
+    function renderWorkflowPanel() {
+      const open = allWorkflows.filter(w => w.state === 'open');
+      const decided = allWorkflows.filter(w => w.state === 'decided');
+      workflowListEl.innerHTML = '';
+      if (open.length === 0 && decided.length === 0) {
+        workflowPanelEl.classList.add('empty');
+        workflowListEl.innerHTML = '<p class="hint" style="margin: 0;">No pending workflows. Invoke <code>/feature-image-blog &lt;post-path&gt;</code> in Claude Code to start one.</p>';
+        return;
+      }
+      workflowPanelEl.classList.remove('empty');
+      if (open.length > 0) {
+        const h = document.createElement('div');
+        h.style.cssText = 'font-family: "JetBrains Mono", monospace; font-size: 0.7rem; color: #a0aab4; margin-bottom: 0.4rem;';
+        h.textContent = 'OPEN — click Activate to start working on one';
+        workflowListEl.appendChild(h);
+        for (const item of open) workflowListEl.appendChild(renderWorkflowItem(item));
+      }
+      if (decided.length > 0) {
+        const h = document.createElement('div');
+        h.style.cssText = 'font-family: "JetBrains Mono", monospace; font-size: 0.7rem; color: #5fd1a3; margin: 0.75rem 0 0.4rem;';
+        h.textContent = 'DECIDED — waiting for agent to apply';
+        workflowListEl.appendChild(h);
+        for (const item of decided) workflowListEl.appendChild(renderWorkflowItem(item));
+      }
+    }
+
+    function renderActiveBanner() {
+      if (!activeWorkflow) {
+        activeBannerEl.style.display = 'none';
+        return;
+      }
+      activeBannerEl.style.display = 'flex';
+      activeBannerEl.className = 'active-wf-banner';
+      const title = activeWorkflow.context.title || activeWorkflow.context.postPath || activeWorkflow.id.slice(0, 8);
+      activeBannerEl.innerHTML = `
+        <span><strong>Active workflow:</strong> ${escapeHtml(title)} <span style="color:#6b7280">(${activeWorkflow.id.slice(0,8)})</span></span>
+        <button type="button" id="deactivate-btn">Deactivate</button>
+      `;
+      document.getElementById('deactivate-btn').addEventListener('click', () => {
+        activeWorkflow = null;
+        renderWorkflowPanel();
+        renderActiveBanner();
+        refreshGallery();
+      });
+    }
+
+    async function refreshWorkflows() {
+      try {
+        allWorkflows = await fetchWorkflows();
+        if (activeWorkflow) {
+          const current = allWorkflows.find(w => w.id === activeWorkflow.id);
+          if (!current || current.state !== 'open') activeWorkflow = null;
+        }
+        renderWorkflowPanel();
+        renderActiveBanner();
+      } catch (err) {
+        workflowListEl.innerHTML = `<div class="err">Could not load workflows: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    async function submitDecision(entryId) {
+      if (!activeWorkflow) return;
+      const notes = prompt('Optional notes for this decision:', '') || undefined;
+      try {
+        const res = await fetch('/api/dev/feature-image/workflow', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            action: 'decide',
+            id: activeWorkflow.id,
+            logEntryId: entryId,
+            userNotes: notes,
+          }),
+        });
+        if (!res.ok) {
+          const j = await res.json().catch(() => ({}));
+          throw new Error(j.error || `status ${res.status}`);
+        }
+        activeWorkflow = null;
+        await refreshWorkflows();
+        await refreshGallery();
+        alert('Decision submitted. Run /feature-image-apply in Claude Code to apply it.');
+      } catch (err) {
+        alert(`Failed to submit decision: ${err.message}`);
+      }
+    }
+
+    async function fetchLog() {
+      const res = await fetch('/api/dev/feature-image/log');
+      if (!res.ok) throw new Error(`log fetch failed: ${res.status}`);
+      return (await res.json()).entries;
+    }
+
+    function fmtDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString();
+    }
+
+    function renderEntry(entry) {
+      const div = document.createElement('div');
+      div.className = 'gallery-item';
+      div.dataset.id = entry.id;
+
+      const title = entry.title ? `<strong>${escapeHtml(entry.title)}</strong>` : '<em>(no title)</em>';
+      const promptLine = entry.prompt ? `<div style="font-size: 0.85rem; margin: 0.5rem 0; color: #a0aab4;">${escapeHtml(entry.prompt)}</div>` : '';
+      const chain = entry.preset ? `preset: ${entry.preset}` : (entry.filters || '(no filters)');
+      const error = entry.error ? `<div class="err">${escapeHtml(entry.error)}</div>` : '';
+
+      let variantsHtml = '';
+      if (entry.outputs) {
+        const imgs = [];
+        for (const c of (entry.outputs.composited || [])) {
+          imgs.push({ src: c.path, caption: `${c.format}${c.provider ? ` · ${c.provider}` : ''}` });
+        }
+        if (imgs.length === 0) {
+          for (const p of (entry.outputs.filtered || [])) imgs.push({ src: p, caption: 'filtered' });
+        }
+        if (imgs.length === 0) {
+          for (const p of (entry.outputs.raw || [])) imgs.push({ src: p, caption: 'raw' });
+        }
+        if (imgs.length > 0) {
+          variantsHtml = '<div class="variants">' + imgs.map(i =>
+            `<figure><img src="${escapeAttr(i.src)}?t=${Date.now()}" alt="" loading="lazy"><figcaption>${escapeHtml(i.caption)}</figcaption></figure>`
+          ).join('') + '</div>';
+        }
+      }
+
+      const notes = entry.notes ? `<div style="font-size: 0.85rem; margin-top: 0.5rem; color: #a0aab4; font-style: italic;">${escapeHtml(entry.notes)}</div>` : '';
+
+      const decisionBtn = activeWorkflow && entry.status !== 'rejected' && (entry.outputs.composited.length > 0 || entry.outputs.filtered.length > 0)
+        ? `<button type="button" class="submit-decision" data-action="decide">Submit for workflow ${activeWorkflow.id.slice(0,8)}</button>`
+        : '';
+
+      div.innerHTML = `
+        ${error}
+        ${title}
+        ${promptLine}
+        ${variantsHtml}
+        <div class="meta">
+          <span>${fmtDate(entry.timestamp)}</span>
+          <span><strong>provider:</strong> ${escapeHtml(entry.provider || '-')}</span>
+          <span><strong>${escapeHtml(chain)}</strong></span>
+          <span><strong>duration:</strong> ${entry.durationMs}ms</span>
+          <span class="status ${entry.status}">${entry.status}</span>
+        </div>
+        ${notes}
+        <div class="row-actions">
+          ${decisionBtn}
+          <button type="button" data-status="approved" class="secondary">Approve</button>
+          <button type="button" data-status="rejected" class="secondary">Reject</button>
+          <button type="button" data-action="note" class="secondary">Edit note</button>
+          <button type="button" data-action="copy" class="secondary">Copy as input</button>
+        </div>
+      `;
+
+      div.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const action = btn.dataset.action;
+          const newStatus = btn.dataset.status;
+          if (newStatus) return updateStatus(entry.id, newStatus);
+          if (action === 'note') return editNote(entry);
+          if (action === 'copy') return copyAsInput(entry);
+          if (action === 'decide') return submitDecision(entry.id);
+        });
+      });
+
+      return div;
+    }
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function escapeAttr(s) { return escapeHtml(s); }
+
+    async function refreshGallery() {
+      try {
+        const entries = await fetchLog();
+        galleryEl.innerHTML = '';
+        if (entries.length === 0) {
+          galleryEl.innerHTML = '<p class="hint">No generations yet.</p>';
+          return;
+        }
+        for (const entry of entries) galleryEl.appendChild(renderEntry(entry));
+      } catch (err) {
+        galleryEl.innerHTML = `<div class="err">Could not load log: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    async function updateStatus(id, status) {
+      try {
+        const res = await fetch('/api/dev/feature-image/log', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id, status }),
+        });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        await refreshGallery();
+      } catch (err) {
+        alert(`Failed to update status: ${err.message}`);
+      }
+    }
+
+    async function editNote(entry) {
+      const next = prompt('Note:', entry.notes || '');
+      if (next === null) return;
+      try {
+        const res = await fetch('/api/dev/feature-image/log', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: entry.id, notes: next }),
+        });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        await refreshGallery();
+      } catch (err) {
+        alert(`Failed to save note: ${err.message}`);
+      }
+    }
+
+    function copyAsInput(entry) {
+      if (entry.prompt) document.getElementById('prompt').value = entry.prompt;
+      if (entry.provider) document.getElementById('provider').value = entry.provider;
+      if (entry.preset) document.getElementById('preset').value = entry.preset;
+      if (entry.title) document.getElementById('title').value = entry.title;
+      if (entry.subtitle) document.getElementById('subtitle').value = entry.subtitle;
+      if (entry.formats) document.getElementById('formats').value = entry.formats;
+      document.querySelectorAll('input[name=filters]').forEach(cb => { cb.checked = false; });
+      if (entry.filters && !entry.preset) {
+        const picks = entry.filters.split(',').map(s => s.trim());
+        document.querySelectorAll('input[name=filters]').forEach(cb => {
+          if (picks.includes(cb.value)) cb.checked = true;
+        });
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const formData = new FormData(form);
+      const filters = Array.from(document.querySelectorAll('input[name=filters]:checked')).map(cb => cb.value);
+      const body = {
+        prompt: (formData.get('prompt') || '').toString().trim() || undefined,
+        provider: formData.get('provider'),
+        preset: (formData.get('preset') || '').toString() || undefined,
+        filters: filters.length > 0 && !formData.get('preset') ? filters.join(',') : undefined,
+        title: (formData.get('title') || '').toString().trim() || undefined,
+        subtitle: (formData.get('subtitle') || '').toString().trim() || undefined,
+        formats: (formData.get('formats') || 'og').toString(),
+      };
+      if (!body.prompt) {
+        statusEl.textContent = 'Prompt is required.';
+        statusEl.className = 'error';
+        return;
+      }
+      genBtn.disabled = true;
+      statusEl.textContent = 'Generating… (can take 30-60s for AI providers)';
+      statusEl.className = 'working';
+      try {
+        const res = await fetch('/api/dev/feature-image/generate', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || `status ${res.status}`);
+        statusEl.textContent = `Done in ${json.entry.durationMs}ms.`;
+        statusEl.className = '';
+        await refreshGallery();
+      } catch (err) {
+        statusEl.textContent = `Error: ${err.message}`;
+        statusEl.className = 'error';
+      } finally {
+        genBtn.disabled = false;
+      }
+    });
+
+    refreshWorkflows();
+    refreshGallery();
+
+    // Auto-refresh workflows every 5 seconds so new items enqueued by the agent appear
+    setInterval(refreshWorkflows, 5000);
+  </script>
+</body>
+</html>

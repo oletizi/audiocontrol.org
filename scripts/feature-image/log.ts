@@ -1,0 +1,71 @@
+import { readFileSync, existsSync, appendFileSync, writeFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const rootDir = join(__dirname, '..', '..');
+const LOG_PATH = join(rootDir, '.feature-image-history.jsonl');
+
+export type LogStatus = 'generated' | 'approved' | 'rejected';
+
+export interface LogEntry {
+  id: string;
+  timestamp: string;
+  prompt?: string;
+  backgroundPath?: string;
+  provider?: string;
+  preset?: string;
+  filters?: string;
+  title?: string;
+  subtitle?: string;
+  formats?: string;
+  outputDir: string;
+  outputs: {
+    raw: string[];
+    filtered: string[];
+    composited: Array<{ provider: string | null; format: string; path: string }>;
+  };
+  durationMs: number;
+  status: LogStatus;
+  notes?: string;
+  error?: string;
+}
+
+/** Read all log entries, oldest first. Empty array if the file doesn't exist. */
+export function readLog(): LogEntry[] {
+  if (!existsSync(LOG_PATH)) return [];
+  const content = readFileSync(LOG_PATH, 'utf-8');
+  const lines = content.split('\n').filter(l => l.trim().length > 0);
+  const entries: LogEntry[] = [];
+  for (const line of lines) {
+    try {
+      entries.push(JSON.parse(line) as LogEntry);
+    } catch {
+      // skip malformed lines rather than crash
+    }
+  }
+  return entries;
+}
+
+/** Append a new entry to the log. */
+export function appendLog(entry: LogEntry): void {
+  appendFileSync(LOG_PATH, JSON.stringify(entry) + '\n', 'utf-8');
+}
+
+/** Update an existing entry by id (rewrites the whole file). */
+export function updateLog(id: string, patch: Partial<Pick<LogEntry, 'status' | 'notes'>>): LogEntry | null {
+  const entries = readLog();
+  const idx = entries.findIndex(e => e.id === id);
+  if (idx === -1) return null;
+  entries[idx] = { ...entries[idx], ...patch };
+  writeFileSync(
+    LOG_PATH,
+    entries.map(e => JSON.stringify(e)).join('\n') + '\n',
+    'utf-8',
+  );
+  return entries[idx];
+}
+
+export function getLogPath(): string {
+  return LOG_PATH;
+}

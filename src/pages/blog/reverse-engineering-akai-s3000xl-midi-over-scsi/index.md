@@ -6,6 +6,8 @@ date: "April 2026"
 datePublished: "2026-04-07"
 dateModified: "2026-04-07"
 author: "Orion Letizi"
+image: "/images/blog/reverse-engineering-akai-s3000xl-midi-over-scsi/feature-filtered.png"
+socialImage: "/images/blog/reverse-engineering-akai-s3000xl-midi-over-scsi/feature-og.png"
 ---
 
 # Reverse-Engineering the Akai S3000XL MIDI-over-SCSI Protocol
