@@ -1,9 +1,8 @@
 export {
-  loadCredentials,
-  getAccessToken,
-  clearTokenCache,
-  type RedditCredentials,
-} from './auth.js';
+  loadConfig,
+  buildUserAgent,
+  type RedditConfig,
+} from './config.js';
 
 export {
   getUserSubmissions,

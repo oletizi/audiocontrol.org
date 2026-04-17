@@ -30,7 +30,7 @@ Content creation for audiocontrol.org is ad hoc with no schedule, no procedure, 
 
 - **Sub-channel tracking**: each `DistributionRecord` carries a channel (e.g. subreddit `r/synthdiy`, YouTube channel name, LinkedIn page) so coverage can be tracked below the platform level
 - **Cross-posting opportunities**: a curated `topic → channels` map plus a skill that diffs recorded distributions against the map for a given post, surfacing unshared relevant channels
-- **Reddit API read-only sync (Tier 1)**: `/editorial-reddit-sync` pulls the user's own Reddit submissions and upserts DistributionRecords automatically, so the calendar stays in sync with reality without manual entry
+- **Reddit API read-only sync (Tier 1)**: `/editorial-reddit-sync` pulls the user's own Reddit submissions via Reddit's public `.json` endpoints (no OAuth, no credentials — just the username in a one-line config file) and upserts DistributionRecords automatically, so the calendar stays in sync with reality without manual entry
 - **Subreddit enrichment (Tier 2)**: opportunity reports include live subscriber count and self-promo hints pulled from `/r/<sub>/about.json`
 - **Reddit-first scope**: the curated map ships with subreddits first; the data model supports any platform but automation and enrichment target Reddit only
 

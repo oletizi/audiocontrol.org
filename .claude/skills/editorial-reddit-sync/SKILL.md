@@ -10,24 +10,19 @@ Query the Reddit API for the configured user's recent submissions, match each to
 
 ## Prerequisites
 
-`~/.config/audiocontrol/reddit.json` must exist with:
+`~/.config/audiocontrol/reddit.json` must exist with **one** field — your Reddit username:
 
 ```json
-{
-  "clientId": "...",
-  "clientSecret": "...",
-  "username": "your-reddit-username",
-  "password": "your-reddit-password",
-  "userAgent": "audiocontrol.org:editorial-sync:v1 (by /u/your-reddit-username)"
-}
+{ "username": "your-reddit-username" }
 ```
 
-The credentials come from a Reddit "script" app at https://www.reddit.com/prefs/apps. If the file is missing, the skill throws with a clear error — do not attempt to run without it.
+That's the entire setup. No Reddit app, no password, no OAuth, no 2FA concerns. We use Reddit's public `.json` endpoints — they're rate-limited but more than sufficient for periodic sync.
+
+If the file is missing, the skill throws with a clear error telling the user how to create it.
 
 ## Steps
 
-1. **Load credentials** via `loadCredentials()` from `scripts/lib/reddit/auth.ts`. If this throws, stop and tell the user to create the config file.
-2. **Fetch submissions**: call `getUserSubmissions(username, 200)` from `scripts/lib/reddit/client.ts` — returns up to 200 of the user's most recent submissions.
+1. **Fetch submissions**: call `getUserSubmissions(undefined, 200)` from `scripts/lib/reddit/client.ts` — reads the username from config and returns up to 200 of the user's most recent submissions. No authentication step.
 3. **Read the calendar** via `readCalendar(process.cwd())`.
 4. **Match each submission to a blog post**: a submission matches a Published entry if its `url` field contains `audiocontrol.org/blog/<slug>/` or if its `selftext` links to that path. Extract the slug from the URL.
 5. **Build DistributionRecord for each match**:
@@ -60,6 +55,6 @@ New records:
 
 - **Idempotent**: running twice in a row must insert zero records on the second run. The test for "already present" is (slug, platform, normalized channel, url) — not by Reddit submission ID — so we're robust to users adding records manually via `/editorial-distribute` before syncing.
 - **Use the Write tool** to persist the updated calendar.
-- **Error messages must be specific**: if Reddit returns 401, surface the exact status and suggest re-checking credentials. If a submission's URL doesn't parse, skip it and include the reason in the report tail.
+- **Error messages must be specific**: if Reddit returns 429 (rate-limited), say so and suggest waiting before retrying. If a submission's URL doesn't parse, skip it and include the reason in the report tail.
 - Do **not** post anything. This skill is strictly read-only.
-- The skill is safe to schedule as a recurring task (e.g. via `/schedule`) once credentials are configured.
+- The skill is safe to schedule as a recurring task (e.g. via `/schedule`) — just keep it infrequent (hourly or less often) to stay well under Reddit's unauthenticated rate limits.

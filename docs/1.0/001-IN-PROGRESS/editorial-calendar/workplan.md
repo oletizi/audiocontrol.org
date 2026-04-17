@@ -37,8 +37,8 @@
 - `.claude/skills/editorial-reddit-opportunities/SKILL.md` — show unshared relevant subreddits for a post
 - `.claude/skills/editorial-reddit-sync/SKILL.md` — pull submissions from Reddit API and update distribution records
 - `scripts/lib/editorial/channels.ts` — load curated `editorial-channels.json` and diff against distributions
-- `scripts/lib/reddit/auth.ts` — Reddit script-app OAuth token loader
-- `scripts/lib/reddit/client.ts` — minimal Reddit API client (submissions, subreddit about)
+- `scripts/lib/reddit/config.ts` — Reddit username loader, User-Agent builder (no OAuth)
+- `scripts/lib/reddit/client.ts` — minimal Reddit public-JSON client (submissions, subreddit about)
 - `docs/editorial-channels.json` — curated `topic → [subreddit]` map
 
 ## Implementation Phases
@@ -171,8 +171,8 @@
 
 **Tier 1 — Reddit API read-only sync:**
 
-- [x] Add `scripts/lib/reddit/auth.ts` — script-app OAuth (password grant), in-memory token cache
-- [x] Add `scripts/lib/reddit/client.ts` — `getUserSubmissions` with pagination
+- [x] Add `scripts/lib/reddit/config.ts` — one-line config loader (`{username}`), derives User-Agent from username; no OAuth/password
+- [x] Add `scripts/lib/reddit/client.ts` — `getUserSubmissions` via public `.json` endpoints with pagination
 - [x] Create `/editorial-reddit-sync` skill — pulls submissions, matches by URL, upserts DistributionRecords idempotently
 - [x] Dedup on (slug, platform, normalized channel, url) so repeated syncs are idempotent
 - [x] Document reddit.json credential setup in CONTENT-CALENDAR.md

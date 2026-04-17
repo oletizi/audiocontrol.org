@@ -122,27 +122,21 @@ Reddit credentials live at `~/.config/audiocontrol/reddit.json`. See [Reddit Set
 
 ## Reddit Setup
 
-The Reddit integration needs a Reddit "script" app and a local credentials file.
+One-line config file — no Reddit app, no OAuth, no credentials.
 
-1. Go to https://www.reddit.com/prefs/apps and click **create another app**
-2. Choose type **script**
-3. Set the redirect URI to `http://localhost:8080` (unused for script apps; required by the form)
-4. After creation, note the **client ID** (string under the app name, next to "personal use script") and the **secret**
-5. Create `~/.config/audiocontrol/reddit.json`:
-   ```json
-   {
-     "clientId": "...",
-     "clientSecret": "...",
-     "username": "your-reddit-username",
-     "password": "your-reddit-password",
-     "userAgent": "audiocontrol.org:editorial-sync:v1 (by /u/your-reddit-username)"
-   }
-   ```
-6. Verify with `/editorial-reddit-sync` — it should list your recent submissions and report any that matched blog posts
+Create `~/.config/audiocontrol/reddit.json`:
 
-**Security:** the file contains your Reddit password. Keep it out of version control (gitignored by default — it lives outside the repo). Rotate the password if leaked.
+```json
+{ "username": "your-reddit-username" }
+```
 
-**Rate limits:** Reddit allows 60 requests per minute with a User-Agent. Our skills stay well under that. Avoid running `/editorial-reddit-sync` in a tight loop.
+That's it. Run `/editorial-reddit-sync` — it reads your public submissions via Reddit's `.json` endpoints using a User-Agent derived from your username.
+
+**Why no auth?** Reddit's public data (your submissions, subreddit metadata) is accessible without OAuth by appending `.json` to any reddit.com URL. For periodic personal sync this works great and eliminates the password/2FA/app-registration friction of OAuth.
+
+**Rate limits:** unauthenticated requests are limited to roughly 10/min. A full sync of your submissions is ~1-3 requests; keep sync frequency to hourly or less. If you start running into 429s, we can switch to OAuth — but probably you won't.
+
+**What's not available:** posting, voting, private drafts, saved items. Reading public subreddits and a user's public submissions is all this tool needs.
 
 ## Curated cross-posting map
 

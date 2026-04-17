@@ -1,19 +1,23 @@
 /**
- * Minimal Reddit API client.
+ * Minimal Reddit public-JSON client — no authentication.
  *
- * Covers only the calls our editorial tooling needs:
- * - getUserSubmissions: list the user's submissions with URL/subreddit/date
- * - getSubredditInfo: fetch subscriber count and self-promo hints from
- *   /r/<name>/about.json
+ * Reddit exposes most public data by appending `.json` to any reddit.com
+ * URL. We use this for:
+ * - `getUserSubmissions` → `/user/<name>/submitted.json`
+ * - `getSubredditInfo`   → `/r/<name>/about.json`
  *
- * All calls go through the OAuth host (oauth.reddit.com) with a bearer
- * token from auth.ts. Reddit requires a descriptive User-Agent header; we
- * read that from the credentials file so the caller controls it.
+ * Reddit still requires a descriptive User-Agent header on every request,
+ * or the response is rate-limited or blocked. We build the UA from the
+ * configured username so requests are identifiable.
+ *
+ * No OAuth, no app registration, no credentials beyond the user's public
+ * username. Trade-off: tighter rate limit (~10 req/min instead of 100) and
+ * read-only access to public data. Sufficient for our editorial tooling.
  */
 
-import { getAccessToken, loadCredentials } from './auth.js';
+import { loadConfig, buildUserAgent } from './config.js';
 
-const REDDIT_API_BASE = 'https://oauth.reddit.com';
+const REDDIT_PUBLIC_BASE = 'https://www.reddit.com';
 
 interface ListingChild<T> {
   kind: string;
@@ -43,7 +47,7 @@ interface RedditSubmissionRaw {
   domain: string;
 }
 
-/** One submission by the authenticated user. */
+/** One submission by a user. */
 export interface RedditSubmission {
   /** Reddit's full ID, e.g. "t3_abcxyz" */
   id: string;
@@ -84,7 +88,6 @@ export interface SubredditInfo {
   selfPromoHints: string[];
 }
 
-/** Normalize a raw subreddit name ("synthdiy", "/r/synthdiy") to "r/synthdiy". */
 function canonicalSubreddit(raw: string): string {
   const trimmed = raw.trim().replace(/^\/?r\//i, '');
   return `r/${trimmed}`;
@@ -94,48 +97,52 @@ function toIsoDate(createdUtc: number): string {
   return new Date(createdUtc * 1000).toISOString().slice(0, 10);
 }
 
-async function redditGet<T>(path: string): Promise<T> {
-  const creds = loadCredentials();
-  const token = await getAccessToken(creds);
-  const url = new URL(`${REDDIT_API_BASE}${path}`);
+async function redditPublicGet<T>(path: string): Promise<T> {
+  const config = loadConfig();
+  const userAgent = buildUserAgent(config.username);
+
+  const url = new URL(`${REDDIT_PUBLIC_BASE}${path}`);
   if (!url.searchParams.has('raw_json')) {
     url.searchParams.set('raw_json', '1');
   }
+
   const response = await fetch(url.toString(), {
     headers: {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': creds.userAgent,
+      'User-Agent': userAgent,
       Accept: 'application/json',
     },
   });
+
   if (!response.ok) {
     const body = await response.text();
     throw new Error(
-      `Reddit API error ${response.status} ${response.statusText} for ${path}: ${body.slice(0, 500)}`,
+      `Reddit public API error ${response.status} ${response.statusText} for ${path}: ${body.slice(0, 500)}`,
     );
   }
+
   return response.json() as Promise<T>;
 }
 
 /**
- * List the authenticated user's recent submissions (link + self posts).
+ * List the configured user's recent submissions (link + self posts).
  *
- * Reddit's `/user/<u>/submitted` endpoint returns up to 100 per page; this
- * function pages through until either the caller's `limit` is reached or
- * Reddit runs out of results.
+ * Pages through `.json` listings until `limit` is reached or Reddit runs
+ * out of results. If `username` is omitted we read it from the config file.
  */
 export async function getUserSubmissions(
-  username: string,
+  username?: string,
   limit: number = 100,
 ): Promise<RedditSubmission[]> {
+  const effectiveUser = username ?? loadConfig().username;
   const results: RedditSubmission[] = [];
   let after: string | null = null;
 
   while (results.length < limit) {
     const pageSize: number = Math.min(100, limit - results.length);
-    const path: string = `/user/${encodeURIComponent(username)}/submitted?limit=${pageSize}${after ? `&after=${after}` : ''}`;
+    const afterParam = after ? `&after=${after}` : '';
+    const path: string = `/user/${encodeURIComponent(effectiveUser)}/submitted.json?limit=${pageSize}${afterParam}`;
     const listing: Listing<RedditSubmissionRaw> =
-      await redditGet<Listing<RedditSubmissionRaw>>(path);
+      await redditPublicGet<Listing<RedditSubmissionRaw>>(path);
     const children = listing.data.children;
     if (children.length === 0) break;
 
@@ -145,7 +152,7 @@ export async function getUserSubmissions(
         id: raw.name,
         title: raw.title,
         subreddit: canonicalSubreddit(raw.subreddit),
-        permalink: `https://www.reddit.com${raw.permalink}`,
+        permalink: `${REDDIT_PUBLIC_BASE}${raw.permalink}`,
         url: raw.url,
         createdDate: toIsoDate(raw.created_utc),
         selftext: raw.selftext ?? '',
@@ -178,11 +185,11 @@ function extractSelfPromoHints(...texts: Array<string | undefined>): string[] {
   return [...hits];
 }
 
-/** Fetch subscriber count and self-promo hints for a subreddit. */
+/** Fetch subscriber count and self-promo hints for a subreddit via /r/<name>/about.json. */
 export async function getSubredditInfo(name: string): Promise<SubredditInfo> {
   const normalized = name.replace(/^\/?r\//i, '').replace(/\/$/, '');
-  const path = `/r/${encodeURIComponent(normalized)}/about`;
-  const response = await redditGet<{ data: SubredditAboutRaw }>(path);
+  const path = `/r/${encodeURIComponent(normalized)}/about.json`;
+  const response = await redditPublicGet<{ data: SubredditAboutRaw }>(path);
   const data = response.data;
   return {
     name: canonicalSubreddit(data.display_name),
