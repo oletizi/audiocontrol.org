@@ -101,6 +101,16 @@ Requires API keys (auto-loaded from `~/.config/audiocontrol/`):
 /feature-image-blog src/pages/blog/my-new-post/index.md --prompt "abstract dark synthesizer circuits, teal glow, no text"
 ```
 
+## Iteration Context
+
+When iterating with the user on prompts or filters, check `.feature-image-history.jsonl` in the repo root. Each line is a JSON record of a previous generation (prompt, provider, preset/filters, output paths, status, notes). Use it to:
+
+- Avoid re-trying prompts the user already rejected
+- Reference what the user approved previously as a style baseline
+- See what filter chains worked on similar content
+
+The file is populated by the `/dev/feature-image-preview` gallery (see Phase 6) and is gitignored.
+
 ## Related Skills
 
 - `/feature-image` — general-purpose image generation for any page (not blog-specific)

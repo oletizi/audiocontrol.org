@@ -27,3 +27,6 @@ test-results/
 
 # scratch output from feature-image CLI iterations
 public/images/generated/
+
+# feature-image preview gallery iteration history
+.feature-image-history.jsonl
