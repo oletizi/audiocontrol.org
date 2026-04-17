@@ -15,7 +15,7 @@ Structured editorial calendar that tracks content through its lifecycle (idea th
 |-------|-------------|--------|
 | 1 | Calendar Structure & Basic Management | Complete |
 | 2 | Post Scaffolding | Complete |
-| 3 | Analytics Integration | Complete (blocked on oletizi/audiocontrol.org#30 for live data) |
+| 3 | Analytics Integration | Complete |
 
 ## Dependencies
 

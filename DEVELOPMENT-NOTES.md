@@ -4,6 +4,39 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-16: Editorial Calendar — Analytics Wiring & Documentation
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar
+
+**Goal:** Wire editorial calendar to the newly-merged analytics pipeline, add CONTENT-CALENDAR.md documentation, create PR.
+
+**Accomplished:**
+- Rewrote `suggest.ts` from stub functions to live analytics integration (Umami, GA4, Search Console)
+- `getContentSuggestions()` extracts striking-distance and CTR opportunities from Search Console, deduplicates against existing calendar entries
+- `getPostPerformance()` matches published posts to metrics across all data sources, surfaces recommendations
+- Updated `/editorial-suggest` and `/editorial-performance` skills to remove dependency warnings
+- Created CONTENT-CALENDAR.md documenting the full workflow, skills reference, and file layout
+- Added content calendar reference to top-level README
+- Created PR oletizi/audiocontrol.org#46
+
+**Didn't Work:**
+- N/A
+
+**Course Corrections:**
+- None this session
+
+**Quantitative:**
+- Messages: ~10
+- Commits: 4
+- Corrections: 0
+- Files changed: 7
+
+**Insights:**
+- Wiring to an existing analytics pipeline was straightforward — the types and interfaces aligned naturally since suggest.ts was designed with the analytics dependency in mind
+- Writing documentation (CONTENT-CALENDAR.md) after the full system exists produces clearer docs than writing during implementation — the workflow is settled and the edge cases are known
+
+---
+
 ## 2026-04-16: Automated Analytics — Full Implementation
 ### Feature: automated-analytics
 ### Worktree: audiocontrol.org-automated-analytics

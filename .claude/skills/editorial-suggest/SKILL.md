@@ -8,34 +8,28 @@ user_invocable: true
 
 Analyze analytics data and suggest content opportunities to add to the editorial calendar.
 
-## Dependency
-
-This skill requires the **automated-analytics** feature (oletizi/audiocontrol.org#30) to be implemented. Specifically:
-- Phase 1: GA4 Data Pipeline (oletizi/audiocontrol.org#36)
-- Phase 2: Search Console Integration (oletizi/audiocontrol.org#37)
-
-If the analytics pipeline is not yet available, report that to the user with a link to the dependency issue and stop.
-
 ## Steps
 
-1. **Check analytics availability**: Verify the analytics report script exists
-   - If not available: report the dependency gap and stop
-2. **Run analytics report**: Invoke the analytics pipeline to get:
-   - Search Console query data (impressions, position, CTR)
-   - Content gap analysis
-   - Striking-distance queries (positions 8-20)
-3. **Identify opportunities**: Filter and rank suggestions:
-   - High-impression queries with no matching content on the site
-   - Striking-distance queries that a new or updated post could push to page 1
-   - Content gaps where competitors rank but audiocontrol.org doesn't
-4. **Read the calendar**: Read `docs/editorial-calendar.md`
-5. **Deduplicate**: Filter out topics that already exist in the calendar
-6. **Present to user**: Show ranked suggestions with evidence:
+1. **Read the calendar**: Read `docs/editorial-calendar.md`
+2. **Run analytics**: Execute `tsx scripts/analytics-report.ts --json` to fetch live analytics data
+3. **Identify opportunities** from the report:
+   - **Striking-distance queries** (position 5-20): queries where new or expanded content could push to page 1
+   - **CTR opportunities**: high-impression queries with low CTR — title/description may need rewriting
+   - **Content gaps**: queries with impressions but no matching calendar entry
+4. **Deduplicate**: Filter out topics that already exist in the calendar
+5. **Present to user**: Show ranked suggestions with evidence:
    ```
    1. "SCSI protocol tutorial" — 450 impressions, position 12, no page targets this
    2. "Roland S-550 vs S-330" — 200 impressions, position 18, striking distance
    ```
-7. **Accept suggestions**: If the user picks suggestions to add, use `/editorial-add` to add them to Ideas with `source: analytics`
+6. **Accept suggestions**: If the user picks suggestions to add, use `/editorial-add` to add them to Ideas with `source: analytics`
+
+## Implementation
+
+The `getContentSuggestions()` function in `scripts/lib/editorial/suggest.ts` handles steps 2-4. It:
+- Calls the analytics pipeline (Umami, GA4, Search Console)
+- Extracts striking-distance and CTR opportunities
+- Deduplicates against existing calendar entries
 
 ## Important
 

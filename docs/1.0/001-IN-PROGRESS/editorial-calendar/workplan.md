@@ -86,7 +86,7 @@
 - [x] Implement suggest.ts library for analytics integration
 - [x] Track analytics-suggested vs manually added entries in the calendar
 
-**Note:** Skills and library are implemented. Analytics functions throw descriptive errors until the automated-analytics feature (oletizi/audiocontrol.org#30) provides the data pipeline. The `source` field on CalendarEntry distinguishes `analytics` vs `manual` entries.
+**Note:** Analytics integration is live — `suggest.ts` calls the analytics pipeline (Umami, GA4, Search Console) via `scripts/lib/analytics/`. The `source` field on CalendarEntry distinguishes `analytics` vs `manual` entries.
 
 **Acceptance Criteria:**
 - `/editorial-suggest` shows content opportunities derived from analytics data

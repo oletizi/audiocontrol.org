@@ -8,30 +8,19 @@ user_invocable: true
 
 Pull analytics for published posts and flag those needing attention.
 
-## Dependency
-
-This skill requires the **automated-analytics** feature (oletizi/audiocontrol.org#30) to be implemented. Specifically:
-- Phase 3: Actionable Report & Recommendations (oletizi/audiocontrol.org#38)
-
-If the analytics pipeline is not yet available, report that to the user with a link to the dependency issue and stop.
-
 ## Steps
 
-1. **Check analytics availability**: Verify the analytics report script exists
-   - If not available: report the dependency gap and stop
-2. **Read the calendar**: Read `docs/editorial-calendar.md` to get the list of Published entries
-3. **Pull analytics**: For each published post, fetch:
-   - Pageviews and sessions (GA4)
+1. **Read the calendar**: Read `docs/editorial-calendar.md` to get the list of Published entries
+2. **Run analytics**: Execute `tsx scripts/analytics-report.ts --json` to fetch live analytics data
+3. **Match posts to metrics**: For each published post, gather:
+   - Pageviews and sessions (Umami/GA4)
    - Search impressions, clicks, CTR, average position (Search Console)
-4. **Identify underperformers**: Flag posts that show:
-   - Declining traffic trend (compared to previous period)
-   - High impressions but low CTR (title/description may need improvement)
-   - Dropping average position (content may need freshening)
-5. **Generate recommendations**: For each flagged post, provide specific suggestions:
-   - "Update title/description — 500 impressions but 1.2% CTR"
-   - "Add content about X — related query Y has 300 impressions at position 15"
-   - "Refresh content — position dropped from 5 to 12 in the last period"
-6. **Report**: Show a performance table:
+   - Recommendations from the analytics engine
+4. **Flag underperformers**: Posts that have recommendations from the analytics engine:
+   - High impressions but low CTR (title/description needs improvement)
+   - High bounce rate (content or UX issue)
+   - Striking-distance rankings (could be boosted with updates)
+5. **Report**: Show a performance table and recommendations:
    ```
    Published Posts Performance:
 
@@ -44,8 +33,16 @@ If the analytics pipeline is not yet available, report that to the user with a l
    - scsi-over-wifi-raspberry-pi-bridge: High impressions but low CTR — consider updating title and meta description
    ```
 
+## Implementation
+
+The `getPostPerformance()` function in `scripts/lib/editorial/suggest.ts` handles steps 2-4. It:
+- Calls the analytics pipeline (Umami, GA4, Search Console)
+- Matches each published entry to its metrics across all data sources
+- Collects recommendations from the analytics recommendation engine
+- Sorts results with underperformers first
+
 ## Important
 
-- All metrics must come from real analytics data — never fabricate numbers
+- All metrics come from real analytics data — never fabricate numbers
 - Flag posts with specific, actionable recommendations — not generic advice
-- Compare against the post's own history, not arbitrary thresholds
+- Posts with no analytics data should be reported as "No data" rather than skipped
