@@ -1,13 +1,14 @@
 # Automated Analytics
 
-**Status:** In Progress
+**Status:** Ready for Merge
 **Feature Branch:** `feature/automated-analytics`
 **Worktree:** `~/work/audiocontrol-work/audiocontrol.org-automated-analytics`
 **GitHub Issue:** oletizi/audiocontrol.org#30
+**Pull Request:** oletizi/audiocontrol.org#45
 
 ## Overview
 
-Automated analytics pipeline that pulls data from GA4 and Google Search Console, computes actionable content performance metrics, and produces reports via a Claude Code skill. Designed to feed a virtuous cycle: measure content effectiveness, diagnose issues, and act via the editorial calendar.
+Automated analytics pipeline pulling from Umami Cloud, GA4 Data API, and Google Search Console. Produces content scorecard, search performance analysis, content-to-editor funnel, and ranked recommendations via a `/analytics` Claude Code skill.
 
 ## Phase Status
 
