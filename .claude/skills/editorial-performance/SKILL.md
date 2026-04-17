@@ -20,7 +20,8 @@ Pull analytics for published posts and flag those needing attention.
    - High impressions but low CTR (title/description needs improvement)
    - High bounce rate (content or UX issue)
    - Striking-distance rankings (could be boosted with updates)
-5. **Report**: Show a performance table and recommendations:
+5. **Fetch social referrals**: Call `getSocialReferrals(publishedEntries)` from `scripts/lib/editorial/suggest.ts` to break out per-post traffic from Reddit, YouTube, LinkedIn, and Instagram
+6. **Report**: Show a performance table, a per-post social referrals table, and recommendations:
    ```
    Published Posts Performance:
 
@@ -29,9 +30,17 @@ Pull analytics for published posts and flag those needing attention.
    | free-roland-s330-sampler-editor | 1,200 | 3,400 | 4.2% | 6.1 | OK |
    | scsi-over-wifi-raspberry-pi-bridge | 80 | 900 | 0.8% | 14.3 | Needs Update |
 
+   Social Referrals (sessions per post per platform):
+
+   | Post | Reddit | YouTube | LinkedIn | Instagram |
+   |------|--------|---------|----------|-----------|
+   | claude-vs-codex-claude-perspective | 42 | — | 11 | — |
+   | scsi-over-wifi-raspberry-pi-bridge | 7 | — | — | — |
+
    Recommendations:
    - scsi-over-wifi-raspberry-pi-bridge: High impressions but low CTR — consider updating title and meta description
    ```
+   Omit rows with zero social sessions across all four platforms. If no post had any social sessions in the window, report `(no social session traffic attributed in window)`.
 
 ## Implementation
 
@@ -40,6 +49,13 @@ The `getPostPerformance()` function in `scripts/lib/editorial/suggest.ts` handle
 - Matches each published entry to its metrics across all data sources
 - Collects recommendations from the analytics recommendation engine
 - Sorts results with underperformers first
+
+The `getSocialReferrals()` function in the same file handles step 5:
+- Queries GA4 with `pagePath` + `sessionSource` dimensions (via `fetchPageReferrals`)
+- Maps `sessionSource` values to `reddit`, `youtube`, `linkedin`, or `instagram`
+- Returns one record per (slug, platform) pair with ≥1 session — posts with no social traffic produce no records
+
+GA4 is used (rather than Umami) because social platforms typically strip the Referer header, and GA4's session-source attribution remains reliable in that case.
 
 ## Important
 

@@ -25,7 +25,11 @@ Show the editorial content lifecycle and current calendar status. Do NOT modify 
 
 **Analytics skills (Phase 3):**
 - `/editorial-suggest` — Pull analytics, identify content opportunities
-- `/editorial-performance` — Show metrics for published posts, flag underperformers
+- `/editorial-performance` — Show metrics and social referral traffic for published posts
+
+**Distribution skills (Phase 4):**
+- `/editorial-distribute` — Record that a published post was shared on Reddit / YouTube / LinkedIn / Instagram
+- `/editorial-social-review` — Matrix of published posts vs platforms (shared / not shared)
 
 **Status skills:**
 - `/editorial-review` — Show calendar status across all stages

@@ -1,8 +1,12 @@
 export {
+  PLATFORMS,
   STAGES,
+  type Platform,
   type Stage,
   type CalendarEntry,
+  type DistributionRecord,
   type EditorialCalendar,
+  distributionsBySlug,
   entriesByStage,
 } from './types.js';
 
@@ -13,6 +17,7 @@ export {
   renderCalendar,
   writeCalendar,
   addEntry,
+  addDistribution,
   planEntry,
   draftEntry,
   publishEntry,
@@ -24,6 +29,8 @@ export { scaffoldBlogPost, type ScaffoldResult } from './scaffold.js';
 export {
   getContentSuggestions,
   getPostPerformance,
+  getSocialReferrals,
   type ContentSuggestion,
   type PostPerformance,
+  type SocialReferral,
 } from './suggest.js';

@@ -28,3 +28,7 @@
 | claude-vs-codex-claude-perspective | Two AIs, One Feature: What Happens When Claude and Codex Build the Same Thing | Claude Code and Codex independently implemented the same draggable zone feature for the Akai S3000XL editor. The code was comparable. The sessions were not. | | manual | 2026-04-13 | |
 | claude-vs-codex-codex-perspective | What Happened When We Asked Claude and Codex to Build the Same Feature | We asked two AI coding agents to implement the same draggable zone editing feature for the Akai S3000XL editor. The most useful comparison wasn't about code quality -- it was about failure modes. | | manual | 2026-04-13 | |
 | what-2400-session-taught-us-about-agent-workflow | Instructions Are Not Enough: What 2,400 Sessions Taught Us About AI Agent Workflow | Telling an AI agent what to do is easy. Getting it to reliably follow process requires something structural — skills, session journals, and correction-driven guardrails. | | manual | 2026-04-17 | |
+
+## Distribution
+
+*No entries.*

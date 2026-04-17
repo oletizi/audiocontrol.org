@@ -1,6 +1,10 @@
 export { loadApiKey, getBaseUrl, getWebsiteId } from "./auth.js";
 export { buildContentScorecard } from "./umami-client.js";
-export { buildGa4Scorecard } from "./ga4-client.js";
+export {
+  buildGa4Scorecard,
+  fetchPageReferrals,
+  type Ga4PageReferralRow,
+} from "./ga4-client.js";
 export { buildSearchPerformance } from "./gsc-client.js";
 export { buildContentFunnel } from "./funnel.js";
 export { generateRecommendations } from "./recommendations.js";

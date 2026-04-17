@@ -52,7 +52,14 @@ The editorial workflow is managed through composable Claude Code skills — one 
 | Skill | Purpose |
 |-------|---------|
 | `/editorial-suggest` | Pull Search Console data, surface content opportunities |
-| `/editorial-performance` | Show metrics for published posts, flag underperformers |
+| `/editorial-performance` | Show metrics and social referrals for published posts, flag underperformers |
+
+### Social distribution
+
+| Skill | Purpose |
+|-------|---------|
+| `/editorial-distribute` | Record that a published post was shared on Reddit / YouTube / LinkedIn / Instagram |
+| `/editorial-social-review` | Show a matrix of published posts vs platforms |
 
 ### Status and help
 
@@ -97,9 +104,11 @@ The editorial calendar integrates with the analytics pipeline (Umami, GA4, Googl
 
 - **`/editorial-suggest`** queries Search Console for striking-distance queries (position 5-20) and CTR opportunities (high impressions, low clicks). Suggestions include specific evidence so you can make informed decisions about what to write.
 
-- **`/editorial-performance`** matches each published post to its metrics across all data sources and surfaces recommendations from the analytics engine (rewrite titles, boost rankings, investigate bounce rates, add CTAs).
+- **`/editorial-performance`** matches each published post to its metrics across all data sources and surfaces recommendations from the analytics engine (rewrite titles, boost rankings, investigate bounce rates, add CTAs). Also breaks out per-post traffic from Reddit, YouTube, LinkedIn, and Instagram using Umami referrer data.
 
-This creates a virtuous cycle: measure what's working, identify gaps, plan new content, publish, measure again.
+- **`/editorial-distribute` + `/editorial-social-review`** record where each post has been shared and show which posts still have social distribution gaps, closing the loop from published → distributed → measured.
+
+This creates a virtuous cycle: measure what's working, identify gaps, plan new content, publish, distribute, measure again.
 
 ## File Layout
 
@@ -111,7 +120,7 @@ scripts/lib/editorial/
   scaffold.ts                            # Blog post directory/frontmatter generation
   suggest.ts                             # Analytics integration (suggestions + performance)
   index.ts                               # Barrel export
-.claude/skills/editorial-*/SKILL.md      # One skill per action (8 total)
+.claude/skills/editorial-*/SKILL.md      # One skill per action (10 total)
 ```
 
 ## Calendar Format
@@ -137,3 +146,17 @@ Published stage has extra columns:
 ```
 
 Stages with entries in Drafting or Review include an Issue column when any entry has a linked issue.
+
+### Distribution section
+
+A separate `## Distribution` section tracks where published posts have been shared:
+
+```markdown
+## Distribution
+
+| Slug | Platform | URL | Shared | Notes |
+|------|----------|-----|--------|-------|
+| my-post | reddit | https://reddit.com/r/synthdiy/comments/... | 2026-04-16 | r/synthdiy |
+```
+
+Platform is one of `reddit`, `youtube`, `linkedin`, `instagram`. A post can have multiple distribution records — one per share.

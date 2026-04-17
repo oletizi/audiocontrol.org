@@ -14,13 +14,14 @@ import {
   buildSearchPerformance,
   buildContentFunnel,
   generateRecommendations,
+  fetchPageReferrals,
 } from '../analytics/index.js';
 import type {
   AnalyticsReport,
   DateRange,
   Recommendation,
 } from '../analytics/index.js';
-import type { CalendarEntry } from './types.js';
+import { PLATFORMS, type CalendarEntry, type Platform } from './types.js';
 
 /** A content opportunity identified from analytics data. */
 export interface ContentSuggestion {
@@ -222,4 +223,81 @@ export async function getPostPerformance(
   });
 
   return results;
+}
+
+// ---------------------------------------------------------------------------
+// Social referrals (per-post, via GA4 sessionSource)
+// ---------------------------------------------------------------------------
+
+/** Traffic from one social platform to one published post over the window. */
+export interface SocialReferral {
+  slug: string;
+  platform: Platform;
+  sessions: number;
+  pageviews: number;
+}
+
+/**
+ * Patterns matching GA4 `sessionSource` values to our tracked platforms.
+ *
+ * GA4 normalizes a lot of sources to short tokens (e.g. `reddit`, `linkedin`,
+ * `youtube`), but some still appear as full hostnames (e.g. `out.reddit.com`,
+ * `l.instagram.com`). Match both shapes.
+ */
+const PLATFORM_SOURCE_PATTERNS: Record<Platform, RegExp[]> = {
+  reddit: [/^reddit$/i, /^(.+\.)?reddit\.com$/i, /^(.+\.)?redd\.it$/i],
+  youtube: [/^youtube$/i, /^(.+\.)?youtube\.com$/i, /^(.+\.)?youtu\.be$/i],
+  linkedin: [/^linkedin$/i, /^(.+\.)?linkedin\.com$/i, /^(.+\.)?lnkd\.in$/i],
+  instagram: [/^instagram$/i, /^(.+\.)?instagram\.com$/i],
+};
+
+function classifySource(sessionSource: string): Platform | null {
+  const value = (sessionSource ?? '').trim().toLowerCase();
+  if (!value) return null;
+  for (const platform of PLATFORMS) {
+    if (PLATFORM_SOURCE_PATTERNS[platform].some((p) => p.test(value))) {
+      return platform;
+    }
+  }
+  return null;
+}
+
+/**
+ * Return per-post traffic from each tracked social platform, using GA4's
+ * `sessionSource` dimension combined with `pagePath`.
+ *
+ * One record is emitted per (slug, platform) pair with ≥1 session in the
+ * window. Posts with no social referrals produce no records.
+ */
+export async function getSocialReferrals(
+  publishedEntries: CalendarEntry[],
+  days: number = 30,
+): Promise<SocialReferral[]> {
+  const dateRange = computeDateRange(days);
+  const rows = await fetchPageReferrals(dateRange);
+
+  const pathToSlug = new Map(
+    publishedEntries.map((e) => [`/blog/${e.slug}/`, e.slug]),
+  );
+
+  const bySlugPlatform = new Map<string, SocialReferral>();
+
+  for (const row of rows) {
+    const slug = pathToSlug.get(row.pagePath);
+    if (!slug) continue;
+    const platform = classifySource(row.sessionSource);
+    if (!platform) continue;
+    const key = `${slug}|${platform}`;
+    const cur = bySlugPlatform.get(key) ?? {
+      slug,
+      platform,
+      sessions: 0,
+      pageviews: 0,
+    };
+    cur.sessions += row.sessions;
+    cur.pageviews += row.screenPageViews;
+    bySlugPlatform.set(key, cur);
+  }
+
+  return [...bySlugPlatform.values()];
 }
