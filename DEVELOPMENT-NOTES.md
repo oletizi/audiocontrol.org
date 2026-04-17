@@ -4,6 +4,47 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-17: Editorial Calendar — Phases 5, 6, 7 (Subreddit Tracking + YouTube + Tool Cross-link Audit)
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar
+
+**Goal:** Continue extending the editorial calendar with Phase 5 (subreddit tracking + Reddit sync), then Phase 6 (YouTube videos + tools as first-class calendar entries + cross-link audit), then Phase 7 (tool-page HTML audit). Close the loop so every piece of content across blog / YouTube / tool is tracked and cross-referenced automatically.
+
+**Accomplished:**
+- **Phase 5 shipped** (PR #58 merged as `8f0a469`): Platform/channel sub-tracking, curated `editorial-channels.json` map, `/editorial-reddit-sync` and `/editorial-reddit-opportunities` skills. First live sync found 2 attributed shares of the claude-vs-codex-codex-perspective post
+- **Reddit auth simplified to unauthenticated**: switched from OAuth password-grant to Reddit's public `.json` endpoints after user flagged that auth setup friction eats too much of the tool's value. Single-line config (`{"username": "..."}`) vs. the five-field OAuth setup
+- **Phase 6 shipped** (PR #60 merged as `f6cba95`): YouTube videos as first-class CalendarEntry with full Ideas → Published lifecycle; YouTube Data API v3 integration via single API key (matched existing `youtube-key.txt` convention); `/editorial-cross-link-review` skill; Reddit sync extended to match YouTube URLs. Scope creep mid-phase added `tool` as a third content type (standalone apps on audiocontrol.org) so the S-330 editor could be tracked too
+- **Calendar reconciled**: added s330-drum-crunch-video (YouTube) and s330-web-editor (tool) as Published entries; all 8 of /u/Middle-Feeling1313's Reddit submissions now attributed to the right calendar entry (2 to blog, 4 to video, 2 to tool)
+- **Phase 7 shipped** (PR #61 merged as `9bed3d4`): tool cross-link audit via cheerio HTML parsing, unified `byContentUrl` index across all three content types, `extractAudioControlLinksFromMarkdown` catches markdown-relative links, `fetchHtml` with AbortController timeout. Live audit against the real calendar found 4 real backlink gaps — every blog post that links to the editor — because the editor page doesn't link back to any blog post yet
+- 85 unit tests total at session end; all pass; build + typecheck clean through all three phases
+
+**Didn't Work:**
+- **Hand-rolled regex HTML parsing** for Phase 7 was the wrong starting point — real HTML is too quirky (unclosed tags, inline JS strings that look like hrefs, CDATA). User flagged it mid-implementation; switched to cheerio
+- **First auth attempt was OAuth password-grant** — full Reddit app registration with client ID/secret/password in plaintext, plus 2FA-off requirement. User's response ("30% of tool-use time fighting auth") made clear this was overkill for read-only access to public data
+
+**Course Corrections:**
+- [PROCESS] User asked if I'd read the Reddit Developer Platform docs (Devvit) before I recommended the classic Reddit API. I had not — I'd defaulted to the classic API from training-data knowledge. Fetched the docs, confirmed the classic path was still right for our use case (Devvit is for apps hosted *inside* Reddit), but should have checked the current authoritative source before recommending. Lesson: when recommending a specific API surface, verify against the provider's current docs
+- [PROCESS] Before committing the Reddit integration, I'd skipped exploring simpler auth approaches. User surfaced the question "is there a non-OAuth way?" which there was (public `.json` endpoints), and that's what we shipped. Lesson: for read-only access to public data, always consider whether auth is needed at all before designing an auth flow
+- [COMPLEXITY] First attempt at Phase 7 HTML parsing was hand-rolled regex. User correctly called this out as fragile. Switched to a real HTML parser
+- [PROCESS] After agreeing to use an HTML parser, I jumped to installing `node-html-parser` without researching alternatives. User said "make sure the one you pick is widely used and has social capital." Researched the landscape (cheerio 30k stars with GitHub/Airbnb/HasData sponsorship vs node-html-parser 1.2k stars) and picked cheerio, which is the obvious answer by that criterion. Lesson: dependency choices need research even when the first candidate "looks fine"
+
+**Quantitative:**
+- Messages: ~150 across the continuation (three ship cycles)
+- Commits on the feature branch: ~18 across Phases 5, 6, 7
+- PRs shipped and merged: 3 (#58, #60, #61)
+- Unit tests: 85/85 passing at end; grew from 10 (Phase 4) to 85 (Phase 7)
+- GitHub issues closed: #56, #57, #59 (all three via PR merges)
+- Corrections: 4 — the three [PROCESS] ones above plus the [COMPLEXITY] one on regex-vs-cheerio
+
+**Insights:**
+- **Cheap iteration beats heavy planning for infrastructure code.** The "ship Phase N + scope Phase N+1 docs" pattern repeated three times — each phase shipped its main value while the next phase captured the next observed gap. Phase 5's live sync surfaced Phase 6's motivation (YouTube shares had nowhere to land). Phase 6's live use surfaced Phase 7's motivation (blog posts linked to the editor with no backlink visibility). Planning N+1 from real N-1 data is dramatically better than planning ahead
+- **Auth friction compounds across multiple integrations.** We now have Reddit (0 credentials), YouTube (1 API key), Umami (1 API key), GA4 (service account), GitHub (gh CLI). Keeping each integration dead-simple meant the editorial workflow can touch all of them without the user fighting auth. The Reddit OAuth-to-public pivot was the right call even though I'd already built the OAuth version
+- **User-injected scope creep is often correct.** The `tool` content type wasn't in the Phase 6 plan; it got added mid-phase after the live Reddit sync found 2 editor-promo shares with no home. Adding it was the right call — the type system already had the branching structure, so the marginal cost was small, and it unlocked a whole category of future tracking (any audiocontrol.org page that's not a blog post could be a tool entry)
+- **I/O at the edges pays off for audit code.** `auditCrossLinks` takes three closures (fetchBlogMarkdown, fetchVideoDescription, fetchToolPage). Tests use fixture closures; the skill wires in real implementations. When Phase 7 added a third closure, existing tests kept working with trivial `async () => null` stubs — no production-code change required to keep test coverage intact
+- **Social capital isn't vanity — it's risk reduction.** 30k stars on cheerio means "audited by 30k people who use it in production." 1.2k on node-html-parser means "someone wrote it and it mostly works." For a long-lived dep that I won't maintain, the former is the choice every time
+
+---
+
 ## 2026-04-17: Editorial Calendar — Phase 4 Social Distribution + GA4 Migration
 ### Feature: editorial-calendar
 ### Worktree: audiocontrol.org-editorial-calendar
