@@ -26,6 +26,12 @@ Content creation for audiocontrol.org is ad hoc with no schedule, no procedure, 
 - **Social distribution tracking**: recording where published posts have been shared (Reddit, YouTube, LinkedIn, Instagram) and surfacing that data in the calendar
 - **Social referral analytics**: reporting how much traffic each post receives from each social platform, derived from Umami/GA4 referrer data
 
+## In Scope (Phase 5 addition)
+
+- **Sub-channel tracking**: each `DistributionRecord` carries a channel (e.g. subreddit `r/synthdiy`, YouTube channel name, LinkedIn page) so coverage can be tracked below the platform level
+- **Cross-posting opportunities**: a curated `topic → channels` map plus a skill that diffs recorded distributions against the map for a given post, surfacing unshared relevant channels
+- **Reddit-first scope**: the curated map ships with subreddits first; the data model supports any platform but the opportunities skill focuses on Reddit
+
 ## Out of Scope
 
 - External tools (Notion, Google Sheets, CMS)
@@ -50,6 +56,9 @@ Each editorial action is a separate Claude Code skill, composed like UNIX tools.
 | `/editorial-publish` | 2 | Mark entry as Published with date, close GitHub issue |
 | `/editorial-suggest` | 3 | Pull analytics, identify content opportunities |
 | `/editorial-performance` | 3 | Pull analytics for published posts, flag underperformers |
+| `/editorial-distribute` | 4 | Record that a published post was shared on a platform + channel |
+| `/editorial-social-review` | 4 | Show matrix of published posts × platforms |
+| `/editorial-reddit-opportunities` | 5 | For a published post, list relevant subreddits not yet distributed to |
 
 ### Calendar Format
 

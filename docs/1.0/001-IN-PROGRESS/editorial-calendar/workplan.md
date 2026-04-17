@@ -14,6 +14,7 @@
 | Phase 2: Post Scaffolding | oletizi/audiocontrol.org#41 |
 | Phase 3: Analytics Integration | oletizi/audiocontrol.org#42 |
 | Phase 4: Social Distribution Tracking | oletizi/audiocontrol.org#54 |
+| Phase 5: Subreddit Tracking & Cross-posting Opportunities | oletizi/audiocontrol.org#56 |
 
 ## Files Affected
 
@@ -33,6 +34,9 @@
 - `.claude/skills/editorial-performance/SKILL.md` — published post analytics
 - `.claude/skills/editorial-distribute/SKILL.md` — record a social share
 - `.claude/skills/editorial-social-review/SKILL.md` — matrix of shares across platforms
+- `.claude/skills/editorial-reddit-opportunities/SKILL.md` — show unshared relevant subreddits for a post
+- `scripts/lib/editorial/channels.ts` — load curated `editorial-channels.yml` and diff against distributions
+- `docs/editorial-channels.yml` — curated `topic → [subreddit]` map
 
 ## Implementation Phases
 
@@ -120,6 +124,61 @@
 - `/editorial-performance` includes social referral traffic alongside organic search metrics for each post
 - Distribution data is persisted in `docs/editorial-calendar.md` in a `## Distribution` section
 - Calendar round-trips: parsing then rendering produces the same markdown
+
+### Phase 5: Subreddit Tracking & Cross-posting Opportunities
+
+**Deliverable:** Record where a post was shared at the sub-channel level (subreddit, YouTube channel) and surface unshared relevant subreddits for a given post.
+
+#### Skill design (UX first, per composable-skills rule)
+
+| Skill | Input | Output |
+|-------|-------|--------|
+| `/editorial-distribute` (updated) | Prompts for slug, platform, url, **channel** (e.g. `r/synthdiy`), optional notes | Writes a DistributionRecord with `channel` populated |
+| `/editorial-reddit-opportunities <slug>` | One arg: post slug. Fast path: also accept `--topic <tag>` to override | Prints unshared subreddits, grouped by relevance tag, with recorded shares for reference |
+| `/editorial-social-review` (updated) | (no change in args) | Reddit column shows "N subreddits" instead of just a checkmark when that post has reddit distributions |
+
+`/editorial-reddit-opportunities` is the one new user-invocable skill. `/editorial-distribute` and `/editorial-social-review` pick up the new data transparently.
+
+#### Data model
+
+- [ ] Add `channel?: string` field to `DistributionRecord` (e.g. `r/synthdiy`, YouTube channel handle, LinkedIn page slug)
+- [ ] Add `topics?: string[]` to `CalendarEntry` (optional — overlaps with `targetKeywords` but is semantically distinct: topics are coarse tags used for cross-posting recommendations, keywords are SEO targets)
+- [ ] Extend the Distribution markdown table with a Channel column; maintain backwards-compat parsing for old rows without the column
+
+#### Curated map
+
+- [ ] Create `docs/editorial-channels.yml` with a `topic → [subreddit]` map (plus room to add other platforms later)
+- [ ] Seed the map with topic tags we'll use for audiocontrol.org content: `samplers`, `vintage-hardware`, `scsi`, `roland`, `akai`, `ai-agents`, `home-studio`, etc. (initial set — user to curate)
+- [ ] Each subreddit entry can carry optional hints (self-promo rules, flair requirements) as free-form notes
+
+#### Implementation
+
+- [ ] Extend `types.ts` with `channel?: string` on DistributionRecord and `topics?: string[]` on CalendarEntry
+- [ ] Extend `calendar.ts` parser/writer:
+  - Distribution section gains a `Channel` column (optional — omit when no record in the section uses it, for cleaner diffs)
+  - Calendar entry tables gain an optional Topics column following Keywords, rendered only when any entry in the stage has topics
+- [ ] Add a new `channels.ts` library module — loads `docs/editorial-channels.yml` and exposes `getChannelsForTopics(topics: string[]): Map<Platform, string[]>`
+- [ ] Update `/editorial-distribute` skill to prompt for channel after platform
+- [ ] Update `/editorial-social-review` skill to show per-post subreddit count when that post has reddit distributions
+- [ ] Create `/editorial-reddit-opportunities` skill — reads a slug, looks up its topics, consults the curated map, subtracts already-distributed subreddits, reports the gap
+- [ ] Update `/editorial-add` / `/editorial-plan` prompts to collect topics (optional) at plan time
+- [ ] Update `/editorial-help` to cover the new skill
+- [ ] Add tests for channel round-trip in Distribution parser/writer
+- [ ] Add tests for `getChannelsForTopics` and the opportunity-diff logic
+
+**Acceptance Criteria:**
+- `/editorial-distribute` captures a channel (e.g. `r/synthdiy`) as a first-class field, not free-text notes
+- `/editorial-reddit-opportunities <slug>` prints unshared relevant subreddits derived from the curated `editorial-channels.yml` and the post's topics
+- `/editorial-social-review` shows subreddit coverage for Reddit rather than just a checkmark
+- Calendar round-trips cleanly with the new `Channel` and `Topics` columns
+- `docs/editorial-channels.yml` is user-editable and human-readable
+- No regressions to Phase 4 behavior — old Distribution rows without a Channel still parse
+
+#### Open questions (resolve before coding)
+
+- Should `topics` on CalendarEntry be required once Phase 5 ships, or remain optional with graceful handling of untagged posts? (Proposed: optional; untagged posts produce `(no topics — tag this post to get opportunities)` from the skill.)
+- Should the opportunities skill fetch live data (check subreddit activity/recent posts) or strictly read the curated file? (Proposed: strictly curated file; live fetch is a deferred enhancement.)
+- Should the curated map be checked into `docs/` or kept private in `~/.config/audiocontrol/`? (Proposed: `docs/` — it's non-sensitive guidance, useful to review in PRs.)
 
 ## Verification Checklist
 
