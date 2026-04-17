@@ -35,8 +35,11 @@
 - `.claude/skills/editorial-distribute/SKILL.md` — record a social share
 - `.claude/skills/editorial-social-review/SKILL.md` — matrix of shares across platforms
 - `.claude/skills/editorial-reddit-opportunities/SKILL.md` — show unshared relevant subreddits for a post
-- `scripts/lib/editorial/channels.ts` — load curated `editorial-channels.yml` and diff against distributions
-- `docs/editorial-channels.yml` — curated `topic → [subreddit]` map
+- `.claude/skills/editorial-reddit-sync/SKILL.md` — pull submissions from Reddit API and update distribution records
+- `scripts/lib/editorial/channels.ts` — load curated `editorial-channels.json` and diff against distributions
+- `scripts/lib/reddit/auth.ts` — Reddit script-app OAuth token loader
+- `scripts/lib/reddit/client.ts` — minimal Reddit API client (submissions, subreddit about)
+- `docs/editorial-channels.json` — curated `topic → [subreddit]` map
 
 ## Implementation Phases
 
@@ -127,17 +130,20 @@
 
 ### Phase 5: Subreddit Tracking & Cross-posting Opportunities
 
-**Deliverable:** Record where a post was shared at the sub-channel level (subreddit, YouTube channel) and surface unshared relevant subreddits for a given post.
+**Deliverable:** Record where a post was shared at the sub-channel level (subreddit, YouTube channel), surface unshared relevant subreddits for a given post, and automate ingestion from the Reddit API so the calendar stays in sync without manual entry.
+
+**Scope:** Tier 1 (read-only Reddit API sync) + Tier 2 (subreddit enrichment via about.json). Tier 3 (auto-posting) is documented below as deferred.
 
 #### Skill design (UX first, per composable-skills rule)
 
 | Skill | Input | Output |
 |-------|-------|--------|
 | `/editorial-distribute` (updated) | Prompts for slug, platform, url, **channel** (e.g. `r/synthdiy`), optional notes | Writes a DistributionRecord with `channel` populated |
-| `/editorial-reddit-opportunities <slug>` | One arg: post slug. Fast path: also accept `--topic <tag>` to override | Prints unshared subreddits, grouped by relevance tag, with recorded shares for reference |
+| `/editorial-reddit-sync` (new) | None — pulls from Reddit API | Fetches recent submissions by the configured Reddit user, matches to blog posts by URL, upserts DistributionRecords (idempotent) |
+| `/editorial-reddit-opportunities <slug>` | Post slug (fast path); optional `--topic <tag>` to override | Prints subreddits already shared (do-not-duplicate list) and unshared candidates enriched with live subscriber count / activity / self-promo rules from about.json |
 | `/editorial-social-review` (updated) | (no change in args) | Reddit column shows "N subreddits" instead of just a checkmark when that post has reddit distributions |
 
-`/editorial-reddit-opportunities` is the one new user-invocable skill. `/editorial-distribute` and `/editorial-social-review` pick up the new data transparently.
+`/editorial-reddit-sync` and `/editorial-reddit-opportunities` are new user-invocable skills. `/editorial-distribute` and `/editorial-social-review` pick up the new data transparently.
 
 #### Data model
 
@@ -147,38 +153,96 @@
 
 #### Curated map
 
-- [ ] Create `docs/editorial-channels.yml` with a `topic → [subreddit]` map (plus room to add other platforms later)
+- [ ] Create `docs/editorial-channels.json` with a `topic → [subreddit]` map (JSON rather than YAML to avoid a new dependency; human-editable enough for a curated list)
 - [ ] Seed the map with topic tags we'll use for audiocontrol.org content: `samplers`, `vintage-hardware`, `scsi`, `roland`, `akai`, `ai-agents`, `home-studio`, etc. (initial set — user to curate)
 - [ ] Each subreddit entry can carry optional hints (self-promo rules, flair requirements) as free-form notes
 
 #### Implementation
 
-- [ ] Extend `types.ts` with `channel?: string` on DistributionRecord and `topics?: string[]` on CalendarEntry
+**Core (data model + curated opportunities):**
+
+- [x] Extend `types.ts` with `channel?: string` on DistributionRecord and `topics?: string[]` on CalendarEntry
 - [ ] Extend `calendar.ts` parser/writer:
   - Distribution section gains a `Channel` column (optional — omit when no record in the section uses it, for cleaner diffs)
   - Calendar entry tables gain an optional Topics column following Keywords, rendered only when any entry in the stage has topics
-- [ ] Add a new `channels.ts` library module — loads `docs/editorial-channels.yml` and exposes `getChannelsForTopics(topics: string[]): Map<Platform, string[]>`
+- [ ] Add a new `channels.ts` library module — loads `docs/editorial-channels.json`, exposes `getChannelsForTopics(topics: string[]): Map<Platform, string[]>` and `diffShared(candidates, recorded)` that filters out already-shared channels using normalized case-insensitive subreddit comparison
 - [ ] Update `/editorial-distribute` skill to prompt for channel after platform
 - [ ] Update `/editorial-social-review` skill to show per-post subreddit count when that post has reddit distributions
-- [ ] Create `/editorial-reddit-opportunities` skill — reads a slug, looks up its topics, consults the curated map, subtracts already-distributed subreddits, reports the gap
 - [ ] Update `/editorial-add` / `/editorial-plan` prompts to collect topics (optional) at plan time
-- [ ] Update `/editorial-help` to cover the new skill
-- [ ] Add tests for channel round-trip in Distribution parser/writer
-- [ ] Add tests for `getChannelsForTopics` and the opportunity-diff logic
+- [ ] Update `/editorial-help` to cover the new skills
+
+**Tier 1 — Reddit API read-only sync:**
+
+- [ ] Add `scripts/lib/reddit/auth.ts` — loads `~/.config/audiocontrol/reddit.json` (client_id, client_secret, username, password for a script-app OAuth flow), exchanges for a bearer token, caches it
+- [ ] Add `scripts/lib/reddit/client.ts` — minimal Reddit API wrapper with `getUserSubmissions(username, limit)` returning `{permalink, subreddit, url, createdUtc, title}`
+- [ ] Create `/editorial-reddit-sync` skill — fetches user submissions, filters to ones whose `url` or `selftext` references `audiocontrol.org/blog/<slug>/`, extracts slug, upserts DistributionRecords (platform=reddit, channel=r/<subreddit>, url=permalink, dateShared=createdUtc date)
+- [ ] Dedup on (slug, platform, channel, url) so repeated syncs are idempotent
+- [ ] Document reddit.json credential setup in CONTENT-CALENDAR.md (how to create a Reddit script app)
+
+**Tier 2 — Subreddit enrichment:**
+
+- [ ] Extend `scripts/lib/reddit/client.ts` with `getSubredditInfo(name)` hitting `/r/<name>/about.json` → `{subscribers, activeUsers, over18, publicDescription, submissionType, wikiEnabled, selfPromoHints}`
+- [ ] `selfPromoHints` extracted heuristically from the subreddit's public description / rules JSON (substring match for "self-promo", "promotion", "1 in 10", etc.); not authoritative, just a signal
+- [ ] Create `/editorial-reddit-opportunities <slug>` — reads topics, consults curated map, subtracts already-distributed subreddits using case-insensitive channel comparison, enriches remaining candidates with `getSubredditInfo`, reports the gap with subscriber count + self-promo hint
+
+**Tests:**
+
+- [ ] Channel round-trip in Distribution parser/writer
+- [ ] Topics round-trip in stage tables
+- [ ] `getChannelsForTopics` + `diffShared` with case-insensitive matching
+- [ ] Backwards-compat parsing of pre-Phase-5 Distribution rows (no Channel column)
+- [ ] Reddit client: mock fetch for `getUserSubmissions` and `getSubredditInfo` in tests (tests use fixture responses; real API calls happen only from skills)
 
 **Acceptance Criteria:**
 - `/editorial-distribute` captures a channel (e.g. `r/synthdiy`) as a first-class field, not free-text notes
-- `/editorial-reddit-opportunities <slug>` prints unshared relevant subreddits derived from the curated `editorial-channels.yml` and the post's topics
+- `/editorial-reddit-sync` pulls the configured user's Reddit submissions and upserts DistributionRecords idempotently
+- `/editorial-reddit-opportunities <slug>` prints a do-not-duplicate list of already-shared subreddits, then a candidate list enriched with live subscriber count and self-promo hints
 - `/editorial-social-review` shows subreddit coverage for Reddit rather than just a checkmark
 - Calendar round-trips cleanly with the new `Channel` and `Topics` columns
-- `docs/editorial-channels.yml` is user-editable and human-readable
-- No regressions to Phase 4 behavior — old Distribution rows without a Channel still parse
+- `docs/editorial-channels.json` is user-editable and human-readable
+- No regressions to Phase 4 behavior — pre-Phase-5 Distribution rows without a Channel still parse
+
+#### Deferred: Tier 3 — Auto-posting to Reddit
+
+**Status:** Out of scope for Phase 5. Captured here so the PRD reflects the option and the analysis is not lost.
+
+**What it would do**
+
+- `/editorial-reddit-post <slug> <subreddit>` — given a post slug and a target subreddit, submit a link post with the correct title, flair, and URL
+- Integrate with `/editorial-reddit-opportunities` so the user can accept a suggestion and submit in one step
+- Record the submission as a DistributionRecord immediately (or wait for the next `/editorial-reddit-sync` to pick it up)
+
+**Why deferred**
+
+- **Operational risk:** Reddit aggressively bans accounts that exhibit bot-like posting patterns. Even with a legitimate use case, cross-posting the same URL across many subreddits in a short window triggers spam filters. This is specifically the pattern our opportunities skill would encourage.
+- **Per-subreddit rule complexity:** Every relevant subreddit has its own rules — minimum account karma, account age, required flair, banned domains, self-promo ratios (the "1-in-10" rule), submission format (link vs self-post), allowed post frequency. Encoding these rules correctly is an ongoing maintenance burden.
+- **Limited value over manual posting:** The hard part of cross-posting isn't the mechanics of clicking "submit" — it's framing the title and top comment for each community's tone. Automating the submit step doesn't save the valuable effort; it only saves the trivial one.
+- **Community norms:** Many of the most valuable subreddits for our content (e.g. `r/synthdiy`, `r/vintagesynths`) have explicit rules against automated or low-effort self-promotion. Violating those norms damages the brand regardless of the technical legality.
+
+**Requirements if we ever implement**
+
+- Expanded Reddit OAuth scopes: `submit`, `edit`, `modposts` (if we want to edit after posting)
+- Per-subreddit rule config in `editorial-channels.json` — `{requiredFlair, minKarma, minAccountAgeDays, selfPromoRatio, allowedDomains, submissionType}`
+- Rate limiter: per-subreddit max submissions per day, global max submissions per hour
+- Pre-submission validator: karma check, account-age check, flair check, subreddit allows URL check
+- Dry-run mode that shows the exact submission body without posting
+- Submission log at `docs/editorial-submissions.jsonl` — append-only audit trail with request payload, response, any error
+- Integration point: `/editorial-reddit-opportunities` gains a confirmation prompt that optionally calls the submitter
+
+**Alternatives likely to be better than full automation**
+
+- **Clipboard helper:** A skill `/editorial-reddit-prep <slug> <subreddit>` that generates the ideal title, top-comment body, and flair for that community, copies them to the clipboard, and opens the subreddit's submit page in a browser. User pastes and submits manually. Gets the hard part (framing) automated without the risky part (submission).
+- **Never automate posting.** This is currently the recommended path. Tier 1 ingestion + Tier 2 enrichment handles the tracking and discovery problems; submission stays manual.
+
+**Decision log**
+
+- 2026-04-17: User raised Reddit API integration during Phase 5 scoping. Tier 1 + Tier 2 accepted into Phase 5 scope. Tier 3 documented here and deferred indefinitely pending a clear use case that outweighs the operational risk.
 
 #### Open questions (resolve before coding)
 
-- Should `topics` on CalendarEntry be required once Phase 5 ships, or remain optional with graceful handling of untagged posts? (Proposed: optional; untagged posts produce `(no topics — tag this post to get opportunities)` from the skill.)
-- Should the opportunities skill fetch live data (check subreddit activity/recent posts) or strictly read the curated file? (Proposed: strictly curated file; live fetch is a deferred enhancement.)
-- Should the curated map be checked into `docs/` or kept private in `~/.config/audiocontrol/`? (Proposed: `docs/` — it's non-sensitive guidance, useful to review in PRs.)
+- Should `topics` on CalendarEntry be required once Phase 5 ships, or remain optional with graceful handling of untagged posts? (Resolved: **optional**; untagged posts produce `(no topics — tag this post to get opportunities)` from the skill.)
+- Should the curated map be checked into `docs/` or kept private in `~/.config/audiocontrol/`? (Resolved: **`docs/`** — it's non-sensitive guidance, useful to review in PRs.)
+- Should we use YAML or JSON for the curated map? (Resolved: **JSON** — avoids a new dependency; human-editable enough for a curated list.)
 
 ## Verification Checklist
 

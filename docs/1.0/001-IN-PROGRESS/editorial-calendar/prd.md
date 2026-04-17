@@ -30,7 +30,13 @@ Content creation for audiocontrol.org is ad hoc with no schedule, no procedure, 
 
 - **Sub-channel tracking**: each `DistributionRecord` carries a channel (e.g. subreddit `r/synthdiy`, YouTube channel name, LinkedIn page) so coverage can be tracked below the platform level
 - **Cross-posting opportunities**: a curated `topic → channels` map plus a skill that diffs recorded distributions against the map for a given post, surfacing unshared relevant channels
-- **Reddit-first scope**: the curated map ships with subreddits first; the data model supports any platform but the opportunities skill focuses on Reddit
+- **Reddit API read-only sync (Tier 1)**: `/editorial-reddit-sync` pulls the user's own Reddit submissions and upserts DistributionRecords automatically, so the calendar stays in sync with reality without manual entry
+- **Subreddit enrichment (Tier 2)**: opportunity reports include live subscriber count and self-promo hints pulled from `/r/<sub>/about.json`
+- **Reddit-first scope**: the curated map ships with subreddits first; the data model supports any platform but automation and enrichment target Reddit only
+
+## Deferred Scope
+
+- **Reddit auto-posting (Tier 3)**: programmatically submitting link posts to subreddits. Documented in detail in the [workplan](./workplan.md#deferred-tier-3--auto-posting-to-reddit). Deferred indefinitely — operational risk (bot bans, spam filters), per-subreddit rule complexity, and limited value-add over manual posting outweigh the automation benefit. A clipboard-helper alternative is proposed there if partial automation becomes interesting later.
 
 ## Out of Scope
 
@@ -58,7 +64,8 @@ Each editorial action is a separate Claude Code skill, composed like UNIX tools.
 | `/editorial-performance` | 3 | Pull analytics for published posts, flag underperformers |
 | `/editorial-distribute` | 4 | Record that a published post was shared on a platform + channel |
 | `/editorial-social-review` | 4 | Show matrix of published posts × platforms |
-| `/editorial-reddit-opportunities` | 5 | For a published post, list relevant subreddits not yet distributed to |
+| `/editorial-reddit-sync` | 5 | Pull user Reddit submissions via API, upsert DistributionRecords |
+| `/editorial-reddit-opportunities` | 5 | For a published post, list relevant subreddits not yet distributed to, enriched with live subreddit metadata |
 
 ### Calendar Format
 
