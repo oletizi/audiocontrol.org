@@ -1,9 +1,10 @@
 # Editorial Calendar
 
-**Status:** In Progress
+**Status:** In Progress (Phase 4 in review)
 **Feature Branch:** `feature/editorial-calendar`
 **Worktree:** `~/work/audiocontrol-work/audiocontrol.org-editorial-calendar`
 **GitHub Issue:** oletizi/audiocontrol.org#29
+**Phase 4 PR:** oletizi/audiocontrol.org#55
 
 ## Overview
 
