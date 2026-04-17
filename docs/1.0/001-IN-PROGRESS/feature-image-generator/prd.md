@@ -27,12 +27,19 @@ This feature adds AI-generated backgrounds (via DALL-E 3 and FLUX) and wraps the
 - Claude Code `/feature-image` skill that reads page frontmatter and drives the pipeline
 - Provider comparison workflow (generate from both, pick the best)
 
+### In Scope (Extended — Phases 6-10)
+
+- Astro dev-only preview gallery for interactive prompt + filter iteration, with persistent log of attempts
+- Expanded filter library: analog-display (chromatic aberration, bloom, lens distortion), 8-bit (dither, posterize, gradient-map), cinematic (letterbox, light-leak, halftone), and utility (sharpen, contrast, threshold, invert, duotone) primitives
+- New presets combining the new primitives (e.g., `vhs`, `8-bit`, `cinematic`, `monitor`)
+
 ### Out of Scope
 
 - Changes to the existing `generate-og-images.ts` build-time script
-- CMS or web UI for image generation
+- CMS for content management
 - Video or animated image generation
 - Automatic deployment or git commit of generated images
+- Production-facing UI (gallery is dev-only)
 
 ## Technical Context
 

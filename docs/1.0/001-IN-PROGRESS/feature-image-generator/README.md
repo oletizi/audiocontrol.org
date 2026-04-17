@@ -22,4 +22,9 @@ Automates the creation of feature images for blog posts, pages, and social media
 | 2. Text Overlay & Compositing | #33 | Complete |
 | 3. Claude Code Skill | #34 | Complete |
 | 4. Bake-off & Polish | #35 | Not Started |
-| 5. Post-Processing Filter Pipeline | #47 | Not Started |
+| 5. Post-Processing Filter Pipeline | #47 | Complete |
+| 6. Preview Gallery & Iteration Workflow | #48 | Not Started |
+| 7. Analog Display Filter Primitives | #49 | Not Started |
+| 8. 8-bit / Pixel Filter Primitives | #50 | Not Started |
+| 9. Cinematic / Editorial Filter Primitives | #51 | Not Started |
+| 10. Utility Filter Primitives | #52 | Not Started |

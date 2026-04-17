@@ -112,25 +112,151 @@ AI-generated backgrounds vary widely in mood, palette, and grain even with caref
 - [ ] Generated images for 3 different blog posts share visual identity when same preset is applied
 - [ ] `--preset none` (or omitting filters) bypasses post-processing entirely
 
+## Phase 6: Preview Gallery & Iteration Workflow (#48)
+
+**Deliverable:** Astro dev-only route for interactive prompt + filter iteration, with persistent log the agent can read.
+
+### Motivation
+
+Filter and prompt iteration is currently CLI-driven and one-shot. A web UI with free-text prompt input, filter selection, and side-by-side variant display dramatically accelerates the design loop. A persisted log gives the Claude Code skill context on what has been tried, so iteration with the agent doesn't restart from zero.
+
+### Tasks
+
+- [ ] Refactor CLI generation into a programmatic `generateFeatureImage()` function so both CLI and HTTP can call it
+- [ ] Add Astro API endpoint `POST /api/dev/feature-image/generate` that accepts `{ prompt, provider, preset, filters, title?, subtitle? }` and returns `{ outputPath, durationMs, error? }`
+- [ ] Add Astro API endpoint `GET /api/dev/feature-image/log` and `POST /api/dev/feature-image/log` for read/append of the iteration log
+- [ ] Add Astro page at `/dev/feature-image-preview` with: prompt textarea, provider/preset selector, multi-filter checkboxes, generate button, image display, and log table with notes/status
+- [ ] All `/api/dev/*` endpoints and the `/dev/*` route return 404 in production (env check)
+- [ ] Define log schema (JSONL): `{ timestamp, prompt, provider, presetOrFilters, outputPath, status, notes? }`
+- [ ] Persist log at `.feature-image-history.jsonl` in repo root (gitignored)
+- [ ] Update `feature-image-blog` skill to optionally read the log for iteration context
+
+### Acceptance Criteria
+
+- [ ] Running `npm run dev` and visiting `/dev/feature-image-preview` shows the gallery
+- [ ] Submitting a prompt + preset generates an image and displays it within the page
+- [ ] Each generation appends an entry to `.feature-image-history.jsonl`
+- [ ] User can mark entries with status (approved/rejected) and notes via the UI
+- [ ] Production build does NOT expose the gallery or its API endpoints
+- [ ] The `feature-image-blog` skill can read the log file directly to recall recent iterations
+
+## Phase 7: Analog Display Filter Primitives (#49)
+
+**Deliverable:** Three new filter primitives that complete the analog-display look (CRT, vintage video).
+
+### Tasks
+
+- [ ] Implement `chromatic-aberration` — slight per-channel RGB offset for CRT/lens fringing
+- [ ] Implement `bloom` — boost highlights and add Gaussian glow around bright pixels
+- [ ] Implement `lens-distortion` — barrel-distortion warp for CRT screen curvature
+- [ ] Add new presets: `vhs` (chromatic-aberration + scanlines + grain + grade), `monitor` (phosphor + scanlines + lens-distortion + vignette)
+- [ ] Update preview gallery filter list
+
+### Acceptance Criteria
+
+- [ ] Each primitive is independently invocable via `--filters <name>` and visible in the gallery
+- [ ] `vhs` and `monitor` presets produce visually distinct, recognizable looks
+- [ ] No regressions in existing presets
+
+## Phase 8: 8-bit / Pixel Filter Primitives (#50)
+
+**Deliverable:** Three filters for vintage-computing/pixel-art aesthetic.
+
+### Tasks
+
+- [ ] Implement `dither` — Bayer or Floyd-Steinberg dithering with configurable depth
+- [ ] Implement `posterize` — reduce color count to a small palette (configurable)
+- [ ] Implement `gradient-map` — map luminance to a color ramp (default: site teal→amber palette)
+- [ ] Add preset: `8-bit` (posterize + dither + scanlines + gradient-map)
+- [ ] Update preview gallery filter list
+
+### Acceptance Criteria
+
+- [ ] `gradient-map` with site palette enforces brand colors regardless of source image colors
+- [ ] `8-bit` preset produces a recognizable pixel-art look that ties together visually disparate sources
+- [ ] Each primitive is independently invocable
+
+## Phase 9: Cinematic / Editorial Filter Primitives (#51)
+
+**Deliverable:** Three filters for cinematic and editorial photography aesthetic.
+
+### Tasks
+
+- [ ] Implement `letterbox` — top/bottom black bars at configurable aspect ratio
+- [ ] Implement `light-leak` — composite analog-camera light-leak overlay (texture asset or generated gradient)
+- [ ] Implement `halftone` — printing-style dot pattern overlay
+- [ ] Add preset: `cinematic` (letterbox + grade + grain + vignette + bloom)
+- [ ] Update preview gallery filter list
+
+### Acceptance Criteria
+
+- [ ] Each primitive is independently invocable
+- [ ] `cinematic` preset produces editorial-grade hero images with film-photography feel
+- [ ] `letterbox` aspect ratio is configurable
+
+## Phase 10: Utility Filter Primitives (#52)
+
+**Deliverable:** Building-block utility filters for fine-grained control.
+
+### Tasks
+
+- [ ] Implement `sharpen` — counter-blur for accentuating detail
+- [ ] Implement `contrast` — adjust black/white points
+- [ ] Implement `threshold` — pure B/W conversion at a luminance cutoff
+- [ ] Implement `invert` — color inversion
+- [ ] Implement `duotone` — two-color mapping from luminance (different from gradient-map; only two colors)
+- [ ] Update preview gallery filter list
+
+### Acceptance Criteria
+
+- [ ] Each primitive is independently invocable and chainable
+- [ ] All filters from Phases 7-10 appear in the gallery filter selector
+- [ ] Documentation lists every filter with parameters and a short example
+
 ## File Structure
 
 ```
 scripts/feature-image/
-├── types.ts          # Provider interface, format types
+├── types.ts              # Provider interface, format types
 ├── providers/
-│   ├── dalle.ts      # DALL-E 3 implementation
-│   └── flux.ts       # FLUX implementation
-├── filters/          # Phase 5: post-processing filters
-│   ├── types.ts      # Filter interface
+│   ├── dalle.ts
+│   └── flux.ts
+├── filters/              # Phase 5 + 7-10 primitives
+│   ├── types.ts
 │   ├── scanlines.ts
 │   ├── vignette.ts
 │   ├── grain.ts
 │   ├── grade.ts
-│   ├── chromatic-aberration.ts
-│   └── presets.ts    # Named filter chains
-├── overlay.ts        # Text overlay compositing
-└── cli.ts            # CLI entry point
+│   ├── phosphor.ts
+│   ├── chromatic-aberration.ts  # Phase 7
+│   ├── bloom.ts                 # Phase 7
+│   ├── lens-distortion.ts       # Phase 7
+│   ├── dither.ts                # Phase 8
+│   ├── posterize.ts             # Phase 8
+│   ├── gradient-map.ts          # Phase 8
+│   ├── letterbox.ts             # Phase 9
+│   ├── light-leak.ts            # Phase 9
+│   ├── halftone.ts              # Phase 9
+│   ├── sharpen.ts               # Phase 10
+│   ├── contrast.ts              # Phase 10
+│   ├── threshold.ts             # Phase 10
+│   ├── invert.ts                # Phase 10
+│   ├── duotone.ts               # Phase 10
+│   └── index.ts                 # Registry + presets
+├── overlay.ts            # Text overlay compositing
+├── pipeline.ts           # Phase 6: programmatic generateFeatureImage()
+└── cli.ts
 
-.claude/skills/feature-image/
-└── SKILL.md          # Skill definition
+src/pages/dev/
+└── feature-image-preview.astro  # Phase 6: gallery UI (dev-only)
+
+src/pages/api/dev/feature-image/
+├── generate.ts                  # Phase 6: POST generation endpoint
+└── log.ts                       # Phase 6: GET/POST log endpoints
+
+.claude/skills/
+├── feature-image/
+└── feature-image-blog/
+
+.feature-image-history.jsonl     # Phase 6: iteration log (gitignored)
 ```
