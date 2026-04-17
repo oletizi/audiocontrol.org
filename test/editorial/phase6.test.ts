@@ -54,6 +54,33 @@ function videoEntry(slug: string, contentUrl: string): CalendarEntry {
 }
 
 describe('contentType + contentUrl columns', () => {
+  it('round-trips a tool entry', () => {
+    const cal: EditorialCalendar = {
+      entries: [
+        {
+          slug: 's330-editor',
+          title: 'Roland S-330 Web Editor',
+          description: 'Free open-source web editor',
+          stage: 'Published',
+          contentType: 'tool',
+          contentUrl: 'https://audiocontrol.org/roland/s330/editor',
+          targetKeywords: [],
+          source: 'manual',
+          datePublished: '2025-01-01',
+        },
+      ],
+      distributions: [],
+    };
+    const md = renderCalendar(cal);
+    expect(md).toMatch(/\| Type \|/);
+    expect(md).toContain('tool');
+    const reparsed = parseCalendar(md);
+    expect(reparsed.entries[0].contentType).toBe('tool');
+    expect(reparsed.entries[0].contentUrl).toBe(
+      'https://audiocontrol.org/roland/s330/editor',
+    );
+  });
+
   it('round-trips a YouTube entry', () => {
     const cal: EditorialCalendar = {
       entries: [videoEntry('s330-crunch-video', 'https://youtu.be/jWgCQDdsyrw')],
@@ -244,6 +271,34 @@ describe('auditCrossLinks', () => {
     });
     const postAudit = report.entries.find((a) => a.entry.slug === 's330-post');
     expect(postAudit?.errors.length).toBeGreaterThan(0);
+  });
+
+  it('skips tool entries cleanly — no outbound links, no errors, no false-positive backlink gaps', async () => {
+    const cal: EditorialCalendar = {
+      entries: [
+        {
+          slug: 's330-editor',
+          title: 'Roland S-330 Web Editor',
+          description: '',
+          stage: 'Published',
+          contentType: 'tool',
+          contentUrl: 'https://audiocontrol.org/roland/s330/editor',
+          targetKeywords: [],
+          source: 'manual',
+          datePublished: '2025-01-01',
+        },
+      ],
+      distributions: [],
+    };
+    const report = await auditCrossLinks({
+      calendar: cal,
+      fetchBlogMarkdown: () => null,
+      fetchVideoDescription: async () => '',
+    });
+    const toolAudit = report.entries.find((a) => a.entry.slug === 's330-editor');
+    expect(toolAudit?.outbound).toEqual([]);
+    expect(toolAudit?.missingBacklinksTo).toEqual([]);
+    expect(toolAudit?.errors).toEqual([]);
   });
 
   it('records YouTube entries with missing contentUrl as errors', async () => {

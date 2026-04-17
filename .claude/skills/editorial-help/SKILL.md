@@ -38,7 +38,7 @@ Show the editorial content lifecycle and current calendar status. Do NOT modify 
 **YouTube integration skills (Phase 6):**
 - `/editorial-cross-link-review` — Audit bidirectional links between blog posts and YouTube videos; flag missing reciprocal links
 
-YouTube videos are first-class calendar entries — use `/editorial-add` with content type `youtube`. They go through the same five stages as blog posts, but `/editorial-draft` creates only a GitHub issue (no directory) and `/editorial-publish` requires a `contentUrl` (the YouTube video URL).
+YouTube videos and tools/apps on audiocontrol.org are first-class calendar entries — use `/editorial-add` with content type `youtube` or `tool`. They go through the same five stages as blog posts, but `/editorial-draft` creates only a GitHub issue (no directory) and `/editorial-publish` requires a `contentUrl` (the YouTube URL or canonical page URL).
 
 **Status skills:**
 - `/editorial-review` — Show calendar status across all stages

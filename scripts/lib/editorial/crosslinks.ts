@@ -144,7 +144,17 @@ export async function auditCrossLinks(
     const outbound: OutboundLink[] = [];
     const errors: string[] = [];
 
-    if (effectiveContentType(entry) === 'blog') {
+    const entryType = effectiveContentType(entry);
+
+    // Tool entries are tracked in the calendar but the cross-link audit
+    // doesn't analyze them yet: they have no MD file we own and no
+    // fetch-able description. Tool-audit support is a follow-up.
+    if (entryType === 'tool') {
+      audits.push({ entry, outbound: [], missingBacklinksTo: [], errors: [] });
+      continue;
+    }
+
+    if (entryType === 'blog') {
       const md = fetchBlogMarkdown(entry.slug);
       if (md === null) {
         errors.push(`could not read blog markdown for ${entry.slug}`);
@@ -201,6 +211,10 @@ export async function auditCrossLinks(
       if (!link.resolvedSlug) continue;
       const a = auditBySlug.get(link.resolvedSlug);
       if (!a) continue;
+      // Tool entries are not audited for outbound links, so reciprocation
+      // isn't meaningful — skip to avoid false-positive "missing backlink"
+      // flags against every tool.
+      if (effectiveContentType(a.entry) === 'tool') continue;
       const reciprocated = a.outbound.some(
         (l) => l.resolvedSlug === b.entry.slug,
       );

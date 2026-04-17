@@ -16,8 +16,14 @@ export const STAGES = [
 
 export type Stage = (typeof STAGES)[number];
 
-/** What kind of content a calendar entry represents. */
-export const CONTENT_TYPES = ['blog', 'youtube'] as const;
+/** What kind of content a calendar entry represents.
+ *
+ * - `blog`    — content lives in this repo under `src/pages/blog/<slug>/`
+ * - `youtube` — video hosted on YouTube; `contentUrl` is the video URL
+ * - `tool`    — standalone tool or app on audiocontrol.org (e.g. an editor page);
+ *               `contentUrl` is the canonical page URL
+ */
+export const CONTENT_TYPES = ['blog', 'youtube', 'tool'] as const;
 
 export type ContentType = (typeof CONTENT_TYPES)[number];
 
@@ -71,6 +77,24 @@ export function isContentType(value: string): value is ContentType {
  */
 export function effectiveContentType(entry: CalendarEntry): ContentType {
   return entry.contentType ?? 'blog';
+}
+
+/**
+ * True if this content type has a source file in the repo that
+ * `/editorial-draft` should scaffold. Only blog posts live in the repo;
+ * youtube videos and tools live externally.
+ */
+export function hasRepoContent(contentType: ContentType): boolean {
+  return contentType === 'blog';
+}
+
+/**
+ * True if this content type requires `contentUrl` to be set before publishing.
+ * Blog entries derive their URL from the slug; everything else needs an
+ * explicit URL.
+ */
+export function requiresContentUrl(contentType: ContentType): boolean {
+  return contentType !== 'blog';
 }
 
 /** Social platforms we track distribution to. */

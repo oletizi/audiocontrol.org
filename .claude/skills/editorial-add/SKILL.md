@@ -14,7 +14,13 @@ The user provides a title (and optionally a description) as the skill argument. 
 - `/editorial-add "SCSI Protocol Deep Dive"`
 - `/editorial-add "SCSI Protocol Deep Dive" "A technical walkthrough of the SCSI protocol for vintage hardware"`
 
-After title/description, prompt for **content type** — `blog` (default) or `youtube`. For YouTube entries, also prompt for the video URL if the user already has it; leave `contentUrl` unset if the video hasn't been published yet (URL is required at publish time).
+After title/description, prompt for **content type** — one of:
+
+- `blog` (default) — lives in this repo at `src/pages/blog/<slug>/`
+- `youtube` — video hosted on YouTube; prompt for the video URL if known
+- `tool` — standalone tool or app on audiocontrol.org (e.g. an editor page); prompt for the tool URL
+
+For `youtube` and `tool` entries, if the content is already published the URL should be captured now. If the content is still planned (not yet live), `contentUrl` stays unset and must be filled in before `/editorial-publish` will advance the entry.
 
 ## Steps
 
@@ -27,7 +33,7 @@ After title/description, prompt for **content type** — `blog` (default) or `yo
    - Description (from user, or empty)
    - Keywords (empty — set later via `/editorial-plan`)
    - Content type (if not `blog`; the writer adds a Type column when any entry in the stage has a non-default type)
-   - Content URL (for YouTube entries with a known URL; otherwise omit)
+   - Content URL (for `youtube` and `tool` entries with a known URL; otherwise omit)
    - Source: `manual`
 5. **Write the calendar**: Write the updated `docs/editorial-calendar.md`
 6. **Report**: Confirm the entry was added and show its slug

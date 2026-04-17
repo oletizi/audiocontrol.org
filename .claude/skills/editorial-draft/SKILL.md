@@ -6,7 +6,7 @@ user_invocable: true
 
 # Editorial Draft
 
-Move a Planned calendar entry to Drafting. For **blog** entries: creates the blog post directory, index.md with frontmatter, a GitHub tracking issue, and moves the entry. For **youtube** entries: creates a GitHub tracking issue only (no directory — the video lives on YouTube) and moves the entry.
+Move a Planned calendar entry to Drafting. For **blog** entries: creates the blog post directory, index.md with frontmatter, a GitHub tracking issue, and moves the entry. For **youtube** and **tool** entries: creates a GitHub tracking issue only (no directory — the content lives outside the repo) and moves the entry.
 
 ## Input
 
@@ -19,9 +19,9 @@ The user provides the slug of a Planned entry. Example:
 2. **Find the entry**: Look for the slug in the calendar
    - If not found: report error and list available Planned entries
    - If found but not in Planned stage: report its current stage and stop
-3. **Branch on content type** (use `effectiveContentType(entry)` — defaults to `'blog'`):
+3. **Branch on content type** (use `hasRepoContent(effectiveContentType(entry))` — true only for `blog`):
 
-### If contentType is `blog`
+### If the entry has repo content (i.e. contentType is `blog`)
 
 4. **Check for existing post**: Verify `src/pages/blog/<slug>/index.md` does not already exist
    - If it exists: report error and stop
@@ -43,12 +43,12 @@ The user provides the slug of a Planned entry. Example:
    - Title: `[blog post] <entry title>`
    - Body: Description, target keywords, and acceptance criteria (draft, review, publish)
 
-### If contentType is `youtube`
+### Else (contentType is `youtube` or `tool`)
 
-4. **Skip the directory scaffolding** — YouTube videos don't live in the repo.
+4. **Skip the directory scaffolding** — the content lives outside this repo.
 5. **Create GitHub issue**:
-   - Title: `[youtube] <entry title>`
-   - Body: Description, target keywords, topics (if any), acceptance criteria (film, edit, upload, publish — with link-back to blog posts if applicable)
+   - Title: `[<contentType>] <entry title>`
+   - Body: Description, target keywords, topics (if any), acceptance criteria appropriate to the type (e.g. youtube: film/edit/upload/publish with link-back to blog posts if applicable; tool: build/test/deploy/link-from-blog)
    - Mention that the contentUrl must be set on the calendar entry before `/editorial-publish` will advance it.
 
 ### Common final steps
@@ -65,4 +65,4 @@ The user provides the slug of a Planned entry. Example:
 - Use the Write tool to persist changes to `docs/editorial-calendar.md`
 - The author is always "Orion Letizi" unless the user specifies otherwise
 - Follow the frontmatter format exactly as shown in existing blog posts
-- For YouTube entries, do NOT create any files under `src/pages/blog/` — the only artifact is the GitHub issue
+- For `youtube` and `tool` entries, do NOT create any files under `src/pages/blog/` — the only artifact is the GitHub issue

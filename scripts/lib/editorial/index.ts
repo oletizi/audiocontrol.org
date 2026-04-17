@@ -11,7 +11,9 @@ export {
   distributionsBySlug,
   effectiveContentType,
   entriesByStage,
+  hasRepoContent,
   isContentType,
+  requiresContentUrl,
 } from './types.js';
 
 export {
