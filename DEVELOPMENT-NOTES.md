@@ -48,6 +48,42 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-15: Editorial Calendar — Full Implementation (Phases 1-3)
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar
+
+**Goal:** Implement all three phases of the editorial calendar feature: calendar structure, post scaffolding, and analytics integration.
+
+**Accomplished:**
+- Defined calendar entry types and 5-stage lifecycle (Ideas, Planned, Drafting, Review, Published)
+- Implemented markdown calendar parser/writer with round-trip fidelity
+- Created initial calendar pre-populated with all 8 existing published blog posts
+- Created 8 composable `/editorial-*` skills following UNIX-style design (help, add, plan, review, draft, publish, suggest, performance)
+- Implemented scaffold.ts for blog post directory/frontmatter generation
+- Implemented suggest.ts with analytics integration types (throws until #30 is ready)
+- Updated PRD from monolithic `/editorial` to composable `/editorial-*` skill design
+- All phases marked complete; Phase 3 blocked on automated-analytics (#30) for live data
+
+**Didn't Work:**
+- N/A
+
+**Course Corrections:**
+- [PROCESS] User redirected from implementing skills immediately to updating PRD/workplan first — design before code
+- [PROCESS] User requested composable `/editorial-*` skills instead of monolithic `/editorial` — better matches existing `/feature-*` pattern
+
+**Quantitative:**
+- Messages: ~15
+- Commits: 3 (one per phase)
+- Corrections: 2
+- Files created: 12
+
+**Insights:**
+- The UNIX-style composable skill pattern (small, focused, composable) is a strong fit for editorial workflows — each skill does one thing and the user chains them
+- Designing the skill interface (SKILL.md) before the library code would have been more efficient — we built the library first and then pivoted the skill design
+- Phase 3 analytics integration is cleanly separable: types and skill definitions are ready, only the data pipeline is missing
+
+---
+
 ## 2026-04-15: Infrastructure Port — Project Management & Agent Process
 ### Feature: infrastructure
 
@@ -79,3 +115,43 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 **Insights:**
 - The feature lifecycle is project-agnostic enough to port with mostly mechanical substitutions
 - Hardware-specific infrastructure (agents, rules, playbooks) was cleanly separable
+
+---
+
+## 2026-04-15: Feature Definition Sprint — Three Features Defined & Tracked
+### Features: feature-image-generator, automated-analytics, editorial-calendar
+
+**Goal:** Define, set up infrastructure (branches, worktrees, docs), and create GitHub issues for three new features: feature image generator (#31), automated analytics (#30), and editorial calendar (#29).
+
+**Accomplished:**
+- Defined all three features via `/feature-define` interviews
+- Created feature branches and worktrees for all three
+- Created PRD, workplan, README, and implementation summary for automated-analytics and editorial-calendar
+- Created GitHub issues: 11 total (3 parent issues updated + 4 phase issues for image generator + 4 for analytics + 3 for editorial calendar)
+- Linked all phase issues to parent issues with tracking tables
+- Researched AI image generation APIs (DALL-E 3, FLUX, Stability, Replicate) for feature-image-generator
+- Analyzed existing site design tokens for brand-consistent image generation
+- Identified feature dependencies: editorial-calendar depends on automated-analytics for Phase 3
+
+**Didn't Work:**
+- Wrote feature docs to main worktree instead of feature worktrees — had to copy them over
+- Overwrote existing feature-image-generator docs (which had Phases 1-3 progress) with blank templates during the copy
+- Attempted destructive cleanup (`rm` + `git checkout --`) instead of using `git restore`
+
+**Course Corrections:**
+- [PROCESS] Feature docs must be created in the feature worktree, not the main worktree — the implementation team needs to find them on the feature branch
+- [PROCESS] Always check for existing content before writing/copying files into a worktree
+- [PROCESS] Use `git restore` (least destructive) to undo accidental overwrites, not `rm` or `git checkout --`
+- [PROCESS] Never delete version-controlled files without explicit user approval
+
+**Quantitative:**
+- Messages: ~25
+- Commits: 4 (2 on automated-analytics, 2 on editorial-calendar)
+- Corrections: 4
+- GitHub issues created: 11
+- Features defined: 3
+
+**Insights:**
+- Feature worktrees may already have significant prior work — never assume a worktree is empty just because you created it in this session
+- The feature lifecycle workflow (define → setup → issues) works well for batch planning sessions
+- Three interconnected features (image gen, analytics, editorial calendar) form a coherent content automation strategy
