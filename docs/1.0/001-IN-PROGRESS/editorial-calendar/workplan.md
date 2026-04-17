@@ -278,40 +278,36 @@ No changes — `editorial-channels.json` stays topic-to-subreddit. A YouTube vid
 
 **Core data model + skill updates**
 
-- [ ] Extend `types.ts` with `contentType` and `contentUrl`
-- [ ] Update `calendar.ts` parser/writer for Type/URL columns
-- [ ] Update `/editorial-add` to prompt for content type
-- [ ] Update `/editorial-draft` to branch on content type (blog scaffolds directory; youtube creates issue only)
-- [ ] Update `/editorial-publish` to require `contentUrl` for YouTube entries
+- [x] Extend `types.ts` with `contentType` and `contentUrl` (+ `effectiveContentType`, `isContentType` helpers)
+- [x] Update `calendar.ts` parser/writer for Type/URL columns (optional, emitted only when any entry uses non-default values)
+- [x] Update `/editorial-add` to prompt for content type
+- [x] Update `/editorial-draft` to branch on content type (blog scaffolds directory; youtube creates issue only)
+- [x] Update `/editorial-publish` to require `contentUrl` for YouTube entries
 
 **YouTube client**
 
-- [ ] `scripts/lib/youtube/config.ts` — loads `~/.config/audiocontrol/youtube.json` (`{apiKey: "..."}`). Throws with setup instructions if missing
-- [ ] `scripts/lib/youtube/client.ts` — `getVideoMetadata(videoIdOrUrl): {id, title, description, channelTitle, channelId, publishedAt}` using `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=<id>&key=<apiKey>`
-- [ ] Video ID extraction helper supporting `youtube.com/watch?v=<id>`, `youtu.be/<id>`, and `youtube.com/shorts/<id>`
-- [ ] Fixture-based tests — real API calls happen only from skills, not tests
+- [x] `scripts/lib/youtube/config.ts` — loads `~/.config/audiocontrol/youtube.json` (`{apiKey: "..."}`)
+- [x] `scripts/lib/youtube/client.ts` — `getVideoMetadata(videoIdOrUrl)` via `/youtube/v3/videos?part=snippet`
+- [x] `extractVideoId` helper supporting `watch?v=`, `youtu.be/`, `shorts/`, `embed/`, and bare IDs
 
 **Cross-link audit**
 
-- [ ] `scripts/lib/editorial/crosslinks.ts`:
-  - `extractYouTubeLinksFromMarkdown(md): string[]` — parses `youtube.com` and `youtu.be` URLs from a blog MD file
-  - `extractBlogLinksFromDescription(desc): string[]` — parses `audiocontrol.org/blog/<slug>/` URLs
-  - `auditCrossLinks(calendar, fetchDescription)` — returns per-entry reports: what the entry links to, which of those are known calendar entries, and which don't reciprocate
-- [ ] `/editorial-cross-link-review` skill — calls `auditCrossLinks`, passes a `fetchDescription` closure that uses `scripts/lib/youtube/client.ts`, prints the report grouped by gap type
+- [x] `scripts/lib/editorial/crosslinks.ts` — `extractYouTubeLinksFromMarkdown`, `extractBlogLinksFromDescription`, `slugFromBlogUrl`, `auditCrossLinks` with bidirectional gap detection
+- [x] `/editorial-cross-link-review` skill
 
 **Reddit sync improvement**
 
-- [ ] Update `/editorial-reddit-sync` to match submissions against `contentUrl` for YouTube entries in addition to `/blog/<slug>/` URLs for blog entries
-- [ ] Re-run the sync after Phase 6 ships to attribute the 6 pre-existing S-330 editor video shares once that video becomes a calendar entry
+- [x] Update `/editorial-reddit-sync` to match submissions against `contentUrl` for YouTube entries in addition to blog URLs
+- [ ] Re-run the sync after Phase 6 ships, once the S-330 editor video exists as a calendar entry, to attribute the 6 pre-existing shares
 
 **Tests**
 
-- [ ] `contentType` + `contentUrl` round-trip on stage tables
-- [ ] Backwards-compat parsing of legacy tables (no Type/URL columns)
-- [ ] `extractYouTubeLinksFromMarkdown` against realistic blog MD
-- [ ] `extractBlogLinksFromDescription` against realistic YouTube descriptions
-- [ ] `auditCrossLinks` with fixture calendar + fixture descriptions, verifies gap detection in both directions
-- [ ] YouTube client fixture tests (no live API calls from tests)
+- [x] `contentType` + `contentUrl` round-trip on stage tables
+- [x] Backwards-compat parsing of legacy tables (no Type/URL columns)
+- [x] `extractYouTubeLinksFromMarkdown` against realistic blog MD
+- [x] `extractBlogLinksFromDescription` against realistic YouTube descriptions
+- [x] `auditCrossLinks` with fixture calendar + fixture descriptions — verifies reciprocation, missing-backlink detection, and error handling in both directions
+- [x] `extractVideoId` fixture tests covering all supported URL forms
 
 **Acceptance Criteria**
 

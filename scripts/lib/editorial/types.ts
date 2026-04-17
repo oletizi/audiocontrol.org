@@ -16,6 +16,11 @@ export const STAGES = [
 
 export type Stage = (typeof STAGES)[number];
 
+/** What kind of content a calendar entry represents. */
+export const CONTENT_TYPES = ['blog', 'youtube'] as const;
+
+export type ContentType = (typeof CONTENT_TYPES)[number];
+
 /** A single entry in the editorial calendar. */
 export interface CalendarEntry {
   /** URL-safe identifier, e.g. "scsi-over-wifi-raspberry-pi-bridge" */
@@ -26,6 +31,18 @@ export interface CalendarEntry {
   description: string;
   /** Current editorial stage */
   stage: Stage;
+  /**
+   * What kind of content this entry represents. Optional in storage —
+   * entries without an explicit type default to `'blog'` on parse, so
+   * pre-Phase-6 calendars remain valid.
+   */
+  contentType?: ContentType;
+  /**
+   * Canonical URL for content that doesn't live at `/blog/<slug>/`.
+   * Required for `youtube` entries once published. Omitted for `blog`
+   * entries (URL is derived from slug).
+   */
+  contentUrl?: string;
   /** Target SEO keywords (set when moving to Planned) */
   targetKeywords: string[];
   /**
@@ -40,6 +57,20 @@ export interface CalendarEntry {
   issueNumber?: number;
   /** How this entry was sourced */
   source: 'manual' | 'analytics';
+}
+
+/** True if a value is a recognized content type. */
+export function isContentType(value: string): value is ContentType {
+  return (CONTENT_TYPES as readonly string[]).includes(value);
+}
+
+/**
+ * Return the effective content type for an entry — `'blog'` when unset.
+ * Use this everywhere that needs to branch on type, so legacy entries
+ * (no contentType) keep behaving like blog posts.
+ */
+export function effectiveContentType(entry: CalendarEntry): ContentType {
+  return entry.contentType ?? 'blog';
 }
 
 /** Social platforms we track distribution to. */

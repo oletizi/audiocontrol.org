@@ -34,7 +34,10 @@ import { readFileSync, writeFileSync } from 'fs';
 import {
   PLATFORMS,
   STAGES,
+  effectiveContentType,
+  isContentType,
   type CalendarEntry,
+  type ContentType,
   type DistributionRecord,
   type EditorialCalendar,
   type Platform,
@@ -131,6 +134,14 @@ function parseEntries(lines: string[], stage: Stage): CalendarEntry[] {
       if (topics) {
         entry.topics = topics.split(',').map((t) => t.trim()).filter(Boolean);
       }
+
+      const typeValue = col(cells, cols, 'type');
+      if (typeValue && isContentType(typeValue)) {
+        entry.contentType = typeValue;
+      }
+
+      const url = col(cells, cols, 'url');
+      if (url) entry.contentUrl = url;
 
       const published = col(cells, cols, 'published');
       if (published) entry.datePublished = published;
@@ -248,10 +259,20 @@ function renderStageTable(entries: CalendarEntry[], stage: Stage): string {
   const hasTopics = entries.some(
     (e) => e.topics !== undefined && e.topics.length > 0,
   );
+  // Emit Type column when any entry is non-blog
+  const hasType = entries.some(
+    (e) => e.contentType !== undefined && e.contentType !== 'blog',
+  );
+  // Emit URL column when any entry has a contentUrl
+  const hasUrl = entries.some(
+    (e) => e.contentUrl !== undefined && e.contentUrl !== '',
+  );
   const isPublished = stage === 'Published';
 
   const headers: string[] = ['Slug', 'Title', 'Description', 'Keywords'];
   if (hasTopics) headers.push('Topics');
+  if (hasType) headers.push('Type');
+  if (hasUrl) headers.push('URL');
   headers.push('Source');
   if (isPublished) headers.push('Published');
   if (hasIssue || isPublished) headers.push('Issue');
@@ -267,6 +288,8 @@ function renderStageTable(entries: CalendarEntry[], stage: Stage): string {
       escapeCell(e.targetKeywords.join(', ')),
     ];
     if (hasTopics) row.push(escapeCell((e.topics ?? []).join(', ')));
+    if (hasType) row.push(effectiveContentType(e));
+    if (hasUrl) row.push(escapeCell(e.contentUrl ?? ''));
     row.push(e.source);
     if (isPublished) row.push(e.datePublished ?? '');
     if (hasIssue || isPublished) row.push(e.issueNumber ? `#${e.issueNumber}` : '');

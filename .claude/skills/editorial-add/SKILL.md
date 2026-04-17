@@ -14,6 +14,8 @@ The user provides a title (and optionally a description) as the skill argument. 
 - `/editorial-add "SCSI Protocol Deep Dive"`
 - `/editorial-add "SCSI Protocol Deep Dive" "A technical walkthrough of the SCSI protocol for vintage hardware"`
 
+After title/description, prompt for **content type** — `blog` (default) or `youtube`. For YouTube entries, also prompt for the video URL if the user already has it; leave `contentUrl` unset if the video hasn't been published yet (URL is required at publish time).
+
 ## Steps
 
 1. **Read the calendar**: Read `docs/editorial-calendar.md`
@@ -24,6 +26,8 @@ The user provides a title (and optionally a description) as the skill argument. 
    - Title (from user)
    - Description (from user, or empty)
    - Keywords (empty — set later via `/editorial-plan`)
+   - Content type (if not `blog`; the writer adds a Type column when any entry in the stage has a non-default type)
+   - Content URL (for YouTube entries with a known URL; otherwise omit)
    - Source: `manual`
 5. **Write the calendar**: Write the updated `docs/editorial-calendar.md`
 6. **Report**: Confirm the entry was added and show its slug
