@@ -14,13 +14,14 @@ import {
   buildSearchPerformance,
   buildContentFunnel,
   generateRecommendations,
+  fetchReferrers,
 } from '../analytics/index.js';
 import type {
   AnalyticsReport,
   DateRange,
   Recommendation,
 } from '../analytics/index.js';
-import type { CalendarEntry } from './types.js';
+import { PLATFORMS, type CalendarEntry, type Platform } from './types.js';
 
 /** A content opportunity identified from analytics data. */
 export interface ContentSuggestion {
@@ -222,4 +223,80 @@ export async function getPostPerformance(
   });
 
   return results;
+}
+
+// ---------------------------------------------------------------------------
+// Social referrals (site-wide, via Umami)
+// ---------------------------------------------------------------------------
+
+/**
+ * Site-wide traffic to the site from one social platform over the reporting
+ * window. Per-post attribution is not available from this data source — see
+ * the note on fetchReferrers() in umami-client.
+ */
+export interface SocialReferralSummary {
+  platform: Platform;
+  pageviews: number;
+}
+
+/** Hostname patterns mapping Umami referrer values to our tracked platforms. */
+const PLATFORM_HOST_PATTERNS: Record<Platform, RegExp[]> = {
+  reddit: [/(^|\.)reddit\.com$/i, /(^|\.)redd\.it$/i, /^out\.reddit\.com$/i],
+  youtube: [/(^|\.)youtube\.com$/i, /(^|\.)youtu\.be$/i],
+  linkedin: [/(^|\.)linkedin\.com$/i, /(^|\.)lnkd\.in$/i],
+  instagram: [/(^|\.)instagram\.com$/i, /^l\.instagram\.com$/i],
+};
+
+function extractHost(referrerValue: string): string {
+  const value = (referrerValue ?? '').trim();
+  if (!value) return '';
+  try {
+    const u = new URL(value.startsWith('http') ? value : `https://${value}`);
+    return u.hostname.toLowerCase();
+  } catch {
+    return value.toLowerCase();
+  }
+}
+
+function classifyReferrer(host: string): Platform | null {
+  for (const platform of PLATFORMS) {
+    if (PLATFORM_HOST_PATTERNS[platform].some((p) => p.test(host))) {
+      return platform;
+    }
+  }
+  return null;
+}
+
+/**
+ * Return site-wide pageviews from each tracked social platform.
+ *
+ * This is site-level, not per-post — Umami's `/metrics?type=referrer`
+ * endpoint does not honor the `url` filter on our instance. Only platforms
+ * that produced at least one referrer pageview in the window appear in the
+ * result.
+ *
+ * Per-post attribution will move to GA4 in a follow-up.
+ */
+export async function getSocialReferrals(
+  days: number = 30,
+): Promise<SocialReferralSummary[]> {
+  const apiKey = loadApiKey();
+  const baseUrl = getBaseUrl();
+  const websiteId = getWebsiteId();
+  const dateRange = computeDateRange(days);
+
+  const referrers = await fetchReferrers(apiKey, baseUrl, websiteId, dateRange);
+
+  const byPlatform = new Map<Platform, number>();
+  for (const r of referrers) {
+    const host = extractHost(r.x);
+    const platform = classifyReferrer(host);
+    if (!platform) continue;
+    byPlatform.set(platform, (byPlatform.get(platform) ?? 0) + r.y);
+  }
+
+  return [...byPlatform].map(([platform, pageviews]) => ({
+    platform,
+    pageviews,
+  }));
 }

@@ -32,9 +32,12 @@
 
 import { readFileSync, writeFileSync } from 'fs';
 import {
+  PLATFORMS,
   STAGES,
   type CalendarEntry,
+  type DistributionRecord,
   type EditorialCalendar,
+  type Platform,
   type Stage,
 } from './types.js';
 
@@ -67,6 +70,10 @@ function isSeparator(line: string): boolean {
 
 function isStage(name: string): name is Stage {
   return (STAGES as readonly string[]).includes(name);
+}
+
+function isPlatform(value: string): value is Platform {
+  return (PLATFORMS as readonly string[]).includes(value);
 }
 
 function parseEntries(lines: string[], stage: Stage): CalendarEntry[] {
@@ -118,34 +125,74 @@ function parseEntries(lines: string[], stage: Stage): CalendarEntry[] {
   return entries;
 }
 
+function parseDistributions(lines: string[]): DistributionRecord[] {
+  const records: DistributionRecord[] = [];
+
+  let i = 0;
+  while (i < lines.length && !lines[i].startsWith('|')) i++;
+  if (i >= lines.length) return records;
+
+  i++; // header
+  if (i < lines.length && isSeparator(lines[i])) i++;
+
+  while (i < lines.length && lines[i].startsWith('|')) {
+    const cells = parseRow(lines[i]);
+    if (cells.length >= 4 && isPlatform(cells[1])) {
+      const rec: DistributionRecord = {
+        slug: cells[0],
+        platform: cells[1],
+        url: cells[2],
+        dateShared: cells[3],
+      };
+      if (cells.length > 4 && cells[4]) rec.notes = cells[4];
+      records.push(rec);
+    }
+    i++;
+  }
+  return records;
+}
+
+type SectionName = Stage | 'Distribution';
+
 /** Parse the editorial calendar markdown file into an EditorialCalendar. */
 export function parseCalendar(markdown: string): EditorialCalendar {
   const entries: CalendarEntry[] = [];
+  const distributions: DistributionRecord[] = [];
   const lines = markdown.split('\n');
 
-  let currentStage: Stage | null = null;
-  let stageLines: string[] = [];
+  let currentSection: SectionName | null = null;
+  let sectionLines: string[] = [];
 
-  function flushStage() {
-    if (currentStage && stageLines.length > 0) {
-      entries.push(...parseEntries(stageLines, currentStage));
+  function flushSection() {
+    if (currentSection && sectionLines.length > 0) {
+      if (currentSection === 'Distribution') {
+        distributions.push(...parseDistributions(sectionLines));
+      } else {
+        entries.push(...parseEntries(sectionLines, currentSection));
+      }
     }
-    stageLines = [];
+    sectionLines = [];
   }
 
   for (const line of lines) {
-    const stageMatch = line.match(/^## (.+)$/);
-    if (stageMatch) {
-      flushStage();
-      const name = stageMatch[1].trim();
-      currentStage = isStage(name) ? name : null;
-    } else if (currentStage) {
-      stageLines.push(line);
+    const sectionMatch = line.match(/^## (.+)$/);
+    if (sectionMatch) {
+      flushSection();
+      const name = sectionMatch[1].trim();
+      if (isStage(name)) {
+        currentSection = name;
+      } else if (name === 'Distribution') {
+        currentSection = 'Distribution';
+      } else {
+        currentSection = null;
+      }
+    } else if (currentSection) {
+      sectionLines.push(line);
     }
   }
-  flushStage();
+  flushSection();
 
-  return { entries };
+  return { entries, distributions };
 }
 
 /** Read and parse the editorial calendar from disk. */
@@ -196,6 +243,18 @@ function renderStageTable(entries: CalendarEntry[], stage: Stage): string {
   return lines.join('\n');
 }
 
+function renderDistributionTable(records: DistributionRecord[]): string {
+  const lines: string[] = [];
+  lines.push('| Slug | Platform | URL | Shared | Notes |');
+  lines.push('|------|----------|-----|--------|-------|');
+  for (const r of records) {
+    lines.push(
+      `| ${escapeCell(r.slug)} | ${r.platform} | ${escapeCell(r.url)} | ${r.dateShared} | ${escapeCell(r.notes ?? '')} |`,
+    );
+  }
+  return lines.join('\n');
+}
+
 /** Render the full editorial calendar as markdown. */
 export function renderCalendar(calendar: EditorialCalendar): string {
   const sections: string[] = ['# Editorial Calendar', ''];
@@ -210,6 +269,14 @@ export function renderCalendar(calendar: EditorialCalendar): string {
     }
     sections.push('');
   }
+
+  sections.push('## Distribution', '');
+  if (calendar.distributions.length > 0) {
+    sections.push(renderDistributionTable(calendar.distributions));
+  } else {
+    sections.push('*No entries.*');
+  }
+  sections.push('');
 
   return sections.join('\n');
 }
@@ -320,4 +387,27 @@ export function findEntry(
   slug: string,
 ): CalendarEntry | undefined {
   return calendar.entries.find((e) => e.slug === slug);
+}
+
+/**
+ * Append a distribution record for a published post.
+ *
+ * The referenced calendar entry must exist and be in the Published stage —
+ * we don't record shares for posts that haven't shipped yet.
+ */
+export function addDistribution(
+  calendar: EditorialCalendar,
+  record: DistributionRecord,
+): DistributionRecord {
+  const entry = calendar.entries.find((e) => e.slug === record.slug);
+  if (!entry) {
+    throw new Error(`No calendar entry found with slug: ${record.slug}`);
+  }
+  if (entry.stage !== 'Published') {
+    throw new Error(
+      `Entry "${record.slug}" is in stage "${entry.stage}" — must be Published to record a distribution`,
+    );
+  }
+  calendar.distributions.push(record);
+  return record;
 }

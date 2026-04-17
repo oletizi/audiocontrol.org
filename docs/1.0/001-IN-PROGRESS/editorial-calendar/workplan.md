@@ -13,6 +13,7 @@
 | Phase 1: Calendar Structure & Basic Management | oletizi/audiocontrol.org#40 |
 | Phase 2: Post Scaffolding | oletizi/audiocontrol.org#41 |
 | Phase 3: Analytics Integration | oletizi/audiocontrol.org#42 |
+| Phase 4: Social Distribution Tracking | oletizi/audiocontrol.org#54 |
 
 ## Files Affected
 
@@ -30,6 +31,8 @@
 - `.claude/skills/editorial-publish/SKILL.md` — mark entry as Published
 - `.claude/skills/editorial-suggest/SKILL.md` — analytics-driven topic suggestions
 - `.claude/skills/editorial-performance/SKILL.md` — published post analytics
+- `.claude/skills/editorial-distribute/SKILL.md` — record a social share
+- `.claude/skills/editorial-social-review/SKILL.md` — matrix of shares across platforms
 
 ## Implementation Phases
 
@@ -93,6 +96,30 @@
 - `/editorial-performance` shows metrics for published posts and flags underperformers
 - Suggestions include specific data (e.g., "query X has 200 impressions at position 8 — no page targets it")
 - Underperformers include specific improvement recommendations
+
+### Phase 4: Social Distribution Tracking
+
+**Deliverable:** Record where published posts have been shared and surface social referral traffic from analytics
+
+- [x] Define `Platform` union (`'reddit' | 'youtube' | 'linkedin' | 'instagram'`) and `DistributionRecord` interface in types.ts
+- [x] Add `distributions` field to `EditorialCalendar` type
+- [x] Extend calendar.ts parser to read a new `## Distribution` markdown section (columns: Slug, Platform, URL, Shared, Notes)
+- [x] Extend calendar.ts writer to render the `## Distribution` section
+- [x] Add `addDistribution()` mutation function in calendar.ts
+- [x] Create `/editorial-distribute` skill — interactive prompt for slug, platform, URL, optional notes (no positional args)
+- [x] Create `/editorial-social-review` skill — render a matrix of published posts × platforms with checkmarks
+- [x] Add `getSocialReferrals()` to suggest.ts — fetch referrer data from Umami, map hostnames to the 4 platforms, return per-post traffic
+- [x] Extend `/editorial-performance` skill to include a Social Referrals section per post
+- [x] Update `/editorial-help` to list `/editorial-distribute` and `/editorial-social-review`
+- [x] Update `/editorial-review` to show distribution counts alongside stage counts
+- [x] Add unit tests for the Distribution parser/writer round-trip and `addDistribution()`
+
+**Acceptance Criteria:**
+- `/editorial-distribute` prompts the user for each field and records a share in the calendar
+- `/editorial-social-review` shows a matrix of published posts vs platforms (shared / not shared)
+- `/editorial-performance` includes social referral traffic alongside organic search metrics for each post
+- Distribution data is persisted in `docs/editorial-calendar.md` in a `## Distribution` section
+- Calendar round-trips: parsing then rendering produces the same markdown
 
 ## Verification Checklist
 

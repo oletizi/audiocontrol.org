@@ -21,11 +21,16 @@ Content creation for audiocontrol.org is ad hoc with no schedule, no procedure, 
 - A feedback loop: `/editorial-performance` can pull analytics for published posts and flag underperformers or suggest updates
 - Calendar entries distinguish between analytics-suggested and manually added topics
 
+## In Scope (Phase 4 addition)
+
+- **Social distribution tracking**: recording where published posts have been shared (Reddit, YouTube, LinkedIn, Instagram) and surfacing that data in the calendar
+- **Social referral analytics**: reporting how much traffic each post receives from each social platform, derived from Umami/GA4 referrer data
+
 ## Out of Scope
 
 - External tools (Notion, Google Sheets, CMS)
 - Automated publishing or deployment
-- Social media scheduling or cross-posting
+- Automated social media scheduling or cross-posting (distribution *tracking* is in scope; automated *publishing* is not)
 - Multi-author workflow or approval chains
 - Automated content writing or drafting
 

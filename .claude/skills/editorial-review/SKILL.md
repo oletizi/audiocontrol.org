@@ -12,6 +12,7 @@ Show the full editorial calendar status. Do NOT modify anything.
 
 1. **Read the calendar**: Read `docs/editorial-calendar.md`
 2. **Parse and display**: Show entries grouped by stage
+3. **Count distributions**: Read the `## Distribution` section and include a count by platform in the summary
 
 ## Report Format
 
@@ -41,4 +42,10 @@ For each stage with entries, show a table:
 
 For stages with no entries, show: `## Stage (0) — empty`
 
-End with a summary line: `Total: N entries across 5 stages`
+End with a summary:
+```
+Total: N entries across 5 stages
+Distribution: N total shares (reddit: N, youtube: N, linkedin: N, instagram: N)
+```
+
+If the Distribution section is empty, show: `Distribution: no shares recorded`
