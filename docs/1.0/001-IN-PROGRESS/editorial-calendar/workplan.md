@@ -123,9 +123,9 @@
 
 ## Verification Checklist
 
-- [ ] `npm run build` succeeds (no build breakage)
-- [ ] Calendar file is parseable by the script and readable by humans
-- [ ] All skill commands work end-to-end
-- [ ] Post scaffolding matches existing blog conventions
-- [ ] Analytics integration produces actionable suggestions
-- [ ] No secrets committed to the repository
+- [x] `npm run build` succeeds (no build breakage)
+- [x] Calendar file is parseable by the script and readable by humans
+- [x] All skill commands work end-to-end
+- [x] Post scaffolding matches existing blog conventions
+- [x] Analytics integration produces actionable suggestions
+- [x] No secrets committed to the repository

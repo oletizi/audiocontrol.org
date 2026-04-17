@@ -245,27 +245,10 @@ export interface SocialReferral {
  * `l.instagram.com`). Match both shapes.
  */
 const PLATFORM_SOURCE_PATTERNS: Record<Platform, RegExp[]> = {
-  reddit: [
-    /^reddit$/i,
-    /^(.+\.)?reddit\.com$/i,
-    /^(.+\.)?redd\.it$/i,
-    /^out\.reddit\.com$/i,
-  ],
-  youtube: [
-    /^youtube$/i,
-    /^(.+\.)?youtube\.com$/i,
-    /^(.+\.)?youtu\.be$/i,
-  ],
-  linkedin: [
-    /^linkedin$/i,
-    /^(.+\.)?linkedin\.com$/i,
-    /^(.+\.)?lnkd\.in$/i,
-  ],
-  instagram: [
-    /^instagram$/i,
-    /^(.+\.)?instagram\.com$/i,
-    /^l\.instagram\.com$/i,
-  ],
+  reddit: [/^reddit$/i, /^(.+\.)?reddit\.com$/i, /^(.+\.)?redd\.it$/i],
+  youtube: [/^youtube$/i, /^(.+\.)?youtube\.com$/i, /^(.+\.)?youtu\.be$/i],
+  linkedin: [/^linkedin$/i, /^(.+\.)?linkedin\.com$/i, /^(.+\.)?lnkd\.in$/i],
+  instagram: [/^instagram$/i, /^(.+\.)?instagram\.com$/i],
 };
 
 function classifySource(sessionSource: string): Platform | null {
@@ -293,15 +276,11 @@ export async function getSocialReferrals(
   const dateRange = computeDateRange(days);
   const rows = await fetchPageReferrals(dateRange);
 
-  const slugToPath = new Map(
-    publishedEntries.map((e) => [e.slug, `/blog/${e.slug}/`]),
-  );
   const pathToSlug = new Map(
-    [...slugToPath].map(([slug, path]) => [path, slug]),
+    publishedEntries.map((e) => [`/blog/${e.slug}/`, e.slug]),
   );
 
-  type Bucket = { sessions: number; pageviews: number };
-  const agg = new Map<string, Bucket>(); // key: `${slug}|${platform}`
+  const bySlugPlatform = new Map<string, SocialReferral>();
 
   for (const row of rows) {
     const slug = pathToSlug.get(row.pagePath);
@@ -309,16 +288,16 @@ export async function getSocialReferrals(
     const platform = classifySource(row.sessionSource);
     if (!platform) continue;
     const key = `${slug}|${platform}`;
-    const cur = agg.get(key) ?? { sessions: 0, pageviews: 0 };
+    const cur = bySlugPlatform.get(key) ?? {
+      slug,
+      platform,
+      sessions: 0,
+      pageviews: 0,
+    };
     cur.sessions += row.sessions;
     cur.pageviews += row.screenPageViews;
-    agg.set(key, cur);
+    bySlugPlatform.set(key, cur);
   }
 
-  const results: SocialReferral[] = [];
-  for (const [key, bucket] of agg) {
-    const [slug, platform] = key.split('|') as [string, Platform];
-    results.push({ slug, platform, ...bucket });
-  }
-  return results;
+  return [...bySlugPlatform.values()];
 }

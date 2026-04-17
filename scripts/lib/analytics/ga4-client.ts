@@ -171,6 +171,10 @@ export interface Ga4PageReferralRow {
  * sessions to the source that brought the user to the page, which remains
  * reliable even when the Referer header is stripped (unlike Umami's
  * referrer metric).
+ *
+ * Returns up to 1000 rows ordered by sessions desc. For a small site with
+ * tens of published posts this is effectively unbounded; if the caller ever
+ * needs more, add `offset` paging rather than raising the limit.
  */
 export async function fetchPageReferrals(
   range: DateRange,
