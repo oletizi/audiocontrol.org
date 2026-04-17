@@ -325,11 +325,10 @@ No changes — `editorial-channels.json` stays topic-to-subreddit. A YouTube vid
 2. Open or create a project (reuse the one with the GA4 service account if you like)
 3. Enable the **YouTube Data API v3** under APIs & Services → Library
 4. Under Credentials, create an **API key**. Restrict it to the YouTube Data API v3 for hygiene
-5. Save:
-   ```json
-   { "apiKey": "AIza..." }
+5. Save the key as a single line at `~/.config/audiocontrol/youtube-key.txt` (matches the project's existing `flux-key.txt`, `openai-key.txt` convention):
+   ```bash
+   echo "AIza..." > ~/.config/audiocontrol/youtube-key.txt
    ```
-   at `~/.config/audiocontrol/youtube.json`
 
 Quota: 10,000 units per day free. One `videos.list` call costs 1 unit. The cross-link audit reads at most one video per calendar YouTube entry — we won't come close to the limit.
 

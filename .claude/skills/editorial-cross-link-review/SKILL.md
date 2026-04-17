@@ -49,4 +49,4 @@ Group sections exactly as above. Omit any section that has no items. If everythi
 - **Don't fail the whole audit on one bad fetch**: if the YouTube API errors for one video, record the error against that entry and move on. Users will want to see partial results.
 - **Unresolved outbound links** (a YouTube URL in a blog post that doesn't match any known video calendar entry) should prompt the user to consider adding it as a calendar entry — that's the main way Phase 6 expects the calendar to grow.
 - **Blog entries without markdown files** should still report (as errors) — missing markdown usually means the blog post is tracked in the calendar but not yet written.
-- If `~/.config/audiocontrol/youtube.json` is missing, the skill throws with setup instructions from `scripts/lib/youtube/config.ts`. No silent degradation.
+- If `~/.config/audiocontrol/youtube-key.txt` is missing, the skill throws with setup instructions from `scripts/lib/youtube/config.ts`. No silent degradation.
