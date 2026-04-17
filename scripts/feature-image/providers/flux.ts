@@ -9,7 +9,7 @@ import type { ImageProvider, GenerationRequest, GenerationResult } from '../type
 export class FluxProvider implements ImageProvider {
   readonly name = 'flux' as const;
   private apiKey: string;
-  private baseUrl = 'https://api.bfl.ml/v1';
+  private baseUrl = 'https://api.bfl.ai/v1';
 
   constructor() {
     const apiKey = process.env.BFL_API_KEY;
@@ -20,6 +20,10 @@ export class FluxProvider implements ImageProvider {
   }
 
   async generate(request: GenerationRequest): Promise<GenerationResult> {
+    // FLUX Pro 1.1 requires dimensions in [256, 1440] and multiples of 32.
+    const width = this.snapDimension(request.width);
+    const height = this.snapDimension(request.height);
+
     // Submit generation request
     const submitResponse = await fetch(`${this.baseUrl}/flux-pro-1.1`, {
       method: 'POST',
@@ -29,8 +33,8 @@ export class FluxProvider implements ImageProvider {
       },
       body: JSON.stringify({
         prompt: request.prompt,
-        width: request.width,
-        height: request.height,
+        width,
+        height,
       }),
     });
 
@@ -48,9 +52,14 @@ export class FluxProvider implements ImageProvider {
     return {
       provider: 'flux',
       buffer,
-      width: request.width,
-      height: request.height,
+      width,
+      height,
     };
+  }
+
+  private snapDimension(value: number): number {
+    const clamped = Math.max(256, Math.min(1440, value));
+    return Math.round(clamped / 32) * 32;
   }
 
   private async pollForResult(taskId: string): Promise<Buffer> {
