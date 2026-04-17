@@ -17,7 +17,8 @@ Structured editorial calendar that tracks content through its lifecycle (idea th
 | 2 | Post Scaffolding | Complete |
 | 3 | Analytics Integration | Complete |
 | 4 | Social Distribution Tracking | Complete |
-| 5 | Subreddit Tracking & Cross-posting Opportunities | In Progress |
+| 5 | Subreddit Tracking & Cross-posting Opportunities | Ready to ship |
+| 6 | YouTube as First-Class Content + Cross-link Audit | Pending (starts after Phase 5 merges) |
 
 ## Dependencies
 

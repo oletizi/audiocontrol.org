@@ -15,6 +15,7 @@
 | Phase 3: Analytics Integration | oletizi/audiocontrol.org#42 |
 | Phase 4: Social Distribution Tracking | oletizi/audiocontrol.org#54 |
 | Phase 5: Subreddit Tracking & Cross-posting Opportunities | oletizi/audiocontrol.org#56 |
+| Phase 6: YouTube as First-Class Content + Cross-link Audit | oletizi/audiocontrol.org#57 |
 
 ## Files Affected
 
@@ -40,6 +41,10 @@
 - `scripts/lib/reddit/config.ts` — Reddit username loader, User-Agent builder (no OAuth)
 - `scripts/lib/reddit/client.ts` — minimal Reddit public-JSON client (submissions, subreddit about)
 - `docs/editorial-channels.json` — curated `topic → [subreddit]` map
+- `scripts/lib/youtube/config.ts` — YouTube API key loader (Phase 6)
+- `scripts/lib/youtube/client.ts` — YouTube Data API v3 client — fetch video metadata (Phase 6)
+- `scripts/lib/editorial/crosslinks.ts` — extract links from blog MD and YouTube descriptions, diff bidirectional coverage (Phase 6)
+- `.claude/skills/editorial-cross-link-review/SKILL.md` — audit skill (Phase 6)
 
 ## Implementation Phases
 
@@ -240,6 +245,103 @@
 - Should `topics` on CalendarEntry be required once Phase 5 ships, or remain optional with graceful handling of untagged posts? (Resolved: **optional**; untagged posts produce `(no topics — tag this post to get opportunities)` from the skill.)
 - Should the curated map be checked into `docs/` or kept private in `~/.config/audiocontrol/`? (Resolved: **`docs/`** — it's non-sensitive guidance, useful to review in PRs.)
 - Should we use YAML or JSON for the curated map? (Resolved: **JSON** — avoids a new dependency; human-editable enough for a curated list.)
+
+### Phase 6: YouTube as First-Class Content + Cross-link Audit
+
+**Deliverable:** YouTube videos become first-class editorial calendar entries with the same Ideas → Planned → Drafting → Review → Published lifecycle, and a new skill audits bidirectional linking between blog posts and videos so neither side is left dangling.
+
+**Motivation:** The first live `/editorial-reddit-sync` run on 2026-04-17 found 6 Reddit submissions that correctly didn't match blog posts — they were shares of the S-330 editor demo YouTube video. The calendar has no place for that video today, so those shares can't be tracked, the video's performance can't be monitored, and there's no automated way to confirm the video description and related blog posts link to each other. Phase 6 closes both gaps.
+
+#### Skill design (UX first)
+
+| Skill | Change in Phase 6 | Behavior |
+|-------|------------------|----------|
+| `/editorial-add` | Updated | Prompts for `content type` — `blog` (default) or `youtube`. For YouTube, also prompts for the video URL if already known; otherwise URL is captured at publish time |
+| `/editorial-draft` | Updated | Branches on `contentType`: blog entries get directory + frontmatter scaffolding as before; YouTube entries get a GitHub issue only (no repo files to scaffold) |
+| `/editorial-publish` | Updated | For YouTube entries, requires `contentUrl` (the YouTube URL) to be set before advancing. Still records `datePublished` |
+| `/editorial-cross-link-review` (new) | — | Scans all Published entries, extracts links from each (blog MD for `youtube.com`/`youtu.be`; YouTube description for `audiocontrol.org/blog/`), maps hits to known calendar slugs, and reports missing reciprocal links |
+| `/editorial-reddit-sync` | Updated | Extends URL-matching to recognize YouTube URLs and match them to YouTube calendar entries' `contentUrl`, so YouTube-video shares are attributed correctly |
+
+No new user-invocable skill beyond `/editorial-cross-link-review`. The rest are backwards-compatible extensions.
+
+#### Data model
+
+- [ ] Add `contentType: 'blog' | 'youtube'` to `CalendarEntry` (optional during parsing, defaults to `'blog'` — all existing entries remain valid)
+- [ ] Add `contentUrl?: string` to `CalendarEntry` — the canonical URL for content that doesn't live at `/blog/<slug>/`. For blog entries, stays unset (URL is derived from slug). For YouTube entries, stores the full YouTube URL
+- [ ] Extend `calendar.ts` parser/writer: stage tables gain optional `Type` and `URL` columns, emitted only when any entry in the stage has a non-default value (same pattern as Phase 5's Topics/Channel columns)
+
+#### Curated map
+
+No changes — `editorial-channels.json` stays topic-to-subreddit. A YouTube video is a calendar *entry*, not a channel.
+
+#### Implementation
+
+**Core data model + skill updates**
+
+- [ ] Extend `types.ts` with `contentType` and `contentUrl`
+- [ ] Update `calendar.ts` parser/writer for Type/URL columns
+- [ ] Update `/editorial-add` to prompt for content type
+- [ ] Update `/editorial-draft` to branch on content type (blog scaffolds directory; youtube creates issue only)
+- [ ] Update `/editorial-publish` to require `contentUrl` for YouTube entries
+
+**YouTube client**
+
+- [ ] `scripts/lib/youtube/config.ts` — loads `~/.config/audiocontrol/youtube.json` (`{apiKey: "..."}`). Throws with setup instructions if missing
+- [ ] `scripts/lib/youtube/client.ts` — `getVideoMetadata(videoIdOrUrl): {id, title, description, channelTitle, channelId, publishedAt}` using `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=<id>&key=<apiKey>`
+- [ ] Video ID extraction helper supporting `youtube.com/watch?v=<id>`, `youtu.be/<id>`, and `youtube.com/shorts/<id>`
+- [ ] Fixture-based tests — real API calls happen only from skills, not tests
+
+**Cross-link audit**
+
+- [ ] `scripts/lib/editorial/crosslinks.ts`:
+  - `extractYouTubeLinksFromMarkdown(md): string[]` — parses `youtube.com` and `youtu.be` URLs from a blog MD file
+  - `extractBlogLinksFromDescription(desc): string[]` — parses `audiocontrol.org/blog/<slug>/` URLs
+  - `auditCrossLinks(calendar, fetchDescription)` — returns per-entry reports: what the entry links to, which of those are known calendar entries, and which don't reciprocate
+- [ ] `/editorial-cross-link-review` skill — calls `auditCrossLinks`, passes a `fetchDescription` closure that uses `scripts/lib/youtube/client.ts`, prints the report grouped by gap type
+
+**Reddit sync improvement**
+
+- [ ] Update `/editorial-reddit-sync` to match submissions against `contentUrl` for YouTube entries in addition to `/blog/<slug>/` URLs for blog entries
+- [ ] Re-run the sync after Phase 6 ships to attribute the 6 pre-existing S-330 editor video shares once that video becomes a calendar entry
+
+**Tests**
+
+- [ ] `contentType` + `contentUrl` round-trip on stage tables
+- [ ] Backwards-compat parsing of legacy tables (no Type/URL columns)
+- [ ] `extractYouTubeLinksFromMarkdown` against realistic blog MD
+- [ ] `extractBlogLinksFromDescription` against realistic YouTube descriptions
+- [ ] `auditCrossLinks` with fixture calendar + fixture descriptions, verifies gap detection in both directions
+- [ ] YouTube client fixture tests (no live API calls from tests)
+
+**Acceptance Criteria**
+
+- `/editorial-add` creates a calendar entry with `contentType: 'youtube'` when the user chooses that type
+- `/editorial-draft` on a YouTube entry creates a GitHub issue and does NOT create `src/pages/blog/<slug>/`
+- `/editorial-publish` on a YouTube entry refuses if `contentUrl` is missing
+- `/editorial-cross-link-review` reports for each Published entry what it links to and whether those links are reciprocated
+- `/editorial-reddit-sync` attributes YouTube-URL Reddit submissions to YouTube calendar entries after Phase 6 ships
+- Calendar round-trips cleanly with the new columns
+- No regressions to Phase 5 or earlier behavior — legacy tables without Type/URL columns still parse
+
+#### YouTube API setup (what the user does once)
+
+1. Go to https://console.cloud.google.com
+2. Open or create a project (reuse the one with the GA4 service account if you like)
+3. Enable the **YouTube Data API v3** under APIs & Services → Library
+4. Under Credentials, create an **API key**. Restrict it to the YouTube Data API v3 for hygiene
+5. Save:
+   ```json
+   { "apiKey": "AIza..." }
+   ```
+   at `~/.config/audiocontrol/youtube.json`
+
+Quota: 10,000 units per day free. One `videos.list` call costs 1 unit. The cross-link audit reads at most one video per calendar YouTube entry — we won't come close to the limit.
+
+#### Open questions (resolve before coding)
+
+- Should blog-post MD extraction handle embedded iframes (`<iframe src="youtube.com/embed/...">`) in addition to plain URLs? (Proposed: **yes** — capture all three forms: plain URL, short URL, iframe embed.)
+- Should cross-link audit report be generated as markdown in `docs/` for review, or streamed only to the skill output? (Proposed: **stream only** — audit is fast enough that we don't need to cache; keeping it out of `docs/` avoids churn on every run.)
+- Slug uniqueness: a blog post and a YouTube video on the same topic could collide. (Proposed: **keep global slug uniqueness** — if conflict, the user differentiates manually, e.g. `s330-crunch-post` vs `s330-crunch-video`.)
 
 ## Verification Checklist
 
