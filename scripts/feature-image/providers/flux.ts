@@ -43,11 +43,10 @@ export class FluxProvider implements ImageProvider {
       throw new Error(`FLUX API submission failed (${submitResponse.status}): ${errorText}`);
     }
 
-    const submitResult = await submitResponse.json() as { id: string };
-    const taskId = submitResult.id;
+    const submitResult = await submitResponse.json() as { id: string; polling_url: string };
 
-    // Poll for result
-    const buffer = await this.pollForResult(taskId);
+    // Poll for result using the region-specific URL returned by the API
+    const buffer = await this.pollForResult(submitResult.polling_url);
 
     return {
       provider: 'flux',
@@ -62,12 +61,12 @@ export class FluxProvider implements ImageProvider {
     return Math.round(clamped / 32) * 32;
   }
 
-  private async pollForResult(taskId: string): Promise<Buffer> {
+  private async pollForResult(pollingUrl: string): Promise<Buffer> {
     const maxAttempts = 60;
     const pollIntervalMs = 2000;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const pollResponse = await fetch(`${this.baseUrl}/get_result?id=${taskId}`, {
+      const pollResponse = await fetch(pollingUrl, {
         headers: { 'X-Key': this.apiKey },
       });
 
