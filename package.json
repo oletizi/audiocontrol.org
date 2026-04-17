@@ -8,6 +8,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "generate-og": "tsx scripts/generate-og-images.ts",
+    "generate-feature-image": "tsx scripts/feature-image/cli.ts",
     "test": "vitest run",
     "test:integration": "vitest run test/integration",
     "test:e2e": "playwright test"
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "openai": "^6.34.0",
     "chart.js": "^4.5.1",
     "chartjs-node-canvas": "^5.0.0",
     "satori": "^0.19.1",
