@@ -169,6 +169,14 @@ function safeParseUrl(value: string): URL | null {
  * Normalize a URL for comparison: lowercase hostname, strip trailing
  * slash from the path (except for root), drop fragment. Preserves query
  * string so distinct endpoints don't collide.
+ *
+ * Input is expected to already be an http(s) URL — callers get URLs from
+ * the extractor functions which filter out non-URL candidates upstream.
+ * If we encounter an unparseable string anyway (e.g. a weird attribute
+ * value cheerio surfaced), we return a best-effort lowercase-trimmed
+ * form so callers don't crash. The resulting key won't match anything
+ * real in `byContentUrl`, which is the right behavior: an unparseable
+ * URL shouldn't resolve to any calendar entry.
  */
 export function canonicalizeUrl(url: string): string {
   const u = safeParseUrl(url);

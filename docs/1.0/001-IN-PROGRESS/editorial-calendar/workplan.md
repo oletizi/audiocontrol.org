@@ -154,15 +154,15 @@
 
 #### Data model
 
-- [ ] Add `channel?: string` field to `DistributionRecord` (e.g. `r/synthdiy`, YouTube channel handle, LinkedIn page slug)
-- [ ] Add `topics?: string[]` to `CalendarEntry` (optional — overlaps with `targetKeywords` but is semantically distinct: topics are coarse tags used for cross-posting recommendations, keywords are SEO targets)
-- [ ] Extend the Distribution markdown table with a Channel column; maintain backwards-compat parsing for old rows without the column
+- [x] Add `channel?: string` field to `DistributionRecord` (e.g. `r/synthdiy`, YouTube channel handle, LinkedIn page slug)
+- [x] Add `topics?: string[]` to `CalendarEntry` (optional — overlaps with `targetKeywords` but is semantically distinct: topics are coarse tags used for cross-posting recommendations, keywords are SEO targets)
+- [x] Extend the Distribution markdown table with a Channel column; maintain backwards-compat parsing for old rows without the column
 
 #### Curated map
 
-- [ ] Create `docs/editorial-channels.json` with a `topic → [subreddit]` map (JSON rather than YAML to avoid a new dependency; human-editable enough for a curated list)
-- [ ] Seed the map with topic tags we'll use for audiocontrol.org content: `samplers`, `vintage-hardware`, `scsi`, `roland`, `akai`, `ai-agents`, `home-studio`, etc. (initial set — user to curate)
-- [ ] Each subreddit entry can carry optional hints (self-promo rules, flair requirements) as free-form notes
+- [x] Create `docs/editorial-channels.json` with a `topic → [subreddit]` map (JSON rather than YAML to avoid a new dependency; human-editable enough for a curated list)
+- [x] Seed the map with topic tags we'll use for audiocontrol.org content: `samplers`, `vintage-hardware`, `scsi`, `roland`, `akai`, `ai-agents`, `home-studio`, etc. (initial set — user to curate)
+- [x] Each subreddit entry can carry optional hints (self-promo rules, flair requirements) as free-form notes
 
 #### Implementation
 
@@ -268,9 +268,9 @@ No new user-invocable skill beyond `/editorial-cross-link-review`. The rest are 
 
 #### Data model
 
-- [ ] Add `contentType: 'blog' | 'youtube'` to `CalendarEntry` (optional during parsing, defaults to `'blog'` — all existing entries remain valid)
-- [ ] Add `contentUrl?: string` to `CalendarEntry` — the canonical URL for content that doesn't live at `/blog/<slug>/`. For blog entries, stays unset (URL is derived from slug). For YouTube entries, stores the full YouTube URL
-- [ ] Extend `calendar.ts` parser/writer: stage tables gain optional `Type` and `URL` columns, emitted only when any entry in the stage has a non-default value (same pattern as Phase 5's Topics/Channel columns)
+- [x] Add `contentType: 'blog' | 'youtube' | 'tool'` to `CalendarEntry` (optional during parsing, defaults to `'blog'` — all existing entries remain valid; `tool` added in Phase 6 to cover standalone apps)
+- [x] Add `contentUrl?: string` to `CalendarEntry` — the canonical URL for content that doesn't live at `/blog/<slug>/`. For blog entries, stays unset (URL is derived from slug). For YouTube/tool entries, stores the full URL
+- [x] Extend `calendar.ts` parser/writer: stage tables gain optional `Type` and `URL` columns, emitted only when any entry in the stage has a non-default value (same pattern as Phase 5's Topics/Channel columns)
 
 #### Curated map
 
@@ -300,7 +300,7 @@ No changes — `editorial-channels.json` stays topic-to-subreddit. A YouTube vid
 **Reddit sync improvement**
 
 - [x] Update `/editorial-reddit-sync` to match submissions against `contentUrl` for YouTube entries in addition to blog URLs
-- [ ] Re-run the sync after Phase 6 ships, once the S-330 editor video exists as a calendar entry, to attribute the 6 pre-existing shares
+- [x] Re-run the sync after Phase 6 ships, once the S-330 editor video exists as a calendar entry, to attribute the 6 pre-existing shares (done in commit 9b9a701 + 00dd9bd — all 8 Reddit submissions now attributed)
 
 **Tests**
 
