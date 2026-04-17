@@ -19,6 +19,7 @@ Structured editorial calendar that tracks content through its lifecycle (idea th
 | 4 | Social Distribution Tracking | Complete |
 | 5 | Subreddit Tracking & Cross-posting Opportunities | Ready to ship |
 | 6 | YouTube as First-Class Content + Cross-link Audit | In Progress |
+| 7 | Tool Cross-link Audit | Pending (starts after Phase 6 merges) |
 
 ## Dependencies
 

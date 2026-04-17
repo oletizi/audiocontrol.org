@@ -16,6 +16,7 @@
 | Phase 4: Social Distribution Tracking | oletizi/audiocontrol.org#54 |
 | Phase 5: Subreddit Tracking & Cross-posting Opportunities | oletizi/audiocontrol.org#56 |
 | Phase 6: YouTube as First-Class Content + Cross-link Audit | oletizi/audiocontrol.org#57 |
+| Phase 7: Tool Cross-link Audit | oletizi/audiocontrol.org#59 |
 
 ## Files Affected
 
@@ -43,8 +44,9 @@
 - `docs/editorial-channels.json` — curated `topic → [subreddit]` map
 - `scripts/lib/youtube/config.ts` — YouTube API key loader (Phase 6)
 - `scripts/lib/youtube/client.ts` — YouTube Data API v3 client — fetch video metadata (Phase 6)
-- `scripts/lib/editorial/crosslinks.ts` — extract links from blog MD and YouTube descriptions, diff bidirectional coverage (Phase 6)
+- `scripts/lib/editorial/crosslinks.ts` — extract links from blog MD and YouTube descriptions, diff bidirectional coverage (Phase 6); extended in Phase 7 for tool-page analysis and generalized audiocontrol.org link resolution
 - `.claude/skills/editorial-cross-link-review/SKILL.md` — audit skill (Phase 6)
+- `scripts/lib/http/fetch-page.ts` — minimal HTML fetcher for tool pages (Phase 7)
 
 ## Implementation Phases
 
@@ -337,6 +339,77 @@ Quota: 10,000 units per day free. One `videos.list` call costs 1 unit. The cross
 - Should blog-post MD extraction handle embedded iframes (`<iframe src="youtube.com/embed/...">`) in addition to plain URLs? (Proposed: **yes** — capture all three forms: plain URL, short URL, iframe embed.)
 - Should cross-link audit report be generated as markdown in `docs/` for review, or streamed only to the skill output? (Proposed: **stream only** — audit is fast enough that we don't need to cache; keeping it out of `docs/` avoids churn on every run.)
 - Slug uniqueness: a blog post and a YouTube video on the same topic could collide. (Proposed: **keep global slug uniqueness** — if conflict, the user differentiates manually, e.g. `s330-crunch-post` vs `s330-crunch-video`.)
+
+### Phase 7: Tool Cross-link Audit
+
+**Deliverable:** Extend `/editorial-cross-link-review` so tool entries participate fully — the audit fetches each tool page's HTML, extracts outbound links, resolves them against the calendar's `contentUrl` index, and flags missing reciprocal links in both directions (blog→tool, tool→blog, tool→video, video→tool).
+
+**Motivation:** Phase 6 added `tool` as a valid content type but deliberately skipped it in the cross-link audit — tools don't have a fetch-able "description" field like YouTube videos, and they don't have a repo MD file like blog posts. Phase 7 closes that gap by fetching the tool's actual rendered HTML page from audiocontrol.org and parsing its outbound links.
+
+Without this, gaps like "the S-330 editor page embeds the drum-crunch video but the video description doesn't link back" or "the editor page doesn't link to the Feb 2026 blog update" can't be detected automatically — the operator has to notice them manually, which is exactly what Phase 6 was supposed to prevent.
+
+#### Skill design
+
+No new user-invocable skill. `/editorial-cross-link-review` is extended: when it encounters a tool entry, it fetches the page HTML, extracts links, and includes the results in the report alongside blog and video entries.
+
+#### Implementation
+
+**HTML fetching**
+
+- [ ] `scripts/lib/http/fetch-page.ts` — minimal `fetchHtml(url)` returning the response body as text. Sets a descriptive User-Agent (e.g. `audiocontrol.org-editorial-calendar/1.0 cross-link-audit`), follows redirects, throws on non-2xx. No auth — these are public pages
+- [ ] Timeout: 10s. Tool pages are small and live on the same Netlify deploy; anything slower than 10s means the page is broken
+- [ ] No caching layer in this phase — cross-link audit is fast enough that a repeat fetch is fine. If it becomes an issue later, add a response cache keyed on URL
+
+**Link extraction**
+
+- [ ] `extractLinksFromHtml(html): string[]` in `crosslinks.ts` — regex-based extraction of `href="..."` / `href='...'` attributes and bare `https?://` URLs from the body. Returns absolute URLs, resolving relative `href`s against a base if one is passed in
+- [ ] Skip anchor-only links (`#section`), mail links (`mailto:`), and obvious non-content URLs (feeds, robots.txt, sitemap)
+- [ ] Unit tests against fixture Astro-built HTML — representative samples saved under `test/fixtures/tool-page.html`
+
+**Generalized link resolution**
+
+- [ ] Build a unified `byContentUrl: Map<string, CalendarEntry>` index in `auditCrossLinks`: for each Published entry, compute its canonical URL — `audiocontrol.org/blog/<slug>/` for blog entries, `contentUrl` for YouTube/tool entries — and add it to the map. Normalize by stripping trailing slashes and case-insensitive hostname
+- [ ] Replace the current `extractBlogLinksFromDescription` callers' resolution logic with the unified index so tool URLs resolve from YouTube descriptions too (currently they're silently dropped)
+
+**Tool-entry audit branch**
+
+- [ ] In `auditCrossLinks`, when encountering a tool entry:
+  - Fetch `entry.contentUrl` via `fetchHtml`
+  - Extract links with `extractLinksFromHtml`
+  - For each extracted link, resolve against the unified `byContentUrl` index; record as `OutboundLink { resolvedSlug, resolved }`
+  - On fetch failure, record an error and move on (same per-entry-error pattern as the YouTube branch)
+- [ ] Remove the Phase 6 "tool entries are tracked but the audit doesn't analyze them" skip
+
+**Reciprocation rules**
+
+- [ ] Same second-pass logic — if blog X links to tool Y and Y doesn't link back, flag it in Y's `missingBacklinksTo`; same in the other direction
+- [ ] Remove the Phase 6 second-pass tool-skip now that tools do have outbound links
+
+**Skill update**
+
+- [ ] `/editorial-cross-link-review` skill doc updated to describe tool-page analysis and the fact that tool URLs are now resolvable targets from other entries' content
+
+**Tests**
+
+- [ ] `extractLinksFromHtml` against fixture HTML covering `<a href="...">`, bare URLs in text, relative hrefs (ignored or resolved), anchor-only ignored, `mailto:` ignored
+- [ ] Unified `byContentUrl` index resolves all three content types correctly
+- [ ] `auditCrossLinks` with a tool entry + mock `fetchHtml` returning fixture HTML — verifies outbound extraction and reciprocation
+- [ ] End-to-end fixture: a calendar with a blog entry linking to a tool, a tool page linking back (or not) — both reciprocation states tested
+
+**Acceptance Criteria**
+
+- `/editorial-cross-link-review` reports outbound links for tool entries
+- Tool pages that embed YouTube videos are flagged if the video description doesn't link back to the tool
+- Blog posts that link to a tool are flagged if the tool page doesn't link back to the post
+- Unified content-URL resolution works for all three content types — no silent drops of audiocontrol.org URLs in YouTube descriptions
+- Fetch failures for individual tool pages don't abort the whole audit; they're recorded per-entry
+- Existing Phase 6 tests still pass (no regressions)
+
+#### Open questions (resolve before coding)
+
+- Should the audit follow links inside tool pages recursively (e.g., the editor links to a docs page that links to a blog post)? (Proposed: **no** — single-hop only. Recursive fetching adds complexity and a crawler-like pattern we don't need right now.)
+- Should we cache fetched HTML during a single audit run to avoid re-fetching the same URL? (Proposed: **yes** — in-memory per-audit Map, invalidated each run. Cheap to implement, protects against audits getting slow when many entries reference the same tool.)
+- Do we need a way to exclude specific outbound links from the audit (e.g., social icons in the site footer)? (Proposed: **not initially** — if the audit surfaces noise later, add an `editorial-crosslink-ignore.json` file with URL patterns. For now, the report just shows what it finds and the user can ignore.)
 
 ## Verification Checklist
 
