@@ -8,6 +8,8 @@ import { OUTPUT_FORMATS } from './types.js';
 import { DalleProvider } from './providers/dalle.js';
 import { FluxProvider } from './providers/flux.js';
 import { compositeImage } from './overlay.js';
+import { applyFilters, resolveFilters, resolvePreset, PRESETS } from './filters/index.js';
+import type { Filter } from './filters/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, '..', '..');
@@ -60,6 +62,8 @@ Options:
   --subtitle     Subtitle text for overlay
   --background   Path to existing background image (skips AI generation)
   --formats      Comma-separated output formats: og,youtube,instagram (default: all)
+  --filters      Comma-separated filter names: scanlines,vignette,grain,grade
+  --preset       Named preset: ${Object.keys(PRESETS).join(', ')}
   --output       Output directory (default: public/images/generated)
   --name         Base filename for output (default: generated)
   --width        Generation width in pixels (default: 1792)
@@ -90,6 +94,8 @@ async function main(): Promise<void> {
       subtitle: { type: 'string' },
       background: { type: 'string' },
       formats: { type: 'string', default: 'og,youtube,instagram' },
+      filters: { type: 'string' },
+      preset: { type: 'string' },
       output: { type: 'string', default: 'public/images/generated' },
       name: { type: 'string', default: 'generated' },
       width: { type: 'string', default: '1792' },
@@ -131,6 +137,17 @@ async function main(): Promise<void> {
   const baseName = values.name as string;
   const outputFormats = parseFormats(values.formats as string);
 
+  // Resolve filter chain
+  let filters: Filter[] = [];
+  if (values.preset) {
+    filters = resolvePreset(values.preset as string);
+  } else if (values.filters) {
+    filters = resolveFilters(values.filters as string);
+  }
+  if (filters.length > 0) {
+    console.log(`Filters: ${filters.map(f => f.name).join(' → ')}`);
+  }
+
   // Resolve background image(s)
   const backgrounds: Array<{ name: string; buffer: Buffer }> = [];
 
@@ -164,10 +181,22 @@ async function main(): Promise<void> {
     }
   }
 
+  // Apply filters to backgrounds (before overlay so text stays sharp)
+  if (filters.length > 0) {
+    for (const bg of backgrounds) {
+      const before = bg.buffer;
+      bg.buffer = await applyFilters(before, filters);
+
+      const suffix = bg.name ? bg.name : '';
+      const filteredPath = join(outputDir, `${baseName}${suffix}-filtered.png`);
+      writeFileSync(filteredPath, bg.buffer);
+      console.log(`  Filtered background: ${filteredPath}`);
+    }
+  }
+
   if (!hasTitle) {
-    // Background-only mode: just save the raw images (already saved above)
-    if (hasBackground) {
-      console.log('No --title specified. Use --title to add text overlay.');
+    if (hasBackground && filters.length === 0) {
+      console.log('No --title and no --filters specified. Nothing to do.');
     }
     console.log('\nDone!');
     return;
