@@ -13,15 +13,15 @@ Automated analytics pipeline that pulls data from GA4 and Google Search Console,
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 1 | GA4 Data Pipeline | Not Started |
-| 2 | Search Console Integration | Not Started |
-| 3 | Actionable Report & Recommendations | Not Started |
-| 4 | Claude Code Skill | Not Started |
+| 1 | Umami Data Pipeline | Complete |
+| 2 | Search Console Integration | Complete |
+| 3 | Actionable Report & Recommendations | Complete |
+| 4 | Claude Code Skill | Complete |
 
 ## Prerequisites
 
-- Google Cloud service account with read access to GA4 and Search Console
-- GA4 numeric property ID (from GA4 admin panel)
+- Umami Cloud API key (`~/.config/audiocontrol/umami-key.json`)
+- Google Cloud service account with Search Console read access
 - Google Search Console verified for audiocontrol.org
 
 ## Documentation
