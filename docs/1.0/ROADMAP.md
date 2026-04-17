@@ -37,4 +37,5 @@ _None._
 
 | Feature | Description |
 |---------|-------------|
+| [editorial-calendar](003-COMPLETE/editorial-calendar/) | Structured content calendar with analytics-driven suggestions and GA4-backed social distribution tracking |
 | [palette-redesign](003-COMPLETE/palette-redesign/) | Dark theme redesign with coral/teal accents and card-based layout |
