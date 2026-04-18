@@ -3,7 +3,7 @@
 **Status:** In Progress
 **Feature Branch:** `feature/editorialcontrol-site`
 **Worktree:** `~/work/audiocontrol-work/audiocontrol.org-editorialcontrol-site`
-**GitHub Issue:** TBD (run `/feature-issues` next)
+**GitHub Issue:** oletizi/audiocontrol.org#69
 
 ## Overview
 

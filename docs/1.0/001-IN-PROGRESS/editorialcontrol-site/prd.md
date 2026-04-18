@@ -100,7 +100,7 @@ Six phases, each shippable independently:
 
 ## References
 
-- Parent GitHub issue: TBD (created by `/feature-issues`)
+- Parent GitHub issue: oletizi/audiocontrol.org#69
 - Definition file (transient): `/tmp/feature-definition-editorialcontrol-site.md`
 - Feature branch: `feature/editorialcontrol-site`
 - Based on: `feature/editorial-calendar` at `9e125d0` (includes the unmerged draft that gets migrated in Phase 4)

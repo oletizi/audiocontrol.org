@@ -3,19 +3,19 @@
 **Feature slug:** `editorialcontrol-site`
 **Branch:** `feature/editorialcontrol-site`
 **Milestone:** editorialcontrol.org launch
-**GitHub Issue:** TBD (run `/feature-issues`)
+**GitHub Issue:** oletizi/audiocontrol.org#69
 
 ## GitHub Tracking
 
 | Phase | Issue |
 |-------|-------|
-| Parent | TBD |
-| Phase 1: Multi-site source layout + build split | TBD |
-| Phase 2: Multi-site editorial calendar library | TBD |
-| Phase 3: editorialcontrol branding + core pages | TBD |
-| Phase 4: Content migration | TBD |
-| Phase 5: Reddit / distribution | TBD |
-| Phase 6: Launch | TBD |
+| Parent | oletizi/audiocontrol.org#69 |
+| Phase 1: Multi-site source layout + build split | oletizi/audiocontrol.org#70 |
+| Phase 2: Multi-site editorial calendar library | oletizi/audiocontrol.org#71 |
+| Phase 3: editorialcontrol branding + core pages | oletizi/audiocontrol.org#72 |
+| Phase 4: Content migration | oletizi/audiocontrol.org#73 |
+| Phase 5: Reddit / distribution | oletizi/audiocontrol.org#74 |
+| Phase 6: Launch | oletizi/audiocontrol.org#75 |
 
 ## Files Affected
 
