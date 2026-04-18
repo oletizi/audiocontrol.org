@@ -1351,7 +1351,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
 
       const fallbackName = entry.title?.trim() || 'Untitled template';
       const name = defaults?.name ?? fallbackName;
-      const slug = defaults?.slug ?? slugifyForTemplate(fallbackName) || 'untitled';
+      const slug = defaults?.slug ?? (slugifyForTemplate(fallbackName) || 'untitled');
       const description = defaults?.description ?? '';
       const tags = Array.isArray(defaults?.tags) ? defaults.tags : [];
 
