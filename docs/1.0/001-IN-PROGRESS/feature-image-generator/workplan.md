@@ -274,6 +274,60 @@ Every generation right now starts from either a hand-typed prompt or one the age
 - Auto-archival when fitness drops below threshold for N consecutive generations
 - Per-site-section template sets (e.g., different libraries for blog vs. device pages)
 
+## Phase 12: DOM Preview & Commit-to-PNG (#67)
+
+**Deliverable:** Interactive gallery preview where title/subtitle, filter chain, and overlay visibility are live-editable in HTML/CSS. Committing rasterizes the exact DOM via Playwright, making preview == bake and eliminating the satori/sharp dual-source-of-truth.
+
+### Motivation
+
+Today a gallery user can't tweak title/subtitle or toggle the overlay without regenerating. The CSS preview and the baked PNG are also produced by two different code paths (DOM vs. satori+sharp), so they can diverge visually. Moving the preview into live DOM and rasterizing that same DOM on commit solves both problems at once.
+
+### Tasks
+
+- [ ] Build interactive preview component in the gallery
+  - [ ] Replace static composited `<img>` with a `<div class="og-preview">` layering the raw AI image + CSS filter overlays + positioned title/subtitle block
+  - [ ] Text overlay: editable `<input>` (title) and `<textarea>` (subtitle) positioned inside the preview
+  - [ ] Toggle: overlay on/off checkbox (hides the text block without destroying content)
+  - [ ] Per-filter toggles (scanlines, grain, vignette, grade, phosphor) + preset quick-select
+  - [ ] All controls drive CSS variables on the preview element; no backend calls during iteration
+- [ ] Add CSS implementations of each filter primitive matching existing sharp filters directionally:
+  - [ ] scanlines (repeating-linear-gradient overlay)
+  - [ ] vignette (radial-gradient overlay)
+  - [ ] grain (tiled noise PNG overlay)
+  - [ ] grade (`filter: brightness contrast saturate hue-rotate`)
+  - [ ] phosphor (`filter: blur`)
+- [ ] Build bake route `/dev/feature-image-bake`
+  - [ ] Accepts query params: `entry`, `format` (og|youtube|instagram), `title`, `subtitle`, `preset`, filter chain, `overlay` bool
+  - [ ] Server-renders a single variant at exact pixel dims using the shared preview stylesheet
+  - [ ] 404 in production (`import.meta.env.PROD`)
+- [ ] Build commit endpoint `POST /api/dev/feature-image/recomposite`
+  - [ ] Request: `{ entryId, title, subtitle, preset, filters, overlay, formats[] }`
+  - [ ] Launches Playwright headless (already in devDeps), navigates to bake route per format, screenshots at viewport size, writes `public/images/generated/<id>-<format>.png`
+  - [ ] Appends a new log entry with references to the rebaked outputs (preserves history of iterations)
+- [ ] Wire "Commit" button on each gallery item to call the recomposite endpoint
+  - [ ] Show in-flight state + success/error
+  - [ ] Refresh gallery on success so new bake shows as latest log entry
+- [ ] Manual verification
+  - [ ] Editing title/subtitle updates preview with zero network traffic
+  - [ ] Toggling filters updates preview immediately
+  - [ ] Commit produces PNGs that match what the preview showed
+  - [ ] All three formats (og, youtube, instagram) render correctly
+
+### Acceptance Criteria
+
+- [ ] Gallery preview reflects title/subtitle/filter edits in real time with no backend round-trip
+- [ ] Overlay toggle hides/shows text without affecting the background
+- [ ] Each filter primitive is independently toggleable in the preview and matches its sharp counterpart directionally
+- [ ] Commit button produces PNG files on disk via Playwright DOM screenshot
+- [ ] All three formats (1200×630, 1280×720, 1080×1080) bake correctly
+- [ ] Preview and bake use the same stylesheet — no visual divergence
+- [ ] Production build does not expose the bake route or the recomposite endpoint
+
+### Deferred
+
+- Retiring satori/sharp overlay path from the initial-generation pipeline (first-time generation still uses the existing bake; only gallery-driven recomposition uses DOM rasterization in this phase)
+- Shareable preview permalinks (a URL that replays a specific preview state)
+
 ## File Structure
 
 ```
