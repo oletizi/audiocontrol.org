@@ -947,6 +947,118 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     @media (max-width: 640px) {
       .save-template-panel .stp-row-2 { grid-template-columns: 1fr; }
     }
+
+    /* Conflict resolution (inside panel when slug collides) */
+    .stp-conflict {
+      margin-top: 0.25rem;
+      padding-top: 0.9rem;
+      border-top: 1px solid var(--edge);
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .stp-conflict-head {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.6rem 0.85rem;
+      align-items: start;
+    }
+    .stp-conflict-icon {
+      font-size: 1rem;
+      color: var(--warning);
+      padding-top: 0.1rem;
+    }
+    .stp-conflict-title {
+      font-size: 0.85rem;
+      color: var(--text-1);
+      line-height: 1.45;
+    }
+    .stp-conflict-title code {
+      background: var(--bg-2);
+      color: var(--accent);
+      padding: 0 0.3rem;
+      border-radius: 3px;
+    }
+    .stp-conflict-existing {
+      margin-top: 0.5rem;
+      padding: 0.55rem 0.75rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      font-size: 0.78rem;
+    }
+    .stp-conflict-existing strong { color: var(--text-0); margin-right: 0.5rem; }
+    .stp-conflict-fit {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+    }
+    .stp-conflict-desc {
+      margin-top: 0.3rem;
+      color: var(--text-2);
+      line-height: 1.45;
+      font-style: italic;
+    }
+    .stp-conflict-choice-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-3);
+    }
+    .stp-conflict-choices {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .stp-choice {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+      padding: 0.7rem 0.9rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      color: var(--text-1);
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.05s;
+    }
+    .stp-choice:hover:not(:disabled) {
+      background: var(--bg-3);
+      border-color: var(--accent);
+    }
+    .stp-choice:active:not(:disabled) { transform: translateY(1px); }
+    .stp-choice:disabled { opacity: 0.5; cursor: progress; }
+    .stp-choice-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-0);
+      letter-spacing: 0.02em;
+    }
+    .stp-choice-title code {
+      font-size: 0.78rem;
+      color: var(--accent);
+      background: rgba(47, 184, 168, 0.1);
+      padding: 0 0.3rem;
+      border-radius: 3px;
+    }
+    .stp-choice-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      color: var(--text-2);
+      line-height: 1.5;
+      font-weight: 400;
+    }
+    .stp-choice-danger { border-color: rgba(228, 115, 115, 0.35); }
+    .stp-choice-danger .stp-choice-title { color: var(--danger); }
+    .stp-choice-danger:hover:not(:disabled) {
+      background: rgba(228, 115, 115, 0.08);
+      border-color: var(--danger);
+    }
     .card-focused .err-line {
       color: var(--danger);
       background: rgba(228, 115, 115, 0.08);
@@ -1562,37 +1674,46 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         if (ev.key === 'Escape') { ev.preventDefault(); close(); }
       });
 
-      submitBtn.addEventListener('click', async () => {
-        if (!entry.prompt) return;
-        const payload = {
-          slug: slugEl.value.trim(),
-          name: nameEl.value.trim(),
-          description: descEl.value.trim(),
-          tags,
-          prompt: entry.prompt,
-          preset: entry.preset,
-          provider: entry.provider,
-          examples: [entry.id],
-        };
-        // Basic validation with inline feedback, not dialogs.
-        if (!payload.slug) {
-          msgEl.textContent = 'Slug is required.';
-          msgEl.className = 'stp-msg error';
-          slugEl.focus();
-          return;
-        }
+      const collectPayload = () => ({
+        slug: slugEl.value.trim(),
+        name: nameEl.value.trim(),
+        description: descEl.value.trim(),
+        tags,
+        prompt: entry.prompt,
+        preset: entry.preset,
+        provider: entry.provider,
+        examples: [entry.id],
+      });
+
+      const validate = (payload) => {
+        if (!payload.slug) { msgEl.textContent = 'Slug is required.'; msgEl.className = 'stp-msg error'; slugEl.focus(); return false; }
         if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(payload.slug)) {
           msgEl.textContent = 'Slug must be lowercase letters/digits separated by single hyphens.';
           msgEl.className = 'stp-msg error';
           slugEl.focus();
-          return;
+          return false;
         }
-        if (!payload.name) {
-          msgEl.textContent = 'Name is required.';
-          msgEl.className = 'stp-msg error';
-          nameEl.focus();
-          return;
-        }
+        if (!payload.name) { msgEl.textContent = 'Name is required.'; msgEl.className = 'stp-msg error'; nameEl.focus(); return false; }
+        return true;
+      };
+
+      const finish = async (finalSlug, successText) => {
+        await fetch('/api/dev/feature-image/log', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: entry.id, templateSlug: finalSlug }),
+        });
+        localStorage.removeItem(saveTemplateDraftKey(entry.id));
+        msgEl.textContent = successText;
+        msgEl.className = 'stp-msg ok';
+        await refreshTemplates();
+        setTimeout(() => { close(); refreshGallery(); }, 900);
+      };
+
+      submitBtn.addEventListener('click', async () => {
+        if (!entry.prompt) return;
+        const payload = collectPayload();
+        if (!validate(payload)) return;
 
         submitBtn.disabled = true;
         msgEl.textContent = 'Saving…';
@@ -1604,24 +1725,168 @@ const filterNames = Object.keys(FILTER_REGISTRY);
             body: JSON.stringify({ action: 'create', template: payload }),
           });
           const json = await res.json();
-          if (!res.ok) throw new Error(json.error || `status ${res.status}`);
-          // Tag this entry with the new template slug so its rating counts.
-          await fetch('/api/dev/feature-image/log', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ id: entry.id, templateSlug: payload.slug }),
-          });
-          localStorage.removeItem(saveTemplateDraftKey(entry.id));
-          msgEl.textContent = `Saved as ${payload.slug}. Available in the template dropdown now.`;
-          msgEl.className = 'stp-msg ok';
-          await refreshTemplates();
-          setTimeout(() => { close(); refreshGallery(); }, 900);
+          if (!res.ok) {
+            if (/already exists/i.test(String(json.error))) {
+              await enterConflictMode(panel, entry, payload, { tags, finish });
+              return;
+            }
+            throw new Error(json.error || `status ${res.status}`);
+          }
+          await finish(payload.slug, `Saved as ${payload.slug}. Available in the template dropdown now.`);
         } catch (err) {
           msgEl.textContent = `Save failed: ${err.message}`;
           msgEl.className = 'stp-msg error';
           submitBtn.disabled = false;
         }
       });
+    }
+
+    async function enterConflictMode(panel, entry, payload, { tags, finish }) {
+      // Fetch the existing template so the user can see what they'd be colliding with.
+      let existing = null;
+      try {
+        const res = await fetch('/api/dev/feature-image/templates?includeArchived=true');
+        const json = await res.json();
+        existing = (json.templates ?? []).find(t => t.slug === payload.slug) ?? null;
+      } catch {
+        // soldier on — existing metadata is useful but not required
+      }
+
+      const existingName = existing?.name ? escapeHtml(existing.name) : escapeHtml(payload.slug);
+      const existingDesc = existing?.description ? escapeHtml(existing.description) : '<em>(no description)</em>';
+      const fit = existing?.fitness;
+      const fitLine = fit && fit.usageCount > 0
+        ? `fitness ${fit.fitness.toFixed(2)} · ${fit.usageCount} use${fit.usageCount === 1 ? '' : 's'} · avg ★ ${fit.averageRating.toFixed(1)}`
+        : 'new — no ratings yet';
+      const suggestedForkSlug = deriveUniqueForkSlug(payload.slug, existing);
+
+      const body = panel.querySelector('.stp-body');
+      const actions = panel.querySelector('.stp-actions');
+      const msgEl = panel.querySelector('.stp-msg');
+
+      body.insertAdjacentHTML('beforeend', `
+        <div class="stp-conflict">
+          <div class="stp-conflict-head">
+            <span class="stp-conflict-icon" aria-hidden="true">⦿</span>
+            <div>
+              <div class="stp-conflict-title">A template with slug <code>${escapeHtml(payload.slug)}</code> already exists.</div>
+              <div class="stp-conflict-existing">
+                <strong>${existingName}</strong>
+                <span class="stp-conflict-fit">${escapeHtml(fitLine)}</span>
+                <div class="stp-conflict-desc">${existingDesc}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stp-conflict-choice-label">Choose how to reconcile:</div>
+          <div class="stp-conflict-choices">
+            <button type="button" class="stp-choice" data-choice="example">
+              <span class="stp-choice-title">Add as example</span>
+              <span class="stp-choice-desc">Keep the existing template. Append this entry to its examples so your rating counts toward its fitness.</span>
+            </button>
+            <button type="button" class="stp-choice" data-choice="fork">
+              <span class="stp-choice-title">Fork as <code>${escapeHtml(suggestedForkSlug)}</code></span>
+              <span class="stp-choice-desc">Create a new template with <code>parent: ${escapeHtml(payload.slug)}</code> so lineage is preserved.</span>
+            </button>
+            <button type="button" class="stp-choice stp-choice-danger" data-choice="overwrite">
+              <span class="stp-choice-title">Update existing</span>
+              <span class="stp-choice-desc">Replace the existing template's name, description, tags, and prompt with your values. Existing examples and fitness history are preserved.</span>
+            </button>
+          </div>
+        </div>
+      `);
+      // Hide the default Save button; Cancel stays.
+      const submitBtn = actions.querySelector('.stp-submit');
+      if (submitBtn) submitBtn.style.display = 'none';
+
+      panel.querySelectorAll('.stp-choice').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const choice = btn.dataset.choice;
+          handleConflictChoice(choice, panel, entry, payload, { existing, suggestedForkSlug, finish });
+        });
+      });
+
+      msgEl.textContent = '';
+      msgEl.className = 'stp-msg';
+    }
+
+    function deriveUniqueForkSlug(base, existing) {
+      // If the existing slug already ends with -vN, increment.
+      const m = base.match(/^(.*?)-v(\d+)$/);
+      if (m) return `${m[1]}-v${parseInt(m[2], 10) + 1}`;
+      return `${base}-v2`;
+    }
+
+    async function handleConflictChoice(choice, panel, entry, payload, { existing, suggestedForkSlug, finish }) {
+      const msgEl = panel.querySelector('.stp-msg');
+      panel.querySelectorAll('.stp-choice').forEach(b => (b.disabled = true));
+      msgEl.textContent = 'Applying…';
+      msgEl.className = 'stp-msg working';
+
+      try {
+        if (choice === 'example') {
+          // Append entry.id to existing.examples, avoiding duplicates.
+          const existingExamples = existing?.examples ?? [];
+          if (!existingExamples.includes(entry.id)) existingExamples.push(entry.id);
+          const res = await fetch('/api/dev/feature-image/templates', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ action: 'update', slug: payload.slug, patch: { examples: existingExamples } }),
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || `status ${res.status}`);
+          await finish(payload.slug, `Added this entry as an example of "${payload.slug}".`);
+        } else if (choice === 'fork') {
+          const res = await fetch('/api/dev/feature-image/templates', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              action: 'fork',
+              sourceSlug: payload.slug,
+              newSlug: suggestedForkSlug,
+              overrides: {
+                name: payload.name,
+                description: payload.description,
+                tags: payload.tags,
+                prompt: payload.prompt,
+                preset: payload.preset,
+                provider: payload.provider,
+              },
+            }),
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || `status ${res.status}`);
+          // Tag the entry with the NEW fork slug, then also seed it as an example of the fork.
+          await fetch('/api/dev/feature-image/templates', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ action: 'update', slug: suggestedForkSlug, patch: { examples: [entry.id] } }),
+          });
+          await finish(suggestedForkSlug, `Forked as "${suggestedForkSlug}" with parent "${payload.slug}".`);
+        } else if (choice === 'overwrite') {
+          const patch = {
+            name: payload.name,
+            description: payload.description,
+            tags: payload.tags,
+            prompt: payload.prompt,
+            preset: payload.preset,
+            provider: payload.provider,
+            examples: [...(existing?.examples ?? []), ...(existing?.examples?.includes(entry.id) ? [] : [entry.id])],
+          };
+          const res = await fetch('/api/dev/feature-image/templates', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ action: 'update', slug: payload.slug, patch }),
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || `status ${res.status}`);
+          await finish(payload.slug, `Updated "${payload.slug}" with your values. Existing examples preserved.`);
+        }
+      } catch (err) {
+        msgEl.textContent = `Failed: ${err.message}`;
+        msgEl.className = 'stp-msg error';
+        panel.querySelectorAll('.stp-choice').forEach(b => (b.disabled = false));
+      }
     }
 
     async function rateEntry(entry, rating) {
