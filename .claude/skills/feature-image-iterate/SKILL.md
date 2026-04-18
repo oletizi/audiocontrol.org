@@ -6,7 +6,7 @@ user_invocable: true
 
 # Feature Image — Iterate
 
-Part of the conversation loop. Picks up `feature-image-iterate` workflow items that the user enqueued from the gallery's focus-mode thread composer, responds by generating a new image, and appends an assistant message with commentary and a link to the new log entry.
+Part of the conversation loop. Picks up `feature-image-iterate` workflow items that the user enqueued from the gallery's focus-mode thread composer, responds by generating a new image (or a recomposite, or a clarifying question), and appends an assistant message with commentary and a link to the new log entry.
 
 ## Usage
 
@@ -16,75 +16,122 @@ Part of the conversation loop. Picks up `feature-image-iterate` workflow items t
 
 No arguments. Processes every pending iterate request.
 
-The dev server at `http://localhost:4322` (or `:4321` if the port is free) must be running.
+The dev server at `http://localhost:4322` (or `:4321`) must be running.
+
+## Helper scripts
+
+Two scripts live in this skill directory. They're designed to keep the permission prompts down — one pre-approved command pattern per phase, instead of ad-hoc curl one-liners:
+
+- `drain.ts` — lists all pending iterate items with full context (source entry, thread history, snapshot). Read-only.
+- `respond.ts --payload=<file>` — executes one response: generate/recomposite/clarify → append-assistant → apply-result.
 
 ## Steps
 
-1. **List pending iterate items:**
-   - `GET http://localhost:4322/api/dev/feature-image/workflow?state=open`
-   - Filter to items where `type === 'feature-image-iterate'`
-   - Report count to the user; if zero, stop
+### 1. Drain pending items
 
-2. **For each item, in order:**
+```bash
+tsx .claude/skills/feature-image-iterate/drain.ts
+```
 
-   a. **Read the context:**
-      - `context.threadId` — root entry id of the lineage
-      - `context.sourceEntryId` — the entry the user was viewing when they sent the message
-      - `context.userFeedback` — the user's natural-language feedback text
-      - `context.snapshot` — current title, subtitle, prompt, preset, filters, overlay
+Output is JSON with `pendingCount` and per-item `workflowId`, `threadId`, `sourceEntryId`, `userFeedback`, `snapshot`, `source` (the source log entry), and `thread` (prior message history).
 
-   b. **Read the thread to get prior context** (if the thread has more than one message):
-      - `GET http://localhost:4322/api/dev/feature-image/threads?entryId=<sourceEntryId>`
-      - Returns `{threadId, messages: [...]}` oldest-first
+If `pendingCount === 0`, report that and stop.
 
-   c. **Read the source entry** from `.feature-image-history.jsonl` by `sourceEntryId` — gives you the original prompt, preset, filters, provider, etc.
+### 2. For each item, pick a strategy
 
-   d. **Interpret the feedback** and pick a response strategy:
-      - *Prompt tweak*: the user wants a different subject, palette, or mood → generate a new image with an adjusted prompt
-      - *Preset/filter tweak*: the user wants a different visual treatment → generate with a different preset, or use the recomposite endpoint on the existing raw image
-      - *Text tweak*: the user wants different overlay text → use `recomposite` with the updated title/subtitle (no new raw generation needed)
-      - *Ambiguous feedback*: append a text-only assistant message asking a clarifying question (no new generation)
+Interpret the `userFeedback` in context of `snapshot` (what the user was looking at) and `thread` (what's been discussed). Pick exactly ONE strategy per item:
 
-   e. **Generate or recomposite:**
-      - For a new image: `POST http://localhost:4322/api/dev/feature-image/generate` with `{ prompt, provider, preset, filters, title, subtitle, formats, templateSlug?, parentEntryId: sourceEntryId }`. **IMPORTANT: set `parentEntryId` to the source entry id** so lineage is preserved.
-      - For a recomposite: `POST http://localhost:4322/api/dev/feature-image/recomposite` with `{ sourceEntryId, title, subtitle, preset, filters, overlay, formats }`. The recomposite endpoint already sets `parentEntryId` to the source.
-      - Capture the returned `entry.id` for the assistant message reference.
+| Feedback pattern | Strategy |
+|------------------|----------|
+| "Too literal" / "Too on-the-nose" / "Try something more abstract" | `generate` with prompt tweak toward abstraction |
+| "Make it darker/brighter/more saturated" / "Different palette" | `generate` with prompt tweak (for palette) or `recomposite` with grade change |
+| "Change the title to X" / "Different subtitle" | `recomposite` with new title/subtitle, no new raw image |
+| "Add/remove scanlines" / "More phosphor" | `recomposite` with filter tweak |
+| "Show another variation" | `generate` with same settings (different seed) |
+| Meta-question about the workflow (e.g. "how do I mark this as preferred?") | `clarify` — text-only response, no generation |
+| Anything ambiguous / multiple conflicting asks | `clarify` with a single specific question back |
 
-   f. **Append the assistant message:**
-      - `POST http://localhost:4322/api/dev/feature-image/threads` with `{ action: 'append-assistant', threadId: context.threadId, text: "<short explanation of what you changed and why>", logEntryId: "<new entry id>" }`
-      - Keep the text concise (1-3 sentences). Explain *what* changed and briefly *why* you interpreted the feedback that way.
+### 3. Build the payload file
 
-   g. **Mark the workflow applied:**
-      - `POST http://localhost:4322/api/dev/feature-image/workflow` with `{ action: 'apply-result', id: <workflow id>, changedFiles: ["<generated file paths>"] }`
-      - On error: include the `error` field so the state stays `decided` and the item can be retried.
+Write a JSON payload to a tmp file. Example shapes:
 
-3. **Summary report:**
-   - N iterations processed, M succeeded, K failed
-   - Per item: source → new entry id, strategy used (prompt tweak / recomposite / clarifying question)
-   - Remind the user the new entries appear in the gallery under the same thread (focused on the parent shows the same thread; focusing on the new entry shows it too)
+**Prompt tweak** (new generation):
+```json
+{
+  "workflowId": "<from drain output>",
+  "threadId": "<from drain>",
+  "assistantText": "Pushed the prompt away from literal grid arrangements — now it asks for overlapping shapes at slight angles. Same palette and grain.",
+  "strategy": "generate",
+  "generate": {
+    "prompt": "<adjusted prompt>",
+    "provider": "flux",
+    "preset": "retro-crt",
+    "title": "<from snapshot>",
+    "subtitle": "<from snapshot>",
+    "formats": "og",
+    "parentEntryId": "<sourceEntryId>"
+  }
+}
+```
+
+**Recomposite** (reuse raw, change overlay/filters):
+```json
+{
+  "workflowId": "...",
+  "threadId": "...",
+  "assistantText": "Swapped to teal-amber grade so the shadows warm up without losing the cool highlights.",
+  "strategy": "recomposite",
+  "recomposite": {
+    "sourceEntryId": "<sourceEntryId>",
+    "title": "<from snapshot>",
+    "subtitle": "<from snapshot>",
+    "preset": "teal-amber",
+    "filters": { "grade": "teal-amber", "phosphor": "off", "vignette": "subtle", "scanlines": "off", "grain": "light" },
+    "overlay": true,
+    "formats": ["og"]
+  }
+}
+```
+
+**Clarify** (text-only, no generation):
+```json
+{
+  "workflowId": "...",
+  "threadId": "...",
+  "assistantText": "When you say 'more scattered', do you want fewer panels at larger scales, or the same count but more offset from each other?",
+  "strategy": "clarify"
+}
+```
+
+### 4. Execute the response
+
+```bash
+tsx .claude/skills/feature-image-iterate/respond.ts --payload=/tmp/iter-<short-id>.json
+```
+
+Respond writes all three steps (the optional generate/recomposite + the assistant message + apply-result). On success, prints the new entry id and confirms.
+
+### 5. Summary report
+
+After processing all items:
+- N processed, M succeeded, K failed
+- Per item: `sourceEntryId[:8] → newEntryId[:8] · strategy`
+- Remind the user the new entries appear in the gallery under the same thread.
 
 ## Feedback Interpretation Hints
 
-Common feedback patterns:
-
-| User says… | Strategy |
-|------------|----------|
-| "Too literal" / "Too on-the-nose" | Prompt tweak toward abstraction; explain in assistant message |
-| "Make it darker/brighter/more saturated" | Grade filter change via recomposite |
-| "Try a different palette" | Prompt tweak with explicit palette guidance |
-| "The title doesn't wrap well" / "Change the subtitle to X" | Recomposite with new title/subtitle, no new raw generation |
-| "Remove/add scanlines" | Recomposite with filter adjustment |
-| "Show me another variation" | Generate with same prompt + settings (different seed) |
-| "What if we tried [totally different thing]?" | Prompt tweak; acknowledge in assistant message that this is a bigger shift |
-
-Always pick ONE strategy per iterate item — if the feedback suggests multiple changes, bundle them into the single response generation rather than firing off multiple workflow items.
+- Always pick ONE strategy per iterate item. Bundle multiple changes into a single response generation rather than firing multiple workflow items.
+- When in doubt, `clarify` is better than guessing — the user will appreciate the precise follow-up more than a wrong generation.
+- If the feedback is a meta-question about the pipeline (ratings, templates, lineage, artifical selection), answer in the assistant message without generating. Point at the Phase 11 prompt library for "how do I cultivate this"-style questions.
 
 ## Error Recovery
 
-An item that fails stays in `open` state (since `apply-result` with `error` transitions to `decided`, not a retry). Re-running `/feature-image-iterate` re-processes it after the underlying issue is fixed. If you encounter a persistent problem (API key missing, credits exhausted), report to the user and suggest they cancel the workflow item from the gallery.
+`respond.ts` exits non-zero on any HTTP failure. Errors include the response body so you can diagnose. Retry by re-running with the same payload after fixing the underlying issue (e.g. dev server not running, API key missing).
+
+If a persistent problem blocks progress (credits exhausted, etc.), report to the user and suggest they cancel the workflow item from the gallery.
 
 ## Related Skills
 
-- `/feature-image-blog <post-path>` — starts a blog-post workflow (different `type`)
+- `/feature-image-blog <post-path>` — creates feature-image-blog workflow items (different `type`)
 - `/feature-image-apply` — applies decided blog workflows to posts
 - `/feature-image-help` — reports pipeline state including pending iterations
