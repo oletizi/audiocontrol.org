@@ -4,12 +4,12 @@
 
 | Slug | Title | Description | Keywords | Source |
 |------|------|------|------|------|
-| building-the-editorial-calendar-feature | Building the Editorial Calendar Feature | A writeup of the editorial-calendar feature itself — why ad-hoc content creation needed a system, how the Ideas→Published lifecycle works, and how analytics, Reddit, and YouTube got wired into one virtuous loop. |  | manual |
 | analytics-automation-feature | Analytics Automation Feature | How the automated-analytics feature turns Umami / GA4 / Search Console into actionable recommendations — the scorecard, striking-distance queries, CTR opportunities, and the feedback loop into the editorial calendar. |  | manual |
 | codex-parallel-implementation-and-work-checking-on-mesa-ii | Codex Parallel Implementation and Work Checking on MESA II | Running Claude Code and Codex against the same MESA II reverse-engineering problem in parallel, using each to cross-check the other. How disagreement between agents surfaces real bugs; how agreement gives higher confidence than a single agent alone. |  | manual |
 | video-demo-feature | Video Demo Feature | Making YouTube videos a first-class content type alongside blog posts — same lifecycle, same cross-link audit, same distribution tracking. How treating videos as editorial entries (not marketing afterthoughts) changes the content workflow. |  | manual |
 | lightweight-web-workflow-dashboards-with-action-queues-for-claude-code | Lightweight Web Workflow Dashboards with Action Queues for Claude Code | A pattern: instead of rigid hand-coded review UIs, build lightweight dev-only web dashboards that present an action queue Claude Code pushes work into and the user resolves. Queue is a JSONL file in git — no database. Claude Code is the backend — no rigid workflow engine. The workflow is a family of Claude skills. The audiocontrol.org /feature-image-* family is the live worked example (see the feature-image-automation-feature post). Pass messages back and forth via the queue: the dashboard surfaces complex questions Claude has, user responses save back. Works for feature images, works for any high-bandwidth review loop where the decision surface is too rich for a CLI yes/no. |  | manual |
 | evolution-by-artificial-selection-for-prompt-generation | Evolution by Artificial Selection for Prompt Generation | Cultivating a prompt library under selection pressure instead of one-shot engineering the perfect prompt. Fitness from user ratings, lineage through forks, fitness×recency weighting in the UI — brand consistency as a by-product, evolution as the mechanism. The general principle: for high-variance search spaces (prompts, filter combos, skill docs), a population under selection pressure beats brute-force or engineering. |  | manual |
+| homegrown-workflow-skills-vs-the-popular-claude-plugins | Homegrown Workflow Skills vs. the Popular Claude Plugins | A side-by-side look at our homegrown session-lifecycle and feature-workflow skills — the /session-start, /feature-define, /feature-ship, /editorial-* families plus DEVELOPMENT-NOTES and feature workplans — against the widely-used Claude plugins that purport to do the same job. Where did homegrown win? Where would a plugin have served better? Criteria: fit-for-purpose, extensibility, maintenance burden, composability with the rest of the skill stack. |  | manual |
 
 ## Planned
 
@@ -17,7 +17,9 @@
 
 ## Drafting
 
-*No entries.*
+| Slug | Title | Description | Keywords | Topics | Source | Issue |
+|------|------|------|------|------|------|------|
+| building-the-editorial-calendar-feature | Building the Editorial Calendar Feature | A writeup of the editorial-calendar feature itself — why ad-hoc content creation needed a system, how the Ideas→Published lifecycle works, and how analytics, Reddit, and YouTube got wired into one virtuous loop. | AI content workflow automation, flexible editorial calendar for content teams, ship content faster with AI, build your own AI content stack | content-marketing, automation-workflow, claude | manual | #68 |
 
 ## Review
 
