@@ -440,6 +440,10 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     }
     .card-compact .card-thumb:hover { outline-color: var(--accent); }
     .card-compact .card-thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .card-compact .card-thumb:has(.og-preview-thumb) {
+      outline: 1px dashed var(--accent);
+      outline-offset: -1px;
+    }
     .card-compact .card-thumb img,
     .card-compact .card-thumb .og-preview {
       width: 100%;
@@ -2116,14 +2120,63 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     }
 
     function buildThumbPreview(entry) {
-      // Prefer the baked composited image as the "current state" thumbnail.
+      // If there's an in-progress draft, mirror the focus preview so the
+      // thumbnail reflects what the user is actually editing. Otherwise fall
+      // back to the baked composited PNG (what's actually on disk).
+      const draft = readPreviewDraft(entry.id);
+      const raw = entry.outputs?.raw?.[0];
+      if (draft && raw) {
+        return buildLiveThumbHtml(entry, raw, draft);
+      }
       const composited = entry.outputs?.composited?.[0];
       const filtered = entry.outputs?.filtered?.[0];
       if (composited) return `<img src="${escapeAttr(composited.path)}?t=${Date.now()}" alt="" loading="lazy" />`;
       if (filtered)  return `<img src="${escapeAttr(filtered)}?t=${Date.now()}" alt="" loading="lazy" />`;
-      const raw = entry.outputs?.raw?.[0];
-      if (raw) return `<img src="${escapeAttr(raw)}?t=${Date.now()}" alt="" loading="lazy" />`;
+      if (raw)       return `<img src="${escapeAttr(raw)}?t=${Date.now()}" alt="" loading="lazy" />`;
       return '<div style="padding: 2rem; text-align: center; color: var(--text-3); font-family: \'JetBrains Mono\', monospace; font-size: 0.7rem;">no output</div>';
+    }
+
+    function buildLiveThumbHtml(entry, rawPath, draft) {
+      // Derive filter state: draft overrides → fall back to entry.preset defaults.
+      const preset = draft.preset || (entry.preset && PRESET_FILTERS[entry.preset] ? entry.preset : 'retro-crt');
+      const defaults = PRESET_FILTERS[preset] ?? PRESET_FILTERS['retro-crt'];
+      const grade = draft.grade ?? defaults.grade;
+      const phosphor = draft.phosphor ?? defaults.phosphor;
+      const vignette = draft.vignette ?? defaults.vignette;
+      const scanlines = draft.scanlines ?? defaults.scanlines;
+      const grain = draft.grain ?? defaults.grain;
+      const overlay = draft.overlay ?? 'on';
+      const format = draft.format ?? 'og';
+
+      const title = (typeof draft.title === 'string' ? draft.title : (entry.title ?? ''));
+      const subtitle = (typeof draft.subtitle === 'string' ? draft.subtitle : (entry.subtitle ?? ''));
+      const overlayHtml = (overlay === 'on' || overlay === true)
+        ? `<div class="og-text-panel">
+            <div class="og-title">${escapeHtml(title)}</div>
+            ${subtitle ? `<div class="og-subtitle">${escapeHtml(subtitle)}</div>` : ''}
+            <div class="og-brand-row">
+              <img class="og-logo" src="/favicon.svg" alt="" />
+              <div class="og-brand-text">audiocontrol.org</div>
+            </div>
+          </div>`
+        : '';
+      return `
+        <div class="og-preview og-preview-thumb"
+             data-format="${escapeAttr(format)}"
+             data-grade="${escapeAttr(grade)}"
+             data-phosphor="${escapeAttr(phosphor)}"
+             data-vignette="${escapeAttr(vignette)}"
+             data-scanlines="${escapeAttr(scanlines)}"
+             data-grain="${escapeAttr(grain)}"
+             data-overlay="${escapeAttr(overlay === true ? 'on' : overlay)}"
+             data-preset="${escapeAttr(preset)}">
+          <img class="og-bg" src="${escapeAttr(rawPath)}?t=${Date.now()}" alt="" loading="lazy" />
+          <div class="og-layer og-vignette"></div>
+          <div class="og-layer og-scanlines"></div>
+          <div class="og-layer og-grain"></div>
+          ${overlayHtml}
+        </div>
+      `;
     }
 
     function renderCompactCard(entry) {
