@@ -1,0 +1,173 @@
+# Workplan: editorialcontrol-site
+
+**Feature slug:** `editorialcontrol-site`
+**Branch:** `feature/editorialcontrol-site`
+**Milestone:** editorialcontrol.org launch
+**GitHub Issue:** TBD (run `/feature-issues`)
+
+## GitHub Tracking
+
+| Phase | Issue |
+|-------|-------|
+| Parent | TBD |
+| Phase 1: Multi-site source layout + build split | TBD |
+| Phase 2: Multi-site editorial calendar library | TBD |
+| Phase 3: editorialcontrol branding + core pages | TBD |
+| Phase 4: Content migration | TBD |
+| Phase 5: Reddit / distribution | TBD |
+| Phase 6: Launch | TBD |
+
+## Files Affected
+
+**Build system / repo layout:**
+- `astro.config.mjs` → `astro.audiocontrol.config.mjs` + `astro.editorialcontrol.config.mjs`
+- `src/pages/` → `src/sites/audiocontrol/pages/` + `src/sites/editorialcontrol/pages/`
+- `netlify.toml` — updated
+- `package.json` — per-site build/dev scripts
+
+**Editorial calendar library:**
+- `scripts/lib/editorial/calendar.ts` — `calendarPath(rootDir, site)` and friends
+- `scripts/lib/editorial/channels.ts` — `channelsPath(rootDir, site)` and friends
+- `docs/editorial-calendar-audiocontrol.md` (rename from `docs/editorial-calendar.md`)
+- `docs/editorial-calendar-editorialcontrol.md` (new)
+- `docs/editorial-channels-audiocontrol.json` (rename from `docs/editorial-channels.json`)
+- `docs/editorial-channels-editorialcontrol.json` (new)
+- `.claude/skills/editorial-*/SKILL.md` — `--site` parameter
+
+**Reddit config:**
+- `~/.config/audiocontrol/reddit.json` — site-keyed structure
+- `scripts/lib/reddit/config.ts` — `loadConfig(site)`
+
+**Branding:**
+- `src/sites/audiocontrol/brand.ts` (new)
+- `src/sites/editorialcontrol/brand.ts` (new)
+- `src/layouts/BaseLayout.astro` — accepts brand config
+
+**Content migration:**
+- Two blog post dirs moved under `src/sites/editorialcontrol/pages/blog/`
+- Calendar entries migrated
+- Blog index updated for both sites
+
+## Implementation Phases
+
+### Phase 1: Multi-site source layout + build split
+
+**Deliverable:** The repo builds both sites from two Astro configs. audiocontrol.org deploys identically to today; editorialcontrol.org stub builds to a working placeholder page served on Netlify.
+
+- [ ] Create `src/sites/audiocontrol/` subtree
+- [ ] Move `src/pages/` → `src/sites/audiocontrol/pages/`
+- [ ] Create `src/sites/editorialcontrol/pages/` with an index placeholder page
+- [ ] Split `astro.config.mjs` into `astro.audiocontrol.config.mjs` and `astro.editorialcontrol.config.mjs` with distinct `site`, `srcDir`, and sitemap config
+- [ ] Update `package.json` scripts: `build:audiocontrol`, `build:editorialcontrol`, `build` (runs both); same for `dev`
+- [ ] Update `netlify.toml` or per-site Netlify UI config so each Netlify site runs the correct build command
+- [ ] Verify audiocontrol.org builds identically — diff `dist/` against pre-split output
+- [ ] Verify editorialcontrol.org builds to a functional HTML placeholder
+- [ ] Second Netlify site connected to same repo, custom domain pending
+
+**Acceptance Criteria:**
+- `npm run build:audiocontrol` produces output equivalent to today's `npm run build`
+- `npm run build:editorialcontrol` produces a deployable placeholder site
+- Both Netlify sites auto-deploy from main (or the launch branch)
+- Existing integration tests still pass
+
+### Phase 2: Multi-site editorial calendar library
+
+**Deliverable:** Editorial calendar library accepts a `site` parameter. Skills accept `--site`. Both sites' calendars and channels configs live at their site-keyed paths.
+
+- [ ] Update `scripts/lib/editorial/calendar.ts` — `calendarPath(rootDir, site)` and all callers
+- [ ] Update `scripts/lib/editorial/channels.ts` — `channelsPath(rootDir, site)` and loaders
+- [ ] Rename `docs/editorial-calendar.md` → `docs/editorial-calendar-audiocontrol.md` and update references
+- [ ] Rename `docs/editorial-channels.json` → `docs/editorial-channels-audiocontrol.json` and update references
+- [ ] Create empty `docs/editorial-calendar-editorialcontrol.md` (with stage headings)
+- [ ] Create `docs/editorial-channels-editorialcontrol.json` with a curated subreddit list for content-marketing, automation-workflow, claude, plus site-appropriate additions
+- [ ] Update all `/editorial-*` skills to accept `--site <slug>` and error clearly if omitted
+- [ ] Update existing unit tests to cover the `site` parameter; add one test per new path resolution
+- [ ] Update CONTENT-CALENDAR.md to document the `--site` convention
+
+**Acceptance Criteria:**
+- All existing editorial-calendar tests pass with the new site parameter
+- A new test covers resolving calendar paths per site
+- Running a skill without `--site` gives a clear error listing valid sites
+- Both sites' calendars round-trip cleanly
+
+### Phase 3: editorialcontrol.org branding and core pages
+
+**Deliverable:** editorialcontrol.org has a brand-aligned visual identity distinct from audiocontrol.org, and the core pages render cleanly: home, about, blog index (empty), contact.
+
+- [ ] Design: pick an accent palette that differentiates editorialcontrol.org while maintaining the family look
+- [ ] Create `src/sites/editorialcontrol/brand.ts` with color tokens, logo variant, typography overrides
+- [ ] Extract audiocontrol's current palette into `src/sites/audiocontrol/brand.ts` for symmetry
+- [ ] Refactor base layout to accept a brand config; site-specific layout variants wrap it
+- [ ] Create editorialcontrol home page describing the site's scope and value proposition
+- [ ] Create editorialcontrol about page
+- [ ] Create editorialcontrol blog index page (empty state)
+- [ ] Create editorialcontrol contact page with mailto CTA
+- [ ] Verify audiocontrol.org visual output is byte-identical after the brand extraction
+
+**Acceptance Criteria:**
+- editorialcontrol.org renders with distinct branding across all core pages
+- Home / about / blog index / contact all render cleanly at their expected paths
+- audiocontrol.org visual design is unchanged
+- Lighthouse or similar accessibility/perf scores within 5 points of the pre-split audiocontrol baseline
+
+### Phase 4: Content migration
+
+**Deliverable:** Two posts live on editorialcontrol.org with their editorial calendar entries ported and tracking issues retitled.
+
+- [ ] Move `building-the-editorial-calendar-feature` to `src/sites/editorialcontrol/pages/blog/<slug>/` and migrate its calendar entry
+- [ ] Retitle tracking issue #68 to reference editorialcontrol.org
+- [ ] Revert audiocontrol's calendar entry for `building-the-editorial-calendar-feature` (remove)
+- [ ] Move `feature-image-automation-feature` to `src/sites/editorialcontrol/pages/blog/<slug>/`; reframe with the current agent-as-workflow thesis
+- [ ] Remove `feature-image-automation-feature` from audiocontrol's calendar and blog index
+- [ ] Generate feature images for both posts via the existing feature-image pipeline (targeting editorialcontrol now)
+- [ ] Add both to editorialcontrol's blog index
+
+**Acceptance Criteria:**
+- Both posts render correctly on editorialcontrol.org
+- Both calendar entries are in Published stage on editorialcontrol's calendar
+- audiocontrol.org no longer references either post in its calendar, blog index, or pages
+- Feature images generated and applied to both posts
+- `/editorial-cross-link-review --site=editorialcontrol` reports no unreciprocated links
+
+### Phase 5: Reddit / distribution setup
+
+**Deliverable:** editorialcontrol.org has its own Reddit sync working end-to-end. Distribution records flow into its calendar.
+
+- [ ] Decide on a brand-aligned Reddit username and register the account
+- [ ] Update `scripts/lib/reddit/config.ts` to support site-keyed credential lookup
+- [ ] Update `reddit.json` schema (site-keyed structure)
+- [ ] Update `/editorial-reddit-sync` and `/editorial-reddit-opportunities` to resolve the right username per site
+- [ ] Seed the editorialcontrol Reddit account with at least one promotional share (to have data for first sync)
+- [ ] Run `/editorial-reddit-sync --site=editorialcontrol` and confirm attribution
+- [ ] Finalize the subreddit list in `editorial-channels-editorialcontrol.json`
+
+**Acceptance Criteria:**
+- `/editorial-reddit-sync --site=editorialcontrol` runs clean and attributes at least one submission
+- `/editorial-reddit-opportunities --site=editorialcontrol <slug>` reports candidates from the curated list
+- audiocontrol's Reddit sync continues to work unchanged
+
+### Phase 6: Launch
+
+**Deliverable:** editorialcontrol.org is live with HTTPS, DNS pointing to Netlify, sitemap submitted, and the debut posts indexed.
+
+- [ ] Point editorialcontrol.org DNS at Netlify (CNAME / A records)
+- [ ] Enable HTTPS via Netlify (auto-provisioned cert)
+- [ ] Verify `https://editorialcontrol.org/` resolves and serves the live site
+- [ ] Create and submit sitemap to Google Search Console
+- [ ] Create a separate GA4 property (or Umami site) for editorialcontrol.org — minimal: tracking ID in place
+- [ ] Announce launch: run `/editorial-distribute --site=editorialcontrol` for each debut post against its best-fit subreddits
+
+**Acceptance Criteria:**
+- `https://editorialcontrol.org` resolves with a valid certificate
+- Sitemap submitted and processing in Search Console
+- At least one distribution record per debut post recorded in the calendar
+
+## Verification Checklist
+
+- [ ] Both sites build cleanly via their respective `npm run build:*` commands
+- [ ] All existing editorial-calendar tests pass with the new `--site` parameter
+- [ ] audiocontrol.org visual output is unchanged (verified by eye + diffed dist output)
+- [ ] Both debut posts render correctly on editorialcontrol.org
+- [ ] Reddit sync works on both sites independently
+- [ ] No secrets committed (`reddit.json` stays outside the repo at `~/.config/audiocontrol/`)
+- [ ] Documentation in CONTENT-CALENDAR.md reflects the multi-site workflow
