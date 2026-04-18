@@ -29,6 +29,10 @@ export interface LogEntry {
   status: LogStatus;
   notes?: string;
   error?: string;
+  /** 1-5 user rating; absence means unrated. */
+  rating?: number;
+  /** Slug of the prompt template used to seed this generation (if any). */
+  templateSlug?: string;
 }
 
 /** Read all log entries, oldest first. Empty array if the file doesn't exist. */
@@ -53,7 +57,10 @@ export function appendLog(entry: LogEntry): void {
 }
 
 /** Update an existing entry by id (rewrites the whole file). */
-export function updateLog(id: string, patch: Partial<Pick<LogEntry, 'status' | 'notes'>>): LogEntry | null {
+export function updateLog(
+  id: string,
+  patch: Partial<Pick<LogEntry, 'status' | 'notes' | 'rating' | 'templateSlug'>>,
+): LogEntry | null {
   const entries = readLog();
   const idx = entries.findIndex(e => e.id === id);
   if (idx === -1) return null;

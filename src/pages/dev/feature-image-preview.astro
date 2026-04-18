@@ -100,6 +100,18 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     .active-wf-banner button:hover { color: #c4ced8; }
     .submit-decision { background: #5fd1a3 !important; color: #0a0c10 !important; }
     .submit-decision:hover { background: #7adcb4 !important; }
+    .stars { display: inline-flex; gap: 2px; font-family: 'JetBrains Mono', monospace; user-select: none; }
+    .stars button { background: transparent; color: #3a4048; padding: 0 2px; font-size: 1rem; cursor: pointer; border: none; line-height: 1; }
+    .stars button.on { color: #f5c542; }
+    .stars button:hover { color: #f5c542; }
+    .template-picker { display: flex; gap: 0.5rem; align-items: stretch; }
+    .template-picker select { flex: 1; }
+    .template-picker button.secondary { background: #2a3038; color: #c4ced8; padding: 0 0.75rem; font-size: 0.75rem; }
+    .candidate-pill { display: inline-block; padding: 0.15rem 0.4rem; margin: 0.15rem 0.15rem 0 0; background: #2a3038; color: #a0aab4; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; border-radius: 3px; cursor: pointer; }
+    .candidate-pill:hover { background: #3a4048; color: #c4ced8; }
+    .candidate-pill.suggested { background: #1e3a32; color: #5fd1a3; }
+    .template-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; }
+    .template-meta strong { color: #c4ced8; }
   </style>
 </head>
 <body>
@@ -116,6 +128,17 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       <h2>Generate</h2>
       <div id="active-wf-banner" style="display: none;"></div>
       <form id="gen-form">
+        <label>
+          <span>Template (optional — pre-fills prompt/preset/provider)</span>
+          <div class="template-picker">
+            <select id="template-select"><option value="">(none)</option></select>
+            <button type="button" class="secondary" id="template-fork">Fork</button>
+            <button type="button" class="secondary" id="template-clear">Clear</button>
+          </div>
+          <div id="template-meta" class="template-meta"></div>
+          <div id="candidate-pills"></div>
+        </label>
+
         <label>
           <span>Prompt</span>
           <textarea id="prompt" name="prompt" placeholder="Abstract geometric structure, teal and amber, dark moody background, no text, no words, no letters, no typography"></textarea>
@@ -185,11 +208,199 @@ const filterNames = Object.keys(FILTER_REGISTRY);
 
     let activeWorkflow = null;  // the currently-selected workflow item
     let allWorkflows = [];      // cached list
+    let allTemplates = [];      // cached template list
+    let activeTemplate = null;  // the currently-selected template (from picker)
+    const templateSelect = document.getElementById('template-select');
+    const templateMeta = document.getElementById('template-meta');
+    const candidatePills = document.getElementById('candidate-pills');
 
     async function fetchWorkflows() {
       const res = await fetch('/api/dev/feature-image/workflow');
       if (!res.ok) throw new Error(`workflow fetch failed: ${res.status}`);
       return (await res.json()).items;
+    }
+
+    async function fetchTemplates() {
+      const res = await fetch('/api/dev/feature-image/templates');
+      if (!res.ok) throw new Error(`templates fetch failed: ${res.status}`);
+      return (await res.json()).templates;
+    }
+
+    async function refreshTemplates() {
+      try {
+        allTemplates = await fetchTemplates();
+        renderTemplateSelect();
+      } catch (err) {
+        console.error('Could not load templates:', err);
+      }
+    }
+
+    function renderTemplateSelect() {
+      const candidateSlugs = new Set(activeWorkflow?.context?.candidateTemplates || []);
+      const suggestedSlug = activeWorkflow?.context?.suggestedTemplateSlug;
+      templateSelect.innerHTML = '<option value="">(none)</option>';
+      for (const t of allTemplates) {
+        const opt = document.createElement('option');
+        opt.value = t.slug;
+        const fitness = t.fitness?.usageCount > 0 ? ` (fit ${t.fitness.fitness.toFixed(2)} · n=${t.fitness.usageCount})` : ' (new)';
+        opt.textContent = `${t.name}${fitness}`;
+        if (candidateSlugs.has(t.slug)) opt.textContent = '★ ' + opt.textContent;
+        templateSelect.appendChild(opt);
+      }
+      if (activeTemplate) templateSelect.value = activeTemplate.slug;
+      else if (suggestedSlug) templateSelect.value = suggestedSlug;
+      renderCandidatePills();
+      onTemplateChange();
+    }
+
+    function renderCandidatePills() {
+      candidatePills.innerHTML = '';
+      const candidates = activeWorkflow?.context?.candidateTemplates;
+      if (!candidates || candidates.length === 0) return;
+      const suggested = activeWorkflow.context.suggestedTemplateSlug;
+      for (const slug of candidates) {
+        const t = allTemplates.find(x => x.slug === slug);
+        if (!t) continue;
+        const pill = document.createElement('span');
+        pill.className = 'candidate-pill' + (slug === suggested ? ' suggested' : '');
+        pill.textContent = t.name;
+        pill.title = t.description || '';
+        pill.addEventListener('click', () => {
+          templateSelect.value = slug;
+          onTemplateChange();
+        });
+        candidatePills.appendChild(pill);
+      }
+    }
+
+    function onTemplateChange() {
+      const slug = templateSelect.value;
+      activeTemplate = slug ? (allTemplates.find(t => t.slug === slug) || null) : null;
+      if (activeTemplate) {
+        document.getElementById('prompt').value = activeTemplate.prompt;
+        if (activeTemplate.preset) {
+          const presetSel = document.getElementById('preset');
+          if ([...presetSel.options].some(o => o.value === activeTemplate.preset)) {
+            presetSel.value = activeTemplate.preset;
+          }
+        }
+        if (activeTemplate.provider) {
+          const providerSel = document.getElementById('provider');
+          if ([...providerSel.options].some(o => o.value === activeTemplate.provider)) {
+            providerSel.value = activeTemplate.provider;
+          }
+        }
+        const fit = activeTemplate.fitness;
+        const lineage = activeTemplate.parent ? ` · forked from ${activeTemplate.parent}` : '';
+        const fitText = fit && fit.usageCount > 0
+          ? `fitness ${fit.fitness.toFixed(2)} · ${fit.usageCount} uses · avg ★ ${fit.averageRating.toFixed(1)}`
+          : 'new — no ratings yet';
+        templateMeta.innerHTML = `<strong>${escapeHtml(activeTemplate.name)}</strong> — ${escapeHtml(activeTemplate.description || '')} <br/>${fitText}${lineage}`;
+      } else {
+        templateMeta.textContent = '';
+      }
+    }
+
+    templateSelect.addEventListener('change', onTemplateChange);
+    document.getElementById('template-clear').addEventListener('click', () => {
+      templateSelect.value = '';
+      activeTemplate = null;
+      templateMeta.textContent = '';
+    });
+    document.getElementById('template-fork').addEventListener('click', forkActiveTemplate);
+
+    async function forkActiveTemplate() {
+      if (!activeTemplate) {
+        alert('Select a template to fork first.');
+        return;
+      }
+      const newSlug = prompt(`New slug for fork of "${activeTemplate.slug}":`, `${activeTemplate.slug}-v2`);
+      if (!newSlug || !newSlug.trim()) return;
+      const newName = prompt('Name for the forked template:', `${activeTemplate.name} (variant)`);
+      if (newName === null) return;
+      const promptText = prompt('Prompt body (edit as desired):', activeTemplate.prompt);
+      if (promptText === null) return;
+      try {
+        const res = await fetch('/api/dev/feature-image/templates', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            action: 'fork',
+            sourceSlug: activeTemplate.slug,
+            newSlug: newSlug.trim(),
+            overrides: { name: newName, prompt: promptText },
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || `status ${res.status}`);
+        await refreshTemplates();
+        templateSelect.value = newSlug.trim();
+        onTemplateChange();
+      } catch (err) {
+        alert(`Failed to fork: ${err.message}`);
+      }
+    }
+
+    async function saveAsTemplate(entry) {
+      if (!entry.prompt) {
+        alert('This entry has no prompt to save.');
+        return;
+      }
+      const slug = prompt('Slug for the new template (e.g. crystal-violet):');
+      if (!slug || !slug.trim()) return;
+      const name = prompt('Name for the template:', slug);
+      if (name === null) return;
+      const description = prompt('Description (when to use it):', '');
+      if (description === null) return;
+      const tagsRaw = prompt('Tags (comma-separated):', '');
+      if (tagsRaw === null) return;
+      const tags = tagsRaw.split(',').map(s => s.trim()).filter(Boolean);
+      try {
+        const res = await fetch('/api/dev/feature-image/templates', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create',
+            template: {
+              slug: slug.trim(),
+              name,
+              description,
+              tags,
+              prompt: entry.prompt,
+              preset: entry.preset,
+              provider: entry.provider,
+              examples: [entry.id],
+            },
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || `status ${res.status}`);
+        // Also tag the entry with the template slug so its rating counts
+        await fetch('/api/dev/feature-image/log', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: entry.id, templateSlug: slug.trim() }),
+        });
+        await refreshTemplates();
+        await refreshGallery();
+      } catch (err) {
+        alert(`Failed to save template: ${err.message}`);
+      }
+    }
+
+    async function rateEntry(entry, rating) {
+      try {
+        const res = await fetch('/api/dev/feature-image/log', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: entry.id, rating }),
+        });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        await refreshTemplates();
+        await refreshGallery();
+      } catch (err) {
+        alert(`Failed to rate: ${err.message}`);
+      }
     }
 
     function renderWorkflowItem(item) {
@@ -405,6 +616,12 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         ? `<button type="button" class="submit-decision" data-action="decide">Submit for workflow ${activeWorkflow.id.slice(0,8)}</button>`
         : '';
 
+      const starsHtml = '<span class="stars">' + [1,2,3,4,5].map(n =>
+        `<button type="button" class="${entry.rating && entry.rating >= n ? 'on' : ''}" data-action="rate" data-rate="${n}">★</button>`
+      ).join('') + '</span>';
+
+      const tplLabel = entry.templateSlug ? `<span><strong>tpl:</strong> ${escapeHtml(entry.templateSlug)}</span>` : '';
+
       div.innerHTML = `
         ${error}
         ${title}
@@ -414,8 +631,10 @@ const filterNames = Object.keys(FILTER_REGISTRY);
           <span>${fmtDate(entry.timestamp)}</span>
           <span><strong>provider:</strong> ${escapeHtml(entry.provider || '-')}</span>
           <span><strong>${escapeHtml(chain)}</strong></span>
+          ${tplLabel}
           <span><strong>duration:</strong> ${entry.durationMs}ms</span>
           <span class="status ${entry.status}">${entry.status}</span>
+          ${starsHtml}
         </div>
         ${notes}
         <div class="row-actions">
@@ -424,6 +643,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
           <button type="button" data-status="rejected" class="secondary">Reject</button>
           <button type="button" data-action="note" class="secondary">Edit note</button>
           <button type="button" data-action="copy" class="secondary">Copy as input</button>
+          <button type="button" data-action="save-template" class="secondary">Save as template</button>
         </div>
       `;
 
@@ -435,6 +655,8 @@ const filterNames = Object.keys(FILTER_REGISTRY);
           if (action === 'note') return editNote(entry);
           if (action === 'copy') return copyAsInput(entry);
           if (action === 'decide') return submitDecision(entry.id);
+          if (action === 'rate') return rateEntry(entry, parseInt(btn.dataset.rate, 10));
+          if (action === 'save-template') return saveAsTemplate(entry);
         });
       });
 
@@ -519,6 +741,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         title: (formData.get('title') || '').toString().trim() || undefined,
         subtitle: (formData.get('subtitle') || '').toString().trim() || undefined,
         formats: (formData.get('formats') || 'og').toString(),
+        templateSlug: activeTemplate?.slug,
       };
       if (!body.prompt) {
         statusEl.textContent = 'Prompt is required.';
@@ -547,6 +770,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       }
     });
 
+    refreshTemplates();
     refreshWorkflows();
     refreshGallery();
 

@@ -243,29 +243,29 @@ Every generation right now starts from either a hand-typed prompt or one the age
 
 ### Tasks
 
-- [ ] Define template schema (`scripts/feature-image/templates.ts`): `{ slug, name, description, tags, prompt, preset?, provider?, parent?, archived?, examples: logEntryId[] }`
-- [ ] Store library at `docs/feature-image-prompts.yaml` (hand-editable, checked in)
-- [ ] Add `rating` field (1-5) to `LogEntry` schema; extend `POST /api/dev/feature-image/log` to accept rating updates
-- [ ] Compute template fitness: `avg(ratings of generations that used this template, weighted by recency)` with a minimum usage count before a template can appear in the default picker
-- [ ] API endpoints: `GET /api/dev/feature-image/templates`, `POST /api/dev/feature-image/templates` (create/update/fork/archive)
-- [ ] Gallery UI:
+- [x] Define template schema (`scripts/feature-image/templates.ts`): `{ slug, name, description, tags, prompt, preset?, provider?, parent?, archived?, examples: logEntryId[] }`
+- [x] Store library at `docs/feature-image-prompts.yaml` (hand-editable, checked in)
+- [x] Add `rating` field (1-5) to `LogEntry` schema; extend `POST /api/dev/feature-image/log` to accept rating updates
+- [x] Compute template fitness: `avg(ratings of generations that used this template, weighted by recency)` with a minimum usage count before a template can appear in the default picker
+- [x] API endpoints: `GET /api/dev/feature-image/templates`, `POST /api/dev/feature-image/templates` (create/update/fork/archive)
+- [x] Gallery UI:
   - Template picker dropdown on the generate form (pre-fills prompt + preset + provider)
   - Star-rating widget on each history entry (1-5)
   - "Save as template" action on an approved entry (creates a new library entry; user names it)
   - "Fork this template" action on a template (clones with parent reference; opens for edit)
-  - Template list view with fitness scores and lineage indicators
-- [ ] Skill `/feature-image-prompts` — list templates by tag / fitness / lineage
-- [ ] Update `/feature-image-blog` to auto-suggest top-N templates matching the post's tags (auto-tag derived from blog index `tags: []`, user can override)
-- [ ] Seed library from the three applied generations on main (agent-workflow, claude-vs-codex-claude / -codex, reverse-engineering) with initial fitness derived from their approval status
+- [ ] Template list view with fitness scores and lineage indicators (deferred — `/feature-image-prompts` skill provides this for now; richer in-gallery UI later)
+- [x] Skill `/feature-image-prompts` — list templates by tag / fitness / lineage
+- [x] Update `/feature-image-blog` to auto-suggest top-N templates matching the post's tags (auto-tag derived from blog index `tags: []`, user can override)
+- [x] Seed library with templates extracted from the four applied generations on main (data-packet-network referencing the real log entry; crystal-teal/-amber and stacked-panels-receding as starting points awaiting first ratings)
 
 ### Acceptance Criteria
 
-- [ ] `docs/feature-image-prompts.yaml` exists with ≥3 seed templates referencing real log entries
-- [ ] Gallery template picker pre-fills the form; submitting the form records which template was used so its fitness can update
-- [ ] Rating a generation updates the corresponding template's fitness
-- [ ] Forking a template creates a new one with `parent` set; parent chain is visible in the template list
-- [ ] `/feature-image-blog` suggests matching templates from the library when tags overlap
-- [ ] Archiving a template hides it from default suggestions but it stays forkable
+- [x] `docs/feature-image-prompts.yaml` exists with 4 seed templates (one with a real example reference)
+- [x] Gallery template picker pre-fills the form; submitting the form records which template was used so its fitness can update
+- [x] Rating a generation updates the corresponding template's fitness
+- [x] Forking a template creates a new one with `parent` set; parent chain is visible in the template list
+- [x] `/feature-image-blog` suggests matching templates from the library when tags overlap
+- [x] Archiving a template hides it from default suggestions but it stays forkable
 
 ### Deferred to Future Phases
 

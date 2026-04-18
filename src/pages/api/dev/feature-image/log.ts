@@ -20,6 +20,8 @@ interface UpdateBody {
   id: string;
   status?: LogStatus;
   notes?: string;
+  rating?: number;
+  templateSlug?: string;
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -44,7 +46,12 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 
-  const updated = updateLog(body.id, { status: body.status, notes: body.notes });
+  const updated = updateLog(body.id, {
+    status: body.status,
+    notes: body.notes,
+    rating: body.rating,
+    templateSlug: body.templateSlug,
+  });
   if (!updated) {
     return new Response(
       JSON.stringify({ error: `no log entry with id ${body.id}` }),

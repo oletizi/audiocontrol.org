@@ -19,6 +19,7 @@ const DEFAULT_OUTPUT = join(rootDir, 'public', 'images', 'generated');
 interface GenerateBody {
   prompt?: string;
   backgroundPath?: string;
+  templateSlug?: string;
   provider?: ProviderSelection;
   preset?: string;
   filters?: string;
@@ -99,6 +100,7 @@ export const POST: APIRoute = async ({ request }) => {
       },
       durationMs: result.durationMs,
       status: 'generated',
+      templateSlug: body.templateSlug,
     };
     appendLog(entry);
 
@@ -124,6 +126,7 @@ export const POST: APIRoute = async ({ request }) => {
       durationMs: 0,
       status: 'rejected',
       error: message,
+      templateSlug: body.templateSlug,
     };
     appendLog(entry);
 

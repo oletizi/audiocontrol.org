@@ -1,0 +1,61 @@
+version: 1
+templates:
+  - slug: crystal-amber
+    name: Isometric Crystal (amber)
+    description: Warm-toned twin of crystal-teal. Same geometric language but amber-dominant. Pair with crystal-teal when a post contrasts two perspectives or alternatives.
+    tags:
+      - ai
+      - process
+      - systems
+      - architecture
+      - workflow
+      - geometric
+      - warm
+    prompt: Abstract geometric data visualization, single translucent isometric crystal structure of stacked layered panels, dominantly warm amber orange tones with subtle teal accent edges, fading into deep shadow background, thin glowing wireframe lines tracing through the structure, minimalist editorial illustration style, dark moody atmosphere, no objects no people no text no words no letters no typography no labels
+    preset: retro-crt
+    provider: flux
+    parent: crystal-teal
+    examples: []
+  - slug: crystal-teal
+    name: Isometric Crystal (teal)
+    description: Translucent isometric crystal structure of stacked layered panels, teal-dominant. Conveys "framework" or "structure" — good for AI/agent, process, systems-thinking, or architecture posts. Pairs with retro-crt.
+    tags:
+      - ai
+      - process
+      - systems
+      - architecture
+      - workflow
+      - geometric
+    prompt: Abstract geometric data visualization, single translucent isometric crystal structure of stacked layered panels, dominantly cool teal cyan tones with subtle amber accent edges, fading into deep shadow background, thin glowing wireframe lines tracing through the structure, minimalist editorial illustration style, dark moody atmosphere, no objects no people no text no words no letters no typography no labels
+    preset: retro-crt
+    provider: flux
+    examples: []
+  - slug: data-packet-network
+    name: Data Packet Network
+    description: Layered translucent data packets flowing through a wireframe node network. Suggests investigation, protocol analysis, signal tracing. Good for debugging, reverse engineering, networking, and protocol deep-dive posts.
+    tags:
+      - debugging
+      - reverse-engineering
+      - protocol
+      - networking
+      - scsi
+      - midi
+      - investigation
+    prompt: Abstract isometric illustration of layered translucent data packets flowing through a network of glowing wireframe nodes, cool teal cyan dominant with warm amber accent highlights on connection lines, deep shadow background suggesting intense focused analysis, thin glowing trace lines weaving between the nodes, minimalist editorial style, dark moody atmosphere, no objects no people no text no words no letters no typography no labels
+    preset: retro-crt
+    provider: flux
+    examples:
+      - ed8b6e7f-582c-4d0e-8759-8c947802176c
+  - slug: stacked-panels-receding
+    name: Stacked Panels Receding
+    description: Isometric grid of translucent panels receding into deep teal shadow, with thin amber accent lines tracing a path. Conveys accumulation or sequence — good for long-form retrospectives, session journals, or multi-step analyses.
+    tags:
+      - retrospective
+      - analysis
+      - process
+      - narrative
+      - geometric
+    prompt: Abstract geometric data visualization, isometric grid of stacked translucent panels receding into deep teal shadow, thin amber accent lines tracing a path through the panels, minimalist editorial illustration style, dark moody background, subtle depth, no objects no people no text no words no letters no typography no labels
+    preset: retro-crt
+    provider: flux
+    examples: []
