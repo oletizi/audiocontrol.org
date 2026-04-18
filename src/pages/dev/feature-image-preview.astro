@@ -2,6 +2,7 @@
 export const prerender = false;
 
 import { PRESETS, FILTER_REGISTRY } from '../../../scripts/feature-image/filters/index.js';
+import '../../styles/og-preview.css';
 
 if (import.meta.env.PROD) {
   return new Response('Not Found', { status: 404 });
@@ -16,127 +17,702 @@ const filterNames = Object.keys(FILTER_REGISTRY);
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Feature Image Preview — dev</title>
+  <title>Feature Image — Studio</title>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
+  <style is:global>
+    /* ── Design tokens ─────────────────────────────────────────────────────── */
+    :root {
+      --bg-0: #0b0e13;
+      --bg-1: #121620;
+      --bg-2: #181d28;
+      --bg-3: #212836;
+      --edge: #232a37;
+      --edge-hi: #323a4a;
+      --text-0: #e8edf3;
+      --text-1: #c4ced8;
+      --text-2: #8892a0;
+      --text-3: #6b7280;
+      --accent: #2fb8a8;
+      --accent-hi: #3fcdbc;
+      --warning: #f5a142;
+      --danger: #e47373;
+      --success: #5fd1a3;
+      --rating: #f5c542;
+      --drawer-w: 380px;
+      --handle-w: 32px;
+      --radius: 6px;
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      padding: 2rem;
-      background: #141820;
-      color: #c4ced8;
+      padding: 0;
+      background: var(--bg-0);
+      color: var(--text-1);
       font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--accent); }
+
+    button, input, select, textarea { font: inherit; }
+
+    /* ── App chrome ────────────────────────────────────────────────────────── */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.25rem;
+      background: var(--bg-0);
+      border-bottom: 1px solid var(--edge);
+      backdrop-filter: blur(8px);
+    }
+    .app-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-2);
+    }
+    .app-title strong { color: var(--accent); font-weight: 700; letter-spacing: 0.18em; }
+    .app-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      display: flex;
+      gap: 1rem;
+    }
+    .app-meta code { color: var(--text-2); }
+
+    /* ── Stage (main gallery area) ─────────────────────────────────────────── */
+    .stage {
+      min-height: calc(100vh - 3.2rem);
+      padding: 1.25rem calc(var(--handle-w) + 1rem);
+      display: flex;
+      justify-content: center;
+    }
+    .stage-inner {
+      width: 100%;
+      max-width: 780px;
+    }
+    .stage-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--edge);
+    }
+    .stage-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-3);
+    }
+    .stage-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+    }
+
+    /* ── Drawers ───────────────────────────────────────────────────────────── */
+    .drawer {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: calc(var(--drawer-w) + var(--handle-w));
+      display: flex;
+      background: var(--bg-1);
+      border-color: var(--edge);
+      z-index: 10;
+      transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-lg);
+    }
+    .drawer-left  { left: 0;  transform: translateX(calc(-1 * var(--drawer-w))); border-right: 1px solid var(--edge); }
+    .drawer-right { right: 0; flex-direction: row-reverse; transform: translateX(var(--drawer-w)); border-left: 1px solid var(--edge); }
+    .drawer-left.open  { transform: translateX(0); }
+    .drawer-right.open { transform: translateX(0); }
+
+    .drawer-content {
+      width: var(--drawer-w);
+      overflow-y: auto;
+      padding: 1rem 1.1rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--edge-hi) transparent;
+    }
+    .drawer-content::-webkit-scrollbar { width: 8px; }
+    .drawer-content::-webkit-scrollbar-thumb { background: var(--edge-hi); border-radius: 4px; }
+
+    .drawer-handle {
+      width: var(--handle-w);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-1);
+      border: none;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      position: relative;
+    }
+    .drawer-left  .drawer-handle { border-left: 1px solid var(--edge); }
+    .drawer-right .drawer-handle { border-right: 1px solid var(--edge); }
+    .drawer-handle:hover { background: var(--bg-2); color: var(--text-0); }
+    .drawer-handle .handle-label {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      user-select: none;
+    }
+    .drawer-handle .handle-chevron {
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      transition: transform 0.2s ease;
+      color: var(--accent);
+    }
+    .drawer.open .drawer-handle .handle-chevron { transform: rotate(180deg); }
+    .drawer-handle .handle-badge {
+      position: absolute;
+      top: 0.6rem;
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: 1.5rem;
+      padding: 0.1rem 0.35rem;
+      background: var(--accent);
+      color: var(--bg-0);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+      border-radius: 999px;
+      text-align: center;
+      line-height: 1.3;
+      display: none;
+    }
+    .drawer-handle .handle-badge.visible { display: block; }
+
+    .scrim {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 10, 0.55);
+      backdrop-filter: blur(3px);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9;
+      transition: opacity 0.2s ease;
+    }
+    .scrim.visible { opacity: 1; pointer-events: auto; }
+
+    /* ── Drawer content typography ─────────────────────────────────────────── */
+    .drawer h2 {
+      margin: 0 0 0.25rem 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-0);
+      letter-spacing: 0.02em;
+    }
+    .drawer .drawer-sub {
+      margin: 0 0 1rem 0;
+      font-size: 0.75rem;
+      color: var(--text-3);
+      line-height: 1.45;
+    }
+    .section-rule {
+      margin: 1.25rem 0 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--edge);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-3);
+    }
+
+    /* ── Forms ─────────────────────────────────────────────────────────────── */
+    form { display: flex; flex-direction: column; gap: 0.75rem; }
+    label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.8rem; color: var(--text-2); }
+    label > span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-3);
+    }
+    input[type="text"], select, textarea {
+      background: var(--bg-2);
+      color: var(--text-0);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.7rem;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    textarea { min-height: 6rem; resize: vertical; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.5; }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg-1);
+    }
+
+    .filter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
+    .filter-grid label {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--text-1);
+      padding: 0.3rem 0.5rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+    .filter-grid label:hover { border-color: var(--edge-hi); }
+    .filter-grid input[type="checkbox"] { width: auto; margin: 0; accent-color: var(--accent); }
+
+    /* ── Buttons ───────────────────────────────────────────────────────────── */
+    button {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 0.55rem 0.9rem;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: var(--bg-0); }
+    .btn-primary:not(:disabled):hover { background: var(--accent-hi); }
+    .btn-ghost { background: transparent; color: var(--text-2); border-color: var(--edge); }
+    .btn-ghost:hover { background: var(--bg-2); color: var(--text-0); }
+    .btn-danger-ghost { background: transparent; color: var(--danger); border-color: var(--edge); }
+    .btn-danger-ghost:hover { background: rgba(228, 115, 115, 0.08); }
+    .btn-success-ghost { background: transparent; color: var(--success); border-color: var(--edge); }
+    .btn-success-ghost:hover { background: rgba(95, 209, 163, 0.08); }
+    .btn-focus {
+      background: var(--bg-3);
+      color: var(--text-0);
+      border-color: var(--edge-hi);
+    }
+    .btn-focus:hover { background: var(--accent); color: var(--bg-0); border-color: var(--accent); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+    /* ── Template picker ───────────────────────────────────────────────────── */
+    .template-picker { display: flex; gap: 0.3rem; align-items: stretch; }
+    .template-picker select { flex: 1; min-width: 0; }
+    .template-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      margin-top: 0.3rem;
       line-height: 1.5;
     }
-    h1, h2 { font-family: 'JetBrains Mono', monospace; }
-    h1 { margin-top: 0; color: #2fb8a8; }
-    h2 { color: #c4ced8; margin-top: 2rem; }
-    .layout { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; max-width: 1800px; margin: 0 auto; }
-    @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
-    form { display: flex; flex-direction: column; gap: 1rem; }
-    label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: #a0aab4; }
-    label span { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    input, select, textarea {
-      font: inherit;
-      background: #1c2028;
-      color: #e0e6ed;
-      border: 1px solid #2a3038;
-      border-radius: 4px;
-      padding: 0.5rem 0.75rem;
-    }
-    textarea { min-height: 8rem; resize: vertical; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
-    input:focus, select:focus, textarea:focus { outline: 1px solid #2fb8a8; border-color: #2fb8a8; }
-    button {
-      font: inherit;
+    .template-meta strong { color: var(--text-1); }
+    .candidate-pills { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.4rem; }
+    .candidate-pill {
+      padding: 0.15rem 0.45rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      color: var(--text-2);
       font-family: 'JetBrains Mono', monospace;
-      background: #2fb8a8;
-      color: #0a0c10;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 4px;
+      font-size: 0.65rem;
+      border-radius: 999px;
       cursor: pointer;
-      font-weight: 600;
     }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    button:not(:disabled):hover { background: #3fcdbc; }
-    .filter-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-    .filter-list label { flex-direction: row; align-items: center; gap: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-transform: none; letter-spacing: 0; }
-    .filter-list input[type=checkbox] { width: auto; }
-    .hint { color: #6b7280; font-size: 0.8rem; }
-    .err { color: #e47373; background: rgba(228, 115, 115, 0.1); padding: 0.75rem; border-radius: 4px; font-size: 0.85rem; }
-    .gallery-item { border: 1px solid #2a3038; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: #1c2028; }
-    .gallery-item img { max-width: 100%; border-radius: 4px; display: block; }
-    .gallery-item .meta { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #6b7280; }
-    .gallery-item .meta strong { color: #c4ced8; font-weight: 500; }
-    .gallery-item .status { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.7rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
-    .status.generated { background: #2a3038; color: #a0aab4; }
-    .status.approved { background: #1e3a32; color: #5fd1a3; }
-    .status.rejected { background: #3a1e1e; color: #e47373; }
-    .row-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
-    .row-actions button { padding: 0.4rem 0.75rem; font-size: 0.75rem; }
-    .row-actions button.secondary { background: #2a3038; color: #c4ced8; }
-    .row-actions button.secondary:hover { background: #3a4048; }
-    .notes { width: 100%; margin-top: 0.5rem; }
-    .gallery-item .variants { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
-    .gallery-item .variants figure { margin: 0; }
-    .gallery-item .variants figcaption { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; }
-    #status { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; min-height: 1.5em; color: #a0aab4; }
-    #status.working { color: #2fb8a8; }
-    #status.error { color: #e47373; }
-    .workflow-panel { background: #1c2028; border: 1px solid #2a3038; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
-    .workflow-panel h3 { margin: 0 0 0.75rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #2fb8a8; }
-    .workflow-panel.empty h3 { color: #6b7280; }
-    .workflow-item { border-left: 3px solid #2a3038; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; background: #141820; border-radius: 0 4px 4px 0; cursor: pointer; transition: border-color 0.15s; }
-    .workflow-item:hover { border-left-color: #2fb8a8; }
-    .workflow-item.active { border-left-color: #2fb8a8; background: rgba(47, 184, 168, 0.08); }
-    .workflow-item .wf-title { font-weight: 600; font-size: 0.9rem; }
-    .workflow-item .wf-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
-    .workflow-item .wf-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-    .workflow-item .wf-actions button { padding: 0.3rem 0.6rem; font-size: 0.7rem; }
-    .workflow-item.decided { border-left-color: #5fd1a3; }
-    .workflow-item.applied { border-left-color: #6b7280; opacity: 0.6; }
-    .active-wf-banner { background: rgba(47, 184, 168, 0.1); border: 1px solid #2fb8a8; border-radius: 4px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
-    .active-wf-banner button { background: transparent; color: #a0aab4; border: 1px solid #2a3038; padding: 0.3rem 0.6rem; font-size: 0.75rem; }
-    .active-wf-banner button:hover { color: #c4ced8; }
-    .submit-decision { background: #5fd1a3 !important; color: #0a0c10 !important; }
-    .submit-decision:hover { background: #7adcb4 !important; }
-    .stars { display: inline-flex; gap: 2px; font-family: 'JetBrains Mono', monospace; user-select: none; }
-    .stars button { background: transparent; color: #3a4048; padding: 0 2px; font-size: 1rem; cursor: pointer; border: none; line-height: 1; }
-    .stars button.on { color: #f5c542; }
-    .stars button:hover { color: #f5c542; }
-    .template-picker { display: flex; gap: 0.5rem; align-items: stretch; }
-    .template-picker select { flex: 1; }
-    .template-picker button.secondary { background: #2a3038; color: #c4ced8; padding: 0 0.75rem; font-size: 0.75rem; }
-    .candidate-pill { display: inline-block; padding: 0.15rem 0.4rem; margin: 0.15rem 0.15rem 0 0; background: #2a3038; color: #a0aab4; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; border-radius: 3px; cursor: pointer; }
-    .candidate-pill:hover { background: #3a4048; color: #c4ced8; }
-    .candidate-pill.suggested { background: #1e3a32; color: #5fd1a3; }
-    .template-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; }
-    .template-meta strong { color: #c4ced8; }
+    .candidate-pill:hover { border-color: var(--edge-hi); color: var(--text-0); }
+    .candidate-pill.suggested { background: rgba(47, 184, 168, 0.12); border-color: var(--accent); color: var(--accent); }
+
+    /* ── Status line ───────────────────────────────────────────────────────── */
+    #gen-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-2);
+      min-height: 1.3em;
+      margin-top: 0.25rem;
+    }
+    #gen-status.working { color: var(--accent); }
+    #gen-status.error { color: var(--danger); }
+
+    /* ── Workflow panel (right drawer) ─────────────────────────────────────── */
+    .wf-group-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-3);
+      margin: 0.5rem 0 0.4rem;
+    }
+    .wf-group-label.decided { color: var(--success); }
+    .wf-item {
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.5rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-left: 2px solid var(--edge-hi);
+      border-radius: var(--radius);
+      transition: border-color 0.15s;
+    }
+    .wf-item.active { border-left-color: var(--accent); background: rgba(47, 184, 168, 0.06); }
+    .wf-item.decided { border-left-color: var(--success); }
+    .wf-item.applied { border-left-color: var(--text-3); opacity: 0.55; }
+    .wf-item .wf-title { font-size: 0.85rem; font-weight: 500; color: var(--text-0); line-height: 1.3; }
+    .wf-item .wf-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-3); margin-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .wf-item .wf-meta strong { color: var(--text-2); font-weight: 500; }
+    .wf-item .wf-actions { display: flex; gap: 0.35rem; margin-top: 0.5rem; }
+    .wf-item .wf-actions button { padding: 0.3rem 0.55rem; font-size: 0.65rem; }
+    .wf-note { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--success); }
+    .wf-note.muted { color: var(--text-3); }
+
+    .active-wf-banner {
+      background: rgba(47, 184, 168, 0.08);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.85rem;
+      font-size: 0.8rem;
+      color: var(--text-1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .active-wf-banner strong { color: var(--accent); font-weight: 600; }
+    .active-wf-banner button { padding: 0.25rem 0.5rem; font-size: 0.65rem; }
+
+    /* ── Gallery cards (compact) ───────────────────────────────────────────── */
+    .gallery { display: flex; flex-direction: column; gap: 0.85rem; }
+    .gallery .empty-hint {
+      padding: 3rem 1rem;
+      text-align: center;
+      color: var(--text-3);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .card {
+      background: var(--bg-1);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .card:hover { border-color: var(--edge-hi); }
+
+    .card-compact {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 1rem;
+      padding: 0.85rem;
+      align-items: center;
+    }
+    .card-compact .card-thumb {
+      width: 240px;
+      aspect-ratio: 1200 / 630;
+      background: var(--bg-0);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+    }
+    .card-compact .card-thumb img,
+    .card-compact .card-thumb .og-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .card-compact .card-body { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+    .card-compact .card-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-0);
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-compact .card-title em { color: var(--text-3); font-style: italic; font-weight: 400; }
+    .card-compact .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-3);
+      align-items: center;
+    }
+    .card-compact .card-meta strong { color: var(--text-2); font-weight: 500; }
+    .card-compact .card-actions {
+      display: flex;
+      gap: 0.3rem;
+      margin-top: 0.2rem;
+      flex-wrap: wrap;
+    }
+    .card-compact .card-actions button { padding: 0.35rem 0.65rem; font-size: 0.7rem; }
+
+    .status-pill {
+      display: inline-block;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .status-pill.generated { background: var(--bg-3); color: var(--text-2); }
+    .status-pill.approved  { background: rgba(95, 209, 163, 0.15); color: var(--success); }
+    .status-pill.rejected  { background: rgba(228, 115, 115, 0.15); color: var(--danger); }
+
+    .stars { display: inline-flex; gap: 0; user-select: none; }
+    .stars button {
+      background: transparent;
+      color: var(--edge-hi);
+      padding: 0 1px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: none;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .stars button.on { color: var(--rating); }
+    .stars button:hover, .stars button:hover ~ button { color: var(--edge-hi); }
+    .stars:hover button { color: var(--rating); }
+    .stars button:hover ~ button { color: var(--edge-hi); }
+
+    .card-compact .dropdown { position: relative; }
+    .card-compact .dropdown-toggle {
+      background: transparent;
+      color: var(--text-2);
+      border: 1px solid var(--edge);
+      padding: 0.35rem 0.55rem;
+    }
+    .card-compact .dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 4px);
+      min-width: 180px;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 0.25rem;
+      display: none;
+      z-index: 4;
+    }
+    .card-compact .dropdown.open .dropdown-menu { display: block; }
+    .card-compact .dropdown-menu button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      color: var(--text-1);
+      padding: 0.4rem 0.6rem;
+      border: none;
+      font-size: 0.7rem;
+    }
+    .card-compact .dropdown-menu button:hover { background: var(--bg-3); color: var(--text-0); }
+
+    /* ── Card — focused mode ───────────────────────────────────────────────── */
+    .gallery.has-focus { display: block; }
+    .gallery.has-focus .card:not(.focused) { display: none; }
+    .card.focused {
+      border-color: var(--accent);
+      padding: 0;
+    }
+    .card.focused .card-compact { display: none; }
+    .card-focused {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      padding: 1.25rem;
+      gap: 0.85rem;
+    }
+    .card-focused .focus-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .card-focused .focus-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .card-focused .focus-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+    }
+    .card-focused .focus-close {
+      background: var(--bg-2);
+      color: var(--text-2);
+      border: 1px solid var(--edge);
+      padding: 0.3rem 0.55rem;
+      font-size: 0.7rem;
+    }
+    .card-focused .focus-close:hover { background: var(--bg-3); color: var(--text-0); }
+    .card-focused .focus-preview { width: 100%; }
+    .card-focused .og-preview { width: 100%; border-radius: var(--radius); }
+    .card-focused .prompt-line {
+      font-size: 0.78rem;
+      color: var(--text-2);
+      font-style: italic;
+      line-height: 1.4;
+    }
+    .card-focused .full-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      padding: 0.4rem 0;
+      border-top: 1px solid var(--edge);
+      border-bottom: 1px solid var(--edge);
+    }
+    .card-focused .full-meta strong { color: var(--text-1); font-weight: 500; }
+    .card-focused .note-line {
+      font-size: 0.78rem;
+      color: var(--text-2);
+      font-style: italic;
+    }
+    .card-focused .err-line {
+      color: var(--danger);
+      background: rgba(228, 115, 115, 0.08);
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    /* Preview controls (focus mode) */
+    .preview-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+    }
+    .preview-controls .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.85rem;
+      align-items: center;
+    }
+    .preview-controls label {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--text-2);
+    }
+    .preview-controls label.cb { gap: 0.35rem; }
+    .preview-controls label.cb input { width: auto; accent-color: var(--accent); margin: 0; }
+    .preview-controls label > span {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-3);
+    }
+    .preview-controls select {
+      padding: 0.3rem 0.45rem;
+      font-size: 0.7rem;
+      background: var(--bg-1);
+    }
+    .commit-row {
+      margin-top: 0.25rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--edge);
+      justify-content: space-between;
+    }
+    .commit-btn { background: var(--success); color: var(--bg-0); border: none; }
+    .commit-btn:not(:disabled):hover { background: #7adcb4; }
+    .commit-status { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-3); }
+    .commit-status.working { color: var(--accent); }
+    .commit-status.error { color: var(--danger); }
+
+    /* Live-preview static thumbnail (no controls) */
+    .card-thumb .og-preview {
+      pointer-events: none;
+      /* compact thumbnails don't respond to clicks */
+    }
+    .card-thumb .og-preview .og-title,
+    .card-thumb .og-preview .og-subtitle,
+    .card-thumb .og-preview .og-brand-row { pointer-events: none; }
+
+    /* ── Misc ──────────────────────────────────────────────────────────────── */
+    .hint { color: var(--text-3); font-size: 0.75rem; }
+    .err {
+      color: var(--danger);
+      background: rgba(228, 115, 115, 0.1);
+      padding: 0.6rem 0.75rem;
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+    }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.9em; color: var(--text-2); }
+
+    @media (max-width: 640px) {
+      .card-compact { grid-template-columns: 1fr; }
+      .card-compact .card-thumb { width: 100%; }
+      :root { --drawer-w: 300px; }
+    }
   </style>
 </head>
 <body>
-  <h1>feature-image preview</h1>
-  <p class="hint">Dev-only gallery for iterating on prompts and filters. Generation log: <code>.feature-image-history.jsonl</code>. Workflow pipeline: <code>.feature-image-pipeline.jsonl</code>.</p>
+  <header class="app-header">
+    <div class="app-title"><strong>FI</strong> · feature image studio</div>
+    <div class="app-meta">
+      <span>log <code>.feature-image-history.jsonl</code></span>
+      <span>wf <code>.feature-image-pipeline.jsonl</code></span>
+    </div>
+  </header>
 
-  <section class="workflow-panel" id="workflow-panel">
-    <h3>Pending workflows</h3>
-    <div id="workflow-list">Loading…</div>
-  </section>
-
-  <div class="layout">
-    <section>
+  <!-- Left drawer: Generate -->
+  <aside class="drawer drawer-left" id="drawer-generate">
+    <div class="drawer-content">
       <h2>Generate</h2>
+      <p class="drawer-sub">New generation from prompt or template. Output lands in History.</p>
+
       <div id="active-wf-banner" style="display: none;"></div>
+
       <form id="gen-form">
         <label>
-          <span>Template (optional — pre-fills prompt/preset/provider)</span>
+          <span>Template</span>
           <div class="template-picker">
             <select id="template-select"><option value="">(none)</option></select>
-            <button type="button" class="secondary" id="template-fork">Fork</button>
-            <button type="button" class="secondary" id="template-clear">Clear</button>
+            <button type="button" class="btn-ghost" id="template-fork">Fork</button>
+            <button type="button" class="btn-ghost" id="template-clear">Clear</button>
           </div>
           <div id="template-meta" class="template-meta"></div>
-          <div id="candidate-pills"></div>
+          <div id="candidate-pills" class="candidate-pills"></div>
         </label>
 
         <label>
@@ -159,12 +735,12 @@ const filterNames = Object.keys(FILTER_REGISTRY);
             <option value="">(none)</option>
             {presets.map(name => <option value={name}>{name}</option>)}
           </select>
-          <span class="hint">Overrides the filter checkboxes below when set.</span>
+          <span class="hint" style="text-transform: none; letter-spacing: 0; font-family: 'Inter', sans-serif; font-weight: 400;">Overrides filters below when set.</span>
         </label>
 
         <label>
-          <span>Filters (used if Preset is blank)</span>
-          <div class="filter-list">
+          <span>Filters</span>
+          <div class="filter-grid">
             {filterNames.map(name => (
               <label><input type="checkbox" name="filters" value={name} />{name}</label>
             ))}
@@ -172,60 +748,171 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         </label>
 
         <label>
-          <span>Title (optional)</span>
-          <input type="text" id="title" name="title" />
+          <span>Title</span>
+          <input type="text" id="title" name="title" placeholder="optional" />
         </label>
 
         <label>
-          <span>Subtitle (optional)</span>
-          <input type="text" id="subtitle" name="subtitle" />
+          <span>Subtitle</span>
+          <input type="text" id="subtitle" name="subtitle" placeholder="optional" />
         </label>
 
         <label>
-          <span>Formats (when title is set)</span>
+          <span>Formats</span>
           <input type="text" id="formats" name="formats" value="og" placeholder="og,youtube,instagram" />
         </label>
 
-        <button type="submit" id="gen-btn">Generate</button>
-        <div id="status"></div>
+        <button type="submit" id="gen-btn" class="btn-primary">Generate</button>
+        <div id="gen-status"></div>
       </form>
-    </section>
+    </div>
+    <button class="drawer-handle" id="handle-generate" aria-label="Toggle Generate drawer">
+      <span class="handle-chevron" aria-hidden="true">›</span>
+      <span class="handle-label">Generate</span>
+    </button>
+  </aside>
 
-    <section>
-      <h2>History</h2>
-      <div id="gallery">Loading…</div>
-    </section>
-  </div>
+  <!-- Right drawer: Workflows -->
+  <aside class="drawer drawer-right" id="drawer-workflow">
+    <button class="drawer-handle" id="handle-workflow" aria-label="Toggle Workflows drawer">
+      <span class="handle-chevron" aria-hidden="true">‹</span>
+      <span class="handle-label">Workflows</span>
+      <span class="handle-badge" id="handle-workflow-badge">0</span>
+    </button>
+    <div class="drawer-content">
+      <h2>Workflows</h2>
+      <p class="drawer-sub">Async handoffs from Claude via <code>/feature-image-blog</code>. Activate one, iterate in the gallery, then submit a decision.</p>
+      <div id="workflow-list"></div>
+    </div>
+  </aside>
+
+  <div class="scrim" id="scrim"></div>
+
+  <!-- Main stage -->
+  <main class="stage">
+    <div class="stage-inner">
+      <div class="stage-head">
+        <span class="stage-label" id="stage-label">History</span>
+        <span class="stage-count" id="stage-count"></span>
+      </div>
+      <div class="gallery" id="gallery">
+        <div class="empty-hint">Loading…</div>
+      </div>
+    </div>
+  </main>
 
   <script>
+    // ── State ──────────────────────────────────────────────────────────────
     const form = document.getElementById('gen-form');
     const genBtn = document.getElementById('gen-btn');
-    const statusEl = document.getElementById('status');
+    const genStatusEl = document.getElementById('gen-status');
     const galleryEl = document.getElementById('gallery');
+    const stageLabelEl = document.getElementById('stage-label');
+    const stageCountEl = document.getElementById('stage-count');
     const workflowListEl = document.getElementById('workflow-list');
-    const workflowPanelEl = document.getElementById('workflow-panel');
     const activeBannerEl = document.getElementById('active-wf-banner');
+    const scrimEl = document.getElementById('scrim');
 
-    let activeWorkflow = null;  // the currently-selected workflow item
-    let allWorkflows = [];      // cached list
-    let allTemplates = [];      // cached template list
-    let activeTemplate = null;  // the currently-selected template (from picker)
+    const drawerGenerate = document.getElementById('drawer-generate');
+    const drawerWorkflow = document.getElementById('drawer-workflow');
+    const handleGenerate = document.getElementById('handle-generate');
+    const handleWorkflow = document.getElementById('handle-workflow');
+    const wfBadge = document.getElementById('handle-workflow-badge');
+
+    let activeWorkflow = null;
+    let allWorkflows = [];
+    let allTemplates = [];
+    let activeTemplate = null;
+    let focusedEntryId = null;
+    let cachedEntries = [];
+
     const templateSelect = document.getElementById('template-select');
     const templateMeta = document.getElementById('template-meta');
     const candidatePills = document.getElementById('candidate-pills');
 
+    // ── Drawers ────────────────────────────────────────────────────────────
+    function openDrawer(drawer, other) {
+      drawer.classList.add('open');
+      if (other) other.classList.remove('open');
+      updateScrim();
+    }
+    function closeDrawer(drawer) {
+      drawer.classList.remove('open');
+      updateScrim();
+    }
+    function toggleDrawer(drawer, other) {
+      if (drawer.classList.contains('open')) closeDrawer(drawer);
+      else openDrawer(drawer, other);
+    }
+    function updateScrim() {
+      const anyOpen = drawerGenerate.classList.contains('open') || drawerWorkflow.classList.contains('open');
+      scrimEl.classList.toggle('visible', anyOpen);
+    }
+
+    handleGenerate.addEventListener('click', () => toggleDrawer(drawerGenerate, drawerWorkflow));
+    handleWorkflow.addEventListener('click', () => toggleDrawer(drawerWorkflow, drawerGenerate));
+    scrimEl.addEventListener('click', () => {
+      closeDrawer(drawerGenerate);
+      closeDrawer(drawerWorkflow);
+    });
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Escape') return;
+      if (focusedEntryId) {
+        unfocusEntry();
+      } else if (drawerGenerate.classList.contains('open')) {
+        closeDrawer(drawerGenerate);
+      } else if (drawerWorkflow.classList.contains('open')) {
+        closeDrawer(drawerWorkflow);
+      }
+    });
+
+    // Restore drawer states
+    if (localStorage.getItem('fi-drawer-generate') === 'open') openDrawer(drawerGenerate);
+    if (localStorage.getItem('fi-drawer-workflow') === 'open') openDrawer(drawerWorkflow);
+    drawerGenerate.addEventListener('transitionend', () => {
+      localStorage.setItem('fi-drawer-generate', drawerGenerate.classList.contains('open') ? 'open' : 'closed');
+    });
+    drawerWorkflow.addEventListener('transitionend', () => {
+      localStorage.setItem('fi-drawer-workflow', drawerWorkflow.classList.contains('open') ? 'open' : 'closed');
+    });
+
+    // ── Utils ──────────────────────────────────────────────────────────────
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function escapeAttr(s) { return escapeHtml(s); }
+    function fmtDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+
+    // ── Filter presets (mirrored from og-preview.css / OGPreview) ──────────
+    const PRESET_FILTERS = {
+      none:         { grade: 'none',        phosphor: 'off',   vignette: 'off',    scanlines: 'off',   grain: 'off' },
+      subtle:       { grade: 'none',        phosphor: 'off',   vignette: 'subtle', scanlines: 'off',   grain: 'light' },
+      'retro-crt':  { grade: 'crt',         phosphor: 'on',    vignette: 'on',     scanlines: 'on',    grain: 'on' },
+      'teal-amber': { grade: 'teal-amber',  phosphor: 'off',   vignette: 'subtle', scanlines: 'off',   grain: 'light' },
+      'heavy-crt':  { grade: 'heavy',       phosphor: 'heavy', vignette: 'heavy',  scanlines: 'heavy', grain: 'heavy' },
+    };
+
+    // ── Fetchers ───────────────────────────────────────────────────────────
     async function fetchWorkflows() {
       const res = await fetch('/api/dev/feature-image/workflow');
       if (!res.ok) throw new Error(`workflow fetch failed: ${res.status}`);
       return (await res.json()).items;
     }
-
     async function fetchTemplates() {
       const res = await fetch('/api/dev/feature-image/templates');
       if (!res.ok) throw new Error(`templates fetch failed: ${res.status}`);
       return (await res.json()).templates;
     }
+    async function fetchLog() {
+      const res = await fetch('/api/dev/feature-image/log');
+      if (!res.ok) throw new Error(`log fetch failed: ${res.status}`);
+      return (await res.json()).entries;
+    }
 
+    // ── Templates ──────────────────────────────────────────────────────────
     async function refreshTemplates() {
       try {
         allTemplates = await fetchTemplates();
@@ -234,7 +921,6 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         console.error('Could not load templates:', err);
       }
     }
-
     function renderTemplateSelect() {
       const candidateSlugs = new Set(activeWorkflow?.context?.candidateTemplates || []);
       const suggestedSlug = activeWorkflow?.context?.suggestedTemplateSlug;
@@ -252,7 +938,6 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       renderCandidatePills();
       onTemplateChange();
     }
-
     function renderCandidatePills() {
       candidatePills.innerHTML = '';
       const candidates = activeWorkflow?.context?.candidateTemplates;
@@ -265,14 +950,10 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         pill.className = 'candidate-pill' + (slug === suggested ? ' suggested' : '');
         pill.textContent = t.name;
         pill.title = t.description || '';
-        pill.addEventListener('click', () => {
-          templateSelect.value = slug;
-          onTemplateChange();
-        });
+        pill.addEventListener('click', () => { templateSelect.value = slug; onTemplateChange(); });
         candidatePills.appendChild(pill);
       }
     }
-
     function onTemplateChange() {
       const slug = templateSelect.value;
       activeTemplate = slug ? (allTemplates.find(t => t.slug === slug) || null) : null;
@@ -280,15 +961,11 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         document.getElementById('prompt').value = activeTemplate.prompt;
         if (activeTemplate.preset) {
           const presetSel = document.getElementById('preset');
-          if ([...presetSel.options].some(o => o.value === activeTemplate.preset)) {
-            presetSel.value = activeTemplate.preset;
-          }
+          if ([...presetSel.options].some(o => o.value === activeTemplate.preset)) presetSel.value = activeTemplate.preset;
         }
         if (activeTemplate.provider) {
           const providerSel = document.getElementById('provider');
-          if ([...providerSel.options].some(o => o.value === activeTemplate.provider)) {
-            providerSel.value = activeTemplate.provider;
-          }
+          if ([...providerSel.options].some(o => o.value === activeTemplate.provider)) providerSel.value = activeTemplate.provider;
         }
         const fit = activeTemplate.fitness;
         const lineage = activeTemplate.parent ? ` · forked from ${activeTemplate.parent}` : '';
@@ -300,20 +977,14 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         templateMeta.textContent = '';
       }
     }
-
     templateSelect.addEventListener('change', onTemplateChange);
     document.getElementById('template-clear').addEventListener('click', () => {
-      templateSelect.value = '';
-      activeTemplate = null;
-      templateMeta.textContent = '';
+      templateSelect.value = ''; activeTemplate = null; templateMeta.textContent = '';
     });
     document.getElementById('template-fork').addEventListener('click', forkActiveTemplate);
 
     async function forkActiveTemplate() {
-      if (!activeTemplate) {
-        alert('Select a template to fork first.');
-        return;
-      }
+      if (!activeTemplate) { alert('Select a template to fork first.'); return; }
       const newSlug = prompt(`New slug for fork of "${activeTemplate.slug}":`, `${activeTemplate.slug}-v2`);
       if (!newSlug || !newSlug.trim()) return;
       const newName = prompt('Name for the forked template:', `${activeTemplate.name} (variant)`);
@@ -342,10 +1013,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     }
 
     async function saveAsTemplate(entry) {
-      if (!entry.prompt) {
-        alert('This entry has no prompt to save.');
-        return;
-      }
+      if (!entry.prompt) { alert('This entry has no prompt to save.'); return; }
       const slug = prompt('Slug for the new template (e.g. crystal-violet):');
       if (!slug || !slug.trim()) return;
       const name = prompt('Name for the template:', slug);
@@ -362,20 +1030,14 @@ const filterNames = Object.keys(FILTER_REGISTRY);
           body: JSON.stringify({
             action: 'create',
             template: {
-              slug: slug.trim(),
-              name,
-              description,
-              tags,
-              prompt: entry.prompt,
-              preset: entry.preset,
-              provider: entry.provider,
+              slug: slug.trim(), name, description, tags,
+              prompt: entry.prompt, preset: entry.preset, provider: entry.provider,
               examples: [entry.id],
             },
           }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || `status ${res.status}`);
-        // Also tag the entry with the template slug so its rating counts
         await fetch('/api/dev/feature-image/log', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
@@ -403,24 +1065,25 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       }
     }
 
+    // ── Workflow panel ─────────────────────────────────────────────────────
     function renderWorkflowItem(item) {
       const div = document.createElement('div');
-      div.className = 'workflow-item ' + item.state;
+      div.className = 'wf-item ' + item.state;
       if (activeWorkflow && activeWorkflow.id === item.id) div.classList.add('active');
       const postLine = item.context.postPath
-        ? `<span><strong>post:</strong> ${escapeHtml(item.context.postPath)}</span>`
+        ? `<span><strong>post</strong> ${escapeHtml(item.context.postPath)}</span>`
         : '';
       const titleLine = item.context.title ? `<div class="wf-title">${escapeHtml(item.context.title)}</div>` : '<div class="wf-title"><em>untitled workflow</em></div>';
       let actions = '';
       if (item.state === 'open') {
         actions = `
-          <button type="button" data-act="activate">${activeWorkflow && activeWorkflow.id === item.id ? 'Deactivate' : 'Activate'}</button>
-          <button type="button" class="secondary" data-act="cancel">Cancel</button>
+          <button type="button" class="btn-primary" data-act="activate">${activeWorkflow && activeWorkflow.id === item.id ? 'Deactivate' : 'Activate'}</button>
+          <button type="button" class="btn-ghost" data-act="cancel">Cancel</button>
         `;
       } else if (item.state === 'decided') {
-        actions = `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #5fd1a3;">awaiting /feature-image-apply</span>`;
+        actions = `<span class="wf-note">awaiting /feature-image-apply</span>`;
       } else if (item.state === 'applied') {
-        actions = `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #6b7280;">applied</span>`;
+        actions = `<span class="wf-note muted">applied</span>`;
       }
       div.innerHTML = `
         ${titleLine}
@@ -443,15 +1106,11 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     }
 
     function toggleActivate(item) {
-      if (activeWorkflow && activeWorkflow.id === item.id) {
-        activeWorkflow = null;
-      } else {
-        activeWorkflow = item;
-        prefillFromWorkflow(item);
-      }
+      if (activeWorkflow && activeWorkflow.id === item.id) activeWorkflow = null;
+      else { activeWorkflow = item; prefillFromWorkflow(item); }
       renderWorkflowPanel();
       renderActiveBanner();
-      refreshGallery();  // re-render to show/hide per-entry decision buttons
+      refreshGallery();
     }
 
     function prefillFromWorkflow(item) {
@@ -461,10 +1120,10 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       if (ctx.description) document.getElementById('subtitle').value = ctx.description;
       if (ctx.suggestedPreset) {
         const presetSel = document.getElementById('preset');
-        if ([...presetSel.options].some(o => o.value === ctx.suggestedPreset)) {
-          presetSel.value = ctx.suggestedPreset;
-        }
+        if ([...presetSel.options].some(o => o.value === ctx.suggestedPreset)) presetSel.value = ctx.suggestedPreset;
       }
+      // Pop the Generate drawer so user sees the prefilled form
+      openDrawer(drawerGenerate, drawerWorkflow);
     }
 
     async function cancelWorkflow(item) {
@@ -486,40 +1145,38 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     function renderWorkflowPanel() {
       const open = allWorkflows.filter(w => w.state === 'open');
       const decided = allWorkflows.filter(w => w.state === 'decided');
+      const pendingCount = open.length + decided.length;
+      wfBadge.textContent = String(pendingCount);
+      wfBadge.classList.toggle('visible', pendingCount > 0);
+
       workflowListEl.innerHTML = '';
       if (open.length === 0 && decided.length === 0) {
-        workflowPanelEl.classList.add('empty');
-        workflowListEl.innerHTML = '<p class="hint" style="margin: 0;">No pending workflows. Invoke <code>/feature-image-blog &lt;post-path&gt;</code> in Claude Code to start one.</p>';
+        workflowListEl.innerHTML = '<p class="hint">No pending workflows. Invoke <code>/feature-image-blog &lt;post-path&gt;</code> in Claude Code to start one.</p>';
         return;
       }
-      workflowPanelEl.classList.remove('empty');
       if (open.length > 0) {
         const h = document.createElement('div');
-        h.style.cssText = 'font-family: "JetBrains Mono", monospace; font-size: 0.7rem; color: #a0aab4; margin-bottom: 0.4rem;';
-        h.textContent = 'OPEN — click Activate to start working on one';
+        h.className = 'wf-group-label';
+        h.textContent = `Open · ${open.length}`;
         workflowListEl.appendChild(h);
         for (const item of open) workflowListEl.appendChild(renderWorkflowItem(item));
       }
       if (decided.length > 0) {
         const h = document.createElement('div');
-        h.style.cssText = 'font-family: "JetBrains Mono", monospace; font-size: 0.7rem; color: #5fd1a3; margin: 0.75rem 0 0.4rem;';
-        h.textContent = 'DECIDED — waiting for agent to apply';
+        h.className = 'wf-group-label decided';
+        h.textContent = `Decided · ${decided.length} — awaiting agent`;
         workflowListEl.appendChild(h);
         for (const item of decided) workflowListEl.appendChild(renderWorkflowItem(item));
       }
     }
 
     function renderActiveBanner() {
-      if (!activeWorkflow) {
-        activeBannerEl.style.display = 'none';
-        return;
-      }
+      if (!activeWorkflow) { activeBannerEl.style.display = 'none'; return; }
       activeBannerEl.style.display = 'flex';
-      activeBannerEl.className = 'active-wf-banner';
       const title = activeWorkflow.context.title || activeWorkflow.context.postPath || activeWorkflow.id.slice(0, 8);
       activeBannerEl.innerHTML = `
-        <span><strong>Active workflow:</strong> ${escapeHtml(title)} <span style="color:#6b7280">(${activeWorkflow.id.slice(0,8)})</span></span>
-        <button type="button" id="deactivate-btn">Deactivate</button>
+        <span><strong>Active:</strong> ${escapeHtml(title)}</span>
+        <button type="button" class="btn-ghost" id="deactivate-btn">Deactivate</button>
       `;
       document.getElementById('deactivate-btn').addEventListener('click', () => {
         activeWorkflow = null;
@@ -557,11 +1214,9 @@ const filterNames = Object.keys(FILTER_REGISTRY);
             userNotes: notes,
           }),
         });
-        if (!res.ok) {
-          const j = await res.json().catch(() => ({}));
-          throw new Error(j.error || `status ${res.status}`);
-        }
+        if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error || `status ${res.status}`); }
         activeWorkflow = null;
+        unfocusEntry();
         await refreshWorkflows();
         await refreshGallery();
         alert('Decision submitted. Run /feature-image-apply in Claude Code to apply it.');
@@ -570,113 +1225,317 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       }
     }
 
-    async function fetchLog() {
-      const res = await fetch('/api/dev/feature-image/log');
-      if (!res.ok) throw new Error(`log fetch failed: ${res.status}`);
-      return (await res.json()).entries;
+    // ── Gallery rendering ──────────────────────────────────────────────────
+    function focusEntry(id) {
+      focusedEntryId = id;
+      closeDrawer(drawerGenerate);
+      closeDrawer(drawerWorkflow);
+      refreshGallery();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function unfocusEntry() {
+      if (!focusedEntryId) return;
+      focusedEntryId = null;
+      refreshGallery();
     }
 
-    function fmtDate(iso) {
-      const d = new Date(iso);
-      return d.toLocaleString();
+    function buildThumbPreview(entry) {
+      // Prefer the baked composited image as the "current state" thumbnail.
+      const composited = entry.outputs?.composited?.[0];
+      const filtered = entry.outputs?.filtered?.[0];
+      if (composited) return `<img src="${escapeAttr(composited.path)}?t=${Date.now()}" alt="" loading="lazy" />`;
+      if (filtered)  return `<img src="${escapeAttr(filtered)}?t=${Date.now()}" alt="" loading="lazy" />`;
+      const raw = entry.outputs?.raw?.[0];
+      if (raw) return `<img src="${escapeAttr(raw)}?t=${Date.now()}" alt="" loading="lazy" />`;
+      return '<div style="padding: 2rem; text-align: center; color: var(--text-3); font-family: \'JetBrains Mono\', monospace; font-size: 0.7rem;">no output</div>';
     }
 
-    function renderEntry(entry) {
+    function renderCompactCard(entry) {
       const div = document.createElement('div');
-      div.className = 'gallery-item';
+      div.className = 'card';
       div.dataset.id = entry.id;
 
-      const title = entry.title ? `<strong>${escapeHtml(entry.title)}</strong>` : '<em>(no title)</em>';
-      const promptLine = entry.prompt ? `<div style="font-size: 0.85rem; margin: 0.5rem 0; color: #a0aab4;">${escapeHtml(entry.prompt)}</div>` : '';
-      const chain = entry.preset ? `preset: ${entry.preset}` : (entry.filters || '(no filters)');
-      const error = entry.error ? `<div class="err">${escapeHtml(entry.error)}</div>` : '';
-
-      let variantsHtml = '';
-      if (entry.outputs) {
-        const imgs = [];
-        for (const c of (entry.outputs.composited || [])) {
-          imgs.push({ src: c.path, caption: `${c.format}${c.provider ? ` · ${c.provider}` : ''}` });
-        }
-        if (imgs.length === 0) {
-          for (const p of (entry.outputs.filtered || [])) imgs.push({ src: p, caption: 'filtered' });
-        }
-        if (imgs.length === 0) {
-          for (const p of (entry.outputs.raw || [])) imgs.push({ src: p, caption: 'raw' });
-        }
-        if (imgs.length > 0) {
-          variantsHtml = '<div class="variants">' + imgs.map(i =>
-            `<figure><img src="${escapeAttr(i.src)}?t=${Date.now()}" alt="" loading="lazy"><figcaption>${escapeHtml(i.caption)}</figcaption></figure>`
-          ).join('') + '</div>';
-        }
-      }
-
-      const notes = entry.notes ? `<div style="font-size: 0.85rem; margin-top: 0.5rem; color: #a0aab4; font-style: italic;">${escapeHtml(entry.notes)}</div>` : '';
-
-      const decisionBtn = activeWorkflow && entry.status !== 'rejected' && (entry.outputs.composited.length > 0 || entry.outputs.filtered.length > 0)
-        ? `<button type="button" class="submit-decision" data-action="decide">Submit for workflow ${activeWorkflow.id.slice(0,8)}</button>`
-        : '';
-
+      const titleHtml = entry.title ? escapeHtml(entry.title) : '<em>(no title)</em>';
+      const chain = entry.preset ? `preset ${entry.preset}` : (entry.filters || 'no filters');
       const starsHtml = '<span class="stars">' + [1,2,3,4,5].map(n =>
         `<button type="button" class="${entry.rating && entry.rating >= n ? 'on' : ''}" data-action="rate" data-rate="${n}">★</button>`
       ).join('') + '</span>';
 
-      const tplLabel = entry.templateSlug ? `<span><strong>tpl:</strong> ${escapeHtml(entry.templateSlug)}</span>` : '';
-
       div.innerHTML = `
-        ${error}
-        ${title}
-        ${promptLine}
-        ${variantsHtml}
-        <div class="meta">
-          <span>${fmtDate(entry.timestamp)}</span>
-          <span><strong>provider:</strong> ${escapeHtml(entry.provider || '-')}</span>
-          <span><strong>${escapeHtml(chain)}</strong></span>
-          ${tplLabel}
-          <span><strong>duration:</strong> ${entry.durationMs}ms</span>
-          <span class="status ${entry.status}">${entry.status}</span>
-          ${starsHtml}
-        </div>
-        ${notes}
-        <div class="row-actions">
-          ${decisionBtn}
-          <button type="button" data-status="approved" class="secondary">Approve</button>
-          <button type="button" data-status="rejected" class="secondary">Reject</button>
-          <button type="button" data-action="note" class="secondary">Edit note</button>
-          <button type="button" data-action="copy" class="secondary">Copy as input</button>
-          <button type="button" data-action="save-template" class="secondary">Save as template</button>
+        <div class="card-compact">
+          <div class="card-thumb">${buildThumbPreview(entry)}</div>
+          <div class="card-body">
+            <div class="card-title">${titleHtml}</div>
+            <div class="card-meta">
+              <span>${fmtDate(entry.timestamp)}</span>
+              <span><strong>${escapeHtml(entry.provider || '-')}</strong></span>
+              <span>${escapeHtml(chain)}</span>
+              <span class="status-pill ${entry.status}">${entry.status}</span>
+              ${starsHtml}
+            </div>
+            <div class="card-actions">
+              <button type="button" class="btn-focus" data-action="focus">Focus ⟶</button>
+              <button type="button" class="btn-success-ghost" data-status="approved">Approve</button>
+              <button type="button" class="btn-danger-ghost" data-status="rejected">Reject</button>
+              <div class="dropdown">
+                <button type="button" class="dropdown-toggle" data-action="toggle-menu" aria-label="More">⋯</button>
+                <div class="dropdown-menu">
+                  <button type="button" data-action="note">Edit note</button>
+                  <button type="button" data-action="copy">Copy as input</button>
+                  <button type="button" data-action="save-template">Save as template</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       `;
 
-      div.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', () => {
+      wireCardActions(div, entry);
+      return div;
+    }
+
+    function renderFocusedCard(entry) {
+      const div = document.createElement('div');
+      div.className = 'card focused';
+      div.dataset.id = entry.id;
+
+      const rawPath = entry.outputs?.raw?.[0] ?? null;
+      const titleHtml = entry.title ? escapeHtml(entry.title) : '<em>(no title)</em>';
+      const chain = entry.preset ? `preset ${entry.preset}` : (entry.filters || 'no filters');
+      const tplLabel = entry.templateSlug ? `<span><strong>tpl</strong> ${escapeHtml(entry.templateSlug)}</span>` : '';
+      const starsHtml = '<span class="stars">' + [1,2,3,4,5].map(n =>
+        `<button type="button" class="${entry.rating && entry.rating >= n ? 'on' : ''}" data-action="rate" data-rate="${n}">★</button>`
+      ).join('') + '</span>';
+      const err = entry.error ? `<div class="err-line">${escapeHtml(entry.error)}</div>` : '';
+      const prompt = entry.prompt ? `<div class="prompt-line">${escapeHtml(entry.prompt)}</div>` : '';
+      const notes = entry.notes ? `<div class="note-line">note: ${escapeHtml(entry.notes)}</div>` : '';
+
+      const decisionBtn = activeWorkflow && entry.status !== 'rejected' && ((entry.outputs?.composited?.length || 0) > 0 || (entry.outputs?.filtered?.length || 0) > 0)
+        ? `<button type="button" class="btn-primary" data-action="decide">Submit for workflow ${activeWorkflow.id.slice(0,8)}</button>`
+        : '';
+
+      const preview = rawPath ? buildLivePreviewHtml(entry, rawPath) : buildThumbPreview(entry);
+
+      div.innerHTML = `
+        <div class="card-focused">
+          <div class="focus-head">
+            <div>
+              <div class="focus-title">${titleHtml}</div>
+              <div class="focus-meta">${fmtDate(entry.timestamp)} · ${escapeHtml(entry.provider || '-')}</div>
+            </div>
+            <button type="button" class="focus-close" data-action="unfocus">ESC · Close</button>
+          </div>
+          ${err}
+          ${prompt}
+          <div class="focus-preview">${preview}</div>
+          <div class="full-meta">
+            <span>${escapeHtml(chain)}</span>
+            ${tplLabel}
+            <span><strong>duration</strong> ${entry.durationMs}ms</span>
+            <span class="status-pill ${entry.status}">${entry.status}</span>
+            ${starsHtml}
+          </div>
+          ${notes}
+          <div class="btn-row">
+            ${decisionBtn}
+            <button type="button" class="btn-success-ghost" data-status="approved">Approve</button>
+            <button type="button" class="btn-danger-ghost" data-status="rejected">Reject</button>
+            <button type="button" class="btn-ghost" data-action="note">Edit note</button>
+            <button type="button" class="btn-ghost" data-action="copy">Copy as input</button>
+            <button type="button" class="btn-ghost" data-action="save-template">Save as template</button>
+          </div>
+        </div>
+      `;
+
+      wireCardActions(div, entry);
+      if (rawPath) wireLivePreview(div, entry);
+      return div;
+    }
+
+    function wireCardActions(root, entry) {
+      root.querySelectorAll('[data-action], [data-status]').forEach(btn => {
+        // Skip controls inside the live preview (they're wired separately).
+        if (btn.closest('.preview-controls')) return;
+        if (btn.closest('.og-text-panel')) return;
+        btn.addEventListener('click', (ev) => {
+          ev.stopPropagation();
           const action = btn.dataset.action;
           const newStatus = btn.dataset.status;
           if (newStatus) return updateStatus(entry.id, newStatus);
+          if (action === 'focus') return focusEntry(entry.id);
+          if (action === 'unfocus') return unfocusEntry();
           if (action === 'note') return editNote(entry);
           if (action === 'copy') return copyAsInput(entry);
           if (action === 'decide') return submitDecision(entry.id);
           if (action === 'rate') return rateEntry(entry, parseInt(btn.dataset.rate, 10));
           if (action === 'save-template') return saveAsTemplate(entry);
+          if (action === 'toggle-menu') {
+            const dd = btn.closest('.dropdown');
+            dd.classList.toggle('open');
+            // close on next outside click
+            const outside = (e) => { if (!dd.contains(e.target)) { dd.classList.remove('open'); document.removeEventListener('click', outside); } };
+            setTimeout(() => document.addEventListener('click', outside), 0);
+          }
+        });
+      });
+    }
+
+    // ── Live preview (focus mode) ──────────────────────────────────────────
+    function buildLivePreviewHtml(entry, rawPath) {
+      const preset = entry.preset && PRESET_FILTERS[entry.preset] ? entry.preset : 'retro-crt';
+      const f = PRESET_FILTERS[preset];
+      const title = entry.title ?? '';
+      const subtitle = entry.subtitle ?? '';
+      return `
+        <div class="live-preview">
+          <div class="og-preview editable"
+               data-format="og"
+               data-grade="${f.grade}"
+               data-phosphor="${f.phosphor}"
+               data-vignette="${f.vignette}"
+               data-scanlines="${f.scanlines}"
+               data-grain="${f.grain}"
+               data-overlay="on"
+               data-preset="${preset}">
+            <img class="og-bg" src="${escapeAttr(rawPath)}" alt="" />
+            <div class="og-layer og-vignette"></div>
+            <div class="og-layer og-scanlines"></div>
+            <div class="og-layer og-grain"></div>
+            <div class="og-text-panel">
+              <input class="og-title-input" type="text" value="${escapeAttr(title)}" placeholder="Title" />
+              <textarea class="og-subtitle-input" rows="1" placeholder="Subtitle">${escapeHtml(subtitle)}</textarea>
+              <div class="og-brand-row">
+                <img class="og-logo" src="/favicon.svg" alt="" />
+                <div class="og-brand-text">audiocontrol.org</div>
+              </div>
+            </div>
+          </div>
+          <div class="preview-controls">
+            <div class="control-row">
+              <label><span>Format</span><select data-ctl="format"><option value="og">og</option><option value="youtube">youtube</option><option value="instagram">instagram</option></select></label>
+              <label><span>Preset</span><select data-ctl="preset">${Object.keys(PRESET_FILTERS).map(n => `<option value="${n}"${n === preset ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+              <label class="cb"><input type="checkbox" data-ctl="overlay" checked /> Overlay</label>
+            </div>
+            <div class="control-row">
+              <label><span>Grade</span><select data-ctl="grade">${selectOptions(['none','crt','teal-amber','heavy'], f.grade)}</select></label>
+              <label><span>Phosphor</span><select data-ctl="phosphor">${selectOptions(['off','on','heavy'], f.phosphor)}</select></label>
+              <label><span>Vignette</span><select data-ctl="vignette">${selectOptions(['off','subtle','on','heavy'], f.vignette)}</select></label>
+              <label><span>Scanlines</span><select data-ctl="scanlines">${selectOptions(['off','on','heavy'], f.scanlines)}</select></label>
+              <label><span>Grain</span><select data-ctl="grain">${selectOptions(['off','light','on','heavy'], f.grain)}</select></label>
+            </div>
+            <div class="control-row commit-row">
+              <label class="cb"><input type="checkbox" data-ctl="all-formats" /> Bake og + youtube + instagram</label>
+              <div class="btn-row">
+                <span class="commit-status"></span>
+                <button type="button" class="commit-btn">Commit → bake PNGs</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    function selectOptions(values, selected) {
+      return values.map(v => `<option value="${v}"${v === selected ? ' selected' : ''}>${v}</option>`).join('');
+    }
+    function autosizeTextarea(ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+
+    function wireLivePreview(entryDiv, entry) {
+      const previewEl = entryDiv.querySelector('.og-preview');
+      const controls = entryDiv.querySelector('.preview-controls');
+      if (!previewEl || !controls) return;
+
+      const subtitleTa = previewEl.querySelector('.og-subtitle-input');
+      if (subtitleTa) {
+        requestAnimationFrame(() => autosizeTextarea(subtitleTa));
+        subtitleTa.addEventListener('input', () => autosizeTextarea(subtitleTa));
+        if (typeof ResizeObserver !== 'undefined') {
+          const ro = new ResizeObserver(() => autosizeTextarea(subtitleTa));
+          ro.observe(previewEl);
+        }
+      }
+
+      const filterCtls = ['grade', 'phosphor', 'vignette', 'scanlines', 'grain'];
+      controls.querySelectorAll('[data-ctl]').forEach(el => {
+        el.addEventListener('input', () => {
+          const ctl = el.dataset.ctl;
+          if (ctl === 'format') previewEl.dataset.format = el.value;
+          else if (ctl === 'preset') {
+            const preset = el.value;
+            const f = PRESET_FILTERS[preset];
+            if (!f) return;
+            previewEl.dataset.preset = preset;
+            for (const k of filterCtls) {
+              previewEl.dataset[k] = f[k];
+              const sel = controls.querySelector(`[data-ctl="${k}"]`);
+              if (sel) sel.value = f[k];
+            }
+          } else if (ctl === 'overlay') previewEl.dataset.overlay = el.checked ? 'on' : 'off';
+          else if (filterCtls.includes(ctl)) previewEl.dataset[ctl] = el.value;
         });
       });
 
-      return div;
+      const commitBtn = controls.querySelector('.commit-btn');
+      const statusEl = controls.querySelector('.commit-status');
+      commitBtn.addEventListener('click', () => commitLivePreview(entry, previewEl, controls, commitBtn, statusEl));
     }
 
-    function escapeHtml(s) {
-      return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    }
-    function escapeAttr(s) { return escapeHtml(s); }
+    async function commitLivePreview(entry, previewEl, controls, commitBtn, statusEl) {
+      const titleInput = previewEl.querySelector('.og-title-input');
+      const subtitleInput = previewEl.querySelector('.og-subtitle-input');
+      const title = titleInput ? titleInput.value : '';
+      const subtitle = subtitleInput ? subtitleInput.value : '';
+      const overlay = previewEl.dataset.overlay === 'on';
+      const preset = previewEl.dataset.preset || undefined;
+      const filters = {};
+      for (const k of ['grade', 'phosphor', 'vignette', 'scanlines', 'grain']) filters[k] = previewEl.dataset[k];
+      const allFormatsCb = controls.querySelector('[data-ctl="all-formats"]');
+      const formats = allFormatsCb && allFormatsCb.checked ? ['og', 'youtube', 'instagram'] : [previewEl.dataset.format || 'og'];
 
+      commitBtn.disabled = true;
+      statusEl.textContent = 'Baking…';
+      statusEl.className = 'commit-status working';
+      try {
+        const res = await fetch('/api/dev/feature-image/recomposite', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ sourceEntryId: entry.id, title, subtitle, preset, filters, overlay, formats }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || `status ${res.status}`);
+        statusEl.textContent = `Baked ${formats.length} format${formats.length === 1 ? '' : 's'} in ${json.entry.durationMs}ms.`;
+        statusEl.className = 'commit-status';
+        await refreshGallery();
+      } catch (err) {
+        statusEl.textContent = `Error: ${err.message}`;
+        statusEl.className = 'commit-status error';
+      } finally {
+        commitBtn.disabled = false;
+      }
+    }
+
+    // ── Gallery refresh ────────────────────────────────────────────────────
     async function refreshGallery() {
       try {
-        const entries = await fetchLog();
+        cachedEntries = await fetchLog();
+        stageCountEl.textContent = `${cachedEntries.length} ${cachedEntries.length === 1 ? 'entry' : 'entries'}`;
         galleryEl.innerHTML = '';
-        if (entries.length === 0) {
-          galleryEl.innerHTML = '<p class="hint">No generations yet.</p>';
+        galleryEl.classList.toggle('has-focus', !!focusedEntryId);
+        if (cachedEntries.length === 0) {
+          stageLabelEl.textContent = 'History';
+          galleryEl.innerHTML = '<div class="empty-hint">No generations yet. Open the Generate drawer to create one.</div>';
           return;
         }
-        for (const entry of entries) galleryEl.appendChild(renderEntry(entry));
+        if (focusedEntryId) {
+          const entry = cachedEntries.find(e => e.id === focusedEntryId);
+          if (!entry) { focusedEntryId = null; galleryEl.classList.remove('has-focus'); }
+          else {
+            stageLabelEl.textContent = 'Focus';
+            galleryEl.appendChild(renderFocusedCard(entry));
+            return;
+          }
+        }
+        stageLabelEl.textContent = 'History';
+        for (const entry of cachedEntries) galleryEl.appendChild(renderCompactCard(entry));
       } catch (err) {
         galleryEl.innerHTML = `<div class="err">Could not load log: ${escapeHtml(err.message)}</div>`;
       }
@@ -726,9 +1585,10 @@ const filterNames = Object.keys(FILTER_REGISTRY);
           if (picks.includes(cb.value)) cb.checked = true;
         });
       }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      openDrawer(drawerGenerate, drawerWorkflow);
     }
 
+    // ── Generate form ──────────────────────────────────────────────────────
     form.addEventListener('submit', async (ev) => {
       ev.preventDefault();
       const formData = new FormData(form);
@@ -744,13 +1604,13 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         templateSlug: activeTemplate?.slug,
       };
       if (!body.prompt) {
-        statusEl.textContent = 'Prompt is required.';
-        statusEl.className = 'error';
+        genStatusEl.textContent = 'Prompt is required.';
+        genStatusEl.className = 'error';
         return;
       }
       genBtn.disabled = true;
-      statusEl.textContent = 'Generating… (can take 30-60s for AI providers)';
-      statusEl.className = 'working';
+      genStatusEl.textContent = 'Generating… (can take 30-60s for AI providers)';
+      genStatusEl.className = 'working';
       try {
         const res = await fetch('/api/dev/feature-image/generate', {
           method: 'POST',
@@ -759,22 +1619,21 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || `status ${res.status}`);
-        statusEl.textContent = `Done in ${json.entry.durationMs}ms.`;
-        statusEl.className = '';
+        genStatusEl.textContent = `Done in ${json.entry.durationMs}ms.`;
+        genStatusEl.className = '';
         await refreshGallery();
       } catch (err) {
-        statusEl.textContent = `Error: ${err.message}`;
-        statusEl.className = 'error';
+        genStatusEl.textContent = `Error: ${err.message}`;
+        genStatusEl.className = 'error';
       } finally {
         genBtn.disabled = false;
       }
     });
 
+    // ── Boot ───────────────────────────────────────────────────────────────
     refreshTemplates();
     refreshWorkflows();
     refreshGallery();
-
-    // Auto-refresh workflows every 5 seconds so new items enqueued by the agent appear
     setInterval(refreshWorkflows, 5000);
   </script>
 </body>

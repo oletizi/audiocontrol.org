@@ -1,0 +1,114 @@
+---
+/*
+ * OGPreview — a live DOM rendering of a feature image. Used both in the
+ * gallery (editable) and in the bake route (rasterized by Playwright).
+ * Filter state is driven by data-* attributes on the root element so
+ * controls can flip them at runtime without re-rendering.
+ */
+
+export interface FilterState {
+  grade?: 'none' | 'crt' | 'heavy' | 'teal-amber';
+  phosphor?: 'off' | 'on' | 'heavy';
+  vignette?: 'off' | 'subtle' | 'on' | 'heavy';
+  scanlines?: 'off' | 'on' | 'heavy';
+  grain?: 'off' | 'light' | 'on' | 'heavy';
+}
+
+export type PresetName = 'none' | 'subtle' | 'retro-crt' | 'teal-amber' | 'heavy-crt';
+
+export function presetToFilters(preset: PresetName): FilterState {
+  switch (preset) {
+    case 'none':
+      return { grade: 'none', phosphor: 'off', vignette: 'off', scanlines: 'off', grain: 'off' };
+    case 'subtle':
+      return { grade: 'none', phosphor: 'off', vignette: 'subtle', scanlines: 'off', grain: 'light' };
+    case 'retro-crt':
+      return { grade: 'crt', phosphor: 'on', vignette: 'on', scanlines: 'on', grain: 'on' };
+    case 'teal-amber':
+      return { grade: 'teal-amber', phosphor: 'off', vignette: 'subtle', scanlines: 'off', grain: 'light' };
+    case 'heavy-crt':
+      return { grade: 'heavy', phosphor: 'heavy', vignette: 'heavy', scanlines: 'heavy', grain: 'heavy' };
+  }
+}
+
+interface Props {
+  bgSrc: string;
+  title?: string;
+  subtitle?: string;
+  format?: 'og' | 'youtube' | 'instagram';
+  filters?: FilterState;
+  preset?: PresetName;
+  overlay?: boolean;
+  editable?: boolean;
+  id?: string;
+  logoSrc?: string;
+  width?: number;
+  height?: number;
+}
+
+const {
+  bgSrc,
+  title = '',
+  subtitle = '',
+  format = 'og',
+  filters,
+  preset,
+  overlay = true,
+  editable = false,
+  id,
+  logoSrc = '/favicon.svg',
+  width,
+  height,
+} = Astro.props;
+
+const effective: Required<FilterState> = {
+  grade: 'none',
+  phosphor: 'off',
+  vignette: 'off',
+  scanlines: 'off',
+  grain: 'off',
+  ...(preset ? presetToFilters(preset) : {}),
+  ...(filters ?? {}),
+};
+
+const inlineDims = width && height
+  ? `width: ${width}px; height: ${height}px; aspect-ratio: ${width} / ${height};`
+  : undefined;
+---
+
+<div
+  class:list={['og-preview', editable && 'editable']}
+  data-format={format}
+  data-grade={effective.grade}
+  data-phosphor={effective.phosphor}
+  data-vignette={effective.vignette}
+  data-scanlines={effective.scanlines}
+  data-grain={effective.grain}
+  data-overlay={overlay ? 'on' : 'off'}
+  data-preset={preset ?? ''}
+  id={id}
+  style={inlineDims}
+>
+  <img class="og-bg" src={bgSrc} alt="" />
+  <div class="og-layer og-vignette"></div>
+  <div class="og-layer og-scanlines"></div>
+  <div class="og-layer og-grain"></div>
+
+  <div class="og-text-panel">
+    {editable ? (
+      <Fragment>
+        <input class="og-title-input" type="text" value={title} placeholder="Title" />
+        <textarea class="og-subtitle-input" rows="3" placeholder="Subtitle">{subtitle}</textarea>
+      </Fragment>
+    ) : (
+      <Fragment>
+        <div class="og-title">{title}</div>
+        {subtitle && <div class="og-subtitle">{subtitle}</div>}
+      </Fragment>
+    )}
+    <div class="og-brand-row">
+      <img class="og-logo" src={logoSrc} alt="" />
+      <div class="og-brand-text">audiocontrol.org</div>
+    </div>
+  </div>
+</div>

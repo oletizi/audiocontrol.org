@@ -1,0 +1,188 @@
+/*
+ * OG Preview — shared stylesheet for live DOM preview and bake route.
+ * Uses container-query width units (cqw) so pixel-scale is identical
+ * at 1200×630 (OG), 1280×720 (YouTube), 1080×1080 (Instagram), or any
+ * scaled-down preview. Drives all filter primitives with data-* attrs.
+ */
+
+.og-preview {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: var(--og-aspect, 1200 / 630);
+  overflow: hidden;
+  container-type: inline-size;
+  background: #0a0c10;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #c4ced8;
+  --og-bg-filter: none;
+  --og-bg-blur: 0;
+}
+
+.og-preview .og-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: var(--og-bg-filter) blur(var(--og-bg-blur));
+}
+
+.og-preview .og-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ── Grade (color) variants — applied to bg via CSS filter chain ── */
+.og-preview[data-grade="crt"]        { --og-bg-filter: saturate(0.9) hue-rotate(4deg); }
+.og-preview[data-grade="heavy"]      { --og-bg-filter: saturate(1.05); }
+.og-preview[data-grade="teal-amber"] { --og-bg-filter: saturate(0.85) hue-rotate(-6deg) brightness(1.02); }
+.og-preview[data-grade="none"]       { --og-bg-filter: none; }
+
+/* ── Phosphor (Gaussian blur on bg) ── */
+.og-preview[data-phosphor="on"]    { --og-bg-blur: 0.12cqw; }
+.og-preview[data-phosphor="heavy"] { --og-bg-blur: 0.18cqw; }
+
+/* ── Vignette overlay (radial darkening) ── */
+.og-preview[data-vignette="subtle"] .og-vignette {
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.35) 100%);
+}
+.og-preview[data-vignette="on"] .og-vignette {
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.55) 100%);
+}
+.og-preview[data-vignette="heavy"] .og-vignette {
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.7) 100%);
+}
+
+/* ── Scanlines overlay ── */
+.og-preview[data-scanlines="on"] .og-scanlines {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.4) 0 0.17cqw,
+    transparent 0.17cqw 0.42cqw
+  );
+}
+.og-preview[data-scanlines="heavy"] .og-scanlines {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.55) 0 0.25cqw,
+    transparent 0.25cqw 0.5cqw
+  );
+}
+
+/* ── Grain overlay (SVG fractal noise data URI) ── */
+.og-preview .og-grain {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/></svg>");
+  background-repeat: repeat;
+  background-size: 12cqw;
+  mix-blend-mode: overlay;
+  opacity: 0;
+}
+.og-preview[data-grain="light"] .og-grain { opacity: 0.05; }
+.og-preview[data-grain="on"]    .og-grain { opacity: 0.08; }
+.og-preview[data-grain="heavy"] .og-grain { opacity: 0.12; }
+
+/* ── Text overlay panel (bottom) ── */
+.og-preview .og-text-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 5cqw;
+  background: rgba(10, 12, 16, 0.82);
+  border-top: 0.25cqw solid #2fb8a8;
+  display: flex;
+  flex-direction: column;
+  gap: 1.3cqw;
+  z-index: 2;
+}
+
+.og-preview[data-overlay="off"] .og-text-panel {
+  display: none;
+}
+
+.og-preview .og-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: #c4ced8;
+  font-size: 4.3cqw;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.og-preview .og-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: #6b7280;
+  font-size: 2.5cqw;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.og-preview .og-subtitle:empty,
+.og-preview .og-title:empty {
+  display: none;
+}
+
+.og-preview .og-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  margin-top: 0.6cqw;
+}
+
+.og-preview .og-logo {
+  width: 2.4cqw;
+  height: 2.4cqw;
+  object-fit: contain;
+}
+
+.og-preview .og-brand-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 1.8cqw;
+  color: #6b7280;
+  letter-spacing: 0.01em;
+}
+
+/* ── Editable inputs (in gallery only) inherit OG styling cleanly ── */
+.og-preview .og-title-input,
+.og-preview .og-subtitle-input {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  resize: none;
+  outline: none;
+  overflow: hidden;
+}
+
+.og-preview .og-title-input {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: #c4ced8;
+  font-size: 4.3cqw;
+  line-height: 1.25;
+}
+
+.og-preview .og-subtitle-input {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: #6b7280;
+  font-size: 2.5cqw;
+  line-height: 1.3;
+}
+
+.og-preview.editable .og-title-input:focus,
+.og-preview.editable .og-subtitle-input:focus {
+  outline: 0.15cqw solid #2fb8a8;
+  outline-offset: 0.2cqw;
+}
+
+/* ── Aspect ratio variants ── */
+.og-preview[data-format="og"]        { --og-aspect: 1200 / 630; }
+.og-preview[data-format="youtube"]   { --og-aspect: 1280 / 720; }
+.og-preview[data-format="instagram"] { --og-aspect: 1 / 1; }

@@ -1,0 +1,87 @@
+---
+export const prerender = false;
+
+import OGPreview, { type PresetName, type FilterState } from '../../components/dev/OGPreview.astro';
+import { readLog } from '../../../scripts/feature-image/log.js';
+import '../../styles/og-preview.css';
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+
+const url = Astro.url;
+const p = url.searchParams;
+
+const entryId = p.get('entry');
+const rawParam = p.get('raw');
+const format = (p.get('format') as 'og' | 'youtube' | 'instagram') || 'og';
+const title = p.get('title') ?? '';
+const subtitle = p.get('subtitle') ?? '';
+const preset = (p.get('preset') as PresetName | null) || undefined;
+const overlay = p.get('overlay') !== 'off';
+
+const filterKeys = ['grade', 'phosphor', 'vignette', 'scanlines', 'grain'] as const;
+const filters: FilterState = {};
+for (const k of filterKeys) {
+  const v = p.get(k);
+  if (v) (filters as Record<string, string>)[k] = v;
+}
+
+const dims: Record<string, { w: number; h: number }> = {
+  og: { w: 1200, h: 630 },
+  youtube: { w: 1280, h: 720 },
+  instagram: { w: 1080, h: 1080 },
+};
+const { w, h } = dims[format] ?? dims.og;
+
+let bgSrc = rawParam ?? '';
+if (!bgSrc && entryId) {
+  const entries = await readLog();
+  const entry = entries.find(e => e.id === entryId);
+  if (!entry) {
+    return new Response(`Entry ${entryId} not found in history`, { status: 404 });
+  }
+  const raw = entry.outputs?.raw?.[0];
+  if (!raw) {
+    return new Response(`Entry ${entryId} has no raw output`, { status: 404 });
+  }
+  bgSrc = raw;
+}
+if (!bgSrc) {
+  return new Response('Must provide entry=<id> or raw=<path>', { status: 400 });
+}
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Feature Image Bake — {format}</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@700&display=swap" rel="stylesheet" />
+  <style set:html={`
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      overflow: hidden;
+    }
+    body {
+      width: ${w}px;
+      height: ${h}px;
+    }
+  `}></style>
+</head>
+<body>
+  <OGPreview
+    bgSrc={bgSrc}
+    title={title}
+    subtitle={subtitle}
+    format={format}
+    preset={preset}
+    filters={filters}
+    overlay={overlay}
+    width={w}
+    height={h}
+  />
+</body>
+</html>
