@@ -1,45 +1,63 @@
 ---
 layout: ../../../layouts/BlogLayout.astro
-title: "Feature Images on Autopilot"
-description: "An AI-generation pipeline for blog feature images with a lightweight dashboard, a JSONL work queue, and Claude Code as the backend. Plus a preview of evolving prompts by artificial selection."
+title: "Automating Around a Design Skills Gap"
+description: "The older feature images on this site are rough. I'm not a designer and I'm not trying to become one. Closing the skills gap with automation, dropping the friction of shipping posts, and growing a design system by artificial selection."
 date: "April 2026"
-datePublished: "2026-04-17"
-dateModified: "2026-04-17"
+datePublished: "2026-04-18"
+dateModified: "2026-04-18"
 author: "Orion Letizi"
 ---
 
-# Feature Images on Autopilot
+# Automating Around a Design Skills Gap
 
-Every blog post needs a feature image. The hand-crafted version: pick a photo, add a title overlay in Figma, export three formats, multiply by every post you ship — and watch the brand drift because nobody remembers which lavender accent went on which post.
+Scroll through the older posts on this site and the feature images give away the truth: I made them by hand, I'm not a designer, and it shows. Some are passable. Most are rough. The set doesn't cohere. The brand drifted in whichever direction the current panic pointed me.
 
-AI can handle the background generation now. That's table stakes. The harder problem is the pipeline around it: iterating on prompts until the image is actually on-brand, keeping a human in the loop without making them open three apps, and not inventing a new workflow system just to manage the queue.
+This isn't a post about how we solved that. It's a post about how we're trying to automate our way out of it — using AI generation, a lightweight iteration workflow, and, most importantly, an evolving design system cultivated by artificial selection.
 
-This post walks through how we solved that for audiocontrol.org: AI generation, a filter chain, branded overlays, and multi-format output — wired together through a dashboard that has no database, no framework, and uses Claude Code as the backend.
+The visible results will lag. The older images are still there. Some of the newer ones are better. The point of what follows is the *approach*: AI as the generator, a cheap iteration surface so a non-designer can actually pick good ones, and selection pressure as the slow work of converging on a visual language I couldn't have written down upfront.
 
-## The pipeline
+## The skills gap is real, and I'm not going to close it by studying
 
-Generating one feature image runs through four stages:
+I've tried to get better at visual design. It never sticks. Not enough reps, not enough taste built up, not enough interest in the parts that aren't technical. Every one-off hand-made feature image is an exercise in ad-hoc choices: which color, which crop, which font size, which background. Consistency across fifteen posts isn't something I'm going to achieve with an artisanal approach, because I don't have the internal standard to apply consistently.
+
+Automation isn't a substitute for design skill. It's a way to bake in consistency where I can't provide it manually, and a way to raise the floor when I can't move the ceiling. That's the honest frame.
+
+## The other half of the problem: friction
+
+The skills gap alone wouldn't have driven this. I would have kept making mediocre images and moved on. What pushed automation up the priority list was the compounding effect of friction.
+
+Every manual feature image is an interruption. Open the post. Open a background generator. Pick a crop. Open Figma (or whatever tool is handy that day). Position the title text. Pick a color. Export OG, YouTube, Instagram. Wire them into the frontmatter. Update the blog index card.
+
+Fifteen minutes if everything goes well. Forty-five when it doesn't — when the background doesn't quite work, when the title won't fit at a legible size, when I forget which tool I'm using for what.
+
+Multiply by every post and you get the soft backlog that kills a publishing cadence. Posts sit in drafting because the feature image is still to-do. Momentum dies. The queue of ideas outpaces the queue of shipped work, and eventually you stop adding to either.
+
+Automation doesn't just improve the quality floor — it changes the economics. A fixed-cost step becomes nearly free, and the threshold for "worth shipping" drops with it. Small ideas become postable, because the feature-image overhead isn't the rate-limiting step anymore. Honestly, that matters more than the skills-gap framing: the skills-gap framing is about quality; the friction framing is about whether the post ships at all.
+
+And automation compounds. Once one step on the pre-publish checklist is automated, the next one looks tractable. Cross-link audit. OG images for non-blog pages. Canonical URL checks. Each one that turns into a one-shot skill takes a whole category of toil off the table.
+
+## The pipeline (the generator)
+
+The pipeline itself is mechanical and roughly feature-complete:
 
 1. **AI background** — DALL-E 3 or FLUX, behind a common provider interface so they can be swapped or compared at the same prompt.
-2. **Post-processing filters** — scanlines, vignette, grain, grade, phosphor bloom; composable, with named presets like `retro-crt` or `teal-amber` that encode a specific visual identity.
-3. **Branded text overlay** — title and subtitle rendered with Satori, using our brand font and color system, positioned with controllable margins and alignment.
+2. **Post-processing filters** — scanlines, vignette, grain, grade, phosphor bloom; composable, with named presets like `retro-crt` or `teal-amber` that encode a visual identity.
+3. **Branded text overlay** — title and subtitle rendered with Satori using our brand font, positioned with controllable margins and alignment.
 4. **Multi-format export** — OG (1200×630), YouTube (1280×720), Instagram (1080×1080), all in a single run.
 
-That part is mechanical. The interesting part is what wraps around it.
+That part does its job. But the generator is only the easy half of the problem.
 
-## AI output is noisy — you need a cheap human gate
+## AI output is noisy — a human gate is non-negotiable
 
-Generation is high-variance. The average output of any image model on any prompt is mediocre. The distribution has a long tail of excellent results and a long tail of nonsense, and you don't know which you got until you see it.
+Generation is high-variance. The average output of any image model on any prompt is mediocre. The distribution has a long tail of excellent results and a long tail of nonsense, and you don't know which you got until you see it. Someone has to look at the output and decide.
 
-So you iterate. Tweak the prompt. Swap the preset. Try a different provider. Regenerate. Reject three, keep one. Apply it to the post.
+For a non-designer, "decide" mostly means pattern-matching against whatever reference examples are nearby. Which means the iteration surface has to be cheap enough to actually use — otherwise I'll keep the first acceptable result instead of the best available one, and the brand drift problem I'm trying to fix will just move from manual to automated.
 
-Doing that from a CLI is painful — you're context-switching between terminal output, a file viewer, and the dev server. Doing it in a proper SaaS dashboard is overkill — you've signed up to maintain a web app that does one thing.
+## The lightweight iteration surface
 
-We took a middle path.
+Iterating from a CLI is painful — context-switching between terminal output, a file viewer, and the dev server. Iterating through a proper SaaS dashboard is overkill — now I'm maintaining a web app that does one thing.
 
-## The lightweight dashboard
-
-The entire interface is an Astro page served only by the dev server: `/dev/feature-image-preview`. In production it 404s. Three regions:
+We took a middle path: a dev-only Astro page at `/dev/feature-image-preview`. In production it 404s. Three regions on the page:
 
 - **Pending workflows panel** — open items the agent has enqueued, plus decided items waiting to be applied. Auto-polls every five seconds.
 - **Generate form** — prompt, provider, preset, filter selections, title, subtitle. Submitting runs the pipeline and appends to the history.
@@ -49,10 +67,12 @@ No database. No framework. Just Astro, two server endpoints that 404 in prod, an
 
 ## The queue is a file
 
-Two JSONL files back the whole thing, both gitignored:
+Two JSONL files back the whole thing, checked into the repo:
 
 - `.feature-image-history.jsonl` — every generation ever run. One line per record. The raw audit log.
 - `.feature-image-pipeline.jsonl` — workflow items with state transitions. One record per pipeline run; appended on every state change.
+
+These are versioned on purpose. They hold the history that Phase 11's prompt-library fitness scores will be computed from — lose them and you lose the ability for the design system to evolve from prior decisions.
 
 Every workflow item is in one of four states:
 
@@ -60,51 +80,129 @@ Every workflow item is in one of four states:
 open → decided → applied | cancelled
 ```
 
-That's the entire contract. `open` means the agent has enqueued a post and the user is expected to iterate and pick one. `decided` means the user has marked an approved generation for this workflow. `applied` means `/feature-image-apply` has copied the image, updated the post frontmatter, and wired the blog index card.
+That's the entire contract. `open` means the agent has enqueued a post and I'm expected to iterate and pick one. `decided` means I've marked an approved generation for this workflow. `applied` means `/feature-image-apply` has copied the image, updated the post frontmatter, and wired the blog index card.
 
 Why a file instead of a database:
 
-- **Zero infrastructure.** No server to run, no connection string, no ORM.
+- **Zero infrastructure.** No server, no connection string, no ORM.
 - **Inspectable with shell tools.** `tail -f`, `grep`, `jq`.
-- **The schema is a TypeScript type.** If we need to change it, we edit the type and add handling for legacy records. No migrations.
+- **The schema is a TypeScript type.** If we need to change it, we edit the type and handle legacy records. No migrations.
 - **Rewriting history is `git`, or at worst `sed`.**
 
 ## Claude Code is the backend
 
-The dashboard has no application logic. It's a thin client over the JSONL files. All the behavior lives in a family of Claude Code skills:
+The dashboard has no application logic. It's a thin client over the JSONL files. All behavior lives in a family of Claude Code skills:
 
-- **`/feature-image-blog <post>`** — reads the post, builds an initial prompt from its title and description, appends an `open` workflow item. No generation yet.
-- **`/feature-image-apply`** — reads all `decided` workflow items, copies approved images into `public/images/blog/<slug>/`, updates frontmatter (`image` + `socialImage`), updates the blog index card, transitions the workflow to `applied`.
-- **`/feature-image-help`** — reports the current pipeline state. Open workflows, decided-awaiting-apply, recent generations.
+- **`/feature-image-blog <post-path-or-url>`** — the async entry point. Reads the post's frontmatter, drafts a starting prompt from the title and description, appends an `open` `WorkflowItem` to `.feature-image-pipeline.jsonl`, and hands off to the gallery. No generation happens here; the user iterates in the browser.
+- **`/feature-image-apply`** — the async exit point. Reads all `decided` workflow items, copies approved images into `public/images/blog/<slug>/`, updates frontmatter (`image` + `socialImage`), updates the blog index card, transitions the workflow to `applied` or `cancelled` with any errors recorded on the item.
+- **`/feature-image-help`** — reports current pipeline state: open workflows, decided workflows awaiting apply, recent generations from the history log, and a short hint on what action to take next.
 
-Skills are Markdown files with library calls. When the workflow shape changes, we change the skill, not the plumbing. Nothing else needs updating.
+Skills are Markdown files with library calls. When the workflow shape changes, we change the skill, not the plumbing.
 
-The trade-off: the user has to open their Claude Code session to make anything happen. That's fine for a dev-facing tool. It would be the wrong trade for a customer-facing product.
+The trade-off: I have to open a Claude Code session to make anything happen. That's fine for a dev-facing tool. It would be the wrong trade for a customer-facing product.
 
-## The pattern generalizes
+## The part that's actually hard: a design system nobody wrote down
 
-Any workflow where:
+Here's where I have to be honest about the limits of what's shipped. The generator works. The iteration surface works. But neither of those gets you consistency across posts, and consistency is the thing I can't provide manually.
 
-- Humans need to approve or refine AI output before it ships,
-- Iteration is high-bandwidth (you'll try many variants before keeping one),
-- The decision surface is too rich for a CLI yes/no prompt,
+Today, every generation starts from either a hand-typed prompt or one the agent proposes from scratch. On-brand prompts decay as session memory fades. The images get better individually — I have a cheap way to pick the best of a few candidates now — but the set still drifts, because I'm still making the design decisions one post at a time.
 
-benefits from the same shape: queue as a file, dashboard as dev-only Astro routes, Claude Code as the backend, the workflow captured as a family of skills. This is a reusable template for a lot of AI-assisted content and engineering workflows where the human gate matters.
+The next phase attacks this through the same basic insight that keeps showing up: when the human can't engineer the right answer, set up the conditions for the right answer to emerge from selection.
 
-A follow-up post goes wide on the pattern itself — what belongs in the queue, when to reach for a polling dashboard versus a one-shot CLI, how to keep the schema honest across skill revisions.
+A prompt library lives in the repo. Each template carries its own aggregate fitness — a rolling average of 1-5 ratings on the generations that used it. Every generation in the gallery can be rated. Every rating updates the template's fitness. Templates can be forked; the lineage is visible in the library UI. The gallery weights suggestions by `fitness × recency`, so older, lower-performing templates get out of the way while staying forkable.
 
-## What's next: prompts that evolve
+The library *is* the design system. Not a static Figma file. An evolving population of prompt templates under selection pressure, where the fitness function is me rating what comes out of the pipeline, and the selection happens implicitly every time the gallery picks what to suggest for the next post.
 
-Every generation today starts from a hand-typed prompt or one the agent proposes from scratch. On-brand prompts decay as session memory fades. The result, over time, is brand drift — every post's feature image is individually plausible but the set doesn't hold together.
+I don't have to be smart enough to write the right prompt. I have to be consistent enough to rate what comes out and occasionally fork what works. Over enough generations, the library converges on the visual language I wasn't going to articulate on my own.
 
-The next phase tackles this, and it does so not by engineering a better prompt but by letting good prompts emerge from a population.
+## Why this matters beyond feature images
 
-A prompt library in the repo. Each template carries its own aggregate fitness — a rolling average of 1-5 ratings on the generations that used it. Every generation in the gallery can be rated. Every rating updates the template's fitness. Templates can be forked; the lineage is visible in the library UI. The gallery weights suggestions by `fitness × recency`, so older, lower-performing templates get out of the way while staying forkable for future experiments.
+The pattern here generalizes in two directions, each worth its own follow-up:
 
-Brand consistency becomes a by-product. The mechanism is artificial selection.
+**The workflow shape.** Queue as a file, dashboard as dev-only Astro routes, Claude Code as the backend, the workflow captured as a family of skills. Any AI-assisted workflow that needs a human gate on output could use the same shape. The decision surface for feature images is richer than a CLI yes/no but thinner than a SaaS dashboard, and a lot of AI-assisted content and engineering tasks fit that same shape.
 
-There's a broader point here, and it will get its own post: for high-variance search spaces — prompts, filter combinations, parameter tunings, maybe even skill docs — a population of candidates under selection pressure beats brute-force search or one-shot engineering. You don't have to be smart enough to write the right prompt. You have to be consistent enough to rate what comes out and occasionally fork what works.
+**The evolution-over-engineering principle.** For high-variance search spaces — prompts, filter combinations, parameter tunings, maybe even skill docs — a population of candidates under selection pressure beats brute-force search or one-shot engineering. You don't have to be the expert. You have to be the fitness function.
 
-## Try it
+Both of those deserve dedicated posts. This one is just the anchor: the current state of the pipeline, the honest reason it exists (a skills gap I'm not planning to close the hard way), and the direction things are headed.
 
-The source lives on the `feature/feature-image-generator` branch until the prompt-library phase ships. The workflow is documented in `FEATURE-IMAGES.md`. The skills are under `.claude/skills/feature-image-*/`. The pipeline library is `scripts/feature-image/`.
+## Show our work
+
+Here's what the core pieces actually look like.
+
+The `WorkflowItem` type *is* the state machine:
+
+```typescript
+export type WorkflowState =
+  | 'open'       // agent has enqueued; user is iterating
+  | 'decided'    // user has picked an approved generation
+  | 'applied'    // agent has wired it into the post
+  | 'cancelled';
+
+export interface WorkflowItem {
+  id: string;
+  type: 'feature-image-blog';
+  createdAt: string;
+  createdBy: 'agent' | 'user';
+  state: WorkflowState;
+  context: {
+    postPath?: string;
+    slug?: string;
+    title?: string;
+    description?: string;
+    suggestedPrompt?: string;
+    suggestedPreset?: string;
+    notes?: string;
+  };
+  decision?: {
+    decidedAt: string;
+    logEntryId: string;       // ref into .feature-image-history.jsonl
+    userNotes?: string;
+  };
+  application?: {
+    appliedAt: string;
+    changedFiles: string[];
+    error?: string;
+  };
+}
+```
+
+Each line of `.feature-image-pipeline.jsonl` is one of these objects, appended on every state transition. The `state` field moves through the lifecycle; the `context`, `decision`, and `application` fields carry whatever metadata that transition needs.
+
+Here's the top of `/feature-image-blog`'s `SKILL.md` — the entire skill is a Markdown file like this, and the agent follows it:
+
+```markdown
+---
+name: feature-image-blog
+description: "Start a feature image workflow for a blog post:
+  derive context from the post, enqueue a workflow item, and
+  hand off to the dev-only gallery for iteration."
+user_invocable: true
+---
+
+# Feature Image (Blog Post) — Workflow Start
+
+This skill is the entry point for the async feature-image pipeline:
+
+    agent enqueues (this skill) → user iterates in gallery
+      → user decides → agent applies (/feature-image-apply)
+
+This skill does NOT generate images directly. It records intent
+and context so the user can iterate freely in the gallery, then
+approve a specific generation for the agent to wire into the post.
+
+## Steps
+
+1. Resolve the post path (either a file or a URL)
+2. Read post frontmatter (title, description)
+3. Propose an AI image prompt biased toward the site's visual style
+4. Append an `open` WorkflowItem to .feature-image-pipeline.jsonl
+5. Report the new workflow id and hand off to the gallery
+```
+
+That's it. No framework, no workflow engine — a Markdown file instructing the agent how to compose a few library calls. When the shape changes, I edit the Markdown.
+
+Fuller snippets — the pipeline module, the Astro API routes, the whole SKILL.md family — are available as gists on request.
+
+## Where it stands
+
+The older feature images on this site are still the old, hand-made ones. New posts are going through the pipeline. Somewhere between the two is where the system has to prove it works — not by making me a designer, but by making "not a designer" good enough.
