@@ -1813,19 +1813,78 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     }
     function autosizeTextarea(ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
 
+    function previewDraftKey(entryId) { return `fi-preview-draft-${entryId}`; }
+
+    function readPreviewDraft(entryId) {
+      try {
+        const raw = localStorage.getItem(previewDraftKey(entryId));
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function capturePreviewState(previewEl, controls) {
+      const titleEl = previewEl.querySelector('.og-title-input');
+      const subtitleEl = previewEl.querySelector('.og-subtitle-input');
+      const allFormatsCb = controls?.querySelector('[data-ctl="all-formats"]');
+      return {
+        title: titleEl ? titleEl.value : '',
+        subtitle: subtitleEl ? subtitleEl.value : '',
+        format: previewEl.dataset.format,
+        preset: previewEl.dataset.preset,
+        grade: previewEl.dataset.grade,
+        phosphor: previewEl.dataset.phosphor,
+        vignette: previewEl.dataset.vignette,
+        scanlines: previewEl.dataset.scanlines,
+        grain: previewEl.dataset.grain,
+        overlay: previewEl.dataset.overlay,
+        allFormats: !!(allFormatsCb && allFormatsCb.checked),
+      };
+    }
+
+    function applyPreviewDraft(previewEl, controls, draft) {
+      if (!draft) return;
+      const titleEl = previewEl.querySelector('.og-title-input');
+      const subtitleEl = previewEl.querySelector('.og-subtitle-input');
+      if (titleEl && typeof draft.title === 'string') titleEl.value = draft.title;
+      if (subtitleEl && typeof draft.subtitle === 'string') subtitleEl.value = draft.subtitle;
+      const keys = ['format', 'preset', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay'];
+      for (const k of keys) {
+        if (draft[k] !== undefined) {
+          previewEl.dataset[k] = draft[k];
+          const sel = controls.querySelector(`[data-ctl="${k}"]`);
+          if (sel && sel.tagName === 'SELECT') sel.value = draft[k];
+          if (sel && sel.type === 'checkbox') sel.checked = draft[k] === 'on' || draft[k] === true;
+        }
+      }
+      const allFormatsCb = controls.querySelector('[data-ctl="all-formats"]');
+      if (allFormatsCb && typeof draft.allFormats === 'boolean') allFormatsCb.checked = draft.allFormats;
+    }
+
     function wireLivePreview(entryDiv, entry) {
       const previewEl = entryDiv.querySelector('.og-preview');
       const controls = entryDiv.querySelector('.preview-controls');
       if (!previewEl || !controls) return;
 
+      // Restore in-progress preview edits so gallery re-renders don't clobber them.
+      applyPreviewDraft(previewEl, controls, readPreviewDraft(entry.id));
+
+      const persistDraft = () => {
+        const state = capturePreviewState(previewEl, controls);
+        localStorage.setItem(previewDraftKey(entry.id), JSON.stringify(state));
+      };
+
       const subtitleTa = previewEl.querySelector('.og-subtitle-input');
-      if (subtitleTa) {
-        requestAnimationFrame(() => autosizeTextarea(subtitleTa));
-        subtitleTa.addEventListener('input', () => autosizeTextarea(subtitleTa));
-        if (typeof ResizeObserver !== 'undefined') {
-          const ro = new ResizeObserver(() => autosizeTextarea(subtitleTa));
-          ro.observe(previewEl);
-        }
+      const titleTa = previewEl.querySelector('.og-title-input');
+      for (const ta of [subtitleTa, titleTa]) {
+        if (!ta) continue;
+        requestAnimationFrame(() => autosizeTextarea(ta));
+        ta.addEventListener('input', () => { autosizeTextarea(ta); persistDraft(); });
+      }
+      if (subtitleTa && typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => autosizeTextarea(subtitleTa));
+        ro.observe(previewEl);
       }
 
       const filterCtls = ['grade', 'phosphor', 'vignette', 'scanlines', 'grain'];
@@ -1845,6 +1904,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
             }
           } else if (ctl === 'overlay') previewEl.dataset.overlay = el.checked ? 'on' : 'off';
           else if (filterCtls.includes(ctl)) previewEl.dataset[ctl] = el.value;
+          persistDraft();
         });
       });
 
@@ -1878,6 +1938,9 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         if (!res.ok) throw new Error(json.error || `status ${res.status}`);
         statusEl.textContent = `Baked ${formats.length} format${formats.length === 1 ? '' : 's'} in ${json.entry.durationMs}ms.`;
         statusEl.className = 'commit-status';
+        // Commit produces a new entry with these values baked in — the draft on
+        // the source is no longer relevant.
+        localStorage.removeItem(previewDraftKey(entry.id));
         await refreshGallery();
       } catch (err) {
         statusEl.textContent = `Error: ${err.message}`;
