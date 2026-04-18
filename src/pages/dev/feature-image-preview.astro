@@ -432,7 +432,12 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       border-radius: var(--radius);
       overflow: hidden;
       position: relative;
+      cursor: pointer;
+      transition: outline 0.15s ease;
+      outline: 1px solid transparent;
     }
+    .card-compact .card-thumb:hover { outline-color: var(--accent); }
+    .card-compact .card-thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .card-compact .card-thumb img,
     .card-compact .card-thumb .og-preview {
       width: 100%;
@@ -1263,7 +1268,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
 
       div.innerHTML = `
         <div class="card-compact">
-          <div class="card-thumb">${buildThumbPreview(entry)}</div>
+          <div class="card-thumb" data-action="focus" role="button" tabindex="0" title="Click to focus">${buildThumbPreview(entry)}</div>
           <div class="card-body">
             <div class="card-title">${titleHtml}</div>
             <div class="card-meta">
@@ -1377,6 +1382,12 @@ const filterNames = Object.keys(FILTER_REGISTRY);
             setTimeout(() => document.addEventListener('click', outside), 0);
           }
         });
+        // Non-button focus triggers (e.g., thumbnail) need keyboard support.
+        if (btn.tagName !== 'BUTTON' && btn.dataset.action === 'focus') {
+          btn.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); focusEntry(entry.id); }
+          });
+        }
       });
     }
 
