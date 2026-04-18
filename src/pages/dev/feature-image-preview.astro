@@ -318,8 +318,134 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     .btn-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
     /* ── Template picker ───────────────────────────────────────────────────── */
-    .template-picker { display: flex; gap: 0.3rem; align-items: stretch; }
-    .template-picker select { flex: 1; min-width: 0; }
+    /* Template picker grid (replaces the old dropdown) */
+    .tpl-picker-section { display: flex; flex-direction: column; gap: 0.4rem; }
+    .tpl-picker-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .tpl-picker-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-3);
+    }
+    .tpl-picker-actions { display: flex; gap: 0.3rem; }
+    .tpl-picker-actions button { padding: 0.3rem 0.55rem; font-size: 0.65rem; }
+
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
+      max-height: 420px;
+      overflow-y: auto;
+      padding: 0.1rem;
+    }
+    .tpl-empty {
+      grid-column: 1 / -1;
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-3);
+      line-height: 1.45;
+    }
+
+    .tpl-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 0;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      color: var(--text-1);
+      text-align: left;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.15s, background 0.15s, transform 0.06s;
+      min-width: 0;
+    }
+    .tpl-card:hover { border-color: var(--edge-hi); background: var(--bg-3); }
+    .tpl-card:active { transform: translateY(1px); }
+    .tpl-card.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .tpl-card.suggested { border-color: rgba(245, 197, 66, 0.5); }
+    .tpl-card.suggested.selected { border-color: var(--accent); }
+
+    .tpl-card-thumb {
+      width: 100%;
+      aspect-ratio: 1200 / 630;
+      background: var(--bg-0);
+      overflow: hidden;
+      position: relative;
+    }
+    .tpl-card-thumb .og-preview,
+    .tpl-card-thumb img { width: 100%; height: 100%; display: block; }
+    .tpl-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a3040 0%, #0d1a26 100%);
+    }
+    .tpl-placeholder[data-preset="retro-crt"] { background: linear-gradient(135deg, #1e2d38 0%, #2a3b4a 50%, #1a2430 100%); }
+    .tpl-placeholder[data-preset="teal-amber"] { background: linear-gradient(135deg, #1a3040 0%, #3a2d1a 100%); }
+    .tpl-placeholder[data-preset="heavy-crt"] { background: linear-gradient(135deg, #0a1015 0%, #2d1f38 100%); }
+    .tpl-placeholder[data-preset="subtle"] { background: linear-gradient(135deg, #1a2028 0%, #252d36 100%); }
+
+    .tpl-card-body {
+      padding: 0.5rem 0.6rem 0.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      min-width: 0;
+    }
+    .tpl-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.4rem;
+      min-width: 0;
+    }
+    .tpl-card-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-0);
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+      flex: 1;
+    }
+    .tpl-suggested-dot { color: var(--rating); margin-right: 0.2rem; }
+    .tpl-card-fit {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-3);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .tpl-card.selected .tpl-card-fit { color: var(--accent); }
+    .tpl-card-desc {
+      font-size: 0.7rem;
+      color: var(--text-2);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .tpl-card-tags { display: flex; flex-wrap: wrap; gap: 0.2rem; }
+    .tpl-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.55rem;
+      padding: 0.08rem 0.35rem;
+      background: var(--bg-3);
+      color: var(--text-3);
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+    }
     .template-meta {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.7rem;
@@ -1168,16 +1294,18 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       <div id="active-wf-banner" style="display: none;"></div>
 
       <form id="gen-form">
-        <label>
-          <span>Template</span>
-          <div class="template-picker">
-            <select id="template-select"><option value="">(none)</option></select>
-            <button type="button" class="btn-ghost" id="template-fork" title="Clone the selected template with a new slug — sets parent reference for lineage tracking">Fork</button>
-            <button type="button" class="btn-ghost" id="template-clear" title="Clear the template selection">Clear</button>
+        <div class="tpl-picker-section">
+          <div class="tpl-picker-head">
+            <span class="tpl-picker-label">Template</span>
+            <div class="tpl-picker-actions">
+              <button type="button" class="btn-ghost" id="template-fork" title="Clone the selected template with a new slug — sets parent reference for lineage tracking">Fork</button>
+              <button type="button" class="btn-ghost" id="template-clear" title="Clear the template selection">None</button>
+            </div>
           </div>
+          <div id="template-grid" class="template-grid" role="radiogroup" aria-label="Prompt template"></div>
           <div id="template-meta" class="template-meta"></div>
           <div id="candidate-pills" class="candidate-pills"></div>
-        </label>
+        </div>
 
         <label>
           <span>Prompt</span>
@@ -1290,7 +1418,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     let focusedEntryId = null;
     let cachedEntries = [];
 
-    const templateSelect = document.getElementById('template-select');
+    const templateGrid = document.getElementById('template-grid');
     const templateMeta = document.getElementById('template-meta');
     const candidatePills = document.getElementById('candidate-pills');
 
@@ -1380,28 +1508,109 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     async function refreshTemplates() {
       try {
         allTemplates = await fetchTemplates();
-        renderTemplateSelect();
+        // We need log entries to render template thumbnails (each thumb comes
+        // from the first example's raw image). Fetch the log if we don't
+        // already have a cache.
+        if (cachedEntries.length === 0) {
+          try { cachedEntries = await fetchLog(); } catch { /* non-fatal */ }
+        }
+        renderTemplateGrid();
       } catch (err) {
         console.error('Could not load templates:', err);
       }
     }
-    function renderTemplateSelect() {
+
+    function findTemplatePreview(template) {
+      // Find the first example log entry with a raw image so we can render a
+      // live-preview thumbnail matching the template's preset/filters.
+      const ids = template.examples ?? [];
+      for (const id of ids) {
+        const entry = cachedEntries.find(e => e.id === id);
+        const raw = entry?.outputs?.raw?.[0];
+        if (raw) return { entry, raw };
+      }
+      return null;
+    }
+
+    function renderTemplateGrid() {
       const candidateSlugs = new Set(activeWorkflow?.context?.candidateTemplates || []);
       const suggestedSlug = activeWorkflow?.context?.suggestedTemplateSlug;
-      templateSelect.innerHTML = '<option value="">(none)</option>';
-      for (const t of allTemplates) {
-        const opt = document.createElement('option');
-        opt.value = t.slug;
-        const fitness = t.fitness?.usageCount > 0 ? ` (fit ${t.fitness.fitness.toFixed(2)} · n=${t.fitness.usageCount})` : ' (new)';
-        opt.textContent = `${t.name}${fitness}`;
-        if (candidateSlugs.has(t.slug)) opt.textContent = '★ ' + opt.textContent;
-        templateSelect.appendChild(opt);
+
+      // If the active workflow suggests a template and the user hasn't chosen
+      // one yet, pre-select it.
+      if (!activeTemplate && suggestedSlug) {
+        const suggested = allTemplates.find(t => t.slug === suggestedSlug);
+        if (suggested) applyTemplate(suggested, { skipRender: true });
       }
-      if (activeTemplate) templateSelect.value = activeTemplate.slug;
-      else if (suggestedSlug) templateSelect.value = suggestedSlug;
+
+      templateGrid.innerHTML = '';
+      if (allTemplates.length === 0) {
+        templateGrid.innerHTML = '<div class="tpl-empty">No templates yet. Save an approved entry as a template to seed the library.</div>';
+        renderTemplateMeta();
+        renderCandidatePills();
+        return;
+      }
+
+      for (const t of allTemplates) {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'tpl-card';
+        card.setAttribute('role', 'radio');
+        card.setAttribute('aria-checked', activeTemplate?.slug === t.slug ? 'true' : 'false');
+        if (activeTemplate?.slug === t.slug) card.classList.add('selected');
+        if (candidateSlugs.has(t.slug)) card.classList.add('suggested');
+        card.title = t.description || '';
+
+        const preview = findTemplatePreview(t);
+        const thumbHtml = preview
+          ? buildLiveThumbHtml(preview.entry, preview.raw, {
+              preset: t.preset,
+              title: '',
+              subtitle: '',
+              overlay: 'off',
+              format: 'og',
+            })
+          : `<div class="tpl-placeholder" data-preset="${escapeAttr(t.preset || 'none')}"></div>`;
+
+        const fit = t.fitness;
+        const fitLine = fit && fit.usageCount > 0
+          ? `★ ${fit.averageRating.toFixed(1)} · n=${fit.usageCount}`
+          : 'new';
+        const starMarker = candidateSlugs.has(t.slug) ? '<span class="tpl-suggested-dot" title="Suggested for this workflow">★</span>' : '';
+        const tagChips = (t.tags ?? []).slice(0, 3).map(tag => `<span class="tpl-tag">${escapeHtml(tag)}</span>`).join('');
+
+        card.innerHTML = `
+          <div class="tpl-card-thumb">${thumbHtml}</div>
+          <div class="tpl-card-body">
+            <div class="tpl-card-head">
+              <span class="tpl-card-name">${starMarker}${escapeHtml(t.name)}</span>
+              <span class="tpl-card-fit">${escapeHtml(fitLine)}</span>
+            </div>
+            ${t.description ? `<div class="tpl-card-desc">${escapeHtml(t.description)}</div>` : ''}
+            ${tagChips ? `<div class="tpl-card-tags">${tagChips}</div>` : ''}
+          </div>
+        `;
+        card.addEventListener('click', () => applyTemplate(t));
+        card.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); applyTemplate(t); }
+        });
+        templateGrid.appendChild(card);
+      }
+
+      renderTemplateMeta();
       renderCandidatePills();
-      onTemplateChange();
     }
+
+    function renderTemplateMeta() {
+      if (!activeTemplate) { templateMeta.textContent = ''; return; }
+      const fit = activeTemplate.fitness;
+      const lineage = activeTemplate.parent ? ` · forked from <code>${escapeHtml(activeTemplate.parent)}</code>` : '';
+      const fitText = fit && fit.usageCount > 0
+        ? `fitness ${fit.fitness.toFixed(2)} · ${fit.usageCount} uses · avg ★ ${fit.averageRating.toFixed(1)}`
+        : 'new — no ratings yet';
+      templateMeta.innerHTML = `${fitText}${lineage}`;
+    }
+
     function renderCandidatePills() {
       candidatePills.innerHTML = '';
       const candidates = activeWorkflow?.context?.candidateTemplates;
@@ -1414,36 +1623,30 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         pill.className = 'candidate-pill' + (slug === suggested ? ' suggested' : '');
         pill.textContent = t.name;
         pill.title = t.description || '';
-        pill.addEventListener('click', () => { templateSelect.value = slug; onTemplateChange(); });
+        pill.addEventListener('click', () => applyTemplate(t));
         candidatePills.appendChild(pill);
       }
     }
-    function onTemplateChange() {
-      const slug = templateSelect.value;
-      activeTemplate = slug ? (allTemplates.find(t => t.slug === slug) || null) : null;
-      if (activeTemplate) {
-        document.getElementById('prompt').value = activeTemplate.prompt;
-        if (activeTemplate.preset) {
+
+    function applyTemplate(template, { skipRender = false } = {}) {
+      activeTemplate = template ?? null;
+      if (template) {
+        document.getElementById('prompt').value = template.prompt;
+        if (template.preset) {
           const presetSel = document.getElementById('preset');
-          if ([...presetSel.options].some(o => o.value === activeTemplate.preset)) presetSel.value = activeTemplate.preset;
+          if ([...presetSel.options].some(o => o.value === template.preset)) presetSel.value = template.preset;
         }
-        if (activeTemplate.provider) {
+        if (template.provider) {
           const providerSel = document.getElementById('provider');
-          if ([...providerSel.options].some(o => o.value === activeTemplate.provider)) providerSel.value = activeTemplate.provider;
+          if ([...providerSel.options].some(o => o.value === template.provider)) providerSel.value = template.provider;
         }
-        const fit = activeTemplate.fitness;
-        const lineage = activeTemplate.parent ? ` · forked from ${activeTemplate.parent}` : '';
-        const fitText = fit && fit.usageCount > 0
-          ? `fitness ${fit.fitness.toFixed(2)} · ${fit.usageCount} uses · avg ★ ${fit.averageRating.toFixed(1)}`
-          : 'new — no ratings yet';
-        templateMeta.innerHTML = `<strong>${escapeHtml(activeTemplate.name)}</strong> — ${escapeHtml(activeTemplate.description || '')} <br/>${fitText}${lineage}`;
-      } else {
-        templateMeta.textContent = '';
       }
+      if (!skipRender) renderTemplateGrid();
     }
-    templateSelect.addEventListener('change', onTemplateChange);
+
     document.getElementById('template-clear').addEventListener('click', () => {
-      templateSelect.value = ''; activeTemplate = null; templateMeta.textContent = '';
+      activeTemplate = null;
+      renderTemplateGrid();
     });
     document.getElementById('template-fork').addEventListener('click', forkActiveTemplate);
 
@@ -1469,8 +1672,8 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || `status ${res.status}`);
         await refreshTemplates();
-        templateSelect.value = newSlug.trim();
-        onTemplateChange();
+        const forked = allTemplates.find(t => t.slug === newSlug.trim());
+        if (forked) applyTemplate(forked);
       } catch (err) {
         alert(`Failed to fork: ${err.message}`);
       }
