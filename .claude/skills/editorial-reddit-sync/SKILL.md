@@ -1,12 +1,16 @@
 ---
 name: editorial-reddit-sync
-description: "Pull recent Reddit submissions via API and upsert DistributionRecords for any that reference audiocontrol.org blog posts."
+description: "Pull recent Reddit submissions via API and upsert DistributionRecords for any that reference the site's blog posts or YouTube videos."
 user_invocable: true
 ---
 
 # Editorial Reddit Sync
 
-Query the Reddit API for the configured user's recent submissions, match each to a blog post by URL, and upsert DistributionRecords in the calendar. Idempotent — re-running produces no duplicate rows.
+Query the Reddit API for the configured user's recent submissions, match each to a blog post or video URL for the target site, and upsert DistributionRecords in that site's calendar. Idempotent — re-running produces no duplicate rows.
+
+## Site
+
+Accepts `--site <slug>` (default: `audiocontrol`). Valid sites: `audiocontrol`, `editorialcontrol`. The site determines the calendar file and — more importantly — the **host** used to match submission URLs (`audiocontrol.org` vs `editorialcontrol.org`). Per-site Reddit username / credential lookup is a Phase 5 concern; until then the shared `~/.config/audiocontrol/reddit.json` is used for both sites. Unknown `--site` values error.
 
 ## Prerequisites
 
@@ -22,12 +26,13 @@ If the file is missing, the skill throws with a clear error telling the user how
 
 ## Steps
 
-1. **Fetch submissions**: call `getUserSubmissions(undefined, 200)` from `scripts/lib/reddit/client.ts` — reads the username from config and returns up to 200 of the user's most recent submissions. No authentication step.
-3. **Read the calendar** via `readCalendar(process.cwd())`.
+1. **Resolve site** via `assertSite()` and derive `host = siteHost(site)`.
+2. **Fetch submissions**: call `getUserSubmissions(undefined, 200)` from `scripts/lib/reddit/client.ts` — reads the username from config and returns up to 200 of the user's most recent submissions. No authentication step.
+3. **Read the calendar** via `readCalendar(process.cwd(), site)`.
 4. **Match each submission to a Published calendar entry**:
-   - **Blog match**: submission `url` or `selftext` contains `audiocontrol.org/blog/<slug>/` where `<slug>` exists as a Published blog entry. Extract the slug from the URL.
+   - **Blog match**: submission `url` or `selftext` contains `<host>/blog/<slug>/` where `<slug>` exists as a Published blog entry for this site. Extract the slug using `slugFromBlogUrl(url, host)`.
    - **YouTube match**: submission `url` is a YouTube URL (watch/shorts/youtu.be) whose video ID matches the `contentUrl` of a Published YouTube entry. Use `extractVideoId` from `scripts/lib/youtube/client.ts` to normalize both sides.
-   - A submission may match at most one entry. Prefer blog match if both somehow apply. Unmatched submissions are reported but not recorded.
+   - A submission may match at most one entry. Prefer blog match if both somehow apply. Submissions that reference the other site's host are skipped (not unmatched — they belong to a different `--site` run). Unmatched submissions are reported but not recorded.
 5. **Build DistributionRecord for each match**:
    - `slug`: the matched entry's slug (blog slug, or YouTube entry slug)
    - `platform`: `reddit`
@@ -36,8 +41,8 @@ If the file is missing, the skill throws with a clear error telling the user how
    - `dateShared`: the submission's `createdDate`
    - `notes`: the submission's `title` (truncated to 100 chars if longer)
 6. **Dedupe**: a record is "already present" if the calendar has a DistributionRecord with the same `slug`, `platform`, and normalized `channel`, **and** the same `url`. Only insert new ones; do not modify existing records.
-7. **Write the calendar** via `writeCalendar(process.cwd(), cal)`.
-8. **Report**: number of submissions fetched, number matched to blog posts, number of new DistributionRecords inserted, number skipped as duplicates.
+7. **Write the calendar** via `writeCalendar(process.cwd(), site, cal)`.
+8. **Report**: the site, number of submissions fetched, number matched to the site's content, number of new DistributionRecords inserted, number skipped as duplicates, number skipped as belonging to the other site.
 
 ## Report Format
 

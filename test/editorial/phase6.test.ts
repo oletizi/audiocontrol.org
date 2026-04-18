@@ -17,10 +17,12 @@ import {
 } from '../../scripts/lib/editorial/index.js';
 import {
   auditCrossLinks,
-  extractAudioControlLinksFromText,
+  extractSiteLinksFromText,
   extractYouTubeLinksFromMarkdown,
   slugFromBlogUrl,
 } from '../../scripts/lib/editorial/crosslinks.js';
+
+const HOST = 'audiocontrol.org';
 import { extractVideoId } from '../../scripts/lib/youtube/client.js';
 
 function emptyCalendar(): EditorialCalendar {
@@ -185,8 +187,8 @@ Again: https://youtu.be/abcdefghijk
   });
 });
 
-describe('extractAudioControlLinksFromText', () => {
-  it('extracts any audiocontrol.org URL', () => {
+describe('extractSiteLinksFromText', () => {
+  it('extracts any host-matching URL', () => {
     const desc = `
 Full article: https://audiocontrol.org/blog/scsi-over-wifi-raspberry-pi-bridge/
 
@@ -194,15 +196,25 @@ Try the tool: https://audiocontrol.org/roland/s330/editor
 
 Also: https://www.audiocontrol.org/blog/roland-s-series-samplers
 `;
-    const urls = extractAudioControlLinksFromText(desc);
+    const urls = extractSiteLinksFromText(desc, HOST);
     expect(urls).toHaveLength(3);
     expect(urls).toContain('https://audiocontrol.org/blog/scsi-over-wifi-raspberry-pi-bridge/');
     expect(urls).toContain('https://audiocontrol.org/roland/s330/editor');
     expect(urls).toContain('https://www.audiocontrol.org/blog/roland-s-series-samplers');
   });
 
-  it('returns empty when no audiocontrol.org URLs are present', () => {
-    expect(extractAudioControlLinksFromText('no links here')).toEqual([]);
+  it('returns empty when no host-matching URLs are present', () => {
+    expect(extractSiteLinksFromText('no links here', HOST)).toEqual([]);
+  });
+
+  it('scopes to the passed host so other sites are ignored', () => {
+    const text = 'Here: https://editorialcontrol.org/blog/foo and here: https://audiocontrol.org/blog/bar/';
+    expect(extractSiteLinksFromText(text, 'audiocontrol.org')).toEqual([
+      'https://audiocontrol.org/blog/bar/',
+    ]);
+    expect(extractSiteLinksFromText(text, 'editorialcontrol.org')).toEqual([
+      'https://editorialcontrol.org/blog/foo',
+    ]);
   });
 });
 
@@ -213,11 +225,20 @@ describe('slugFromBlogUrl', () => {
     ['https://www.audiocontrol.org/blog/slug-three/', 'slug-three'],
     ['http://audiocontrol.org/blog/slug-four/', 'slug-four'],
   ])('extracts slug from %s', (url, expected) => {
-    expect(slugFromBlogUrl(url)).toBe(expected);
+    expect(slugFromBlogUrl(url, HOST)).toBe(expected);
   });
 
   it('returns null for non-blog URLs', () => {
-    expect(slugFromBlogUrl('https://audiocontrol.org/roland/s330')).toBeNull();
+    expect(slugFromBlogUrl('https://audiocontrol.org/roland/s330', HOST)).toBeNull();
+  });
+
+  it('only matches the passed host', () => {
+    expect(
+      slugFromBlogUrl('https://editorialcontrol.org/blog/foo/', 'audiocontrol.org'),
+    ).toBeNull();
+    expect(
+      slugFromBlogUrl('https://editorialcontrol.org/blog/foo/', 'editorialcontrol.org'),
+    ).toBe('foo');
   });
 });
 
@@ -240,6 +261,7 @@ describe('auditCrossLinks', () => {
 
   it('reports a reciprocated link as no-gap', async () => {
     const report = await auditCrossLinks({
+      site: 'audiocontrol',
       calendar,
       fetchBlogMarkdown: (slug) => blogBodies[slug] ?? null,
       fetchVideoDescription: async () =>
@@ -256,6 +278,7 @@ describe('auditCrossLinks', () => {
 
   it('flags a missing backlink when the video description does not reciprocate', async () => {
     const report = await auditCrossLinks({
+      site: 'audiocontrol',
       calendar,
       fetchBlogMarkdown: (slug) => blogBodies[slug] ?? null,
       fetchVideoDescription: async () => 'No blog links here.',
@@ -269,6 +292,7 @@ describe('auditCrossLinks', () => {
 
   it('captures errors when the blog markdown is unavailable', async () => {
     const report = await auditCrossLinks({
+      site: 'audiocontrol',
       calendar,
       fetchBlogMarkdown: () => null,
       fetchVideoDescription: async () => '',
@@ -296,6 +320,7 @@ describe('auditCrossLinks', () => {
       distributions: [],
     };
     const report = await auditCrossLinks({
+      site: 'audiocontrol',
       calendar: cal,
       fetchBlogMarkdown: () => null,
       fetchVideoDescription: async () => '',
@@ -324,6 +349,7 @@ describe('auditCrossLinks', () => {
       distributions: [],
     };
     const report = await auditCrossLinks({
+      site: 'audiocontrol',
       calendar: cal,
       fetchBlogMarkdown: () => null,
       fetchVideoDescription: async () => '',

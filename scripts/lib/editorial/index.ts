@@ -1,19 +1,26 @@
 export {
   CONTENT_TYPES,
+  DEFAULT_SITE,
   PLATFORMS,
+  SITES,
   STAGES,
   type ContentType,
   type Platform,
+  type Site,
   type Stage,
   type CalendarEntry,
   type DistributionRecord,
   type EditorialCalendar,
+  assertSite,
   distributionsBySlug,
   effectiveContentType,
   entriesByStage,
   hasRepoContent,
   isContentType,
+  isSite,
   requiresContentUrl,
+  siteBaseUrl,
+  siteHost,
 } from './types.js';
 
 export {
@@ -44,8 +51,8 @@ export {
 
 export {
   extractYouTubeLinksFromMarkdown,
-  extractAudioControlLinksFromText,
-  extractAudioControlLinksFromMarkdown,
+  extractSiteLinksFromText,
+  extractSiteLinksFromMarkdown,
   extractLinksFromHtml,
   slugFromBlogUrl,
   canonicalizeUrl,

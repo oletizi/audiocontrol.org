@@ -74,20 +74,24 @@
 
 **Deliverable:** Editorial calendar library accepts a `site` parameter. Skills accept `--site`. Both sites' calendars and channels configs live at their site-keyed paths.
 
-- [ ] Update `scripts/lib/editorial/calendar.ts` — `calendarPath(rootDir, site)` and all callers
-- [ ] Update `scripts/lib/editorial/channels.ts` — `channelsPath(rootDir, site)` and loaders
-- [ ] Rename `docs/editorial-calendar.md` → `docs/editorial-calendar-audiocontrol.md` and update references
-- [ ] Rename `docs/editorial-channels.json` → `docs/editorial-channels-audiocontrol.json` and update references
-- [ ] Create empty `docs/editorial-calendar-editorialcontrol.md` (with stage headings)
-- [ ] Create `docs/editorial-channels-editorialcontrol.json` with a curated subreddit list for content-marketing, automation-workflow, claude, plus site-appropriate additions
-- [ ] Update all `/editorial-*` skills to accept `--site <slug>` and error clearly if omitted
-- [ ] Update existing unit tests to cover the `site` parameter; add one test per new path resolution
-- [ ] Update CONTENT-CALENDAR.md to document the `--site` convention
+- [x] Update `scripts/lib/editorial/calendar.ts` — `calendarPath(rootDir, site)` and all callers
+- [x] Update `scripts/lib/editorial/channels.ts` — `channelsPath(rootDir, site)` and loaders
+- [x] Update `scripts/lib/editorial/scaffold.ts` — per-site blog dir `src/sites/<site>/pages/blog`
+- [x] Update `scripts/lib/editorial/crosslinks.ts` — `auditCrossLinks` takes `site`; `extractSiteLinksFromText/Markdown` and `slugFromBlogUrl` take `host` (`extractAudioControlLinks*` renamed to `extractSiteLinks*`)
+- [x] Update `scripts/lib/editorial/suggest.ts` — `getContentSuggestions(site, ...)` strips the correct host from analytics page URLs
+- [x] Add `Site` type, `SITES`, `DEFAULT_SITE`, `isSite`, `assertSite`, `siteHost`, `siteBaseUrl` to `types.ts` and re-export via the barrel
+- [x] Rename `docs/editorial-calendar.md` → `docs/editorial-calendar-audiocontrol.md` and update references
+- [x] Rename `docs/editorial-channels.json` → `docs/editorial-channels-audiocontrol.json` and update references
+- [x] Create empty `docs/editorial-calendar-editorialcontrol.md` (with stage headings)
+- [x] Create `docs/editorial-channels-editorialcontrol.json` with a curated subreddit list for content-marketing, automation-workflow, claude, ai-agents, agent-as-workflow, programming
+- [x] Update all 13 `/editorial-*` skills to accept `--site <slug>`; default to `audiocontrol` when omitted; unknown sites error with the list of valid sites (helper: `assertSite` in `scripts/lib/editorial/types.ts`)
+- [x] Update existing unit tests for the renamed crosslinks API; added `test/editorial/sites.test.ts` covering `SITES`, `DEFAULT_SITE`, `assertSite` defaults+error, per-site `calendarPath`/`channelsPath`, and `siteHost`/`siteBaseUrl`
+- [x] Update CONTENT-CALENDAR.md to document the `--site` convention (including the `audiocontrol` default) and the per-site data file layout
 
 **Acceptance Criteria:**
 - All existing editorial-calendar tests pass with the new site parameter
 - A new test covers resolving calendar paths per site
-- Running a skill without `--site` gives a clear error listing valid sites
+- Running a skill without `--site` uses `audiocontrol`; passing an unknown `--site` errors with the list of valid sites
 - Both sites' calendars round-trip cleanly
 
 ### Phase 3: editorialcontrol.org branding and core pages

@@ -14,7 +14,7 @@ Stand up editorialcontrol.org as a sibling site to audiocontrol.org. One repo, t
 | Phase | Description | Status |
 |-------|-------------|--------|
 | 1 | Multi-site source layout + build split | Implementation complete (Netlify UI work deferred to Phase 6) |
-| 2 | Multi-site editorial calendar library | Not Started |
+| 2 | Multi-site editorial calendar library | Implementation complete |
 | 3 | editorialcontrol branding + core pages | Not Started |
 | 4 | Content migration (2 posts) | Not Started |
 | 5 | Reddit / distribution (multi-account) | Not Started |
@@ -33,7 +33,7 @@ Stand up editorialcontrol.org as a sibling site to audiocontrol.org. One repo, t
 - Brand-aligned Reddit username for editorialcontrol.org
 - Accent palette for editorialcontrol (keep close to audiocontrol; one or two shifted colors)
 - DEVELOPMENT-NOTES.md and ROADMAP.md — split per-site or repo-wide? (default: repo-wide)
-- Default for skills invoked without `--site` (proposed: error with valid-site list)
+- ~~Default for skills invoked without `--site`~~ — **Resolved (2026-04-18):** default to `audiocontrol` when omitted. Preserves the behavior every existing skill invocation relies on; editorialcontrol operators pass `--site=editorialcontrol` explicitly.
 
 ## Documentation
 
