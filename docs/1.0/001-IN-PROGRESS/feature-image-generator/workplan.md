@@ -328,6 +328,60 @@ Today a gallery user can't tweak title/subtitle or toggle the overlay without re
 - Retiring satori/sharp overlay path from the initial-generation pipeline (first-time generation still uses the existing bake; only gallery-driven recomposition uses DOM rasterization in this phase)
 - Shareable preview permalinks (a URL that replays a specific preview state)
 
+## Phase 13: Conversation Thread with Claude (#76)
+
+**Deliverable:** The gallery becomes a conversation surface. Each focused entry has a thread where the user types natural-language feedback ("too literal", "try amber instead") and Claude responds asynchronously with new generations plus commentary. Iterations form a tree via parent/child lineage, so the thread persists across the chain.
+
+### Motivation
+
+Today's iteration loop is one-way: the user adjusts prompt/preset/filters and re-generates, and a single history log captures the outcomes. There's no record of *why* an iteration was requested, and no way to ask Claude for help when the feedback isn't directly actionable by tweaking selectors ("this doesn't feel like it matches the post's tone — can you try something different?"). Phase 13 makes the tool what the user actually wants it to be: a dialogue with Claude about getting to the right answer.
+
+### Concepts
+
+- **Thread** — a sequence of messages anchored to a root log entry. Any entry in the parent-child lineage rooted at that entry sees the same thread.
+- **Message** — `{ role: 'user' | 'assistant', timestamp, text, logEntryId?, snapshot? }`. User messages carry a snapshot of the current edits (title, subtitle, prompt, preset, filters, overlay). Assistant messages may reference a newly-generated log entry.
+- **Lineage** — each `LogEntry` gets an optional `parentEntryId` field; iterations set this to the entry they were generated from. The thread follows the root of the lineage.
+- **Pending iteration** — a workflow item of type `feature-image-iterate` that points at a thread + the last user message. Claude picks it up via a skill and responds.
+
+### Tasks
+
+- [ ] Add `parentEntryId?: string` to `LogEntry` schema; persist it in the recomposite endpoint and any new iterate endpoint
+- [ ] Define `Message` and thread persistence (`scripts/feature-image/threads.ts`): JSONL at `.feature-image-threads.jsonl`, append-only messages keyed by `threadId` (= root entry id of the lineage)
+- [ ] API endpoints:
+  - [ ] `GET /api/dev/feature-image/threads?entryId=<id>` — returns the thread for the lineage containing that entry (resolves root via parent chain), oldest-message-first
+  - [ ] `POST /api/dev/feature-image/threads` with `action: 'append-message'` — appends a user message and enqueues a `feature-image-iterate` workflow item
+- [ ] Gallery thread panel (focus mode only):
+  - [ ] Message list rendered in order with role styling
+  - [ ] Composer textarea + Send button
+  - [ ] Inline thumbnail for any assistant message referencing a log entry (click → focus that entry)
+  - [ ] Polling every 5-10s while focus mode is active to pull new assistant messages
+  - [ ] "Waiting for Claude…" indicator on the user's pending last message
+- [ ] New skill `.claude/skills/feature-image-iterate/` — invoked by the agent to drain pending `feature-image-iterate` workflow items:
+  - [ ] Reads the thread, the snapshot on the latest user message, and the source log entry
+  - [ ] Proposes a prompt adjustment (or a preset/filter change) based on the feedback
+  - [ ] Invokes the generation pipeline; the new log entry gets `parentEntryId` set to the source entry
+  - [ ] Appends an `assistant` message to the thread referencing the new entry + a short explanation of what changed
+  - [ ] Marks the workflow item applied
+- [ ] Update the right-drawer workflow panel to show iterate items distinctly from `feature-image-blog` items (different group label)
+- [ ] Extend `/feature-image-help` to report pending iterate workflow count alongside blog workflow count
+
+### Acceptance Criteria
+
+- [ ] User can open focus mode on any entry and see a thread (empty string if no messages yet)
+- [ ] Sending a message appends to the thread immediately and enqueues a pending iterate workflow item
+- [ ] Running the iterate skill in Claude Code generates a new entry with `parentEntryId` set to the source, appends an assistant message to the thread, and the workflow moves to applied
+- [ ] The gallery polls and renders the assistant response without a manual reload
+- [ ] Opening any entry in a lineage (root or child) shows the same thread
+- [ ] Workflow panel distinguishes iterate items from feature-image-blog items
+
+### Deferred to Future Phases
+
+- Server-sent-events for instant assistant-message delivery (polling is fine for v1)
+- Branching threads (user forks a conversation at a specific message)
+- Assistant text-only messages (Claude asks a clarifying question without generating)
+- Thread search across history
+- Per-message ratings (thumbs up/down on a Claude response)
+
 ## File Structure
 
 ```
