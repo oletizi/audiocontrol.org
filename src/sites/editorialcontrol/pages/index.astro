@@ -1,0 +1,66 @@
+---
+const title = 'editorialcontrol.org';
+const description =
+  'editorialcontrol.org — a forthcoming sibling site to audiocontrol.org focused on content-marketing and agent-as-workflow material.';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #0b0c10;
+        color: #e6e6e6;
+        font-family: 'Inter', system-ui, sans-serif;
+        min-height: 100%;
+      }
+      main {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 6rem 1.5rem 4rem;
+      }
+      h1 {
+        font-size: clamp(2rem, 5vw, 2.75rem);
+        margin: 0 0 1rem;
+        letter-spacing: -0.02em;
+      }
+      p {
+        line-height: 1.6;
+        color: #b8bcc4;
+      }
+      .meta {
+        margin-top: 2rem;
+        font-size: 0.9rem;
+        color: #6b7080;
+      }
+      a {
+        color: #9ec5fe;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>editorialcontrol.org</h1>
+      <p>
+        A sibling site to <a href="https://audiocontrol.org">audiocontrol.org</a>, focused on
+        content-marketing and agent-as-workflow material. This placeholder is here while the site
+        is being built — come back soon.
+      </p>
+      <p class="meta">Status: placeholder.</p>
+    </main>
+  </body>
+</html>

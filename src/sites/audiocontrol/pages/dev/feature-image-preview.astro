@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import { PRESETS, FILTER_REGISTRY } from '../../../scripts/feature-image/filters/index.js';
+import { PRESETS, FILTER_REGISTRY } from '../../../../../scripts/feature-image/filters/index.js';
 
 if (import.meta.env.PROD) {
   return new Response('Not Found', { status: 404 });

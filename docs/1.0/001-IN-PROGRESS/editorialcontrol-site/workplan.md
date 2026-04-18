@@ -54,15 +54,15 @@
 
 **Deliverable:** The repo builds both sites from two Astro configs. audiocontrol.org deploys identically to today; editorialcontrol.org stub builds to a working placeholder page served on Netlify.
 
-- [ ] Create `src/sites/audiocontrol/` subtree
-- [ ] Move `src/pages/` → `src/sites/audiocontrol/pages/`
-- [ ] Create `src/sites/editorialcontrol/pages/` with an index placeholder page
-- [ ] Split `astro.config.mjs` into `astro.audiocontrol.config.mjs` and `astro.editorialcontrol.config.mjs` with distinct `site`, `srcDir`, and sitemap config
-- [ ] Update `package.json` scripts: `build:audiocontrol`, `build:editorialcontrol`, `build` (runs both); same for `dev`
-- [ ] Update `netlify.toml` or per-site Netlify UI config so each Netlify site runs the correct build command
-- [ ] Verify audiocontrol.org builds identically — diff `dist/` against pre-split output
-- [ ] Verify editorialcontrol.org builds to a functional HTML placeholder
-- [ ] Second Netlify site connected to same repo, custom domain pending
+- [x] Create `src/sites/audiocontrol/` subtree (also moved `layouts/`, `components/`, `styles/` under it so relative imports keep working; Phase 3 can extract shared layouts back to `src/layouts/` when the second site needs them)
+- [x] Move `src/pages/` → `src/sites/audiocontrol/pages/`
+- [x] Create `src/sites/editorialcontrol/pages/` with an index placeholder page
+- [x] Split `astro.config.mjs` into `astro.audiocontrol.config.mjs` and `astro.editorialcontrol.config.mjs` with distinct `site`, `srcDir`, `outDir`, and sitemap config
+- [x] Update `package.json` scripts: `build:audiocontrol`, `build:editorialcontrol`, `build` (runs both); same for `dev` and `preview`
+- [x] Update `netlify.toml` (audiocontrol Netlify site: `build:audiocontrol`, publish `dist/audiocontrol`); editorialcontrol Netlify site config set in UI at launch time
+- [x] Verify audiocontrol.org builds identically — normalized diff shows only Astro's auto-generated `data-astro-cid-*` hashes changed (derived from source paths); CSS content and HTML structure are byte-identical after normalization
+- [x] Verify editorialcontrol.org builds to a functional HTML placeholder (index.html + favicons + sitemap emitted to `dist/editorialcontrol`)
+- [ ] Second Netlify site connected to same repo, custom domain pending (deferred to Phase 6 / Launch)
 
 **Acceptance Criteria:**
 - `npm run build:audiocontrol` produces output equivalent to today's `npm run build`
