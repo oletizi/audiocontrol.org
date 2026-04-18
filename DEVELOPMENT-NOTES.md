@@ -4,6 +4,52 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-18: Editorial Calendar — First End-to-End Workflow Run (Idea → Published → Image Handoff)
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar
+
+**Goal:** Exercise the full editorial-calendar workflow on its first real content idea, end-to-end: capture ideas, plan one, scaffold, draft, revise, publish, and kick off the feature-image pipeline. Find the friction points that only show up when the tools get used in anger.
+
+**Accomplished:**
+- Captured 6 content ideas into the `Ideas` stage via a batch `/editorial-add` run (one of them, `lightweight-web-workflow-dashboards`, closed the loop with this session's workflow dashboard use)
+- Planned `feature-image-automation-feature`: keywords, topics, and two new topic tags added to `docs/editorial-channels.json` (`content-marketing` and `automation-workflow`) after the user explicitly expanded the targeting. Each new topic seeded with a 5-subreddit candidate list
+- Drafted the post and went through multiple revision cycles in response to direct user feedback. Tracking issue #65 created and closed on publish
+- Published the post: `src/pages/blog/feature-image-automation-feature/index.md`, added to `src/pages/blog/index.astro`, calendar moved Drafting → Published (2026-04-18)
+- Removed `.feature-image-history.jsonl` and `.feature-image-pipeline.jsonl` from `.gitignore` after the user pointed out that gitignoring them was a mistake — those files hold the generation history and workflow audit trail that Phase 11's prompt-library fitness scores will read from
+- Ran `/feature-image-blog` against the new post — enqueued an `open` workflow item, committed the seeded JSONL files so the feature-image-generator branch can pick up iteration after sync
+- Shipped two PRs: #64 (session-end + ideas seed) and #66 (draft + publish + .gitignore fix + blog index + JSONL seed)
+
+**Didn't Work:**
+- First draft framed the feature as "solved." User's pushback: *"any casual reader will immediately notice that the images on the site I made by hand are fugly."* The "solved" framing was dishonest given the current state of hand-made images, and wrong for the reader's first impression. Full reframe required.
+- The first image generation came back "blotchy" per user's note — the grid-of-variants prompt plus `retro-crt` preset compounded; nine-panel abstract + heavy scanlines + phosphor bloom produced noise instead of distinct panels
+- The gallery's feedback loop doesn't automatically surface user notes or rejections to Claude. When the user clicked "Copy as input" and left a critique note, there was no push; I had to read `.feature-image-history.jsonl` manually to see the note and propose a new prompt. That manual bridge is exactly the gap blog idea #6 (workflow-dashboards) is supposed to close, but it isn't built yet
+- The user asked me to update the workflow item's `suggestedPrompt` so the form would re-populate on reactivation — before I finished, they (correctly) pivoted to "merge the PR; I'll continue on the feature-image-generator branch where the iteration tooling is better equipped." Signal that the editorial-calendar branch isn't the right place to iterate on images
+
+**Course Corrections:**
+- [DOCUMENTATION] "This is a post about how we solved that" → full rewrite around a skills-gap confession: "I made them by hand, I'm not a designer, and it shows. I'm not going to close this gap by studying." The honest framing was more interesting than the solved-problem framing would have been
+- [DOCUMENTATION] User flagged that "automation is a massive accelerant for releasing new content" was missing. Added a new section ("The other half of the problem: friction") separating the two motivations — skills gap is about quality, friction is about whether the post ships at all
+- [DOCUMENTATION] User flagged that calling the JSONL files gitignored was wrong. *"If that's true, it's a mistake."* It was true. Fixed both the post language AND `.gitignore` so future generations are versioned. Added a comment in `.gitignore` explaining why they're intentionally tracked. Without this, Phase 11's fitness-scoring loop would have had no data to compute from
+- [DOCUMENTATION] Original "Try it" section pointed to closed-source paths. User: *"audiocontrol.org isn't open source... we can show our work, either in the post or in gists."* Rewrote as "Show our work" with inline TypeScript `WorkflowItem` type + a condensed SKILL.md excerpt — the pattern made visible without requiring a public repo
+- [UX] First "Show our work" opening said *"the audiocontrol.org repo isn't open source, but the pattern is the interesting part."* User: *"don't mention that. Not relevant."* The frame was defensive where it didn't need to be. Removed the caveat; opened directly with the code
+- [UX] First skill-family list led with `/feature-image <page-path>` as "the original one-shot skill." User: *"No reader cares about 'the original' one-shot skill. It just muddies the water."* Removed; the list is now three entries (blog / apply / help), all part of the async pipeline the post is about
+- [PROCESS] I started the dev server without `--host` initially — user accesses via `http://orion-m4:4321`, needs the network bind. Same correction I received last session; I should default to `--host` for this project going forward
+
+**Quantitative:**
+- Messages this session: ~70 across the walkthrough
+- Commits on the feature branch: 5 non-merge (7952982, 8c0ac35, d430c89, e1e55bd + the pre-existing 003272f from session start) — all shipped via 2 PR merges (#64, #66)
+- Blog post revisions: roughly 7 substantive edits on the draft before merge
+- New topic tags seeded: 2 (content-marketing, automation-workflow, each with 5 subreddit candidates)
+- Image generations run: 1 (rejected)
+
+**Insights:**
+- The editorial-calendar workflow works end-to-end. Capturing ideas, planning, drafting, publishing, and publishing to the blog index all went cleanly through the library + skill layer. The first real user of this feature had no workflow friction — the friction was all in the content itself (framing, voice, accuracy), which is exactly where friction belongs
+- **The honest framing was stronger.** The user's "we're automating our way out of a skills gap" reframe turned a generic "I built this thing" post into something with a specific angle and a credible voice. The tell: after the rewrite, the post had its own opinions about what automation is *for* (consistency where skill is missing, friction reduction to enable volume) rather than just explaining a pipeline. That kind of content-shaping is worth multiple revision cycles
+- **Dogfooding exposes real UX gaps.** The gallery's reject → copy-as-input → iterate loop is fine *for a designer* who knows what to try next. For a non-designer iterating through an agent, the loop needs Claude to see the rejection and notes and propose the next prompt. That's not built. Today's handoff is "user tells me verbally what's wrong; I rewrite the prompt; they paste it into the form." Blog idea #6 is exactly this gap — the gallery as a bidirectional message surface between agent and user. After today's run, it's less an abstract pattern and more a specific feature request
+- **Gitignoring history files is a category of bug.** For any system where fitness / audit / evolution depends on historical decisions, the history has to be versioned. We almost shipped an evolutionary design system with its training data gitignored. The user caught it; in the future, any `*.jsonl` added to a project's `.gitignore` deserves a pause to ask "is this history load-bearing?"
+- **Branch-choice matters for iteration modality.** The editorial-calendar branch was right for drafting the post (text editor + dev server + Claude Code chat is the right iteration surface for prose). The feature-image-generator branch is right for iterating on the image (the gallery + faster feedback + richer workflow tooling live there). Moving between branches at the right moment — rather than trying to do both from one worktree — kept each loop tight
+
+---
+
 ## 2026-04-17: Editorial Calendar — Phases 5, 6, 7 (Subreddit Tracking + YouTube + Tool Cross-link Audit)
 ### Feature: editorial-calendar
 ### Worktree: audiocontrol.org-editorial-calendar
