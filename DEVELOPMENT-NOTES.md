@@ -4,6 +4,58 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-17: Feature Image Generator — Workflow Pipeline (Phase 6 ship) + Prompt Library (Phase 11)
+### Feature: feature-image-generator
+### Worktree: audiocontrol.org-feature-image-generator
+
+**Goal:** Land Phase 6 (preview gallery + workflow pipeline) on main, then scope and ship Phase 11 (prompt library with fitness-ranked selection).
+
+**Accomplished:**
+- Updated FEATURE-IMAGES.md to document the Phase 6 two-way workflow pipeline (agent enqueues → gallery iteration → user decision → agent applies)
+- Added `/feature-image-help` skill (user pointed out it was missing — it should report current pipeline state)
+- Opened PR #62 for Phase 6 + workflow pipeline; merged after Netlify checks went green
+- Closed issues #48 (Phase 6) and #35 (Phase 4 — `.env.example` was the last task)
+- Validated the new flow end-to-end on a real post (`reverse-engineering-akai-s3000xl-midi-over-scsi`): `/feature-image-blog` enqueued → user iterated in gallery → submitted decision → `/feature-image-apply` copied files, wired frontmatter and blog index
+- Scoped Phase 11 with the user's "evolution by artificial selection" framing: templates + 1-5 star ratings + fitness rollup + lineage via `parent` field + fork mechanic. Created issue #63, updated PRD/workplan/parent-issue checklist
+- Shipped Phase 11 in full this same session:
+  - `scripts/feature-image/templates.ts` — YAML CRUD, fork/archive helpers, fitness computation (recent-weighted average, Laplace-smoothed by usage count)
+  - Extended `LogEntry` with `rating` and `templateSlug`; threaded both through `pipeline.ts`, `/api/dev/feature-image/log`, and `/api/dev/feature-image/generate`
+  - New `GET /POST /api/dev/feature-image/templates` endpoint (list with computed fitness, create/update/fork/archive)
+  - Gallery UI: template picker (with fitness in option labels), fork button, star widgets on every history entry, "Save as template" button (interactive prompts for slug/name/description/tags), candidate-template pills surfaced from workflow context
+  - New `/feature-image-prompts` skill for browsing the library by tag/fitness/lineage
+  - `/feature-image-blog` updated to read post tags from blog index, query templates, and add `suggestedTemplateSlug` + `candidateTemplates` to the workflow context
+  - Seeded `docs/feature-image-prompts.yaml` with 4 templates (`crystal-teal`, `crystal-amber`, `data-packet-network`, `stacked-panels-receding`); only `data-packet-network` has a real example linked (the reverse-engineering generation), others start at zero usage and float to top to accumulate ratings
+  - Added `yaml` devDependency
+  - Verified live: rating the reverse-engineering generation 5 stars updated `data-packet-network` to fitness 1.25 (correct dampening from Laplace smoothing)
+
+**Didn't Work:**
+- Inserted Phase 11 into the workplan at the wrong position (before Phase 10 instead of after) on first try — had to do a remove + re-insert
+- Dev server died multiple times during testing (exit code 143 / SIGTERM) — likely from running multiple instances and the build process competing for ports
+- Wrote a `/tmp/pr-body.md` file with the Write tool without reading it first, hit a tool-use error, had to delete and recreate
+
+**Course Corrections:**
+- [DOCUMENTATION] User pointed out FEATURE-IMAGES.md was stale (still described the pre-Phase-6 inline-generation flow) and that `/feature-image-help` didn't exist. Both fixed before opening the PR. Lesson: when changing user-facing flow, update the docs and skill registry in the same commit as the code.
+- [PROCESS] Wrong workplan insertion point — should have read the surrounding numbered phases more carefully before inserting Phase 11.
+- [PROCESS] Should have read `/tmp/pr-body.md` before re-writing it (Write tool requires Read first when target exists).
+
+**Quantitative:**
+- Messages: ~30
+- Commits: 4 on the feature branch (`9be0464` reverse-engineering content, `c087f29` docs+help-skill, `720d74b` Phase 11 scoping, `45ab767` Phase 11 implementation), plus the merged PR #62 (`2426246` on main)
+- Corrections: 3 (doc staleness, workplan insertion order, PR-body Write-without-Read)
+- Files changed: ~25 across the session
+- New skills: 3 (`/feature-image-help`, `/feature-image-prompts`, plus `/feature-image-apply` from prior session ratified)
+- New API endpoints: 1 (`/api/dev/feature-image/templates`)
+- New persisted artifacts: 1 (gitignored `.feature-image-pipeline.jsonl`); 1 checked-in (`docs/feature-image-prompts.yaml`)
+
+**Insights:**
+- The two-way workflow pipeline (agent enqueue → user iterate → user decide → agent apply) is a genuinely useful pattern that separates "deliberation in the gallery" from "wiring in the codebase". It matches how the user actually works and the gallery's auto-poll keeps the loop tight without manual refresh.
+- Fitness via Laplace-smoothed blend of recent + overall average is the right shape for small-sample template ranking — a single 5-star rating yields fitness 1.25 (not 5.0), which is the correct "promising but unproven" signal.
+- Floating new (zero-rating) templates to the top of the picker is a critical UX move; without it, established templates would dominate forever and new prompts would never accumulate signal.
+- Updating user-facing docs late is a recurring mistake — Phase 6 had shipped to the gallery and skills before FEATURE-IMAGES.md was updated. Worth a personal heuristic: if the user-facing flow changes, the user-facing docs change in the same commit.
+- `/feature-image-blog`'s shift from "do everything" to "enqueue + hand off" was the right call — it lets the user explore freely instead of being railroaded into accepting the agent's first guess. The skill became simpler AND more useful.
+
+---
+
 ## 2026-04-17: Editorial Calendar — Phase 4 Social Distribution + GA4 Migration
 ### Feature: editorial-calendar
 ### Worktree: audiocontrol.org-editorial-calendar
