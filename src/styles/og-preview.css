@@ -158,6 +158,8 @@
   resize: none;
   outline: none;
   overflow: hidden;
+  min-height: 0;
+  field-sizing: content;
 }
 
 .og-preview .og-title-input {
