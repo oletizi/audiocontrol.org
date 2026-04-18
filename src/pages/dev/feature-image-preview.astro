@@ -1541,12 +1541,22 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     let threadPollHandle = null;
     function stopThreadPolling() { if (threadPollHandle) { clearInterval(threadPollHandle); threadPollHandle = null; } }
 
+    function threadDraftKey(entryId) { return `fi-thread-draft-${entryId}`; }
+
     function wireThread(root, entry) {
       stopThreadPolling();
       const messagesEl = root.querySelector('.thread-messages');
       const inputEl = root.querySelector('.thread-input');
       const sendBtn = root.querySelector('.thread-send');
       if (!messagesEl || !inputEl || !sendBtn) return;
+
+      // Restore draft if any — survives gallery refreshes (ratings, status
+      // changes, commits) and page reloads.
+      const savedDraft = localStorage.getItem(threadDraftKey(entry.id));
+      if (savedDraft) {
+        inputEl.value = savedDraft;
+        requestAnimationFrame(() => autosizeTextarea(inputEl));
+      }
 
       let lastMessageStamp = null;
       let threadIdCached = null;
@@ -1612,6 +1622,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
             throw new Error(j.error || `status ${res.status}`);
           }
           inputEl.value = '';
+          localStorage.removeItem(threadDraftKey(entry.id));
           autosizeTextarea(inputEl);
           await refreshThread();
           await refreshWorkflows();
@@ -1622,7 +1633,13 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         }
       }
 
-      inputEl.addEventListener('input', () => autosizeTextarea(inputEl));
+      inputEl.addEventListener('input', () => {
+        autosizeTextarea(inputEl);
+        // Persist draft on every keystroke so focus-refresh cycles don't lose work.
+        const value = inputEl.value;
+        if (value) localStorage.setItem(threadDraftKey(entry.id), value);
+        else localStorage.removeItem(threadDraftKey(entry.id));
+      });
       inputEl.addEventListener('keydown', (ev) => {
         if ((ev.metaKey || ev.ctrlKey) && ev.key === 'Enter') { ev.preventDefault(); sendMessage(); }
       });
