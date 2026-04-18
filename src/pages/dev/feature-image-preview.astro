@@ -745,18 +745,20 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       transition: max-height 0.22s ease, opacity 0.18s ease, padding 0.22s ease;
     }
     .save-template-panel.stp-open {
-      max-height: 900px;
+      max-height: 1200px;
       opacity: 1;
-      padding: 1rem 1.1rem 0.9rem;
+      padding: 1.1rem 1.2rem 0.95rem;
     }
-    .stp-head {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: baseline;
+
+    /* Head: title + close on row 1, sub on row 2 */
+    .save-template-panel .stp-head { margin-bottom: 1rem; }
+    .save-template-panel .stp-head-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 0.75rem;
-      margin-bottom: 0.85rem;
     }
-    .stp-head .section-label {
+    .save-template-panel .stp-head .section-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.65rem;
       font-weight: 600;
@@ -764,8 +766,13 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       letter-spacing: 0.2em;
       color: var(--accent);
     }
-    .stp-sub { font-size: 0.75rem; color: var(--text-3); line-height: 1.4; }
-    .stp-close {
+    .save-template-panel .stp-sub {
+      margin: 0.35rem 0 0;
+      font-size: 0.78rem;
+      color: var(--text-3);
+      line-height: 1.5;
+    }
+    .save-template-panel .stp-close {
       background: transparent;
       border: none;
       color: var(--text-3);
@@ -775,40 +782,67 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       cursor: pointer;
       border-radius: var(--radius);
     }
-    .stp-close:hover { background: var(--bg-3); color: var(--text-0); }
+    .save-template-panel .stp-close:hover { background: var(--bg-3); color: var(--text-0); }
 
-    .stp-grid {
+    /* Body: each field is a vertical stack (label → input → hint) */
+    .save-template-panel .stp-body { display: flex; flex-direction: column; gap: 0.9rem; }
+    .save-template-panel .stp-row-2 {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.75rem 1rem;
+      gap: 0.9rem;
     }
-    .stp-field { display: flex; flex-direction: column; gap: 0.3rem; }
-    .stp-full { grid-column: 1 / -1; }
-    .stp-label {
+    .save-template-panel .stp-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+    .save-template-panel .stp-label {
+      display: block;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.6rem;
       font-weight: 500;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.14em;
       color: var(--text-3);
+      margin: 0;
     }
-    .stp-field input[type="text"],
-    .stp-field textarea {
+    .save-template-panel .stp-field input[type="text"],
+    .save-template-panel .stp-field textarea {
+      display: block;
+      width: 100%;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       background: var(--bg-2);
       color: var(--text-0);
       border: 1px solid var(--edge);
       border-radius: var(--radius);
-      padding: 0.45rem 0.6rem;
+      padding: 0.5rem 0.65rem;
       min-height: 0;
+      box-sizing: border-box;
     }
-    .stp-field textarea { font-family: 'Inter', sans-serif; line-height: 1.5; resize: vertical; }
-    .stp-field input[type="text"]:focus,
-    .stp-field textarea:focus { outline: none; border-color: var(--accent); background: var(--bg-1); }
-    .stp-hint { font-size: 0.7rem; color: var(--text-3); line-height: 1.4; }
+    .save-template-panel .stp-field textarea {
+      font-family: 'Inter', sans-serif;
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 3rem;
+    }
+    .save-template-panel .stp-field input[type="text"]:focus,
+    .save-template-panel .stp-field textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg-1);
+    }
+    .save-template-panel .stp-hint {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      color: var(--text-3);
+      line-height: 1.4;
+    }
 
-    .stp-tags {
+    /* Tag input */
+    .save-template-panel .stp-tags {
       display: flex;
       flex-wrap: wrap;
       gap: 0.3rem;
@@ -816,15 +850,15 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       background: var(--bg-2);
       border: 1px solid var(--edge);
       border-radius: var(--radius);
-      min-height: 2.2rem;
+      min-height: 2.3rem;
       align-items: center;
     }
-    .stp-tags:focus-within { border-color: var(--accent); background: var(--bg-1); }
-    .stp-tag {
+    .save-template-panel .stp-tags:focus-within { border-color: var(--accent); background: var(--bg-1); }
+    .save-template-panel .stp-tag {
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
-      padding: 0.15rem 0.4rem 0.15rem 0.55rem;
+      padding: 0.15rem 0.35rem 0.15rem 0.55rem;
       background: rgba(47, 184, 168, 0.12);
       border: 1px solid rgba(47, 184, 168, 0.35);
       color: var(--accent);
@@ -832,7 +866,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.7rem;
     }
-    .stp-tag button {
+    .save-template-panel .stp-tag button {
       background: transparent;
       border: none;
       color: var(--accent);
@@ -842,56 +876,76 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       cursor: pointer;
       border-radius: 999px;
     }
-    .stp-tag button:hover { background: rgba(47, 184, 168, 0.18); }
-    .stp-tag-input {
+    .save-template-panel .stp-tag button:hover { background: rgba(47, 184, 168, 0.18); }
+    .save-template-panel .stp-tag-input {
       flex: 1;
       min-width: 10ch;
-      background: transparent !important;
-      border: none !important;
-      padding: 0.15rem 0.1rem !important;
+      background: transparent;
+      border: none;
+      padding: 0.15rem 0.1rem;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.75rem;
       color: var(--text-0);
     }
-    .stp-tag-input:focus { outline: none; }
+    .save-template-panel .stp-tag-input:focus { outline: none; }
 
-    .stp-captured { background: var(--bg-2); border: 1px solid var(--edge); border-radius: var(--radius); padding: 0.6rem 0.75rem; }
-    .stp-captured .stp-label { margin-bottom: 0.3rem; }
-    .stp-captured-body {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      column-gap: 0.75rem;
-      row-gap: 0.35rem;
-      font-size: 0.75rem;
-      color: var(--text-1);
+    /* Captured — simple definition list, no nested card */
+    .save-template-panel .stp-captured {
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--edge);
     }
-    .stp-captured-body strong {
+    .save-template-panel .stp-captured-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       font-weight: 500;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.14em;
+      color: var(--text-3);
+      margin-bottom: 0.5rem;
+    }
+    .save-template-panel .stp-captured-list {
+      margin: 0;
+      display: grid;
+      grid-template-columns: 5rem 1fr;
+      column-gap: 0.75rem;
+      row-gap: 0.4rem;
+      font-size: 0.82rem;
+    }
+    .save-template-panel .stp-captured-list dt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      align-self: start;
+    }
+    .save-template-panel .stp-captured-list dd {
+      margin: 0;
+      color: var(--text-1);
+      line-height: 1.5;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .save-template-panel .stp-msg {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      margin: 0.85rem 0 0;
+      min-height: 1em;
       color: var(--text-3);
     }
-    .stp-captured-body > div { display: contents; }
-    .stp-captured-body span { font-family: 'Inter', sans-serif; line-height: 1.4; }
+    .save-template-panel .stp-msg.working { color: var(--accent); }
+    .save-template-panel .stp-msg.ok { color: var(--success); }
+    .save-template-panel .stp-msg.error { color: var(--danger); }
 
-    .stp-msg { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; margin-top: 0.6rem; min-height: 1em; color: var(--text-3); }
-    .stp-msg.working { color: var(--accent); }
-    .stp-msg.ok { color: var(--success); }
-    .stp-msg.error { color: var(--danger); }
-
-    .stp-actions {
+    .save-template-panel .stp-actions {
       display: flex;
       justify-content: flex-end;
       gap: 0.5rem;
-      margin-top: 0.6rem;
-      padding-top: 0.6rem;
+      margin-top: 0.9rem;
+      padding-top: 0.75rem;
       border-top: 1px solid var(--edge);
     }
 
     @media (max-width: 640px) {
-      .stp-grid { grid-template-columns: 1fr; }
+      .save-template-panel .stp-row-2 { grid-template-columns: 1fr; }
     }
     .card-focused .err-line {
       color: var(--danger);
@@ -1358,49 +1412,60 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       const hasPrompt = !!entry.prompt;
       const promptSnippet = entry.prompt ? escapeHtml(entry.prompt.slice(0, 160)) + (entry.prompt.length > 160 ? '…' : '') : '<em>—</em>';
 
+      const uid = 'stp-' + Math.random().toString(36).slice(2, 8);
       const panel = document.createElement('section');
       panel.className = 'save-template-panel';
       panel.innerHTML = `
-        <div class="stp-head">
-          <span class="section-label">Save as Template</span>
-          <span class="stp-sub">Adds this entry's prompt, preset, and provider to the library for reuse and fitness scoring.</span>
-          <button type="button" class="stp-close" title="Close without saving" aria-label="Close">×</button>
-        </div>
-        <div class="stp-grid">
-          <label class="stp-field">
-            <span class="stp-label">Name</span>
-            <input class="stp-input-name" type="text" value="${escapeAttr(name)}" />
-            <span class="stp-hint">Human-readable; shown in the template dropdown.</span>
-          </label>
-          <label class="stp-field">
-            <span class="stp-label">Slug</span>
-            <input class="stp-input-slug" type="text" value="${escapeAttr(slug)}" />
-            <span class="stp-hint">Used as the template's id. Lowercase, digits, hyphens only.</span>
-          </label>
-          <label class="stp-field stp-full">
-            <span class="stp-label">Description</span>
-            <textarea class="stp-input-desc" rows="2" placeholder="When to use this template…">${escapeHtml(description)}</textarea>
-            <span class="stp-hint">A one-liner that helps future-you pick this template when it applies.</span>
-          </label>
-          <div class="stp-field stp-full">
-            <span class="stp-label">Tags</span>
-            <div class="stp-tags" role="list"></div>
-            <span class="stp-hint">Tags match templates to blog posts via the workflow. Press Enter or comma to add.</span>
+        <header class="stp-head">
+          <div class="stp-head-top">
+            <span class="section-label">Save as Template</span>
+            <button type="button" class="stp-close" title="Close without saving" aria-label="Close">×</button>
           </div>
-          <div class="stp-field stp-full stp-captured">
-            <span class="stp-label">Captured from this entry</span>
-            <div class="stp-captured-body">
-              <div><strong>Prompt</strong> <span>${promptSnippet}</span></div>
-              <div><strong>Preset</strong> <span>${escapeHtml(entry.preset || '—')}</span></div>
-              <div><strong>Provider</strong> <span>${escapeHtml(entry.provider || '—')}</span></div>
+          <p class="stp-sub">Captures this entry's prompt, preset, and provider as a reusable library record.</p>
+        </header>
+
+        <div class="stp-body">
+          <div class="stp-row-2">
+            <div class="stp-field">
+              <label class="stp-label" for="${uid}-name">Name</label>
+              <input class="stp-input-name" id="${uid}-name" type="text" value="${escapeAttr(name)}" />
+              <p class="stp-hint">Shown in the template dropdown.</p>
+            </div>
+            <div class="stp-field">
+              <label class="stp-label" for="${uid}-slug">Slug</label>
+              <input class="stp-input-slug" id="${uid}-slug" type="text" value="${escapeAttr(slug)}" />
+              <p class="stp-hint">Lowercase letters, digits, hyphens.</p>
             </div>
           </div>
+
+          <div class="stp-field">
+            <label class="stp-label" for="${uid}-desc">Description</label>
+            <textarea class="stp-input-desc" id="${uid}-desc" rows="2" placeholder="When to use this template…">${escapeHtml(description)}</textarea>
+            <p class="stp-hint">A one-liner that helps future-you pick this template when it applies.</p>
+          </div>
+
+          <div class="stp-field">
+            <span class="stp-label">Tags</span>
+            <div class="stp-tags" role="list"></div>
+            <p class="stp-hint">Tags match templates to blog posts via the workflow. Enter or comma to add.</p>
+          </div>
+
+          <div class="stp-captured">
+            <div class="stp-captured-label">Captured from this entry</div>
+            <dl class="stp-captured-list">
+              <dt>Prompt</dt><dd>${promptSnippet}</dd>
+              <dt>Preset</dt><dd>${escapeHtml(entry.preset || '—')}</dd>
+              <dt>Provider</dt><dd>${escapeHtml(entry.provider || '—')}</dd>
+            </dl>
+          </div>
         </div>
+
         <div class="stp-msg" aria-live="polite"></div>
-        <div class="stp-actions">
+
+        <footer class="stp-actions">
           <button type="button" class="btn-ghost stp-cancel">Cancel</button>
           <button type="button" class="btn-primary stp-submit"${hasPrompt ? '' : ' disabled title="This entry has no prompt to save"'}>Save template</button>
-        </div>
+        </footer>
       `;
       wireSaveTemplatePanel(panel, entry, tags);
       return panel;
