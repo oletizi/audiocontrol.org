@@ -72,6 +72,24 @@
         { "channel": "r/ReverseEngineering", "note": "academic tone preferred" },
         { "channel": "r/retrocomputing" }
       ]
+    },
+    "content-marketing": {
+      "reddit": [
+        { "channel": "r/ContentMarketing", "note": "thoughtful posts welcome; avoid bare promo" },
+        { "channel": "r/SaaS", "note": "founders/builders; self-promo Saturdays" },
+        { "channel": "r/SEO", "note": "moderation is strict; post must be actionable" },
+        { "channel": "r/marketing" },
+        { "channel": "r/Entrepreneur", "note": "huge; low signal unless story-driven" }
+      ]
+    },
+    "automation-workflow": {
+      "reddit": [
+        { "channel": "r/automation" },
+        { "channel": "r/productivity", "note": "self-promo allowed in niche threads only" },
+        { "channel": "r/ChatGPTCoding" },
+        { "channel": "r/SideProject", "note": "self-promo friendly" },
+        { "channel": "r/IndieHackers" }
+      ]
     }
   }
 }

@@ -6,10 +6,10 @@
 |------|------|------|------|------|
 | building-the-editorial-calendar-feature | Building the Editorial Calendar Feature | A writeup of the editorial-calendar feature itself — why ad-hoc content creation needed a system, how the Ideas→Published lifecycle works, and how analytics, Reddit, and YouTube got wired into one virtuous loop. |  | manual |
 | analytics-automation-feature | Analytics Automation Feature | How the automated-analytics feature turns Umami / GA4 / Search Console into actionable recommendations — the scorecard, striking-distance queries, CTR opportunities, and the feedback loop into the editorial calendar. |  | manual |
-| feature-image-automation-feature | Feature Image Automation Feature | How we went from hand-cropping images to a two-way workflow pipeline between Claude Code skills and a local preview gallery for AI-generated feature images — the JSONL workflow queue, the state machine, and why dev-only Astro routes beat a dashboard app. |  | manual |
 | codex-parallel-implementation-and-work-checking-on-mesa-ii | Codex Parallel Implementation and Work Checking on MESA II | Running Claude Code and Codex against the same MESA II reverse-engineering problem in parallel, using each to cross-check the other. How disagreement between agents surfaces real bugs; how agreement gives higher confidence than a single agent alone. |  | manual |
 | video-demo-feature | Video Demo Feature | Making YouTube videos a first-class content type alongside blog posts — same lifecycle, same cross-link audit, same distribution tracking. How treating videos as editorial entries (not marketing afterthoughts) changes the content workflow. |  | manual |
-| lightweight-web-workflow-dashboards-with-action-queues-for-claude-code | Lightweight Web Workflow Dashboards with Action Queues for Claude Code | A pattern: instead of rigid hand-coded review UIs, build lightweight web dashboards that present an action queue Claude Code pushes work into and the user resolves. Queue is a JSON file in git (no database). Claude Code is the backend (no rigid system). The workflow is a family of Claude skills (see audiocontrol.org /feature-image-* family). Pass messages back and forth via the queue — the dashboard surfaces complex questions Claude has, user responses save back. Works for feature images, could work for any high-bandwidth review loop. |  | manual |
+| lightweight-web-workflow-dashboards-with-action-queues-for-claude-code | Lightweight Web Workflow Dashboards with Action Queues for Claude Code | A pattern: instead of rigid hand-coded review UIs, build lightweight dev-only web dashboards that present an action queue Claude Code pushes work into and the user resolves. Queue is a JSONL file in git — no database. Claude Code is the backend — no rigid workflow engine. The workflow is a family of Claude skills. The audiocontrol.org /feature-image-* family is the live worked example (see the feature-image-automation-feature post). Pass messages back and forth via the queue: the dashboard surfaces complex questions Claude has, user responses save back. Works for feature images, works for any high-bandwidth review loop where the decision surface is too rich for a CLI yes/no. |  | manual |
+| evolution-by-artificial-selection-for-prompt-generation | Evolution by Artificial Selection for Prompt Generation | Cultivating a prompt library under selection pressure instead of one-shot engineering the perfect prompt. Fitness from user ratings, lineage through forks, fitness×recency weighting in the UI — brand consistency as a by-product, evolution as the mechanism. The general principle: for high-variance search spaces (prompts, filter combos, skill docs), a population under selection pressure beats brute-force or engineering. |  | manual |
 
 ## Planned
 
@@ -17,7 +17,9 @@
 
 ## Drafting
 
-*No entries.*
+| Slug | Title | Description | Keywords | Topics | Source | Issue |
+|------|------|------|------|------|------|------|
+| feature-image-automation-feature | Feature Image Automation Feature | How we went from hand-cropping images to a two-way workflow pipeline between Claude Code skills and a local preview gallery for AI-generated feature images — the JSONL workflow queue, the state machine, and why dev-only Astro routes beat a dashboard app. | automated blog feature image generation, AI content marketing workflow, Claude Code skills image pipeline, lightweight content automation | ai-agents, claude, programming, content-marketing, automation-workflow | manual | #65 |
 
 ## Review
 
