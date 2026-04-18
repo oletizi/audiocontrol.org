@@ -30,6 +30,7 @@ interface GenerateBody {
   height?: number;
   baseName?: string;
   outputDir?: string;
+  parentEntryId?: string;
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -101,6 +102,7 @@ export const POST: APIRoute = async ({ request }) => {
       durationMs: result.durationMs,
       status: 'generated',
       templateSlug: body.templateSlug,
+      parentEntryId: body.parentEntryId,
     };
     appendLog(entry);
 

@@ -32,8 +32,9 @@ public/images/generated/
 .playwright-mcp/
 redesign-*.png
 
-# (note: .feature-image-history.jsonl and .feature-image-pipeline.jsonl
-# are intentionally NOT gitignored — they hold the generation history
-# and workflow-decision audit trail that the Phase 11 prompt library
-# will compute fitness scores from. Lose them = lose the design-system
+# (note: .feature-image-history.jsonl, .feature-image-pipeline.jsonl,
+# and .feature-image-threads.jsonl are intentionally NOT gitignored —
+# they hold the generation history, workflow-decision audit trail, and
+# Phase 13 iteration conversation that Phase 11 fitness scoring and
+# future analysis will compute from. Lose them = lose the design-system
 # evolution.)

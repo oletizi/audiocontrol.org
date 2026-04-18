@@ -143,6 +143,7 @@ export const POST: APIRoute = async ({ request, url }) => {
       status: 'generated',
       templateSlug: source.templateSlug,
       notes: `rebaked from ${source.id.slice(0, 8)} via DOM`,
+      parentEntryId: source.id,
     };
     appendLog(entry);
 

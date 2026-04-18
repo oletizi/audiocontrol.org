@@ -33,6 +33,8 @@ export interface LogEntry {
   rating?: number;
   /** Slug of the prompt template used to seed this generation (if any). */
   templateSlug?: string;
+  /** ID of the entry this was iterated from — anchors lineage for threads. */
+  parentEntryId?: string;
 }
 
 /** Read all log entries, oldest first. Empty array if the file doesn't exist. */

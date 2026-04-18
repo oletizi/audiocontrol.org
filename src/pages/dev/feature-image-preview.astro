@@ -363,6 +363,8 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       margin: 0.5rem 0 0.4rem;
     }
     .wf-group-label.decided { color: var(--success); }
+    .wf-group-label.iterate { color: var(--warning); }
+    .wf-title-iterate { font-size: 0.82rem; font-style: italic; color: var(--text-1); font-weight: 400; }
     .wf-item {
       padding: 0.6rem 0.75rem;
       margin-bottom: 0.5rem;
@@ -647,6 +649,87 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     .card-focused .note-saved.working { color: var(--accent); }
     .card-focused .note-saved.ok { color: var(--success); }
     .card-focused .note-saved.error { color: var(--danger); }
+
+    /* Thread section (Phase 13) */
+    .thread-section {
+      margin-top: 0.5rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--edge);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .thread-header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .thread-section .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+    }
+    .thread-hint { font-size: 0.75rem; color: var(--text-3); }
+    .thread-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      max-height: 320px;
+      overflow-y: auto;
+      padding: 0.25rem 0;
+    }
+    .thread-empty {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      padding: 0.5rem 0;
+      text-align: center;
+    }
+    .thread-msg {
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      padding: 0.55rem 0.7rem;
+      max-width: 88%;
+    }
+    .thread-msg-user { align-self: flex-end; border-color: rgba(47, 184, 168, 0.3); background: rgba(47, 184, 168, 0.06); }
+    .thread-msg-assistant { align-self: flex-start; }
+    .thread-msg-head { display: flex; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.2rem; }
+    .thread-byline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-3);
+    }
+    .thread-msg-user .thread-byline { color: var(--accent); }
+    .thread-when { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-3); }
+    .thread-body { font-size: 0.85rem; color: var(--text-1); line-height: 1.45; white-space: pre-wrap; }
+    .thread-entry-ref {
+      margin-top: 0.4rem;
+      padding: 0.25rem 0.55rem;
+      font-size: 0.65rem;
+      background: transparent;
+      border: 1px solid var(--edge);
+      color: var(--text-2);
+    }
+    .thread-entry-ref:hover { background: var(--bg-3); color: var(--text-0); }
+    .thread-composer { display: flex; gap: 0.5rem; align-items: flex-start; }
+    .thread-input {
+      flex: 1;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      background: var(--bg-2);
+      color: var(--text-0);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.7rem;
+      resize: none;
+      min-height: 0;
+      field-sizing: content;
+    }
+    .thread-input:focus { outline: none; border-color: var(--accent); background: var(--bg-1); }
+    .thread-send { padding: 0.5rem 0.9rem; }
     .card-focused .err-line {
       color: var(--danger);
       background: rgba(228, 115, 115, 0.08);
@@ -1118,16 +1201,40 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       const div = document.createElement('div');
       div.className = 'wf-item ' + item.state;
       if (activeWorkflow && activeWorkflow.id === item.id) div.classList.add('active');
+      const isIterate = item.type === 'feature-image-iterate';
+
       const postLine = item.context.postPath
         ? `<span><strong>post</strong> ${escapeHtml(item.context.postPath)}</span>`
         : '';
-      const titleLine = item.context.title ? `<div class="wf-title">${escapeHtml(item.context.title)}</div>` : '<div class="wf-title"><em>untitled workflow</em></div>';
+      const sourceLine = item.context.sourceEntryId
+        ? `<span><strong>src</strong> ${escapeHtml(item.context.sourceEntryId.slice(0, 8))}</span>`
+        : '';
+
+      let titleLine;
+      if (isIterate) {
+        const feedback = item.context.userFeedback || '(no feedback)';
+        titleLine = `<div class="wf-title wf-title-iterate">↺ ${escapeHtml(feedback)}</div>`;
+      } else {
+        titleLine = item.context.title
+          ? `<div class="wf-title">${escapeHtml(item.context.title)}</div>`
+          : '<div class="wf-title"><em>untitled workflow</em></div>';
+      }
+
       let actions = '';
       if (item.state === 'open') {
-        actions = `
-          <button type="button" class="btn-primary" data-act="activate" title="${activeWorkflow && activeWorkflow.id === item.id ? 'Stop working on this workflow' : 'Start working on this workflow — pre-fills the Generate form and shows Submit button on matching entries'}">${activeWorkflow && activeWorkflow.id === item.id ? 'Deactivate' : 'Activate'}</button>
-          <button type="button" class="btn-ghost" data-act="cancel" title="Cancel this workflow without a decision">Cancel</button>
-        `;
+        if (isIterate) {
+          // Iterate items don't need user activation — they're pulled by the
+          // agent via /feature-image-iterate. Only show Cancel.
+          actions = `
+            <span class="wf-note">run /feature-image-iterate</span>
+            <button type="button" class="btn-ghost" data-act="cancel" title="Cancel this iteration request">Cancel</button>
+          `;
+        } else {
+          actions = `
+            <button type="button" class="btn-primary" data-act="activate" title="${activeWorkflow && activeWorkflow.id === item.id ? 'Stop working on this workflow' : 'Start working on this workflow — pre-fills the Generate form and shows Submit button on matching entries'}">${activeWorkflow && activeWorkflow.id === item.id ? 'Deactivate' : 'Activate'}</button>
+            <button type="button" class="btn-ghost" data-act="cancel" title="Cancel this workflow without a decision">Cancel</button>
+          `;
+        }
       } else if (item.state === 'decided') {
         actions = `<span class="wf-note">awaiting /feature-image-apply</span>`;
       } else if (item.state === 'applied') {
@@ -1136,9 +1243,10 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       div.innerHTML = `
         ${titleLine}
         <div class="wf-meta">
-          <span>${escapeHtml(item.state)}</span>
+          <span>${escapeHtml(isIterate ? 'iterate' : (item.type || 'blog'))}</span>
           <span>${escapeHtml(item.id.slice(0, 8))}</span>
           ${postLine}
+          ${sourceLine}
         </div>
         <div class="wf-actions">${actions}</div>
       `;
@@ -1199,20 +1307,31 @@ const filterNames = Object.keys(FILTER_REGISTRY);
 
       workflowListEl.innerHTML = '';
       if (open.length === 0 && decided.length === 0) {
-        workflowListEl.innerHTML = '<p class="hint">No pending workflows. Invoke <code>/feature-image-blog &lt;post-path&gt;</code> in Claude Code to start one.</p>';
+        workflowListEl.innerHTML = '<p class="hint">No pending workflows. Invoke <code>/feature-image-blog &lt;post-path&gt;</code> in Claude Code to start one, or send an Iterate message in focus mode.</p>';
         return;
       }
-      if (open.length > 0) {
+
+      const openBlog = open.filter(w => w.type !== 'feature-image-iterate');
+      const openIterate = open.filter(w => w.type === 'feature-image-iterate');
+
+      if (openBlog.length > 0) {
         const h = document.createElement('div');
         h.className = 'wf-group-label';
-        h.textContent = `Open · ${open.length}`;
+        h.textContent = `Open · blog workflows · ${openBlog.length}`;
         workflowListEl.appendChild(h);
-        for (const item of open) workflowListEl.appendChild(renderWorkflowItem(item));
+        for (const item of openBlog) workflowListEl.appendChild(renderWorkflowItem(item));
+      }
+      if (openIterate.length > 0) {
+        const h = document.createElement('div');
+        h.className = 'wf-group-label iterate';
+        h.textContent = `Open · iterate requests · ${openIterate.length} — run /feature-image-iterate`;
+        workflowListEl.appendChild(h);
+        for (const item of openIterate) workflowListEl.appendChild(renderWorkflowItem(item));
       }
       if (decided.length > 0) {
         const h = document.createElement('div');
         h.className = 'wf-group-label decided';
-        h.textContent = `Decided · ${decided.length} — awaiting agent`;
+        h.textContent = `Decided · ${decided.length} — awaiting /feature-image-apply`;
         workflowListEl.appendChild(h);
         for (const item of decided) workflowListEl.appendChild(renderWorkflowItem(item));
       }
@@ -1284,6 +1403,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     function unfocusEntry() {
       if (!focusedEntryId) return;
       focusedEntryId = null;
+      stopThreadPolling();
       refreshGallery();
     }
 
@@ -1396,13 +1516,149 @@ const filterNames = Object.keys(FILTER_REGISTRY);
             <button type="button" class="btn-ghost" data-action="copy" title="Copy this entry's prompt, provider, preset and filters into the Generate form">Copy as input</button>
             <button type="button" class="btn-ghost" data-action="save-template" title="Save this prompt as a reusable template in the library">Save as template</button>
           </div>
+          <div class="thread-section">
+            <div class="thread-header">
+              <span class="section-label">Thread with Claude</span>
+              <span class="thread-hint">Type what to change or improve; Claude picks it up via <code>/feature-image-iterate</code>.</span>
+            </div>
+            <div class="thread-messages" aria-live="polite"></div>
+            <div class="thread-composer">
+              <textarea class="thread-input" rows="1" placeholder="Ask Claude to iterate… (Cmd/Ctrl+Enter to send)"></textarea>
+              <button type="button" class="btn-primary thread-send" title="Send this feedback to Claude — also snapshots current title/subtitle/preset/filters">Send ↺</button>
+            </div>
+          </div>
         </div>
       `;
 
       wireCardActions(div, entry);
       wireInlineNote(div, entry);
+      wireThread(div, entry);
       if (rawPath) wireLivePreview(div, entry);
       return div;
+    }
+
+    // ── Thread (Phase 13) ──────────────────────────────────────────────────
+    let threadPollHandle = null;
+    function stopThreadPolling() { if (threadPollHandle) { clearInterval(threadPollHandle); threadPollHandle = null; } }
+
+    function wireThread(root, entry) {
+      stopThreadPolling();
+      const messagesEl = root.querySelector('.thread-messages');
+      const inputEl = root.querySelector('.thread-input');
+      const sendBtn = root.querySelector('.thread-send');
+      if (!messagesEl || !inputEl || !sendBtn) return;
+
+      let lastMessageStamp = null;
+      let threadIdCached = null;
+
+      async function refreshThread() {
+        try {
+          const res = await fetch(`/api/dev/feature-image/threads?entryId=${encodeURIComponent(entry.id)}`);
+          if (!res.ok) return;
+          const { threadId, messages } = await res.json();
+          threadIdCached = threadId;
+          renderMessages(messages);
+          const newest = messages.length ? messages[messages.length - 1].timestamp : null;
+          if (newest !== lastMessageStamp) {
+            lastMessageStamp = newest;
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+          }
+        } catch {
+          // swallow — polling should not spam alerts
+        }
+      }
+
+      function renderMessages(messages) {
+        if (messages.length === 0) {
+          messagesEl.innerHTML = '<div class="thread-empty">No messages yet. Send one to start iterating.</div>';
+          return;
+        }
+        const html = messages.map(m => {
+          const byline = m.role === 'user' ? 'You' : 'Claude';
+          const when = new Date(m.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+          const logRef = m.logEntryId
+            ? `<button type="button" class="thread-entry-ref" data-entry-id="${escapeAttr(m.logEntryId)}" title="Jump to this generation in focus mode">view generation →</button>`
+            : '';
+          return `
+            <div class="thread-msg thread-msg-${m.role}">
+              <div class="thread-msg-head">
+                <span class="thread-byline">${byline}</span>
+                <span class="thread-when">${when}</span>
+              </div>
+              <div class="thread-body">${escapeHtml(m.text).replace(/\n/g, '<br/>')}</div>
+              ${logRef}
+            </div>
+          `;
+        }).join('');
+        messagesEl.innerHTML = html;
+        messagesEl.querySelectorAll('.thread-entry-ref').forEach(btn => {
+          btn.addEventListener('click', () => focusEntry(btn.dataset.entryId));
+        });
+      }
+
+      async function sendMessage() {
+        const text = inputEl.value.trim();
+        if (!text) return;
+        sendBtn.disabled = true;
+        const snapshot = captureSnapshot(root, entry);
+        try {
+          const res = await fetch('/api/dev/feature-image/threads', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ action: 'append-message', entryId: entry.id, text, snapshot }),
+          });
+          if (!res.ok) {
+            const j = await res.json().catch(() => ({}));
+            throw new Error(j.error || `status ${res.status}`);
+          }
+          inputEl.value = '';
+          autosizeTextarea(inputEl);
+          await refreshThread();
+          await refreshWorkflows();
+        } catch (err) {
+          alert(`Failed to send: ${err.message}`);
+        } finally {
+          sendBtn.disabled = false;
+        }
+      }
+
+      inputEl.addEventListener('input', () => autosizeTextarea(inputEl));
+      inputEl.addEventListener('keydown', (ev) => {
+        if ((ev.metaKey || ev.ctrlKey) && ev.key === 'Enter') { ev.preventDefault(); sendMessage(); }
+      });
+      sendBtn.addEventListener('click', sendMessage);
+
+      refreshThread();
+      threadPollHandle = setInterval(refreshThread, 6000);
+    }
+
+    function captureSnapshot(cardRoot, entry) {
+      const previewEl = cardRoot.querySelector('.og-preview');
+      if (!previewEl) {
+        return {
+          title: entry.title,
+          subtitle: entry.subtitle,
+          prompt: entry.prompt,
+          preset: entry.preset,
+          overlay: true,
+        };
+      }
+      const titleEl = previewEl.querySelector('.og-title-input');
+      const subtitleEl = previewEl.querySelector('.og-subtitle-input');
+      return {
+        title: titleEl ? titleEl.value : entry.title,
+        subtitle: subtitleEl ? subtitleEl.value : entry.subtitle,
+        prompt: entry.prompt,
+        preset: previewEl.dataset.preset || entry.preset,
+        filters: {
+          grade: previewEl.dataset.grade,
+          phosphor: previewEl.dataset.phosphor,
+          vignette: previewEl.dataset.vignette,
+          scanlines: previewEl.dataset.scanlines,
+          grain: previewEl.dataset.grain,
+        },
+        overlay: previewEl.dataset.overlay === 'on',
+      };
     }
 
     function wireInlineNote(root, entry) {
