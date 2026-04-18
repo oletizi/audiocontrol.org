@@ -97,8 +97,8 @@ const inlineDims = width && height
   <div class="og-text-panel">
     {editable ? (
       <Fragment>
-        <input class="og-title-input" type="text" value={title} placeholder="Title" />
-        <textarea class="og-subtitle-input" rows="3" placeholder="Subtitle">{subtitle}</textarea>
+        <textarea class="og-title-input" rows="1" placeholder="Title">{title}</textarea>
+        <textarea class="og-subtitle-input" rows="1" placeholder="Subtitle">{subtitle}</textarea>
       </Fragment>
     ) : (
       <Fragment>

@@ -1503,7 +1503,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
             <div class="og-layer og-scanlines"></div>
             <div class="og-layer og-grain"></div>
             <div class="og-text-panel">
-              <input class="og-title-input" type="text" value="${escapeAttr(title)}" placeholder="Title" />
+              <textarea class="og-title-input" rows="1" placeholder="Title">${escapeHtml(title)}</textarea>
               <textarea class="og-subtitle-input" rows="1" placeholder="Subtitle">${escapeHtml(subtitle)}</textarea>
               <div class="og-brand-row">
                 <img class="og-logo" src="/favicon.svg" alt="" />
