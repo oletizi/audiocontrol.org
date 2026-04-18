@@ -36,10 +36,17 @@ Content creation for audiocontrol.org is ad hoc with no schedule, no procedure, 
 
 ## In Scope (Phase 6 addition)
 
-- **YouTube videos as first-class calendar entries**: videos go through the same Ideas → Planned → Drafting → Review → Published lifecycle as blog posts. `CalendarEntry` gains a `contentType` discriminator (`blog` | `youtube`) and a `contentUrl` for content that doesn't live at `/blog/<slug>/`
-- **YouTube metadata via Data API v3**: small client that fetches video title, description, and channel given a video ID or URL. Authenticated with a single API key in `~/.config/audiocontrol/youtube.json`. No OAuth — the key has read-only access to public data
-- **Cross-link audit**: a new skill `/editorial-cross-link-review` that verifies bidirectional linking between blog posts and YouTube videos. For each calendar entry, it extracts outbound links from the content (blog MD or YouTube description) and flags missing reciprocal links
+- **YouTube videos as first-class calendar entries**: videos go through the same Ideas → Planned → Drafting → Review → Published lifecycle as blog posts. `CalendarEntry` gains a `contentType` discriminator (`blog` | `youtube` | `tool`) and a `contentUrl` for content that doesn't live at `/blog/<slug>/`
+- **Tools as first-class calendar entries**: standalone apps/editors on audiocontrol.org (like the S-330 web editor) get the same treatment as YouTube videos — tracked by `contentUrl`, lifecycle identical, no repo scaffolding
+- **YouTube metadata via Data API v3**: small client that fetches video title, description, and channel given a video ID or URL. Authenticated with a single API key in `~/.config/audiocontrol/youtube-key.txt`. No OAuth — the key has read-only access to public data
+- **Cross-link audit (blog ↔ YouTube only)**: a new skill `/editorial-cross-link-review` that verifies bidirectional linking between blog posts and YouTube videos. For each calendar entry, it extracts outbound links from the content (blog MD or YouTube description) and flags missing reciprocal links. Tool entries are tracked but not audited — see Phase 7 below for that extension.
 - **Reddit sync improvement**: when a Reddit submission links to a YouTube URL that matches a known YouTube calendar entry, record it as a distribution of that video. Closes the gap observed during the first live `/editorial-reddit-sync` run (6 S-330 editor video shares that had nowhere to attach)
+
+## In Scope (Phase 7 addition)
+
+- **Cross-link audit for tool entries**: fetch the tool's page HTML, parse outbound links (YouTube URLs and audiocontrol.org URLs), and resolve them against the calendar. Extends `/editorial-cross-link-review` so a gap like "blog post X mentions the editor but doesn't link to it" or "editor page embeds video Y but Y's description doesn't link to editor" is detected automatically
+- **Generalized audiocontrol.org link resolution**: any audiocontrol.org URL (blog, tool, or future types) can be resolved to its calendar entry via a unified `contentUrl` index. Not limited to `/blog/<slug>/` paths
+- **Lightweight HTML extraction**: regex-based extraction of `<a href>` and bare URLs from static HTML, no DOM parser dependency
 
 ## Deferred Scope
 
@@ -74,6 +81,7 @@ Each editorial action is a separate Claude Code skill, composed like UNIX tools.
 | `/editorial-reddit-sync` | 5 | Pull user Reddit submissions via API, upsert DistributionRecords |
 | `/editorial-reddit-opportunities` | 5 | For a published post, list relevant subreddits not yet distributed to, enriched with live subreddit metadata |
 | `/editorial-cross-link-review` | 6 | Audit bidirectional linking between blog posts and YouTube videos, flag missing reciprocal links |
+| `/editorial-cross-link-review` (extended) | 7 | Same skill; Phase 7 adds tool-page analysis and generalized audiocontrol.org link resolution |
 
 ### Calendar Format
 

@@ -28,8 +28,8 @@ test-results/
 # scratch output from feature-image CLI iterations
 public/images/generated/
 
-# feature-image preview gallery iteration history
-.feature-image-history.jsonl
-
-# feature-image workflow pipeline between skills and the gallery
-.feature-image-pipeline.jsonl
+# (note: .feature-image-history.jsonl and .feature-image-pipeline.jsonl
+# are intentionally NOT gitignored — they hold the generation history
+# and workflow-decision audit trail that the Phase 11 prompt library
+# will compute fitness scores from. Lose them = lose the design-system
+# evolution.)

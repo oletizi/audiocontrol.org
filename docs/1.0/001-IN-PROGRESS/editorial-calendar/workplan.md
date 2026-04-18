@@ -16,6 +16,7 @@
 | Phase 4: Social Distribution Tracking | oletizi/audiocontrol.org#54 |
 | Phase 5: Subreddit Tracking & Cross-posting Opportunities | oletizi/audiocontrol.org#56 |
 | Phase 6: YouTube as First-Class Content + Cross-link Audit | oletizi/audiocontrol.org#57 |
+| Phase 7: Tool Cross-link Audit | oletizi/audiocontrol.org#59 |
 
 ## Files Affected
 
@@ -43,8 +44,9 @@
 - `docs/editorial-channels.json` — curated `topic → [subreddit]` map
 - `scripts/lib/youtube/config.ts` — YouTube API key loader (Phase 6)
 - `scripts/lib/youtube/client.ts` — YouTube Data API v3 client — fetch video metadata (Phase 6)
-- `scripts/lib/editorial/crosslinks.ts` — extract links from blog MD and YouTube descriptions, diff bidirectional coverage (Phase 6)
+- `scripts/lib/editorial/crosslinks.ts` — extract links from blog MD and YouTube descriptions, diff bidirectional coverage (Phase 6); extended in Phase 7 for tool-page analysis and generalized audiocontrol.org link resolution
 - `.claude/skills/editorial-cross-link-review/SKILL.md` — audit skill (Phase 6)
+- `scripts/lib/http/fetch-page.ts` — minimal HTML fetcher for tool pages (Phase 7)
 
 ## Implementation Phases
 
@@ -152,15 +154,15 @@
 
 #### Data model
 
-- [ ] Add `channel?: string` field to `DistributionRecord` (e.g. `r/synthdiy`, YouTube channel handle, LinkedIn page slug)
-- [ ] Add `topics?: string[]` to `CalendarEntry` (optional — overlaps with `targetKeywords` but is semantically distinct: topics are coarse tags used for cross-posting recommendations, keywords are SEO targets)
-- [ ] Extend the Distribution markdown table with a Channel column; maintain backwards-compat parsing for old rows without the column
+- [x] Add `channel?: string` field to `DistributionRecord` (e.g. `r/synthdiy`, YouTube channel handle, LinkedIn page slug)
+- [x] Add `topics?: string[]` to `CalendarEntry` (optional — overlaps with `targetKeywords` but is semantically distinct: topics are coarse tags used for cross-posting recommendations, keywords are SEO targets)
+- [x] Extend the Distribution markdown table with a Channel column; maintain backwards-compat parsing for old rows without the column
 
 #### Curated map
 
-- [ ] Create `docs/editorial-channels.json` with a `topic → [subreddit]` map (JSON rather than YAML to avoid a new dependency; human-editable enough for a curated list)
-- [ ] Seed the map with topic tags we'll use for audiocontrol.org content: `samplers`, `vintage-hardware`, `scsi`, `roland`, `akai`, `ai-agents`, `home-studio`, etc. (initial set — user to curate)
-- [ ] Each subreddit entry can carry optional hints (self-promo rules, flair requirements) as free-form notes
+- [x] Create `docs/editorial-channels.json` with a `topic → [subreddit]` map (JSON rather than YAML to avoid a new dependency; human-editable enough for a curated list)
+- [x] Seed the map with topic tags we'll use for audiocontrol.org content: `samplers`, `vintage-hardware`, `scsi`, `roland`, `akai`, `ai-agents`, `home-studio`, etc. (initial set — user to curate)
+- [x] Each subreddit entry can carry optional hints (self-promo rules, flair requirements) as free-form notes
 
 #### Implementation
 
@@ -266,9 +268,9 @@ No new user-invocable skill beyond `/editorial-cross-link-review`. The rest are 
 
 #### Data model
 
-- [ ] Add `contentType: 'blog' | 'youtube'` to `CalendarEntry` (optional during parsing, defaults to `'blog'` — all existing entries remain valid)
-- [ ] Add `contentUrl?: string` to `CalendarEntry` — the canonical URL for content that doesn't live at `/blog/<slug>/`. For blog entries, stays unset (URL is derived from slug). For YouTube entries, stores the full YouTube URL
-- [ ] Extend `calendar.ts` parser/writer: stage tables gain optional `Type` and `URL` columns, emitted only when any entry in the stage has a non-default value (same pattern as Phase 5's Topics/Channel columns)
+- [x] Add `contentType: 'blog' | 'youtube' | 'tool'` to `CalendarEntry` (optional during parsing, defaults to `'blog'` — all existing entries remain valid; `tool` added in Phase 6 to cover standalone apps)
+- [x] Add `contentUrl?: string` to `CalendarEntry` — the canonical URL for content that doesn't live at `/blog/<slug>/`. For blog entries, stays unset (URL is derived from slug). For YouTube/tool entries, stores the full URL
+- [x] Extend `calendar.ts` parser/writer: stage tables gain optional `Type` and `URL` columns, emitted only when any entry in the stage has a non-default value (same pattern as Phase 5's Topics/Channel columns)
 
 #### Curated map
 
@@ -278,40 +280,36 @@ No changes — `editorial-channels.json` stays topic-to-subreddit. A YouTube vid
 
 **Core data model + skill updates**
 
-- [ ] Extend `types.ts` with `contentType` and `contentUrl`
-- [ ] Update `calendar.ts` parser/writer for Type/URL columns
-- [ ] Update `/editorial-add` to prompt for content type
-- [ ] Update `/editorial-draft` to branch on content type (blog scaffolds directory; youtube creates issue only)
-- [ ] Update `/editorial-publish` to require `contentUrl` for YouTube entries
+- [x] Extend `types.ts` with `contentType` and `contentUrl` (+ `effectiveContentType`, `isContentType` helpers)
+- [x] Update `calendar.ts` parser/writer for Type/URL columns (optional, emitted only when any entry uses non-default values)
+- [x] Update `/editorial-add` to prompt for content type
+- [x] Update `/editorial-draft` to branch on content type (blog scaffolds directory; youtube creates issue only)
+- [x] Update `/editorial-publish` to require `contentUrl` for YouTube entries
 
 **YouTube client**
 
-- [ ] `scripts/lib/youtube/config.ts` — loads `~/.config/audiocontrol/youtube.json` (`{apiKey: "..."}`). Throws with setup instructions if missing
-- [ ] `scripts/lib/youtube/client.ts` — `getVideoMetadata(videoIdOrUrl): {id, title, description, channelTitle, channelId, publishedAt}` using `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=<id>&key=<apiKey>`
-- [ ] Video ID extraction helper supporting `youtube.com/watch?v=<id>`, `youtu.be/<id>`, and `youtube.com/shorts/<id>`
-- [ ] Fixture-based tests — real API calls happen only from skills, not tests
+- [x] `scripts/lib/youtube/config.ts` — loads `~/.config/audiocontrol/youtube.json` (`{apiKey: "..."}`)
+- [x] `scripts/lib/youtube/client.ts` — `getVideoMetadata(videoIdOrUrl)` via `/youtube/v3/videos?part=snippet`
+- [x] `extractVideoId` helper supporting `watch?v=`, `youtu.be/`, `shorts/`, `embed/`, and bare IDs
 
 **Cross-link audit**
 
-- [ ] `scripts/lib/editorial/crosslinks.ts`:
-  - `extractYouTubeLinksFromMarkdown(md): string[]` — parses `youtube.com` and `youtu.be` URLs from a blog MD file
-  - `extractBlogLinksFromDescription(desc): string[]` — parses `audiocontrol.org/blog/<slug>/` URLs
-  - `auditCrossLinks(calendar, fetchDescription)` — returns per-entry reports: what the entry links to, which of those are known calendar entries, and which don't reciprocate
-- [ ] `/editorial-cross-link-review` skill — calls `auditCrossLinks`, passes a `fetchDescription` closure that uses `scripts/lib/youtube/client.ts`, prints the report grouped by gap type
+- [x] `scripts/lib/editorial/crosslinks.ts` — `extractYouTubeLinksFromMarkdown`, `extractBlogLinksFromDescription`, `slugFromBlogUrl`, `auditCrossLinks` with bidirectional gap detection
+- [x] `/editorial-cross-link-review` skill
 
 **Reddit sync improvement**
 
-- [ ] Update `/editorial-reddit-sync` to match submissions against `contentUrl` for YouTube entries in addition to `/blog/<slug>/` URLs for blog entries
-- [ ] Re-run the sync after Phase 6 ships to attribute the 6 pre-existing S-330 editor video shares once that video becomes a calendar entry
+- [x] Update `/editorial-reddit-sync` to match submissions against `contentUrl` for YouTube entries in addition to blog URLs
+- [x] Re-run the sync after Phase 6 ships, once the S-330 editor video exists as a calendar entry, to attribute the 6 pre-existing shares (done in commit 9b9a701 + 00dd9bd — all 8 Reddit submissions now attributed)
 
 **Tests**
 
-- [ ] `contentType` + `contentUrl` round-trip on stage tables
-- [ ] Backwards-compat parsing of legacy tables (no Type/URL columns)
-- [ ] `extractYouTubeLinksFromMarkdown` against realistic blog MD
-- [ ] `extractBlogLinksFromDescription` against realistic YouTube descriptions
-- [ ] `auditCrossLinks` with fixture calendar + fixture descriptions, verifies gap detection in both directions
-- [ ] YouTube client fixture tests (no live API calls from tests)
+- [x] `contentType` + `contentUrl` round-trip on stage tables
+- [x] Backwards-compat parsing of legacy tables (no Type/URL columns)
+- [x] `extractYouTubeLinksFromMarkdown` against realistic blog MD
+- [x] `extractBlogLinksFromDescription` against realistic YouTube descriptions
+- [x] `auditCrossLinks` with fixture calendar + fixture descriptions — verifies reciprocation, missing-backlink detection, and error handling in both directions
+- [x] `extractVideoId` fixture tests covering all supported URL forms
 
 **Acceptance Criteria**
 
@@ -329,11 +327,10 @@ No changes — `editorial-channels.json` stays topic-to-subreddit. A YouTube vid
 2. Open or create a project (reuse the one with the GA4 service account if you like)
 3. Enable the **YouTube Data API v3** under APIs & Services → Library
 4. Under Credentials, create an **API key**. Restrict it to the YouTube Data API v3 for hygiene
-5. Save:
-   ```json
-   { "apiKey": "AIza..." }
+5. Save the key as a single line at `~/.config/audiocontrol/youtube-key.txt` (matches the project's existing `flux-key.txt`, `openai-key.txt` convention):
+   ```bash
+   echo "AIza..." > ~/.config/audiocontrol/youtube-key.txt
    ```
-   at `~/.config/audiocontrol/youtube.json`
 
 Quota: 10,000 units per day free. One `videos.list` call costs 1 unit. The cross-link audit reads at most one video per calendar YouTube entry — we won't come close to the limit.
 
@@ -342,6 +339,77 @@ Quota: 10,000 units per day free. One `videos.list` call costs 1 unit. The cross
 - Should blog-post MD extraction handle embedded iframes (`<iframe src="youtube.com/embed/...">`) in addition to plain URLs? (Proposed: **yes** — capture all three forms: plain URL, short URL, iframe embed.)
 - Should cross-link audit report be generated as markdown in `docs/` for review, or streamed only to the skill output? (Proposed: **stream only** — audit is fast enough that we don't need to cache; keeping it out of `docs/` avoids churn on every run.)
 - Slug uniqueness: a blog post and a YouTube video on the same topic could collide. (Proposed: **keep global slug uniqueness** — if conflict, the user differentiates manually, e.g. `s330-crunch-post` vs `s330-crunch-video`.)
+
+### Phase 7: Tool Cross-link Audit
+
+**Deliverable:** Extend `/editorial-cross-link-review` so tool entries participate fully — the audit fetches each tool page's HTML, extracts outbound links, resolves them against the calendar's `contentUrl` index, and flags missing reciprocal links in both directions (blog→tool, tool→blog, tool→video, video→tool).
+
+**Motivation:** Phase 6 added `tool` as a valid content type but deliberately skipped it in the cross-link audit — tools don't have a fetch-able "description" field like YouTube videos, and they don't have a repo MD file like blog posts. Phase 7 closes that gap by fetching the tool's actual rendered HTML page from audiocontrol.org and parsing its outbound links.
+
+Without this, gaps like "the S-330 editor page embeds the drum-crunch video but the video description doesn't link back" or "the editor page doesn't link to the Feb 2026 blog update" can't be detected automatically — the operator has to notice them manually, which is exactly what Phase 6 was supposed to prevent.
+
+#### Skill design
+
+No new user-invocable skill. `/editorial-cross-link-review` is extended: when it encounters a tool entry, it fetches the page HTML, extracts links, and includes the results in the report alongside blog and video entries.
+
+#### Implementation
+
+**HTML fetching**
+
+- [x] `scripts/lib/http/fetch-page.ts` — `fetchHtml(url)` with descriptive User-Agent, 10s timeout via AbortController, throws on non-2xx. No auth
+- [x] No caching layer in this phase (revisit if audits get slow)
+
+**Link extraction**
+
+- [x] `extractLinksFromHtml(html, baseUrl?)` in `crosslinks.ts` — uses **cheerio** (the de-facto Node HTML parser, 30k+ stars, backed by htmlparser2) for robust DOM traversal. Regex parsing was considered and rejected — real HTML is too quirky
+- [x] Extracts `href`/`src` attributes plus bare URLs from text content; explicitly strips `<script>` and `<style>` before scanning
+- [x] Skips anchor-only, `mailto:`/`tel:`/`javascript:`/`data:`, feeds, sitemap, robots.txt
+- [x] Unit tests against realistic and deliberately garbage HTML
+
+**Generalized link resolution**
+
+- [x] Unified `byContentUrl` index built from all Published entries. Blog entries derive canonical URL from slug; youtube/tool use `contentUrl`. Normalized via `canonicalizeUrl` (lowercase hostname, strip trailing slash, preserve query)
+- [x] `resolveUrl` tries YouTube first (video ID match — more robust than URL match for YouTube's many URL shapes), then falls back to `byContentUrl`
+- [x] `extractBlogLinksFromDescription` generalized to `extractAudioControlLinksFromText` — matches any audiocontrol.org URL, not just `/blog/`
+- [x] New `extractAudioControlLinksFromMarkdown` — catches absolute URLs AND markdown-relative links like `[text](/roland/s330/editor)`
+
+**Tool-entry audit branch**
+
+- [x] `auditCrossLinks` now has a tool branch: fetches `entry.contentUrl`, extracts links, resolves each via unified index
+- [x] Self-links filtered at the recording step (tool pages link to themselves via nav)
+- [x] On fetch failure, error recorded per-entry; audit continues
+- [x] Phase 6 "tool entries are tracked but not analyzed" skip removed
+
+**Reciprocation rules**
+
+- [x] Phase 6 second-pass tool-skip removed — tools now have outbound links, reciprocation is meaningful
+- [x] Second pass unchanged in shape; flags missing backlinks in both directions
+
+**Skill update**
+
+- [x] `/editorial-cross-link-review` skill doc updated with tool-page fetching, unified resolution, cheerio note
+
+**Tests**
+
+- [x] `extractLinksFromHtml` fixtures: realistic HTML, relative URLs, anchor/mailto/javascript skipping, feeds/sitemap/robots skipping, script/style exclusion, unclosed-tag tolerance, deduplication
+- [x] `extractAudioControlLinksFromMarkdown` with absolute + markdown-relative forms
+- [x] `canonicalizeUrl` cases (hostname case, trailing slash, query preservation)
+- [x] `auditCrossLinks` tool-entry tests: outbound extraction, blog-to-tool via relative link, missing-backlink detection, fetch failure per-entry, missing-contentUrl errors, self-link exclusion
+
+**Acceptance Criteria**
+
+- `/editorial-cross-link-review` reports outbound links for tool entries
+- Tool pages that embed YouTube videos are flagged if the video description doesn't link back to the tool
+- Blog posts that link to a tool are flagged if the tool page doesn't link back to the post
+- Unified content-URL resolution works for all three content types — no silent drops of audiocontrol.org URLs in YouTube descriptions
+- Fetch failures for individual tool pages don't abort the whole audit; they're recorded per-entry
+- Existing Phase 6 tests still pass (no regressions)
+
+#### Open questions (resolve before coding)
+
+- Should the audit follow links inside tool pages recursively (e.g., the editor links to a docs page that links to a blog post)? (Proposed: **no** — single-hop only. Recursive fetching adds complexity and a crawler-like pattern we don't need right now.)
+- Should we cache fetched HTML during a single audit run to avoid re-fetching the same URL? (Proposed: **yes** — in-memory per-audit Map, invalidated each run. Cheap to implement, protects against audits getting slow when many entries reference the same tool.)
+- Do we need a way to exclude specific outbound links from the audit (e.g., social icons in the site footer)? (Proposed: **not initially** — if the audit surfaces noise later, add an `editorial-crosslink-ignore.json` file with URL patterns. For now, the report just shows what it finds and the user can ignore.)
 
 ## Verification Checklist
 

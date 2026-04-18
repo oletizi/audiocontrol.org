@@ -32,8 +32,13 @@ Show the editorial content lifecycle and current calendar status. Do NOT modify 
 - `/editorial-social-review` — Matrix of published posts vs platforms (subreddit count for Reddit)
 
 **Reddit cross-posting skills (Phase 5):**
-- `/editorial-reddit-sync` — Pull recent submissions from Reddit API and upsert distribution records automatically
+- `/editorial-reddit-sync` — Pull recent submissions from Reddit API and upsert distribution records automatically (matches both blog posts AND YouTube entries by URL)
 - `/editorial-reddit-opportunities <slug>` — Show already-shared subreddits (don't duplicate) and unshared candidates with subscriber counts
+
+**YouTube integration skills (Phase 6):**
+- `/editorial-cross-link-review` — Audit bidirectional links between blog posts and YouTube videos; flag missing reciprocal links
+
+YouTube videos and tools/apps on audiocontrol.org are first-class calendar entries — use `/editorial-add` with content type `youtube` or `tool`. They go through the same five stages as blog posts, but `/editorial-draft` creates only a GitHub issue (no directory) and `/editorial-publish` requires a `contentUrl` (the YouTube URL or canonical page URL).
 
 **Status skills:**
 - `/editorial-review` — Show calendar status across all stages
