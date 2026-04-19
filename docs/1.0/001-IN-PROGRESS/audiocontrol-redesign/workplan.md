@@ -70,19 +70,21 @@
 
 ### Phase 3: Homepage Redesign
 
+**Status:** Complete (issue #82)
+
 **Deliverable:** Homepage with narrative structure: hero, project showcase, blog highlights
 
-- [ ] Use `/frontend-design` to redesign the homepage with hero/masthead section
-- [ ] Redesign project cards with richer presentation
-- [ ] Add blog highlights section showing recent posts
-- [ ] Add community/contribution section
-- [ ] Ensure responsive layout works across viewports
+- [x] Hero masthead: panel-label eyebrow with signal-LED, phosphor-amber headline, mission paragraph, primary/ghost CTA buttons, ticked rule, 4-up spec-stat row (Available / In development / Stack / Install)
+- [x] ProjectCard redesign: dimension-bracket corners, panel-label `STATUS: AVAILABLE/PENDING`, spec-meta line ("1987 · 16-voice · 12-bit"), amber CTA with arrow
+- [x] Two-tier projects grid: Available Now (2-col featured) + In Development (3-col small)
+- [x] Latest Writing list: top-3 blog posts sourced from shared `data/blog-posts.ts`, date/title/excerpt rows with "Read article →" hover reveal
+- [x] Community Channels: 3-card grid for GitHub / Discord / YouTube with panel-label eyebrows
 
 **Acceptance Criteria:**
-- Homepage has clear visual hierarchy and narrative flow
-- Projects are presented with context, not just a flat grid
-- Recent blog posts are surfaced on the homepage
-- Layout is responsive and works on mobile
+- [x] Homepage has clear visual hierarchy and narrative flow
+- [x] Projects are presented with context (spec meta, status label), not just a flat grid
+- [x] Recent blog posts surfaced on the homepage
+- [x] Layout is responsive and works on mobile
 
 ### Phase 4: Content Pages — Blog, Docs, Hardware, Device Pages
 
