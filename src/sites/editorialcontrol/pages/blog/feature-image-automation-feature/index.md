@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/BlogLayout.astro
 title: "Automating Around a Design Skills Gap"
-description: "The older feature images on this site are rough. I'm not a designer and I'm not trying to become one. Closing the skills gap with automation, dropping the friction of shipping posts, and growing a design system by artificial selection."
+description: "The older feature images on my audiocontrol.org blog are rough. I'm not a designer and I'm not trying to become one. Closing the skills gap with automation, dropping the friction of shipping posts, and growing a design system by artificial selection."
 date: "April 2026"
 datePublished: "2026-04-18"
 dateModified: "2026-04-18"
@@ -10,7 +10,7 @@ author: "Orion Letizi"
 
 # Automating Around a Design Skills Gap
 
-Scroll through the older posts on this site and the feature images give away the truth: I made them by hand, I'm not a designer, and it shows. Some are passable. Most are rough. The set doesn't cohere. The brand drifted in whichever direction the current panic pointed me.
+Scroll through the older posts on my audiocontrol.org blog and the feature images give away the truth: I made them by hand, I'm not a designer, and it shows. Some are passable. Most are rough. The set doesn't cohere. The brand drifted in whichever direction the current panic pointed me. This publication, editorialcontrol.org, is where I'm writing about the fix — audiocontrol is where the fix has to run.
 
 This isn't a post about how we solved that. It's a post about how we're trying to automate our way out of it — using AI generation, a lightweight iteration workflow, and, most importantly, an evolving design system cultivated by artificial selection.
 
@@ -205,4 +205,4 @@ Fuller snippets — the pipeline module, the Astro API routes, the whole SKILL.m
 
 ## Where it stands
 
-The older feature images on this site are still the old, hand-made ones. New posts are going through the pipeline. Somewhere between the two is where the system has to prove it works — not by making me a designer, but by making "not a designer" good enough.
+The older feature images on audiocontrol.org are still the old, hand-made ones. New posts are going through the pipeline. Somewhere between the two is where the system has to prove it works — not by making me a designer, but by making "not a designer" good enough.

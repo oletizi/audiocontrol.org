@@ -1,0 +1,119 @@
+---
+/**
+ * editorialcontrol wordmark.
+ *
+ * The editorial flavor lives in the type: Fraunces italic set
+ * tightly, with the ".org" kicker as a smaller mono ligature.
+ * No pixel-art icon like audiocontrol — this is a *publication*
+ * mast, not a gear emblem.
+ */
+
+interface Props {
+  variant?: 'masthead' | 'inline' | 'compact';
+}
+
+const { variant = 'inline' } = Astro.props;
+---
+
+{variant === 'masthead' && (
+  <span class="mark mark-masthead" aria-label="editorialcontrol.org">
+    <span class="word">editorial</span><span class="rule" aria-hidden="true"></span><span class="word word-emph">control</span>
+    <span class="org">.org</span>
+  </span>
+)}
+
+{variant === 'inline' && (
+  <span class="mark mark-inline" aria-label="editorialcontrol.org">
+    <span class="word">editorialcontrol</span><span class="org">.org</span>
+  </span>
+)}
+
+{variant === 'compact' && (
+  <span class="mark mark-compact" aria-label="editorialcontrol.org">
+    ec<span class="org">.org</span>
+  </span>
+)}
+
+<style>
+  .mark {
+    font-family: var(--font-display);
+    color: hsl(var(--foreground));
+    line-height: 1;
+    letter-spacing: -0.015em;
+  }
+
+  /* Masthead: the big one. Used on the home page. */
+  .mark-masthead {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(3rem, 10vw, 7rem);
+    letter-spacing: -0.03em;
+    font-variation-settings: "opsz" 144, "SOFT" 100;
+  }
+
+  .mark-masthead .word-emph {
+    color: hsl(var(--primary));
+  }
+
+  .mark-masthead .rule {
+    display: inline-block;
+    width: 0.4em;
+    height: 1px;
+    background: hsl(var(--muted-foreground));
+    transform: translateY(-0.35em);
+    margin: 0 0.1em;
+  }
+
+  .mark-masthead .org {
+    font-family: var(--font-mono);
+    font-size: 0.22em;
+    letter-spacing: 0.1em;
+    font-style: normal;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    align-self: flex-end;
+    padding-bottom: 0.5em;
+    padding-left: 0.15em;
+  }
+
+  /* Inline: header usage. */
+  .mark-inline {
+    display: inline-flex;
+    align-items: baseline;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 1.25rem;
+  }
+
+  .mark-inline .org {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-weight: 500;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: hsl(var(--primary));
+    text-transform: uppercase;
+    padding-left: 0.25rem;
+  }
+
+  /* Compact: favicon-ish monogram, used in tight spots. */
+  .mark-compact {
+    font-style: italic;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .mark-compact .org {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: hsl(var(--primary));
+    text-transform: uppercase;
+    padding-left: 0.15rem;
+  }
+</style>

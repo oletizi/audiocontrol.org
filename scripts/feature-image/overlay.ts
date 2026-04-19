@@ -57,7 +57,7 @@ async function loadFonts(): Promise<FontData> {
 }
 
 async function loadLogoDataUri(): Promise<string> {
-  const svgPath = join(rootDir, 'public/favicon.svg');
+  const svgPath = join(rootDir, 'src/sites/audiocontrol/public/favicon.svg');
   const pngBuffer = await sharp(svgPath)
     .resize(32, 32)
     .png()

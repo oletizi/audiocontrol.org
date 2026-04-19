@@ -1,0 +1,17 @@
+# audiocontrol.org redirects and proxies.
+# This file is audiocontrol-site-scoped by virtue of living in
+# src/sites/audiocontrol/public/, which is that site's publicDir.
+# Astro copies it into dist/audiocontrol/_redirects at build time.
+
+# Sitemap alias
+/sitemap.xml  /sitemap-index.xml  301
+
+# Roland S-330 editor proxy
+/roland/s330/editor   https://roland-sxx0-editor.netlify.app/           200!
+/roland/s330/editor/  https://roland-sxx0-editor.netlify.app/           200!
+/roland/s330/editor/*  https://roland-sxx0-editor.netlify.app/:splat    200!
+
+# Roland S-550 editor proxy (same backing Netlify app as the S-330 editor)
+/roland/s550/editor   https://roland-sxx0-editor.netlify.app/           200!
+/roland/s550/editor/  https://roland-sxx0-editor.netlify.app/           200!
+/roland/s550/editor/*  https://roland-sxx0-editor.netlify.app/:splat    200!

@@ -1,9 +1,9 @@
 /**
  * Markdown editorial calendar parser and writer.
  *
- * The calendar lives in `docs/editorial-calendar.md` as a human-readable
- * markdown file with one table per stage. This module round-trips between
- * that format and the in-memory EditorialCalendar type.
+ * Each site has its own calendar at `docs/editorial-calendar-<site>.md` — a
+ * human-readable markdown file with one table per stage. This module
+ * round-trips between that format and the in-memory EditorialCalendar type.
  *
  * ## Markdown format
  *
@@ -41,6 +41,7 @@ import {
   type DistributionRecord,
   type EditorialCalendar,
   type Platform,
+  type Site,
   type Stage,
 } from './types.js';
 
@@ -48,10 +49,8 @@ import {
 // Paths
 // ---------------------------------------------------------------------------
 
-const CALENDAR_FILENAME = 'docs/editorial-calendar.md';
-
-export function calendarPath(rootDir: string): string {
-  return `${rootDir}/${CALENDAR_FILENAME}`;
+export function calendarPath(rootDir: string, site: Site): string {
+  return `${rootDir}/docs/editorial-calendar-${site}.md`;
 }
 
 // ---------------------------------------------------------------------------
@@ -239,8 +238,8 @@ export function parseCalendar(markdown: string): EditorialCalendar {
 }
 
 /** Read and parse the editorial calendar from disk. */
-export function readCalendar(rootDir: string): EditorialCalendar {
-  const path = calendarPath(rootDir);
+export function readCalendar(rootDir: string, site: Site): EditorialCalendar {
+  const path = calendarPath(rootDir, site);
   const content = readFileSync(path, 'utf-8');
   return parseCalendar(content);
 }
@@ -355,9 +354,10 @@ export function renderCalendar(calendar: EditorialCalendar): string {
 /** Write the editorial calendar to disk. */
 export function writeCalendar(
   rootDir: string,
+  site: Site,
   calendar: EditorialCalendar,
 ): void {
-  const path = calendarPath(rootDir);
+  const path = calendarPath(rootDir, site);
   writeFileSync(path, renderCalendar(calendar), 'utf-8');
 }
 

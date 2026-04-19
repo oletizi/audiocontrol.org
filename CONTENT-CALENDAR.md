@@ -10,7 +10,24 @@ Content moves through five stages:
 Ideas  →  Planned  →  Drafting  →  Review  →  Published
 ```
 
-Each stage is a section in `docs/editorial-calendar.md` — a markdown file with one table per stage. The file is both human-readable and machine-parseable.
+Each stage is a section in `docs/editorial-calendar-<site>.md` — a markdown file with one table per stage. The file is both human-readable and machine-parseable. Each site in the repo (`audiocontrol`, `editorialcontrol`) has its own calendar.
+
+## Multi-site: the `--site` parameter
+
+Every `/editorial-*` skill and every library function that touches disk takes a site parameter:
+
+- **Default**: `audiocontrol`. Invocations without `--site` behave the same as before the multi-site split. Every historical pattern keeps working.
+- **Explicit**: pass `--site=editorialcontrol` (or the audiocontrol variant) to target the other site.
+- **Unknown values error** with the list of valid sites. No silent fallback.
+
+Each site has its own data files:
+
+| Site | Calendar | Channels |
+|------|----------|----------|
+| `audiocontrol` | `docs/editorial-calendar-audiocontrol.md` | `docs/editorial-channels-audiocontrol.json` |
+| `editorialcontrol` | `docs/editorial-calendar-editorialcontrol.md` | `docs/editorial-channels-editorialcontrol.json` |
+
+Blog posts live under `src/sites/<site>/pages/blog/<slug>/`. Library functions are `readCalendar(rootDir, site)`, `writeCalendar(rootDir, site, cal)`, `readChannels(rootDir, site)`, etc.
 
 ### Stages
 
@@ -40,11 +57,13 @@ The editorial workflow is managed through composable Claude Code skills — one 
 
 ### Content lifecycle
 
+Every skill accepts an optional `--site <slug>` (default `audiocontrol`).
+
 | Skill | Purpose |
 |-------|---------|
 | `/editorial-add "Title"` | Add an idea to the calendar |
 | `/editorial-plan slug "kw1, kw2"` | Move to Planned, set target keywords |
-| `/editorial-draft slug` | Scaffold blog post, create GitHub issue, move to Drafting |
+| `/editorial-draft slug` | Scaffold blog post at `src/sites/<site>/pages/blog/<slug>/`, create GitHub issue, move to Drafting |
 | `/editorial-publish slug` | Mark as Published, close GitHub issue |
 
 ### Analytics integration
@@ -81,12 +100,24 @@ Reddit credentials live at `~/.config/audiocontrol/reddit.json`. See [Reddit Set
 
 ### Adding content manually
 
+Default (audiocontrol):
+
 ```
 /editorial-add "SCSI Protocol Deep Dive"
 /editorial-plan scsi-protocol-deep-dive "SCSI protocol, vintage hardware, SCSI commands"
 /editorial-draft scsi-protocol-deep-dive
 # ... write the post ...
 /editorial-publish scsi-protocol-deep-dive
+```
+
+Explicit site:
+
+```
+/editorial-add --site=editorialcontrol "Agents as Workflow Primitives"
+/editorial-plan --site=editorialcontrol agents-as-workflow-primitives "agent workflow, content marketing automation"
+/editorial-draft --site=editorialcontrol agents-as-workflow-primitives
+# ... write the post ...
+/editorial-publish --site=editorialcontrol agents-as-workflow-primitives
 ```
 
 ### Adding content from analytics
@@ -140,9 +171,9 @@ That's it. Run `/editorial-reddit-sync` — it reads your public submissions via
 
 ## Curated cross-posting map
 
-`docs/editorial-channels.json` maps topic tags to recommended distribution channels (subreddits today; room for other platforms later). Edit this file directly to add topics or update subreddits. Each entry can carry an optional `note` with community rules or submission hints.
+`docs/editorial-channels-<site>.json` maps topic tags to recommended distribution channels (subreddits today; room for other platforms later) for that site. Edit the file directly to add topics or update subreddits. Each entry can carry an optional `note` with community rules or submission hints.
 
-The `/editorial-reddit-opportunities` skill reads this file, collects candidates for a post's topics, subtracts already-shared subreddits (case-insensitive comparison — `r/SynthDIY` and `/r/synthdiy` match), enriches remaining candidates with subscriber count from Reddit's API, and reports the gap.
+The `/editorial-reddit-opportunities` skill reads the site's channels file, collects candidates for a post's topics, subtracts already-shared subreddits (case-insensitive comparison — `r/SynthDIY` and `/r/synthdiy` match), enriches remaining candidates with subscriber count from Reddit's API, and reports the gap.
 
 ## Analytics Integration
 
@@ -159,19 +190,24 @@ This creates a virtuous cycle: measure what's working, identify gaps, plan new c
 ## File Layout
 
 ```
-docs/editorial-calendar.md              # The calendar itself (markdown tables)
+docs/editorial-calendar-audiocontrol.md        # audiocontrol's calendar
+docs/editorial-calendar-editorialcontrol.md    # editorialcontrol's calendar
+docs/editorial-channels-audiocontrol.json      # audiocontrol's curated subreddit map
+docs/editorial-channels-editorialcontrol.json  # editorialcontrol's curated subreddit map
 scripts/lib/editorial/
-  types.ts                               # Stage definitions, CalendarEntry type
-  calendar.ts                            # Markdown parser/writer, mutations
-  scaffold.ts                            # Blog post directory/frontmatter generation
-  suggest.ts                             # Analytics integration (suggestions + performance)
-  index.ts                               # Barrel export
-.claude/skills/editorial-*/SKILL.md      # One skill per action (10 total)
+  types.ts                                      # Stage definitions, CalendarEntry, Site, assertSite
+  calendar.ts                                   # Markdown parser/writer, mutations (takes Site)
+  channels.ts                                   # Channels file loader (takes Site)
+  crosslinks.ts                                 # Cross-link audit (takes Site)
+  scaffold.ts                                   # Blog post directory/frontmatter generation (takes Site)
+  suggest.ts                                    # Analytics integration (suggestions + performance)
+  index.ts                                      # Barrel export
+.claude/skills/editorial-*/SKILL.md             # One skill per action
 ```
 
 ## Calendar Format
 
-The calendar file (`docs/editorial-calendar.md`) uses markdown tables. Non-published stages:
+Each site's calendar file (`docs/editorial-calendar-<site>.md`) uses markdown tables. Non-published stages:
 
 ```markdown
 ## Ideas

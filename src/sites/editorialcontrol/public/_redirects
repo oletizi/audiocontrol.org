@@ -1,0 +1,6 @@
+# editorialcontrol.org redirects.
+# Parallel to src/sites/audiocontrol/public/_redirects — per-site redirects
+# only apply to this site's build output.
+
+# Sitemap alias so external linkers hitting /sitemap.xml find the real one.
+/sitemap.xml  /sitemap-index.xml  301

@@ -6,7 +6,7 @@ import {
   type WorkflowContext,
   type WorkflowState,
   type WorkflowType,
-} from '../../../../../scripts/feature-image/workflow.js';
+} from '../../../../../../../scripts/feature-image/workflow.js';
 
 export const prerender = false;
 

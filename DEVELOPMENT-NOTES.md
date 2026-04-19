@@ -4,6 +4,94 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-18: editorialcontrol-site — Phase 1 (Multi-Site Source Layout + Build Split)
+### Feature: editorialcontrol-site
+### Worktree: audiocontrol.org-editorialcontrol-site
+
+**Goal:** Ship Phase 1 of the editorialcontrol-site feature — restructure the repo so two Astro builds (audiocontrol.org + editorialcontrol.org) run from the same tree, with a byte-equivalent audiocontrol build as the acceptance gate.
+
+**Accomplished:**
+- `git mv src/pages → src/sites/audiocontrol/pages`, and also moved `src/layouts`, `src/components`, `src/styles` under `src/sites/audiocontrol/`. Moving the shared dirs (not just pages) kept all ~20 relative imports (`../layouts/Layout.astro`, etc.) valid without a page-by-page rewrite; Phase 3's brand refactor can extract shared base layouts back to `src/layouts/` when editorialcontrol actually needs them.
+- Created `src/sites/editorialcontrol/pages/index.astro` — a dark-themed placeholder page describing the forthcoming sibling site.
+- Split `astro.config.mjs` → `astro.audiocontrol.config.mjs` (site `audiocontrol.org`, `srcDir: 'src/sites/audiocontrol'`, `outDir: 'dist/audiocontrol'`, existing sitemap config and lastModified map) + `astro.editorialcontrol.config.mjs` (site `editorialcontrol.org`, own `srcDir`/`outDir`, empty sitemap customPages). Deleted the original `astro.config.mjs`.
+- `package.json` scripts: `dev`, `dev:audiocontrol`, `dev:editorialcontrol`, `build` (runs both sites sequentially), `build:audiocontrol`, `build:editorialcontrol`, `preview` and `preview:*` variants — all pass the relevant `--config` explicitly.
+- `netlify.toml`: audiocontrol Netlify site now runs `build:audiocontrol` and publishes `dist/audiocontrol`. Editorialcontrol's Netlify UI config is deferred to Phase 6 / Launch.
+- Fixed relative imports broken by the depth change: `src/sites/audiocontrol/pages/api/dev/feature-image/{generate,log,workflow}.ts` (import paths went from 5 levels up to 7; `__dirname` math in `generate.ts` matched). `src/sites/audiocontrol/pages/dev/feature-image-preview.astro` filter import extended by 2 levels.
+- Verified audiocontrol output is byte-equivalent after normalizing Astro's auto-generated `data-astro-cid-*` hashes. Built a pre-split baseline, rebuilt, ran a normalized content diff: all HTML / sitemap / asset outputs are identical after normalization. CSS content pairs all match their pre-split counterparts byte-for-byte.
+- Verified editorialcontrol build emits a working placeholder (`dist/editorialcontrol/index.html`, favicons, sitemap).
+- Shipped a single commit `6596c8c` on `feature/editorialcontrol-site` and pushed.
+
+**Didn't Work:**
+- First build comparison was a naive path-by-path hash diff that flagged 23 HTML files and 3 CSS files as "changed" — which read alarming until I worked out that Astro derives `data-astro-cid-*` scoped-style hashes from source file paths. Moving files changed the cids, which changed the CSS selectors and the HTML data attributes, which changed the CSS filename hashes, which changed the `<link>` tags in the HTML. 26 "changes" — zero semantic difference. Had to write a normalizer that strips the cid hashes and asset filename hashes before diffing. Only then was the null-delta clear.
+- `git stash --include-untracked` rearranged renames into delete+add pairs on restore. Doesn't hurt the commit (git rename detection runs anyway), but the intermediate `git status` output was noisy and briefly looked like I'd lost the rename history.
+
+**Course Corrections:**
+- [PROCESS] Original read of the workplan was to move only `src/pages` (per its wording). The strict reading would have required touching every page to fix relative imports. The charitable reading ("everything audiocontrol-specific under `src/sites/audiocontrol/`") is what the workplan meant and what kept the diff minimal. I called it out in the commit message and in the workplan check-off so Phase 3 knows which layouts are shared vs per-site.
+- [PROCESS] Asked before deciding — I brought the `npm run build runs both sites` vs `default to audiocontrol` tradeoff to the user before editing package.json. Running both is what the workplan specifies, and the user confirmed "do it." Worth asking rather than picking silently.
+- [COMPLEXITY] Didn't spin up a path-alias system (`@/layouts`) or a shared-module extraction as part of Phase 1. That would have been scope creep; Phase 3 is where the layouts get refactored anyway. Phase 1 is restructure + build split, nothing more.
+
+**Quantitative:**
+- Messages: ~20
+- Commits: 1 (`6596c8c`) + 1 docs commit at session-end
+- Corrections: 0 from user this session (the course corrections above are self-identified patterns worth noting)
+- Files changed in the Phase 1 commit: 46 staged (41 renames, 2 modifications, 2 creates, 1 delete)
+- Acceptance tests: `npm test` 93 pass, 2 pre-existing failures (live Roland editor asset naming — unrelated)
+- Build verification: 125 files in pre-split dist, 125 in post-split dist; 99 identical by path+hash, 26 differ only in Astro scoped-cid hashes (normalized diff: zero)
+
+**Insights:**
+- **Astro's scoped-cid hashes are path-derived, not content-derived.** Moving files changes the cids even when the underlying .astro source is byte-identical. Any "build-equivalence" check for this project has to normalize those before diffing, or it'll report false positives forever. Worth remembering the next time we refactor directory structure — and worth documenting as part of the multi-site conventions.
+- **The `src/sites/<site>/` subtree wants to be self-contained by default.** The workplan's strict reading ("move only pages") would have required rewriting every page's relative imports. Moving the whole subtree instead preserved all the relative paths unchanged and gave each site a clean seam. Phase 3 can opt specific layouts *out* of the subtree (back to `src/layouts/`) when editorialcontrol genuinely shares a base layout. "Self-contained by default, extract shared parts when the second consumer appears" is the right order of operations.
+- **Baseline-capture belongs in the first 5 minutes, not at verification time.** I ran `npm run build` and hashed the dist before touching anything. That's the difference between "I have an acceptance gate" and "I'm hoping I didn't break anything." Two-minute investment, paid off when the CSS-hash panic hit — the baseline was already there to diff against.
+- **Two-build-from-one-repo is clean once `srcDir` and `outDir` are per-config.** No shared `dist/` collision, no Netlify confusion — each site points at its own `dist/<site>/` and that's it. The only cross-site surface is `public/` (both builds pull from the same static root), which means the editorialcontrol placeholder currently inherits audiocontrol's favicons. Phase 3 will want to address that — either per-site `publicDir` overrides or an explicit per-site public subtree.
+
+---
+
+## 2026-04-18: Editorial Calendar — First End-to-End Workflow Run (Idea → Published → Image Handoff)
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar
+
+**Goal:** Exercise the full editorial-calendar workflow on its first real content idea, end-to-end: capture ideas, plan one, scaffold, draft, revise, publish, and kick off the feature-image pipeline. Find the friction points that only show up when the tools get used in anger.
+
+**Accomplished:**
+- Captured 6 content ideas into the `Ideas` stage via a batch `/editorial-add` run (one of them, `lightweight-web-workflow-dashboards`, closed the loop with this session's workflow dashboard use)
+- Planned `feature-image-automation-feature`: keywords, topics, and two new topic tags added to `docs/editorial-channels.json` (`content-marketing` and `automation-workflow`) after the user explicitly expanded the targeting. Each new topic seeded with a 5-subreddit candidate list
+- Drafted the post and went through multiple revision cycles in response to direct user feedback. Tracking issue #65 created and closed on publish
+- Published the post: `src/pages/blog/feature-image-automation-feature/index.md`, added to `src/pages/blog/index.astro`, calendar moved Drafting → Published (2026-04-18)
+- Removed `.feature-image-history.jsonl` and `.feature-image-pipeline.jsonl` from `.gitignore` after the user pointed out that gitignoring them was a mistake — those files hold the generation history and workflow audit trail that Phase 11's prompt-library fitness scores will read from
+- Ran `/feature-image-blog` against the new post — enqueued an `open` workflow item, committed the seeded JSONL files so the feature-image-generator branch can pick up iteration after sync
+- Shipped two PRs: #64 (session-end + ideas seed) and #66 (draft + publish + .gitignore fix + blog index + JSONL seed)
+
+**Didn't Work:**
+- First draft framed the feature as "solved." User's pushback: *"any casual reader will immediately notice that the images on the site I made by hand are fugly."* The "solved" framing was dishonest given the current state of hand-made images, and wrong for the reader's first impression. Full reframe required.
+- The first image generation came back "blotchy" per user's note — the grid-of-variants prompt plus `retro-crt` preset compounded; nine-panel abstract + heavy scanlines + phosphor bloom produced noise instead of distinct panels
+- The gallery's feedback loop doesn't automatically surface user notes or rejections to Claude. When the user clicked "Copy as input" and left a critique note, there was no push; I had to read `.feature-image-history.jsonl` manually to see the note and propose a new prompt. That manual bridge is exactly the gap blog idea #6 (workflow-dashboards) is supposed to close, but it isn't built yet
+- The user asked me to update the workflow item's `suggestedPrompt` so the form would re-populate on reactivation — before I finished, they (correctly) pivoted to "merge the PR; I'll continue on the feature-image-generator branch where the iteration tooling is better equipped." Signal that the editorial-calendar branch isn't the right place to iterate on images
+
+**Course Corrections:**
+- [DOCUMENTATION] "This is a post about how we solved that" → full rewrite around a skills-gap confession: "I made them by hand, I'm not a designer, and it shows. I'm not going to close this gap by studying." The honest framing was more interesting than the solved-problem framing would have been
+- [DOCUMENTATION] User flagged that "automation is a massive accelerant for releasing new content" was missing. Added a new section ("The other half of the problem: friction") separating the two motivations — skills gap is about quality, friction is about whether the post ships at all
+- [DOCUMENTATION] User flagged that calling the JSONL files gitignored was wrong. *"If that's true, it's a mistake."* It was true. Fixed both the post language AND `.gitignore` so future generations are versioned. Added a comment in `.gitignore` explaining why they're intentionally tracked. Without this, Phase 11's fitness-scoring loop would have had no data to compute from
+- [DOCUMENTATION] Original "Try it" section pointed to closed-source paths. User: *"audiocontrol.org isn't open source... we can show our work, either in the post or in gists."* Rewrote as "Show our work" with inline TypeScript `WorkflowItem` type + a condensed SKILL.md excerpt — the pattern made visible without requiring a public repo
+- [UX] First "Show our work" opening said *"the audiocontrol.org repo isn't open source, but the pattern is the interesting part."* User: *"don't mention that. Not relevant."* The frame was defensive where it didn't need to be. Removed the caveat; opened directly with the code
+- [UX] First skill-family list led with `/feature-image <page-path>` as "the original one-shot skill." User: *"No reader cares about 'the original' one-shot skill. It just muddies the water."* Removed; the list is now three entries (blog / apply / help), all part of the async pipeline the post is about
+- [PROCESS] I started the dev server without `--host` initially — user accesses via `http://orion-m4:4321`, needs the network bind. Same correction I received last session; I should default to `--host` for this project going forward
+
+**Quantitative:**
+- Messages this session: ~70 across the walkthrough
+- Commits on the feature branch: 5 non-merge (7952982, 8c0ac35, d430c89, e1e55bd + the pre-existing 003272f from session start) — all shipped via 2 PR merges (#64, #66)
+- Blog post revisions: roughly 7 substantive edits on the draft before merge
+- New topic tags seeded: 2 (content-marketing, automation-workflow, each with 5 subreddit candidates)
+- Image generations run: 1 (rejected)
+
+**Insights:**
+- The editorial-calendar workflow works end-to-end. Capturing ideas, planning, drafting, publishing, and publishing to the blog index all went cleanly through the library + skill layer. The first real user of this feature had no workflow friction — the friction was all in the content itself (framing, voice, accuracy), which is exactly where friction belongs
+- **The honest framing was stronger.** The user's "we're automating our way out of a skills gap" reframe turned a generic "I built this thing" post into something with a specific angle and a credible voice. The tell: after the rewrite, the post had its own opinions about what automation is *for* (consistency where skill is missing, friction reduction to enable volume) rather than just explaining a pipeline. That kind of content-shaping is worth multiple revision cycles
+- **Dogfooding exposes real UX gaps.** The gallery's reject → copy-as-input → iterate loop is fine *for a designer* who knows what to try next. For a non-designer iterating through an agent, the loop needs Claude to see the rejection and notes and propose the next prompt. That's not built. Today's handoff is "user tells me verbally what's wrong; I rewrite the prompt; they paste it into the form." Blog idea #6 is exactly this gap — the gallery as a bidirectional message surface between agent and user. After today's run, it's less an abstract pattern and more a specific feature request
+- **Gitignoring history files is a category of bug.** For any system where fitness / audit / evolution depends on historical decisions, the history has to be versioned. We almost shipped an evolutionary design system with its training data gitignored. The user caught it; in the future, any `*.jsonl` added to a project's `.gitignore` deserves a pause to ask "is this history load-bearing?"
+- **Branch-choice matters for iteration modality.** The editorial-calendar branch was right for drafting the post (text editor + dev server + Claude Code chat is the right iteration surface for prose). The feature-image-generator branch is right for iterating on the image (the gallery + faster feedback + richer workflow tooling live there). Moving between branches at the right moment — rather than trying to do both from one worktree — kept each loop tight
+
+---
+
 ## 2026-04-17: Editorial Calendar — Phases 5, 6, 7 (Subreddit Tracking + YouTube + Tool Cross-link Audit)
 ### Feature: editorial-calendar
 ### Worktree: audiocontrol.org-editorial-calendar

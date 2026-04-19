@@ -6,9 +6,11 @@
  */
 
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import type { CalendarEntry } from './types.js';
+import type { CalendarEntry, Site } from './types.js';
 
-const BLOG_DIR = 'src/pages/blog';
+function blogDir(site: Site): string {
+  return `src/sites/${site}/pages/blog`;
+}
 
 /** Format a date as "Month YYYY" for the `date` frontmatter field. */
 function formatDateHuman(isoDate: string): string {
@@ -32,18 +34,20 @@ export interface ScaffoldResult {
  * Create a blog post directory and index.md from a calendar entry.
  *
  * Follows the existing convention:
- * - Directory: src/pages/blog/<slug>/
- * - File: src/pages/blog/<slug>/index.md
+ * - Directory: src/sites/<site>/pages/blog/<slug>/
+ * - File: src/sites/<site>/pages/blog/<slug>/index.md
  * - Frontmatter: layout, title, description, date, datePublished, dateModified, author
  */
 export function scaffoldBlogPost(
   rootDir: string,
+  site: Site,
   entry: CalendarEntry,
   author: string,
 ): ScaffoldResult {
-  const dir = `${rootDir}/${BLOG_DIR}/${entry.slug}`;
+  const baseDir = blogDir(site);
+  const dir = `${rootDir}/${baseDir}/${entry.slug}`;
   const filePath = `${dir}/index.md`;
-  const relativePath = `${BLOG_DIR}/${entry.slug}/index.md`;
+  const relativePath = `${baseDir}/${entry.slug}/index.md`;
 
   if (existsSync(filePath)) {
     throw new Error(

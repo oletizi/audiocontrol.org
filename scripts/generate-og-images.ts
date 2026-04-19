@@ -17,7 +17,7 @@ async function loadInterFont(): Promise<ArrayBuffer> {
 
 // Convert favicon SVG to PNG data URI for embedding in satori
 async function loadLogoDataUri(): Promise<string> {
-  const svgPath = join(rootDir, 'public/favicon.svg');
+  const svgPath = join(rootDir, 'src/sites/audiocontrol/public/favicon.svg');
   const pngBuffer = await sharp(svgPath)
     .resize(32, 32)
     .png()
@@ -221,7 +221,7 @@ async function generateOgImage(page: PageConfig, fontData: ArrayBuffer, logoData
     }
   );
 
-  const outputDir = join(rootDir, 'public/images/og');
+  const outputDir = join(rootDir, 'src/sites/audiocontrol/public/images/og');
   if (!existsSync(outputDir)) {
     mkdirSync(outputDir, { recursive: true });
   }

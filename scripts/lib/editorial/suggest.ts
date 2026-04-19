@@ -21,7 +21,13 @@ import type {
   DateRange,
   Recommendation,
 } from '../analytics/index.js';
-import { PLATFORMS, type CalendarEntry, type Platform } from './types.js';
+import {
+  PLATFORMS,
+  siteHost,
+  type CalendarEntry,
+  type Platform,
+  type Site,
+} from './types.js';
 
 /** A content opportunity identified from analytics data. */
 export interface ContentSuggestion {
@@ -102,16 +108,18 @@ async function fetchReport(days: number): Promise<AnalyticsReport> {
  * - Queries with no matching calendar entry (content gaps)
  */
 export async function getContentSuggestions(
+  site: Site,
   existingEntries: CalendarEntry[],
   days: number = 30,
 ): Promise<ContentSuggestion[]> {
   const report = await fetchReport(days);
   const suggestions: ContentSuggestion[] = [];
   const existingSlugs = new Set(existingEntries.map((e) => e.slug));
+  const siteUrlPrefix = `https://${siteHost(site)}`;
 
   // Striking-distance queries — new content opportunities
   for (const q of report.search.strikingDistance) {
-    const pagePath = q.page.replace('https://audiocontrol.org', '');
+    const pagePath = q.page.replace(siteUrlPrefix, '');
     const slug = pagePath.replace(/^\/blog\//, '').replace(/\/$/, '');
 
     // Skip if this slug is already tracked in the calendar

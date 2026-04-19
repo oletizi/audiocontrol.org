@@ -1,0 +1,500 @@
+---
+import Layout from './Layout.astro';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  frontmatter?: {
+    title: string;
+    description?: string;
+    date?: string;
+    datePublished?: string;
+    dateModified?: string;
+    author?: string;
+    image?: string;
+    socialImage?: string;
+  };
+  headings?: Heading[];
+  title?: string;
+  description?: string;
+  date?: string;
+  datePublished?: string;
+  dateModified?: string;
+  author?: string;
+}
+
+const {
+  frontmatter,
+  headings = [],
+  title: directTitle,
+  description: directDescription,
+  date: directDate,
+  datePublished: directDatePublished,
+  dateModified: directDateModified,
+  author: directAuthor,
+} = Astro.props;
+
+const title = frontmatter?.title ?? directTitle ?? 'Post';
+const description = frontmatter?.description ?? directDescription;
+const date = frontmatter?.date ?? directDate;
+const datePublished = frontmatter?.datePublished ?? directDatePublished;
+const dateModified = frontmatter?.dateModified ?? directDateModified ?? datePublished;
+const author = frontmatter?.author ?? directAuthor ?? 'editorialcontrol.org';
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+// Auto-discovered OG image path: /blog/my-post/ -> /images/og/blog-my-post.png
+const pathSegments = Astro.url.pathname.split('/').filter(Boolean);
+const ogImageSlug = pathSegments.join('-');
+const autoOgImage = `/images/og/${ogImageSlug}.png`;
+const featureImage = frontmatter?.image;
+const socialImage = frontmatter?.socialImage ?? autoOgImage;
+const schemaImage = new URL(socialImage, Astro.site).toString();
+
+const blogPostingJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description: description,
+  datePublished: datePublished,
+  dateModified: dateModified,
+  author: {
+    '@type': 'Person',
+    name: author,
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'editorialcontrol.org',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://editorialcontrol.org/favicon.svg',
+    },
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': canonicalURL.toString(),
+  },
+  image: schemaImage,
+};
+
+const tocHeadings = headings.filter((h) => h.depth === 2);
+---
+
+<Layout
+  title={title}
+  description={description}
+  image={socialImage}
+  type="article"
+  jsonLd={blogPostingJsonLd}
+>
+  <article class="essay site-container">
+    <header class="essay-header">
+      <p class="kicker">Dispatch</p>
+      <h1 class="essay-title">{title}</h1>
+      {description && <p class="essay-subtitle">{description}</p>}
+      <div class="essay-meta">
+        {datePublished && (
+          <time class="meta-date tabular" datetime={datePublished}>{date ?? datePublished}</time>
+        )}
+        {author && <>
+          <span class="meta-dot" aria-hidden="true">·</span>
+          <span class="meta-author">{author}</span>
+        </>}
+      </div>
+      <hr class="rule-accent" />
+    </header>
+
+    <div class="essay-body-wrap">
+      {tocHeadings.length > 0 && (
+        <aside class="toc" aria-label="Table of contents">
+          <p class="toc-header">In this dispatch</p>
+          <ol class="toc-list">
+            {tocHeadings.map((heading, i) => (
+              <li>
+                <a href={`#${heading.slug}`} class="toc-link">
+                  <span class="toc-num tabular">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="toc-text">{heading.text}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </aside>
+      )}
+
+      <div class="essay-body">
+        {featureImage && (
+          <figure class="feature-image">
+            <img src={featureImage} alt="" />
+          </figure>
+        )}
+        <slot />
+      </div>
+    </div>
+  </article>
+</Layout>
+
+<script>
+  // Active-state highlighting for the table of contents.
+  const tocLinks = document.querySelectorAll('.toc-link');
+  const h2s = document.querySelectorAll('.essay-body h2');
+
+  if (tocLinks.length > 0 && h2s.length > 0) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            tocLinks.forEach((link) => link.classList.remove('active'));
+            const activeLink = document.querySelector(
+              `.toc-link[href="#${entry.target.id}"]`,
+            );
+            if (activeLink) activeLink.classList.add('active');
+          }
+        });
+      },
+      { rootMargin: '-80px 0px -80% 0px', threshold: 0 },
+    );
+    h2s.forEach((h2) => observer.observe(h2));
+  }
+</script>
+
+<style>
+  .essay {
+    padding-top: 3rem;
+    padding-bottom: 5rem;
+    max-width: 66rem;
+  }
+
+  .essay-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    margin: 0 0 1rem 0;
+  }
+
+  .essay-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2.25rem, 5.5vw, 3.75rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: hsl(var(--foreground));
+    margin: 0 0 1rem 0;
+    max-width: 40rem;
+  }
+
+  .essay-subtitle {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+    line-height: 1.4;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 1.25rem 0;
+    max-width: 44rem;
+  }
+
+  .essay-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .meta-date {
+    color: hsl(var(--accent));
+  }
+
+  .meta-dot {
+    color: hsl(var(--primary));
+  }
+
+  /* ---- Layout: body + TOC ---- */
+  .essay-body-wrap {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  @media (min-width: 1100px) {
+    .essay-body-wrap {
+      grid-template-columns: 1fr 14rem;
+      gap: 3rem;
+    }
+
+    .toc {
+      order: 2;
+    }
+
+    .essay-body {
+      order: 1;
+    }
+  }
+
+  /* ---- TOC ---- */
+  .toc {
+    position: sticky;
+    top: 5rem;
+    align-self: start;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+    padding-left: 1.5rem;
+    border-left: 1px solid hsl(var(--border));
+  }
+
+  @media (max-width: 1099px) {
+    .toc {
+      position: static;
+      max-height: none;
+      padding: 1rem 0;
+      border-left: 0;
+      border-top: 1px solid hsl(var(--border));
+      border-bottom: 1px solid hsl(var(--border));
+    }
+  }
+
+  .toc-header {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 1rem 0;
+  }
+
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .toc-link {
+    display: grid;
+    grid-template-columns: 1.75rem 1fr;
+    gap: 0.4rem;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .toc-link:hover,
+  .toc-link.active {
+    color: hsl(var(--foreground));
+    text-decoration: none;
+  }
+
+  .toc-link.active .toc-num {
+    color: hsl(var(--primary));
+  }
+
+  .toc-num {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground));
+    padding-top: 0.15rem;
+  }
+
+  /* ---- Body typography ---- */
+  .essay-body {
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: hsl(var(--foreground) / 0.93);
+    max-width: var(--measure-reading);
+    min-width: 0;
+  }
+
+  .feature-image {
+    margin: 0 0 2.5rem 0;
+  }
+
+  .feature-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 21 / 10;
+    object-fit: cover;
+    object-position: center;
+    border: 1px solid hsl(var(--border));
+  }
+
+  .essay-body :global(h2) {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-style: italic;
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    line-height: 1.2;
+    color: hsl(var(--foreground));
+    margin: 3rem 0 1rem 0;
+    scroll-margin-top: 5rem;
+  }
+
+  .essay-body :global(h3) {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.3rem;
+    line-height: 1.3;
+    color: hsl(var(--foreground));
+    margin: 2rem 0 0.75rem 0;
+  }
+
+  .essay-body :global(p) {
+    margin: 0 0 1.25rem 0;
+  }
+
+  /* Drop cap on the first paragraph of the body */
+  .essay-body :global(p:first-of-type:first-letter) {
+    font-family: var(--font-display);
+    font-weight: 600;
+    float: left;
+    font-size: 3.5rem;
+    line-height: 0.85;
+    padding: 0.25rem 0.6rem 0 0;
+    color: hsl(var(--primary));
+  }
+
+  .essay-body :global(strong) {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+  }
+
+  .essay-body :global(em) {
+    color: hsl(var(--accent));
+    font-style: italic;
+  }
+
+  .essay-body :global(a) {
+    color: hsl(var(--primary));
+    text-decoration: none;
+    border-bottom: 1px solid hsl(var(--primary) / 0.4);
+    transition: border-color 0.15s ease;
+  }
+
+  .essay-body :global(a:hover) {
+    border-bottom-color: hsl(var(--primary));
+    text-decoration: none;
+  }
+
+  .essay-body :global(ul),
+  .essay-body :global(ol) {
+    margin: 0 0 1.25rem 0;
+    padding-left: 1.5rem;
+  }
+
+  .essay-body :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .essay-body :global(li) :global(::marker) {
+    color: hsl(var(--primary));
+  }
+
+  .essay-body :global(blockquote) {
+    margin: 2rem 0;
+    padding: 0 0 0 1.25rem;
+    border-left: 2px solid hsl(var(--primary));
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: hsl(var(--accent));
+  }
+
+  .essay-body :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: hsl(var(--card));
+    padding: 0.1rem 0.4rem;
+    color: hsl(var(--primary));
+    border: 1px solid hsl(var(--border));
+  }
+
+  .essay-body :global(pre) {
+    background: hsl(var(--card));
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    border: 1px solid hsl(var(--border));
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .essay-body :global(pre code) {
+    background: none;
+    border: none;
+    padding: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .essay-body :global(hr) {
+    border: 0;
+    border-top: 1px solid hsl(var(--border));
+    margin: 2.5rem 0;
+  }
+
+  .essay-body :global(img) {
+    max-width: 100%;
+    height: auto;
+    margin: 1.5rem 0;
+    border: 1px solid hsl(var(--border));
+  }
+
+  .essay-body :global(figure) {
+    margin: 1.75rem 0;
+  }
+
+  .essay-body :global(figure img) {
+    margin: 0 0 0.5rem 0;
+  }
+
+  .essay-body :global(figcaption) {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 0.95rem;
+    color: hsl(var(--muted-foreground));
+    text-align: center;
+    padding: 0.5rem 0 0 0;
+  }
+
+  .essay-body :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.75rem 0;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+  }
+
+  .essay-body :global(th),
+  .essay-body :global(td) {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .essay-body :global(th) {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 2px solid hsl(var(--primary));
+    font-weight: 500;
+  }
+</style>

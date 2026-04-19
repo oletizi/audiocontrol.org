@@ -1,0 +1,175 @@
+/*
+ * Design Tokens — editorialcontrol.org
+ *
+ * Mirror of src/sites/editorialcontrol/brand.ts. See that file for
+ * palette rationale. These CSS custom properties are what components
+ * actually consume via hsl(var(--primary)).
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Layout */
+  --container-max-width: 1280px;
+  --container-padding: 2rem;
+  --measure-reading: 34rem; /* Ideal prose width for long-form reading. */
+  --measure-narrow: 28rem;  /* Narrow measure for standalone essays. */
+
+  /* Background colors — ink-near-black with faint cool cast */
+  --background: 215 22% 7%;
+  --card: 215 18% 11%;
+  --card-hover: 215 18% 14%;
+
+  /* Foreground — warm off-white (cream on ink) */
+  --foreground: 40 20% 90%;
+  --muted-foreground: 215 10% 55%;
+
+  /* Accent colors */
+  --primary: 74 82% 58%;          /* Signal-green chartreuse */
+  --accent: 38 32% 82%;            /* Parchment cream */
+
+  /* Borders — hairline weight */
+  --border: 215 14% 18%;
+  --border-hover: 215 14% 28%;
+
+  /* Rule weights — this site leans heavily on typographic rules */
+  --rule-hairline: 1px;
+  --rule-medium: 2px;
+
+  /* Typography */
+  --font-display: "Fraunces", "Iowan Old Style", "Palatino", Georgia, serif;
+  --font-body: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-heading: var(--font-display);
+
+  /* Shadow / halo */
+  --card-glow: 0 0 0 1px hsl(var(--border)), 0 8px 32px -8px hsl(0 0% 0% / 0.55);
+  --card-glow-hover: 0 0 0 1px hsl(var(--primary) / 0.35), 0 10px 40px -8px hsl(var(--primary) / 0.12);
+}
+
+/* Shared container class — used by header, footer, and main content. */
+.site-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: var(--container-padding);
+}
+
+/* Rule utilities — hairlines are a primary editorial device. */
+.rule-single {
+  border: 0;
+  border-top: var(--rule-hairline) solid hsl(var(--border));
+  margin: 1.5rem 0;
+}
+
+.rule-double {
+  border: 0;
+  border-top: var(--rule-hairline) solid hsl(var(--border));
+  border-bottom: var(--rule-hairline) solid hsl(var(--border));
+  height: 5px;
+  margin: 2rem 0;
+}
+
+.rule-accent {
+  border: 0;
+  border-top: var(--rule-medium) solid hsl(var(--primary));
+  margin: 1.5rem 0;
+  width: 3rem;
+}
+
+/* Paper-grain atmosphere. Extremely subtle noise overlay.
+ * Pure CSS to avoid an asset round-trip. */
+.paper-grain {
+  position: relative;
+}
+
+.paper-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0);
+  background-size: 3px 3px;
+  mix-blend-mode: overlay;
+}
+
+/* Card glow */
+.card-glow {
+  box-shadow: var(--card-glow);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.card-glow:hover {
+  box-shadow: var(--card-glow-hover);
+}
+
+/* Editorial mark — used as a small typographic indicator before topic
+ * items and section openers. */
+.edit-mark {
+  display: inline-block;
+  color: hsl(var(--primary));
+  font-family: var(--font-display);
+  font-style: italic;
+}
+
+/* Drop cap — for section openers */
+.dropcap::first-letter {
+  font-family: var(--font-display);
+  font-weight: 600;
+  float: left;
+  font-size: 3.25rem;
+  line-height: 0.85;
+  padding: 0.25rem 0.5rem 0 0;
+  color: hsl(var(--primary));
+}
+
+/* Ticker-tape animation used in masthead */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.ticker {
+  overflow: hidden;
+  border-top: var(--rule-hairline) solid hsl(var(--border));
+  border-bottom: var(--rule-hairline) solid hsl(var(--border));
+  padding: 0.5rem 0;
+  background: hsl(var(--background));
+}
+
+.ticker-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker 60s linear infinite;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+}
+
+.ticker-track > span {
+  padding-right: 3rem;
+}
+
+.ticker-track .ticker-mark {
+  color: hsl(var(--primary));
+  padding: 0 0.75rem 0 0;
+}
+
+/* Respect users who'd rather not watch a ticker move forever. */
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}
+
+/* Masthead rule — a thicker signature hairline at the masthead top. */
+.rule-masthead {
+  border: 0;
+  height: 3px;
+  background: hsl(var(--foreground));
+  margin: 0 0 2.5rem 0;
+}

@@ -1,0 +1,163 @@
+---
+/**
+ * editorialcontrol header.
+ *
+ * Publication-style masthead bar: wordmark left, nav right, hairline
+ * under. Matches audiocontrol's structural grammar (sticky, backdrop
+ * blur, nav link pattern) so the two sites feel like siblings.
+ */
+import Logo from './Logo.astro';
+---
+
+<div class="header-wrapper">
+  <header class="site-header site-container">
+    <a href="/" class="header-brand" aria-label="editorialcontrol.org home">
+      <Logo variant="inline" />
+      <span class="edition" aria-hidden="true">vol. 01</span>
+    </a>
+
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="/blog/" class="nav-link">Desk</a>
+      <a href="/about/" class="nav-link">About</a>
+      <a href="/contact/" class="nav-link">Contact</a>
+    </nav>
+  </header>
+</div>
+
+<script>
+  const headerWrapper = document.querySelector('.header-wrapper');
+
+  const handleScroll = () => {
+    if (window.scrollY > 10) {
+      headerWrapper?.classList.add('scrolled');
+    } else {
+      headerWrapper?.classList.remove('scrolled');
+    }
+  };
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll();
+</script>
+
+<style>
+  .header-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: hsl(var(--background) / 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid hsl(var(--border) / 0.6);
+    transition: border-color 0.2s ease;
+  }
+
+  .header-wrapper.scrolled {
+    border-bottom-color: hsl(var(--border));
+  }
+
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+    transition: padding 0.2s ease;
+  }
+
+  .header-wrapper.scrolled .site-header {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .header-brand:hover {
+    text-decoration: none;
+  }
+
+  .header-brand:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 4px;
+    border-radius: 0.25rem;
+  }
+
+  .edition {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    padding-left: 0.75rem;
+    border-left: 1px solid hsl(var(--border));
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
+  }
+
+  .nav-link {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    transition: color 0.18s ease;
+    position: relative;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -0.3rem;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: hsl(var(--primary));
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.18s ease;
+  }
+
+  .nav-link:hover {
+    color: hsl(var(--foreground));
+    text-decoration: none;
+  }
+
+  .nav-link:hover::after,
+  .nav-link:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  .nav-link:focus-visible {
+    color: hsl(var(--foreground));
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 4px;
+    border-radius: 0.125rem;
+  }
+
+  @media (max-width: 640px) {
+    .site-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .site-nav {
+      gap: 1.25rem;
+    }
+
+    .edition {
+      display: none;
+    }
+  }
+</style>
