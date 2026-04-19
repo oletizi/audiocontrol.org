@@ -18,7 +18,7 @@ Stand up editorialcontrol.org as a sibling site to audiocontrol.org. One repo, t
 | 3 | editorialcontrol branding + core pages | Implementation complete |
 | 4 | Content migration (2 posts) | Implementation complete (feature images + cross-link review deferred) |
 | 5 | Reddit / distribution (multi-account) | Code plumbing complete; account + seed + first sync pending (Orion) |
-| 6 | Launch (DNS + HTTPS + sitemap) | Not Started |
+| 6 | Launch (DNS + HTTPS + sitemap) | Pre-launch code ready; runbook written; DNS/Netlify/Search Console pending merge to main |
 
 ## Dependencies
 
@@ -39,4 +39,5 @@ Stand up editorialcontrol.org as a sibling site to audiocontrol.org. One repo, t
 
 - [PRD](./prd.md) — product requirements and technical approach
 - [Workplan](./workplan.md) — implementation phases and task breakdown
+- [Launch runbook](./launch-runbook.md) — step-by-step post-merge Netlify / DNS / analytics / Search Console / Reddit setup
 - [Implementation summary](./implementation-summary.md) — draft template for post-ship writeup

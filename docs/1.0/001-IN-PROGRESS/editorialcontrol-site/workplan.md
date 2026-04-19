@@ -157,12 +157,21 @@
 
 **Deliverable:** editorialcontrol.org is live with HTTPS, DNS pointing to Netlify, sitemap submitted, and the debut posts indexed.
 
-- [ ] Point editorialcontrol.org DNS at Netlify (CNAME / A records)
+Pre-launch code readiness landed ahead of merge:
+
+- [x] Per-site robots.txt: `src/sites/editorialcontrol/pages/robots.txt.ts` endpoint overrides the shared `public/robots.txt` (which is audiocontrol's) so editorialcontrol advertises its own sitemap. audiocontrol's `dist/audiocontrol/robots.txt` verified unchanged.
+- [x] Launch runbook written: [`launch-runbook.md`](./launch-runbook.md) — step-by-step for the Netlify UI / DNS / analytics / Search Console / Reddit work to run through post-merge.
+
+External / click-ops steps, run through `launch-runbook.md` after merge:
+
+- [ ] Create editorialcontrol Netlify site (build: `npm run build:editorialcontrol`, publish: `dist/editorialcontrol`)
+- [ ] Point editorialcontrol.org DNS at Netlify (ALIAS/ANAME for apex, CNAME for www)
 - [ ] Enable HTTPS via Netlify (auto-provisioned cert)
-- [ ] Verify `https://editorialcontrol.org/` resolves and serves the live site
+- [ ] Verify `https://editorialcontrol.org/` resolves with valid cert; `robots.txt` returns the editorialcontrol sitemap URL
+- [ ] Create a separate GA4 property + Umami site for editorialcontrol; paste both IDs into `src/sites/editorialcontrol/layouts/Layout.astro`
 - [ ] Create and submit sitemap to Google Search Console
-- [ ] Create a separate GA4 property (or Umami site) for editorialcontrol.org — minimal: tracking ID in place
-- [ ] Announce launch: run `/editorial-distribute --site=editorialcontrol` for each debut post against its best-fit subreddits
+- [ ] Run Phase 5(b) while we're at it: register Reddit username, migrate `~/.config/audiocontrol/reddit.json` to site-keyed, seed a promo share, run `/editorial-reddit-sync --site=editorialcontrol`
+- [ ] Announce launch: run `/editorial-reddit-opportunities --site=editorialcontrol <slug>` for each debut post, post to 1–2 fitting subs
 
 **Acceptance Criteria:**
 - `https://editorialcontrol.org` resolves with a valid certificate
