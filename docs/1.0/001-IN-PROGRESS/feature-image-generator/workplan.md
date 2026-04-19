@@ -382,6 +382,61 @@ Today's iteration loop is one-way: the user adjusts prompt/preset/filters and re
 - Thread search across history
 - Per-message ratings (thumbs up/down on a Claude response)
 
+## Phase 14: Multi-Site Feature Images (#85)
+
+**Deliverable:** The feature-image generator works for both sites in the repo (audiocontrol and editorialcontrol) with each site's native brand — correct fonts, palette, logo, and brand text — instead of hard-coded audiocontrol styling. Gallery lets the user choose a target site per generation and per focused entry; applying a workflow routes images into the correct site's public directory and wires the correct frontmatter.
+
+### Motivation
+
+Main merged a major architectural split: the repo now hosts `src/sites/audiocontrol/` and `src/sites/editorialcontrol/` as sibling sites, each with its own `brand.ts`, typography, palette, layouts, and `public/`. The feature-image generator predates the split and hard-codes audiocontrol's brand (JB Mono, teal `#2fb8a8`, `/favicon.svg`, "audiocontrol.org"). Without this phase, editorialcontrol blog posts can't use the gallery — they'd come out looking like audiocontrol posts.
+
+### Concepts
+
+- **Site-aware bake** — the `OGPreview` component and bake route read site brand tokens from `src/sites/<site>/brand.ts` (via the shared `Brand` interface in `src/shared/brand.ts`) and set CSS custom properties that drive the overlay's fonts and colors.
+- **Site-aware routing** — the gallery's Generate form and the per-entry focus panel carry a `site` value that flows through `/api/dev/feature-image/generate` and `/recomposite`. `/feature-image-blog` infers the site from the target post's path (`src/sites/<site>/pages/blog/<slug>/index.md`). `/feature-image-apply` copies approved images into `src/sites/<site>/public/images/blog/<slug>/`.
+- **Shared dev tooling** — the dev-only gallery, API endpoints, and scripts stay outside site subtrees (at repo root or under `src/shared/dev/`) so both sites use the same workbench.
+- **Per-site templates (optional)** — `PromptTemplate` gains an optional `site: 'audiocontrol' | 'editorialcontrol' | null` field. `null` means "works for any site". The picker filters by current-site + null. Fitness is scoped per-site so cross-site ratings don't pollute each other.
+
+### Tasks
+
+- [ ] **Audit placement after the main merge.** Determine whether the gallery, API endpoints, OGPreview component, bake route, and og-preview.css should:
+  - live at the repo root (shared) under a new `src/shared/dev/` tree, or
+  - live under one site's subtree (audiocontrol, since it's the workbench) and serve both
+  - whichever Astro's multi-site config supports with least friction
+- [ ] **Add `site` parameter to the pipeline:**
+  - `OGPreview.astro` accepts `site: 'audiocontrol' | 'editorialcontrol'` prop (default `audiocontrol` for backwards compat)
+  - Component reads `src/sites/<site>/brand.ts` at render time and emits CSS custom properties (`--og-primary`, `--og-foreground`, `--og-panel-bg`, `--og-font-display`, `--og-font-body`) the stylesheet consumes
+  - Bake route `/dev/feature-image-bake` accepts `?site=<slug>` query param
+  - `/api/dev/feature-image/generate` and `/recomposite` accept `site` in the body and persist it on the log entry
+- [ ] **Rewrite `og-preview.css`** to use brand custom properties instead of literal colors/fonts. Typography: `font-family: var(--og-font-display)` for title, `var(--og-font-body)` for subtitle. Panel/accent colors come from the same vars. Behavior stays directionally identical when site=audiocontrol.
+- [ ] **Extend `LogEntry` schema** with optional `site: 'audiocontrol' | 'editorialcontrol'`. Default to `audiocontrol` if absent (pre-Phase-14 entries).
+- [ ] **Gallery UI site selector:**
+  - Generate drawer gets a Site field (radio or segmented control) above the Prompt. Defaults to `audiocontrol`; remembered via localStorage.
+  - Focused entry shows which site it's for; focus-mode preview controls include a small Site switcher so the user can re-bake the same raw image under a different site's brand.
+  - Template grid filters by current site + null-site templates.
+- [ ] **Extend `/feature-image-blog` skill:** infer `site` from the post path (first path segment after `src/sites/`). Pass into the workflow context.
+- [ ] **Extend `/feature-image-apply` skill:** use `site` from the workflow context or the approved log entry to route output into `src/sites/<site>/public/images/blog/<slug>/` and update the correct site's blog index + post frontmatter.
+- [ ] **Extend `PromptTemplate` schema** with optional `site` field; update the YAML seeds + templates endpoint + gallery picker filter.
+- [ ] **Seed editorialcontrol templates** — hand-author 2-3 starter templates that reflect editorialcontrol's brand (serif display, editorial feel) so the picker has something sensible on day one.
+- [ ] **Dogfood on one editorialcontrol post** — generate, iterate, approve, apply. Verify the baked PNG uses Fraunces display + chartreuse accent + editorialcontrol branding and lands in the correct directory.
+
+### Acceptance Criteria
+
+- [ ] `OGPreview` and the bake route produce visibly different images for `site=audiocontrol` vs `site=editorialcontrol` from the same raw background
+- [ ] Generated images for audiocontrol are visually unchanged from pre-Phase-14 behavior
+- [ ] Gallery's Generate form has a Site selector; selection persists between sessions
+- [ ] Focused entry displays its site and lets the user switch sites for recomposition
+- [ ] `/feature-image-blog` correctly infers the site from the post path
+- [ ] `/feature-image-apply` writes to the correct `src/sites/<site>/public/images/blog/<slug>/` directory
+- [ ] Template picker filters templates by the currently-selected site
+- [ ] Log entries persist `site` alongside prompt/preset/filters
+
+### Deferred
+
+- Automatic palette inference for the overlay panel from the site's brand (e.g. panel-bg derived from `--card` token) — start with hand-tuned per-site overrides
+- Visual cross-site A/B comparison in the gallery (show the same raw image baked under both sites side by side)
+- Per-site commit hook that regenerates all open workflows when brand tokens change
+
 ## File Structure
 
 ```

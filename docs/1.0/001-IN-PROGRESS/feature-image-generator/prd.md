@@ -46,6 +46,13 @@ This feature adds AI-generated backgrounds (via DALL-E 3 and FLUX) and wraps the
 - Lineage tracking on log entries (parent → child) so iterations form a tree and a thread is visible on any entry in the chain
 - New `/feature-image-iterate` skill (or extension to `/feature-image-help`) that picks up pending thread messages, reads the snapshot + feedback, and invokes the generation pipeline
 
+### In Scope (Extended — Phase 14)
+
+- Multi-site feature image generation. The repo now hosts two sites under `src/sites/<site>/` (audiocontrol and editorialcontrol); each has its own `brand.ts` with distinct palette, typography, and name/tagline.
+- `OGPreview` component and the bake pipeline read site brand data so the overlay uses the correct fonts, colors, logo, and brand text per site.
+- Gallery surfaces site selection: generation form captures which site an image is for; focused entry allows switching sites for exploratory recomposition; applying a workflow routes output into the correct site's public directory.
+- Templates gain optional `site` affinity so the library picker can filter by site and fitness is tracked per-site.
+
 ### Out of Scope
 
 - Changes to the existing `generate-og-images.ts` build-time script
