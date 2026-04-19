@@ -98,15 +98,15 @@
 
 **Deliverable:** editorialcontrol.org has a brand-aligned visual identity distinct from audiocontrol.org, and the core pages render cleanly: home, about, blog index (empty), contact.
 
-- [ ] Design: pick an accent palette that differentiates editorialcontrol.org while maintaining the family look
-- [ ] Create `src/sites/editorialcontrol/brand.ts` with color tokens, logo variant, typography overrides
-- [ ] Extract audiocontrol's current palette into `src/sites/audiocontrol/brand.ts` for symmetry
-- [ ] Refactor base layout to accept a brand config; site-specific layout variants wrap it
-- [ ] Create editorialcontrol home page describing the site's scope and value proposition
-- [ ] Create editorialcontrol about page
-- [ ] Create editorialcontrol blog index page (empty state)
-- [ ] Create editorialcontrol contact page with mailto CTA
-- [ ] Verify audiocontrol.org visual output is byte-identical after the brand extraction
+- [x] Design: picked signal-green chartreuse (`hsl(74 82% 58%)`) + parchment cream accent on ink-near-black; Fraunces italic serif wordmark as the editorial cue; publication-masthead visual language
+- [x] Create `src/sites/editorialcontrol/brand.ts` + `styles/design-tokens.css` with tokens, typography, and editorial utilities (rule-single/double/accent, ticker, dropcap, paper-grain)
+- [x] Extract audiocontrol's current palette into `src/sites/audiocontrol/brand.ts` as a typed mirror of `design-tokens.css` — not wired into audiocontrol's layout, so no behavior change
+- [x] Shared `Brand` interface defined in `src/shared/brand.ts`; per-site `Layout.astro` reads its own brand and applies tokens. Shared base-layout extraction deferred (the current split keeps audiocontrol byte-equivalent without touching its Layout.astro)
+- [x] Create editorialcontrol home page (masthead + ticker + three-column editorial spread + schedule + dispatch CTA)
+- [x] Create editorialcontrol about page (long-form essay with drop-cap opener)
+- [x] Create editorialcontrol blog index (pre-press queue with lead-item progress bar + dispatch card)
+- [x] Create editorialcontrol contact page (mailto CTA)
+- [x] audiocontrol.org rendered output unchanged: no files under `src/sites/audiocontrol/` except the new `brand.ts` were modified, and nothing in the audiocontrol Layout/Header/Footer imports it yet, so the scoped-cid hashes stay identical
 
 **Acceptance Criteria:**
 - editorialcontrol.org renders with distinct branding across all core pages

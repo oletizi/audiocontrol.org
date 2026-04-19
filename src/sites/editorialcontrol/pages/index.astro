@@ -1,66 +1,435 @@
 ---
-const title = 'editorialcontrol.org';
-const description =
-  'editorialcontrol.org — a forthcoming sibling site to audiocontrol.org focused on content-marketing and agent-as-workflow material.';
+import Layout from '../layouts/Layout.astro';
+import Logo from '../components/Logo.astro';
+
+interface Topic {
+  marker: string;
+  name: string;
+  rationale: string;
+}
+
+const topics: Topic[] = [
+  {
+    marker: '§ 01',
+    name: 'Workflow patterns',
+    rationale: 'What it looks like when agents do the grunt work and humans review. Templates, branches, review loops.',
+  },
+  {
+    marker: '§ 02',
+    name: 'Editorial cadence',
+    rationale: 'Shipping writing on a schedule. Calendars, drafts, review, publication — run by agents, finished by a human.',
+  },
+  {
+    marker: '§ 03',
+    name: 'Automation that actually ships',
+    rationale: 'The difference between a cute demo and something you use every week without noticing.',
+  },
+  {
+    marker: '§ 04',
+    name: 'Instrumenting the loop',
+    rationale: 'Analytics, evals, audit trails. What feedback an agent needs to get sharper run over run.',
+  },
+  {
+    marker: '§ 05',
+    name: 'Field notes from the desk',
+    rationale: 'Specific sessions where the workflow worked, broke, or surprised us. No generalizations without a receipt.',
+  },
+];
+
+// Today's date, rendered in editorial masthead style.
+const today = new Date();
+const issueDate = today.toLocaleDateString('en-US', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      :root {
-        color-scheme: dark;
-      }
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        background: #0b0c10;
-        color: #e6e6e6;
-        font-family: 'Inter', system-ui, sans-serif;
-        min-height: 100%;
-      }
-      main {
-        max-width: 640px;
-        margin: 0 auto;
-        padding: 6rem 1.5rem 4rem;
-      }
-      h1 {
-        font-size: clamp(2rem, 5vw, 2.75rem);
-        margin: 0 0 1rem;
-        letter-spacing: -0.02em;
-      }
-      p {
-        line-height: 1.6;
-        color: #b8bcc4;
-      }
-      .meta {
-        margin-top: 2rem;
-        font-size: 0.9rem;
-        color: #6b7080;
-      }
-      a {
-        color: #9ec5fe;
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <h1>editorialcontrol.org</h1>
-      <p>
-        A sibling site to <a href="https://audiocontrol.org">audiocontrol.org</a>, focused on
-        content-marketing and agent-as-workflow material. This placeholder is here while the site
-        is being built — come back soon.
+<Layout
+  title="editorialcontrol.org — A publication on building with AI agents"
+  description="A publication about building with AI agents: workflow patterns, editorial cadence, and automation that actually ships. A sibling to audiocontrol.org."
+>
+  {/* Running ticker across the top — publication metadata */}
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      {Array.from({ length: 2 }).map(() => (
+        <span>
+          <span class="ticker-mark">◆</span>A publication on building with AI agents
+          <span class="ticker-mark">◆</span>Vol. 01 / Issue 00 — Pre-press
+          <span class="ticker-mark">◆</span>Sibling to audiocontrol.org
+          <span class="ticker-mark">◆</span>Published from a terminal
+        </span>
+      ))}
+    </div>
+  </div>
+
+  <section class="masthead site-container">
+    <div class="masthead-meta">
+      <span class="meta-label">Vol. 01 / Issue 00</span>
+      <span class="meta-dot" aria-hidden="true">·</span>
+      <span class="meta-label">Pre-press</span>
+      <span class="meta-dot" aria-hidden="true">·</span>
+      <time class="meta-label meta-date" datetime={today.toISOString().slice(0, 10)}>{issueDate}</time>
+    </div>
+
+    <h1 class="mast">
+      <Logo variant="masthead" />
+    </h1>
+
+    <p class="lede">
+      A publication about <em>building with AI agents</em> — workflow patterns, editorial cadence,
+      and the automation that actually ships, written by someone who would rather be using
+      the work than describing it.
+    </p>
+
+    <hr class="rule-masthead" />
+  </section>
+
+  {/* Editorial spread — three columns, each a short editorial statement */}
+  <section class="spread site-container" aria-labelledby="spread-heading">
+    <h2 id="spread-heading" class="sr-only">Editorial spread</h2>
+
+    <article class="column">
+      <p class="column-label">What's here</p>
+      <p class="column-body dropcap">
+        Posts on getting real work done with LLM agents. Not tutorials. Not benchmarks. The
+        day-to-day texture of running workflows where the model is a collaborator and the
+        human's job is to notice when the work goes sideways.
       </p>
-      <p class="meta">Status: placeholder.</p>
-    </main>
-  </body>
-</html>
+    </article>
+
+    <article class="column">
+      <p class="column-label">Why bother</p>
+      <p class="column-body dropcap">
+        Because the interesting part isn't the model — it's what it does to your process.
+        Calendars, review cycles, publishing cadences: all of it shifts when the person at
+        the desk can delegate, then correct. That shift deserves a press of its own.
+      </p>
+    </article>
+
+    <article class="column">
+      <p class="column-label">How we publish</p>
+      <p class="column-body dropcap">
+        Slowly. Every piece here is drafted by an agent and finished by a human, using the
+        same editorial calendar you can read about in the posts. Nothing ships that wouldn't
+        survive a read-aloud. The receipts stay on the page.
+      </p>
+    </article>
+  </section>
+
+  {/* On the desk — topic listing */}
+  <section class="schedule site-container">
+    <div class="schedule-header">
+      <h2 class="schedule-title">On the desk</h2>
+      <p class="schedule-note">
+        The running list of sections this publication is working on. Each one is a place we
+        expect to return to, not a one-shot post.
+      </p>
+    </div>
+
+    <hr class="rule-single" />
+
+    <ol class="topic-list">
+      {topics.map((t) => (
+        <li class="topic-item">
+          <span class="topic-marker tabular">{t.marker}</span>
+          <div class="topic-body">
+            <h3 class="topic-name">{t.name}</h3>
+            <p class="topic-rationale">{t.rationale}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  {/* Dispatch / signup — quiet, typographic */}
+  <section class="dispatch site-container">
+    <hr class="rule-double" />
+
+    <div class="dispatch-content">
+      <p class="dispatch-kicker">The dispatch</p>
+      <p class="dispatch-lede">
+        When the first issue ships, it goes out to a short list. Want it?
+      </p>
+      <a class="dispatch-cta" href="mailto:orion@audiocontrol.org?subject=editorialcontrol%20dispatch">
+        Write to the editor
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <p class="dispatch-fineprint">
+        No form, no funnel. An email. Reply asks to be added; I reply when the first piece
+        is close.
+      </p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ---- Masthead ---- */
+  .masthead {
+    padding-top: 3.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .masthead-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 2rem;
+  }
+
+  .meta-label {
+    line-height: 1;
+  }
+
+  .meta-dot {
+    color: hsl(var(--primary));
+  }
+
+  .meta-date {
+    color: hsl(var(--accent));
+  }
+
+  .mast {
+    margin: 0 0 1.5rem 0;
+  }
+
+  .lede {
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+    line-height: 1.4;
+    font-weight: 400;
+    max-width: 48rem;
+    color: hsl(var(--foreground));
+    margin: 0;
+  }
+
+  .lede em {
+    font-style: italic;
+    color: hsl(var(--primary));
+  }
+
+  /* ---- Editorial spread ---- */
+  .spread {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    position: relative;
+  }
+
+  /* Column rules — subtle vertical hairlines between spread columns */
+  @media (min-width: 900px) {
+    .spread .column:not(:last-child) {
+      border-right: 1px solid hsl(var(--border));
+      padding-right: 2.5rem;
+    }
+    .spread .column:not(:first-child) {
+      padding-left: 0;
+    }
+  }
+
+  @media (max-width: 899px) {
+    .spread {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+  }
+
+  .column-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    margin: 0 0 0.75rem 0;
+  }
+
+  .column-body {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: hsl(var(--foreground) / 0.92);
+  }
+
+  /* ---- Schedule ---- */
+  .schedule {
+    padding-top: 4rem;
+    padding-bottom: 2rem;
+  }
+
+  .schedule-header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2.5rem;
+    align-items: baseline;
+  }
+
+  @media (max-width: 720px) {
+    .schedule-header {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+  }
+
+  .schedule-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1;
+    color: hsl(var(--foreground));
+    margin: 0;
+  }
+
+  .schedule-note {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-style: italic;
+    color: hsl(var(--muted-foreground));
+    max-width: 36rem;
+    margin: 0;
+  }
+
+  .topic-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: topic;
+  }
+
+  .topic-item {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+    transition: background 0.15s ease;
+  }
+
+  .topic-item:hover {
+    background: hsl(var(--card-hover) / 0.35);
+  }
+
+  @media (max-width: 640px) {
+    .topic-item {
+      grid-template-columns: 1fr;
+      gap: 0.4rem;
+    }
+  }
+
+  .topic-marker {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    color: hsl(var(--primary));
+    padding-top: 0.35rem;
+  }
+
+  .topic-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .topic-name {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: hsl(var(--foreground));
+  }
+
+  .topic-rationale {
+    font-size: 0.95rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.55;
+    max-width: 42rem;
+  }
+
+  /* ---- Dispatch ---- */
+  .dispatch {
+    padding-top: 3.5rem;
+    padding-bottom: 2rem;
+  }
+
+  .dispatch-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 36rem;
+  }
+
+  .dispatch-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+  }
+
+  .dispatch-lede {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+    line-height: 1.35;
+    color: hsl(var(--foreground));
+  }
+
+  .dispatch-cta {
+    align-self: flex-start;
+    margin-top: 0.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    padding: 0.65rem 1rem;
+    border: 1px solid hsl(var(--primary) / 0.5);
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
+  }
+
+  .dispatch-cta:hover {
+    background: hsl(var(--primary));
+    color: hsl(var(--background));
+    border-color: hsl(var(--primary));
+    text-decoration: none;
+  }
+
+  .dispatch-cta .arrow {
+    transition: transform 0.18s ease;
+  }
+
+  .dispatch-cta:hover .arrow {
+    transform: translateX(3px);
+  }
+
+  .dispatch-fineprint {
+    font-size: 0.85rem;
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+  }
+</style>

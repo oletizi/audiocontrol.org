@@ -1,0 +1,289 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+interface UpcomingTopic {
+  number: string;
+  name: string;
+  sketch: string;
+}
+
+const upcoming: UpcomingTopic[] = [
+  {
+    number: 'No. 01',
+    name: 'Building the editorial calendar',
+    sketch: 'How a single markdown file and a dozen skills replaced a to-do app and three half-finished Notion pages.',
+  },
+  {
+    number: 'No. 02',
+    name: 'Agents as workflow, not assistants',
+    sketch: 'The reframe that made the agent useful: stop asking it to help, start asking it to run the process.',
+  },
+  {
+    number: 'No. 03',
+    name: 'Dogfooding a dogfooding tool',
+    sketch: 'What broke when the editorial tool met its first real post, and why most of the failure was in the prose.',
+  },
+];
+---
+
+<Layout
+  title="The desk — editorialcontrol.org"
+  description="Pieces in progress and what's queued for the first issue. The press is warm; the first post ships soon."
+>
+  <section class="desk site-container">
+    <div class="desk-header">
+      <p class="kicker">The desk</p>
+      <h1 class="desk-title">
+        Pre-press.
+      </h1>
+      <p class="desk-lede">
+        The press is warm. No post has shipped <em>here</em> yet — the first issue is in
+        edit. Below: what's on the desk, with a sketch of each. When a piece clears review
+        it replaces its sketch with the real thing.
+      </p>
+      <hr class="rule-accent" />
+    </div>
+
+    <ol class="queue">
+      {upcoming.map((u, i) => (
+        <li class={`queue-item ${i === 0 ? 'queue-item--lead' : ''}`}>
+          <div class="queue-meta">
+            <span class="queue-number tabular">{u.number}</span>
+            <span class="queue-status">{i === 0 ? 'In edit' : i === 1 ? 'Drafting' : 'Planned'}</span>
+          </div>
+          <h2 class="queue-name">{u.name}</h2>
+          <p class="queue-sketch">{u.sketch}</p>
+          {i === 0 && (
+            <div class="queue-progress" aria-hidden="true">
+              <div class="progress-bar"><div class="progress-fill"></div></div>
+              <span class="progress-label">~ 70%</span>
+            </div>
+          )}
+        </li>
+      ))}
+    </ol>
+
+    <hr class="rule-double" />
+
+    <aside class="dispatch-card">
+      <p class="dispatch-kicker">The dispatch</p>
+      <h2 class="dispatch-title">
+        Tell me to send you the first issue.
+      </h2>
+      <p class="dispatch-body">
+        No form, no funnel. An email. Reply asks to be added; I reply when the first piece
+        is close.
+      </p>
+      <a class="dispatch-cta" href="mailto:orion@audiocontrol.org?subject=editorialcontrol%20dispatch">
+        Write to the editor
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </aside>
+  </section>
+</Layout>
+
+<style>
+  .desk {
+    padding-top: 3rem;
+    padding-bottom: 4rem;
+    max-width: 56rem;
+  }
+
+  .desk-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    margin: 0 0 0.85rem 0;
+  }
+
+  .desk-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 1;
+    color: hsl(var(--foreground));
+    margin: 0 0 1.25rem 0;
+  }
+
+  .desk-lede {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-style: italic;
+    line-height: 1.45;
+    color: hsl(var(--muted-foreground));
+    max-width: 38rem;
+    margin: 0;
+  }
+
+  .desk-lede em {
+    color: hsl(var(--accent));
+  }
+
+  /* ---- Queue ---- */
+  .queue {
+    list-style: none;
+    margin: 2rem 0 3rem 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .queue-item {
+    padding: 2rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .queue-item--lead {
+    border-top: 2px solid hsl(var(--primary));
+    padding-top: 1.5rem;
+  }
+
+  .queue-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .queue-number {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    color: hsl(var(--primary));
+  }
+
+  .queue-status {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    padding: 0.15rem 0.5rem;
+    border: 1px solid hsl(var(--border));
+  }
+
+  .queue-item--lead .queue-status {
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary) / 0.5);
+  }
+
+  .queue-name {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 500;
+    line-height: 1.15;
+    margin: 0 0 0.6rem 0;
+    color: hsl(var(--foreground));
+  }
+
+  .queue-item--lead .queue-name {
+    font-style: italic;
+  }
+
+  .queue-sketch {
+    font-family: var(--font-body);
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+    max-width: 44rem;
+    margin: 0;
+  }
+
+  .queue-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .progress-bar {
+    height: 2px;
+    flex-grow: 1;
+    background: hsl(var(--border));
+    max-width: 18rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 70%;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+  }
+
+  .progress-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: hsl(var(--primary));
+  }
+
+  /* ---- Dispatch card ---- */
+  .dispatch-card {
+    padding: 2rem 0 0 0;
+  }
+
+  .dispatch-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    margin: 0 0 0.75rem 0;
+  }
+
+  .dispatch-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    line-height: 1.25;
+    margin: 0 0 0.85rem 0;
+    color: hsl(var(--foreground));
+    max-width: 30rem;
+  }
+
+  .dispatch-body {
+    font-family: var(--font-body);
+    color: hsl(var(--muted-foreground));
+    max-width: 34rem;
+    margin: 0 0 1.25rem 0;
+  }
+
+  .dispatch-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    padding: 0.65rem 1rem;
+    border: 1px solid hsl(var(--primary) / 0.5);
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    text-decoration: none;
+  }
+
+  .dispatch-cta:hover {
+    background: hsl(var(--primary));
+    color: hsl(var(--background));
+    border-color: hsl(var(--primary));
+    text-decoration: none;
+  }
+
+  .dispatch-cta .arrow {
+    transition: transform 0.18s ease;
+  }
+
+  .dispatch-cta:hover .arrow {
+    transform: translateX(3px);
+  }
+</style>
