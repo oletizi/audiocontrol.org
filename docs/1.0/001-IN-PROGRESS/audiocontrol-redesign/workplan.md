@@ -88,20 +88,23 @@
 
 ### Phase 4: Content Pages — Blog, Docs, Hardware, Device Pages
 
+**Status:** Complete (issue #83)
+
 **Deliverable:** All content pages updated to use the new design language
 
-- [ ] Update BlogLayout.astro with new typography and reading experience
-- [ ] Update blog index page styling
-- [ ] Update DocsLayout.astro and docs pages
-- [ ] Update GuideLayout.astro and device pages
-- [ ] Update hardware index page
-- [ ] Visual review of all pages in desktop and mobile viewports
+- [x] Create shared `styles/prose.css` — single source of truth for article typography with Service-Manual voice (Departure Mono h1/h2 with amber accent hairline above h2, IBM Plex Sans h3+, amber-haloed inline code, panel-table treatment, phosphor-underline links); resolves the pre-existing `--fg`/`--muted`/`--card-bg` undefined-token issue
+- [x] Refactor `BlogLayout.astro` to use prose.css + retune TOC (panel-label header, amber active-section border) and post-meta (Departure Mono all-caps, author in amber)
+- [x] Refactor `DocsLayout.astro` to use prose.css (with `.prose--wide` for full-width tables)
+- [x] Refactor `GuideLayout.astro` to use prose.css (matching device-page spec-sheet treatment)
+- [x] Rebuild blog index: panel-label eyebrow + Departure Mono headline + IBM Plex card titles + hairline-border tag pills
+- [x] Rebuild hardware index: panel-label header + amber format meta + Departure Mono device titles
+- [x] Visual review across blog index, blog post, device page, hardware index, desktop + mobile
 
 **Acceptance Criteria:**
-- Blog posts have refined reading typography (line height, measure, heading styles)
-- All content pages feel cohesive with the new design
-- Device pages and docs maintain their information structure with improved presentation
-- No broken layouts or missing styles on any page
+- [x] Blog posts have refined reading typography (36rem measure, 1.72 line-height, amber accent hairlines on h2, phosphor inline-code)
+- [x] All content pages feel cohesive with the new design
+- [x] Device pages and docs maintain their information structure with improved presentation (panel-label table headers, amber underline rule, alternating warm-ink rows)
+- [x] No broken layouts or missing styles on any page
 
 ## Verification Checklist
 

@@ -15,7 +15,7 @@ Visual redesign of audiocontrol.org to match the design quality of the sibling s
 | 1 | Design Foundation — Tokens, Brand, Layout | Complete |
 | 2 | Header, Footer, Navigation | Complete |
 | 3 | Homepage Redesign | Complete |
-| 4 | Content Pages — Blog, Docs, Hardware, Device | In Progress |
+| 4 | Content Pages — Blog, Docs, Hardware, Device | Complete |
 
 ## Documentation
 

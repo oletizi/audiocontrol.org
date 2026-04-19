@@ -1,0 +1,279 @@
+/*
+ * Prose typography — shared across BlogLayout, DocsLayout, GuideLayout.
+ *
+ * A single source of truth for article content styling. Service-Manual
+ * voice: Departure Mono on the largest heading, IBM Plex Sans for body
+ * and sub-heads (readable at small sizes where a pixel face would be
+ * twee), JetBrains Mono for code and tabular meta. Amber primary is
+ * the accent for links, code, and table-header rules.
+ *
+ * Apply to the article container: <article class="prose"> — all child
+ * content uses the scoped block below.
+ *
+ * The legacy `--fg`, `--muted`, `--card-bg` variables referenced by the
+ * old inline styles are replaced here with HSL-token-based colors.
+ */
+
+.prose {
+  line-height: 1.72;
+  color: hsl(var(--foreground));
+  min-width: 0;
+  max-width: var(--measure-reading, 36rem);
+}
+
+/* Allow the article to be wider when explicitly requested
+ * (device pages with spec tables, etc). */
+.prose.prose--wide {
+  max-width: none;
+}
+
+/* --- Headings ------------------------------------------------------- */
+
+.prose h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.4vw, 2.35rem);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.18;
+  color: hsl(var(--foreground));
+  margin: 0 0 0.75rem 0;
+}
+
+.prose h2 {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.2;
+  color: hsl(var(--foreground));
+  margin: 2.75rem 0 1rem 0;
+  padding-top: 0.5rem;
+  position: relative;
+}
+
+/* Amber accent hairline above each h2 — reads as a panel section break. */
+.prose h2::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.25rem;
+  height: 2px;
+  background: hsl(var(--primary));
+  box-shadow: 0 0 8px hsl(var(--primary) / 0.35);
+}
+
+.prose h3 {
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: hsl(var(--foreground));
+  margin: 2rem 0 0.65rem 0;
+}
+
+.prose h4 {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 1.5rem 0 0.5rem 0;
+}
+
+.prose h5,
+.prose h6 {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  margin: 1.25rem 0 0.5rem 0;
+}
+
+/* --- Paragraph, lists, emphasis ------------------------------------ */
+
+.prose p {
+  margin: 0 0 1.25rem 0;
+  color: hsl(var(--foreground));
+}
+
+.prose strong {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+}
+
+.prose em {
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0 0 1.25rem 0;
+  padding-left: 1.5rem;
+}
+
+.prose li {
+  margin-bottom: 0.45rem;
+}
+
+.prose ul li::marker {
+  color: hsl(var(--primary) / 0.85);
+}
+
+.prose ol li::marker {
+  color: hsl(var(--muted-foreground));
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* --- Links --------------------------------------------------------- */
+
+.prose a {
+  color: hsl(var(--primary));
+  text-decoration: none;
+  border-bottom: 1px solid hsl(var(--primary) / 0.35);
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.prose a:hover {
+  color: hsl(var(--primary));
+  border-bottom-color: hsl(var(--primary));
+  text-decoration: none;
+}
+
+/* --- Rules, blockquotes ------------------------------------------- */
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid hsl(var(--border));
+  margin: 2rem 0;
+}
+
+.prose blockquote {
+  margin: 1.5rem 0;
+  padding: 0.25rem 0 0.25rem 1.25rem;
+  border-left: 2px solid hsl(var(--primary));
+  color: hsl(var(--foreground));
+  font-style: italic;
+}
+
+.prose blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* --- Code --------------------------------------------------------- */
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: hsl(var(--primary) / 0.08);
+  border: 1px solid hsl(var(--primary) / 0.18);
+  color: hsl(var(--foreground));
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+}
+
+.prose pre {
+  font-family: var(--font-mono);
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-left: 2px solid hsl(var(--primary) / 0.5);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 0 0 1.5rem 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.prose pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 1em;
+}
+
+/* --- Images, figures ---------------------------------------------- */
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem 0;
+  border: 1px solid hsl(var(--border));
+}
+
+.prose figure {
+  margin: 1.5rem 0;
+}
+
+.prose figure img {
+  margin: 0 0 0.5rem 0;
+}
+
+.prose figcaption {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+/* --- Tables — panel treatment ------------------------------------- */
+
+.prose table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.5rem 0;
+  border: 1px solid hsl(var(--border));
+  font-size: 0.92rem;
+}
+
+.prose th,
+.prose td {
+  padding: 0.7rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid hsl(var(--border));
+  vertical-align: top;
+}
+
+.prose th {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--card));
+  border-bottom: 2px solid hsl(var(--primary) / 0.5);
+}
+
+.prose tbody tr:nth-child(even) {
+  background: hsl(var(--card) / 0.4);
+}
+
+.prose tbody tr:hover {
+  background: hsl(var(--primary) / 0.05);
+}
+
+.prose tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* --- Shared feature-image / hero treatment for article pages ------ */
+
+.post-feature-image {
+  margin: 0 0 2rem 0;
+}
+
+.post-feature-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 21 / 10;
+  object-fit: cover;
+  object-position: center;
+  border: 1px solid hsl(var(--border));
+  box-shadow: var(--card-glow);
+  margin: 0;
+}
