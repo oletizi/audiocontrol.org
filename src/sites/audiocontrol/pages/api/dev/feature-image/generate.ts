@@ -8,16 +8,34 @@ import {
   type ProviderSelection,
 } from '../../../../../../../scripts/feature-image/pipeline.js';
 import { appendLog, type LogEntry } from '../../../../../../../scripts/feature-image/log.js';
+import {
+  type Site,
+  DEFAULT_SITE,
+  resolveSite,
+  getPublicDir,
+} from '../../../../../../../scripts/feature-image/sites.js';
 
 export const prerender = false;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // src/sites/audiocontrol/pages/api/dev/feature-image → repo root is 7 levels up
 const rootDir = join(__dirname, '..', '..', '..', '..', '..', '..', '..');
-// Per-site publicDir (matches astro.audiocontrol.config.mjs). Phase 14 will
-// parameterize this so editorialcontrol can write to its own public tree.
-const PUBLIC_DIR = join(rootDir, 'src', 'sites', 'audiocontrol', 'public');
-const DEFAULT_OUTPUT = join(PUBLIC_DIR, 'images', 'generated');
+
+function outputDirFor(site: Site): string {
+  return join(getPublicDir(site, rootDir), 'images', 'generated');
+}
+
+function toPublicPath(absolutePath: string, site: Site): string {
+  const publicDirPrefix = getPublicDir(site, rootDir) + '/';
+  if (absolutePath.startsWith(publicDirPrefix)) {
+    return '/' + absolutePath.slice(publicDirPrefix.length);
+  }
+  return absolutePath;
+}
+
+function toPublicPaths(paths: string[], site: Site): string[] {
+  return paths.map(p => toPublicPath(p, site));
+}
 
 interface GenerateBody {
   prompt?: string;
@@ -34,6 +52,7 @@ interface GenerateBody {
   baseName?: string;
   outputDir?: string;
   parentEntryId?: string;
+  site?: string;
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -60,9 +79,10 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 
+  const site: Site = resolveSite(body.site);
   const id = randomUUID();
   const baseName = body.baseName ?? id.slice(0, 8);
-  const outputDir = body.outputDir ?? DEFAULT_OUTPUT;
+  const outputDir = body.outputDir ?? outputDirFor(site);
 
   const startedAt = new Date().toISOString();
   try {
@@ -94,18 +114,19 @@ export const POST: APIRoute = async ({ request }) => {
       formats: body.formats,
       outputDir,
       outputs: {
-        raw: toPublicPaths(result.raw),
-        filtered: toPublicPaths(result.filtered),
+        raw: toPublicPaths(result.raw, site),
+        filtered: toPublicPaths(result.filtered, site),
         composited: result.composited.map(c => ({
           provider: c.provider,
           format: c.format,
-          path: toPublicPath(c.path),
+          path: toPublicPath(c.path, site),
         })),
       },
       durationMs: result.durationMs,
       status: 'generated',
       templateSlug: body.templateSlug,
       parentEntryId: body.parentEntryId,
+      site,
     };
     appendLog(entry);
 
@@ -132,6 +153,7 @@ export const POST: APIRoute = async ({ request }) => {
       status: 'rejected',
       error: message,
       templateSlug: body.templateSlug,
+      site,
     };
     appendLog(entry);
 
@@ -142,18 +164,3 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-/**
- * Convert an absolute filesystem path inside `public/` to a URL-style path.
- * e.g. /Users/.../public/images/generated/foo.png → /images/generated/foo.png
- */
-function toPublicPath(absolutePath: string): string {
-  const publicDirPrefix = PUBLIC_DIR + '/';
-  if (absolutePath.startsWith(publicDirPrefix)) {
-    return '/' + absolutePath.slice(publicDirPrefix.length);
-  }
-  return absolutePath;
-}
-
-function toPublicPaths(paths: string[]): string[] {
-  return paths.map(toPublicPath);
-}

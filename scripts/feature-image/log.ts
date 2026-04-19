@@ -35,6 +35,12 @@ export interface LogEntry {
   templateSlug?: string;
   /** ID of the entry this was iterated from — anchors lineage for threads. */
   parentEntryId?: string;
+  /**
+   * Site this image was generated for. Drives brand tokens at bake time
+   * and routing at apply time. Pre-Phase-14 entries lack this field;
+   * consumers should treat absence as DEFAULT_SITE (`audiocontrol`).
+   */
+  site?: 'audiocontrol' | 'editorialcontrol';
 }
 
 /** Read all log entries, oldest first. Empty array if the file doesn't exist. */

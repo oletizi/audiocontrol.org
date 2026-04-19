@@ -5,8 +5,8 @@ import {
   resolveRootEntryId,
   type ThreadMessage,
   type ThreadSnapshot,
-} from '../../../../../scripts/feature-image/threads.js';
-import { createWorkflow } from '../../../../../scripts/feature-image/workflow.js';
+} from '../../../../../../../scripts/feature-image/threads.js';
+import { createWorkflow } from '../../../../../../../scripts/feature-image/workflow.js';
 
 export const prerender = false;
 

@@ -3,6 +3,11 @@
  * Uses container-query width units (cqw) so pixel-scale is identical
  * at 1200×630 (OG), 1280×720 (YouTube), 1080×1080 (Instagram), or any
  * scaled-down preview. Drives all filter primitives with data-* attrs.
+ *
+ * Brand tokens (--og-primary, --og-foreground, --og-font-display, etc.)
+ * are emitted inline by the OGPreview Astro component from the per-site
+ * brand.ts. Fallbacks below are the audiocontrol brand for legacy
+ * callers that don't set the tokens.
  */
 
 .og-preview {
@@ -12,11 +17,26 @@
   aspect-ratio: var(--og-aspect, 1200 / 630);
   overflow: hidden;
   container-type: inline-size;
-  background: #0a0c10;
-  font-family: 'Inter', system-ui, sans-serif;
-  color: #c4ced8;
+
+  /* Fallback tokens (audiocontrol). Overridden by OGPreview inline styles. */
+  --og-primary: hsl(35 95% 62%);
+  --og-accent: hsl(215 55% 55%);
+  --og-foreground: hsl(35 18% 88%);
+  --og-muted-foreground: hsl(30 10% 55%);
+  --og-background: hsl(30 12% 7%);
+  --og-card: hsl(30 14% 11%);
+  --og-border: hsl(30 10% 18%);
+  --og-font-display: "Departure Mono", ui-monospace, Menlo, monospace;
+  --og-font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --og-font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Runtime filter state (set by data-attr rules below). */
   --og-bg-filter: none;
   --og-bg-blur: 0;
+
+  background: var(--og-background);
+  color: var(--og-foreground);
+  font-family: var(--og-font-body);
 }
 
 .og-preview .og-bg {
@@ -83,15 +103,18 @@
 .og-preview[data-grain="on"]    .og-grain { opacity: 0.08; }
 .og-preview[data-grain="heavy"] .og-grain { opacity: 0.12; }
 
-/* ── Text overlay panel (bottom) ── */
+/* ── Text overlay panel (bottom) ──────────────────────────────────────
+ * Panel bg is derived from the site's background token (ink-near-black
+ * either way) with alpha; top rule uses the site's primary as a hairline
+ * brand cue. Both respect the site's typography stack. */
 .og-preview .og-text-panel {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   padding: 5cqw;
-  background: rgba(10, 12, 16, 0.82);
-  border-top: 0.25cqw solid #2fb8a8;
+  background: color-mix(in oklch, var(--og-background) 82%, transparent);
+  border-top: 0.25cqw solid var(--og-primary);
   display: flex;
   flex-direction: column;
   gap: 1.3cqw;
@@ -103,18 +126,19 @@
 }
 
 .og-preview .og-title {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--og-font-display);
   font-weight: 700;
-  color: #c4ced8;
+  color: var(--og-foreground);
   font-size: 4.3cqw;
   line-height: 1.25;
   margin: 0;
+  letter-spacing: 0.01em;
 }
 
 .og-preview .og-subtitle {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--og-font-body);
   font-weight: 700;
-  color: #6b7280;
+  color: var(--og-muted-foreground);
   font-size: 2.5cqw;
   line-height: 1.3;
   margin: 0;
@@ -139,10 +163,10 @@
 }
 
 .og-preview .og-brand-text {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--og-font-mono);
   font-weight: 700;
   font-size: 1.8cqw;
-  color: #6b7280;
+  color: var(--og-muted-foreground);
   letter-spacing: 0.01em;
 }
 
@@ -163,25 +187,47 @@
 }
 
 .og-preview .og-title-input {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--og-font-display);
   font-weight: 700;
-  color: #c4ced8;
+  color: var(--og-foreground);
   font-size: 4.3cqw;
   line-height: 1.25;
+  letter-spacing: 0.01em;
 }
 
 .og-preview .og-subtitle-input {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--og-font-body);
   font-weight: 700;
-  color: #6b7280;
+  color: var(--og-muted-foreground);
   font-size: 2.5cqw;
   line-height: 1.3;
 }
 
 .og-preview.editable .og-title-input:focus,
 .og-preview.editable .og-subtitle-input:focus {
-  outline: 0.15cqw solid #2fb8a8;
+  outline: 0.15cqw solid var(--og-primary);
   outline-offset: 0.2cqw;
+}
+
+/* ── Per-site overrides: a couple of dialed-in tweaks that the shared
+ * rules can't cleanly express. Keep this list tight — each entry is a
+ * decision that diverges from the default. */
+
+/* Editorialcontrol: serif display wants a slightly larger tracking and a
+ * warm parchment accent as the top rule instead of the chartreuse primary.
+ * Chartreuse is the editor's pencil — rationed; using the accent (cream)
+ * for the rule gives the panel a paper-on-ink settle. */
+.og-preview[data-site="editorialcontrol"] {
+  /* No changes needed to tokens — OGPreview sets them. */
+}
+.og-preview[data-site="editorialcontrol"] .og-title {
+  letter-spacing: -0.005em; /* Serifs tighten up at display sizes. */
+}
+.og-preview[data-site="editorialcontrol"] .og-title-input {
+  letter-spacing: -0.005em;
+}
+.og-preview[data-site="editorialcontrol"] .og-text-panel {
+  border-top-color: var(--og-accent); /* Parchment-cream rule, not chartreuse. */
 }
 
 /* ── Aspect ratio variants ── */

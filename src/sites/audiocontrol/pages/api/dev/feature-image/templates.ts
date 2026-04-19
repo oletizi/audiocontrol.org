@@ -8,8 +8,8 @@ import {
   rankTemplates,
   filterByTags,
   type PromptTemplate,
-} from '../../../../../scripts/feature-image/templates.js';
-import { readLog } from '../../../../../scripts/feature-image/log.js';
+} from '../../../../../../../scripts/feature-image/templates.js';
+import { readLog } from '../../../../../../../scripts/feature-image/log.js';
 
 export const prerender = false;
 

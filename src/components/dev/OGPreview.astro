@@ -4,7 +4,16 @@
  * gallery (editable) and in the bake route (rasterized by Playwright).
  * Filter state is driven by data-* attributes on the root element so
  * controls can flip them at runtime without re-rendering.
+ *
+ * Brand tokens are emitted as inline CSS custom properties so the stylesheet
+ * consumes --og-primary / --og-foreground / --og-font-display / etc.
+ * instead of literal colors. Pass site="audiocontrol" or "editorialcontrol"
+ * (default audiocontrol) to switch brand.
  */
+
+import { brand as audiocontrolBrand } from '../../sites/audiocontrol/brand.js';
+import { brand as editorialcontrolBrand } from '../../sites/editorialcontrol/brand.js';
+import type { Brand } from '../../shared/brand.js';
 
 export interface FilterState {
   grade?: 'none' | 'crt' | 'heavy' | 'teal-amber';
@@ -15,6 +24,7 @@ export interface FilterState {
 }
 
 export type PresetName = 'none' | 'subtle' | 'retro-crt' | 'teal-amber' | 'heavy-crt';
+export type Site = 'audiocontrol' | 'editorialcontrol';
 
 export function presetToFilters(preset: PresetName): FilterState {
   switch (preset) {
@@ -31,6 +41,29 @@ export function presetToFilters(preset: PresetName): FilterState {
   }
 }
 
+const BRANDS: Record<Site, Brand> = {
+  audiocontrol: audiocontrolBrand,
+  editorialcontrol: editorialcontrolBrand,
+};
+
+function brandStyle(brand: Brand): string {
+  // Emit one custom property per token the overlay stylesheet reads.
+  // Colors ship as HSL triplets (e.g. "30 12% 7%") so we wrap in hsl() here.
+  return [
+    `--og-primary: hsl(${brand.colors.primary})`,
+    `--og-accent: hsl(${brand.colors.accent})`,
+    `--og-foreground: hsl(${brand.colors.foreground})`,
+    `--og-muted-foreground: hsl(${brand.colors.mutedForeground})`,
+    `--og-background: hsl(${brand.colors.background})`,
+    `--og-card: hsl(${brand.colors.card})`,
+    `--og-border: hsl(${brand.colors.border})`,
+    `--og-font-display: ${brand.typography.display}`,
+    `--og-font-body: ${brand.typography.body}`,
+    `--og-font-mono: ${brand.typography.mono}`,
+    `--og-brand-name: '${brand.name.replace(/'/g, "\\'")}'`,
+  ].join('; ');
+}
+
 interface Props {
   bgSrc: string;
   title?: string;
@@ -41,6 +74,7 @@ interface Props {
   overlay?: boolean;
   editable?: boolean;
   id?: string;
+  site?: Site;
   logoSrc?: string;
   width?: number;
   height?: number;
@@ -56,10 +90,14 @@ const {
   overlay = true,
   editable = false,
   id,
-  logoSrc = '/favicon.svg',
+  site = 'audiocontrol',
+  logoSrc,
   width,
   height,
 } = Astro.props;
+
+const brand = BRANDS[site];
+const effectiveLogoSrc = logoSrc ?? '/favicon.svg';
 
 const effective: Required<FilterState> = {
   grade: 'none',
@@ -71,9 +109,10 @@ const effective: Required<FilterState> = {
   ...(filters ?? {}),
 };
 
-const inlineDims = width && height
-  ? `width: ${width}px; height: ${height}px; aspect-ratio: ${width} / ${height};`
-  : undefined;
+const dimStyle = width && height
+  ? `width: ${width}px; height: ${height}px; aspect-ratio: ${width} / ${height}; `
+  : '';
+const inlineStyle = dimStyle + brandStyle(brand);
 ---
 
 <div
@@ -86,8 +125,9 @@ const inlineDims = width && height
   data-grain={effective.grain}
   data-overlay={overlay ? 'on' : 'off'}
   data-preset={preset ?? ''}
+  data-site={site}
   id={id}
-  style={inlineDims}
+  style={inlineStyle}
 >
   <img class="og-bg" src={bgSrc} alt="" />
   <div class="og-layer og-vignette"></div>
@@ -107,8 +147,8 @@ const inlineDims = width && height
       </Fragment>
     )}
     <div class="og-brand-row">
-      <img class="og-logo" src={logoSrc} alt="" />
-      <div class="og-brand-text">audiocontrol.org</div>
+      <img class="og-logo" src={effectiveLogoSrc} alt="" />
+      <div class="og-brand-text">{brand.name}</div>
     </div>
   </div>
 </div>

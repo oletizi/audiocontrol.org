@@ -28,8 +28,13 @@ test-results/
 # Playwright MCP scratch output (screenshots, snapshots, console logs)
 .playwright-mcp/
 
-# scratch output from feature-image CLI iterations (path follows publicDir split)
+# scratch output from feature-image CLI iterations (per-site publicDir)
 src/sites/audiocontrol/public/images/generated/
+src/sites/editorialcontrol/public/images/generated/
+
+# orphaned pre-split top-level public/ (from before the per-site publicDir
+# fix landed). Safe to delete; gitignored so nothing re-tracks them.
+public/images/generated/
 
 # playwright MCP / dev screenshots
 .playwright-mcp/

@@ -1,8 +1,8 @@
 ---
 export const prerender = false;
 
-import OGPreview, { type PresetName, type FilterState } from '../../components/dev/OGPreview.astro';
-import { readLog } from '../../../scripts/feature-image/log.js';
+import OGPreview, { type PresetName, type FilterState, type Site } from '../../../../components/dev/OGPreview.astro';
+import { readLog } from '../../../../../scripts/feature-image/log.js';
 import '../../styles/og-preview.css';
 
 if (import.meta.env.PROD) {
@@ -20,6 +20,12 @@ const subtitle = p.get('subtitle') ?? '';
 const preset = (p.get('preset') as PresetName | null) || undefined;
 const overlay = p.get('overlay') !== 'off';
 
+const siteParam = p.get('site');
+const validSites: Site[] = ['audiocontrol', 'editorialcontrol'];
+const site: Site = (siteParam && (validSites as string[]).includes(siteParam))
+  ? (siteParam as Site)
+  : 'audiocontrol';
+
 const filterKeys = ['grade', 'phosphor', 'vignette', 'scanlines', 'grain'] as const;
 const filters: FilterState = {};
 for (const k of filterKeys) {
@@ -35,6 +41,7 @@ const dims: Record<string, { w: number; h: number }> = {
 const { w, h } = dims[format] ?? dims.og;
 
 let bgSrc = rawParam ?? '';
+let inheritedSite: Site | null = null;
 if (!bgSrc && entryId) {
   const entries = await readLog();
   const entry = entries.find(e => e.id === entryId);
@@ -46,18 +53,32 @@ if (!bgSrc && entryId) {
     return new Response(`Entry ${entryId} has no raw output`, { status: 404 });
   }
   bgSrc = raw;
+  // If the entry has a site and the caller didn't override, inherit it.
+  if (!siteParam && entry.site && (validSites as string[]).includes(entry.site)) {
+    inheritedSite = entry.site as Site;
+  }
 }
 if (!bgSrc) {
   return new Response('Must provide entry=<id> or raw=<path>', { status: 400 });
 }
+
+const effectiveSite: Site = inheritedSite ?? site;
+
+// Each site needs its self-hosted fonts plus a Google-Fonts fallback for any
+// display face the preview wants that isn't shipped locally (Fraunces for
+// editorialcontrol). Local fonts live under /fonts on their own site; for
+// editorialcontrol we pull Fraunces from Google Fonts since it's not bundled.
+const fontHead = effectiveSite === 'editorialcontrol'
+  ? '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700&family=Inter:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" />'
+  : '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;700&display=swap" />';
 ---
 
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Feature Image Bake — {format}</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@700&display=swap" rel="stylesheet" />
+  <title>Feature Image Bake — {format} · {effectiveSite}</title>
+  <Fragment set:html={fontHead} />
   <style set:html={`
     html, body {
       margin: 0;
@@ -68,6 +89,17 @@ if (!bgSrc) {
     body {
       width: ${w}px;
       height: ${h}px;
+    }
+    /* Audiocontrol's Departure Mono is self-hosted; Editorialcontrol uses
+     * Fraunces from Google Fonts above. Both sites' body faces (IBM Plex
+     * Sans, Inter) come from Google Fonts since the OGPreview runs outside
+     * the site's normal font-face declarations. */
+    @font-face {
+      font-family: 'Departure Mono';
+      src: url('/fonts/departure-mono-regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: block;
     }
   `}></style>
 </head>
@@ -80,6 +112,7 @@ if (!bgSrc) {
     preset={preset}
     filters={filters}
     overlay={overlay}
+    site={effectiveSite}
     width={w}
     height={h}
   />

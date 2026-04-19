@@ -4,14 +4,16 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { appendLog, readLog, type LogEntry } from '../../../../../../../scripts/feature-image/log.js';
 import { bakeVariants, formatDims, type BakeVariant } from '../../../../../../../scripts/feature-image/bake-dom.js';
+import {
+  type Site,
+  resolveSite,
+  getPublicDir,
+} from '../../../../../../../scripts/feature-image/sites.js';
 
 export const prerender = false;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, '..', '..', '..', '..', '..', '..', '..');
-// Per-site publicDir. Phase 14 will parameterize this by site.
-const PUBLIC_DIR = join(rootDir, 'src', 'sites', 'audiocontrol', 'public');
-const DEFAULT_OUTPUT = join(PUBLIC_DIR, 'images', 'generated');
 
 type Format = 'og' | 'youtube' | 'instagram';
 
@@ -25,10 +27,16 @@ interface RecompositeBody {
   formats?: Format[];
   includeFilteredVariant?: boolean;
   baseName?: string;
+  /** Override the inherited site for exploratory cross-site recomposition. */
+  site?: string;
 }
 
-function toPublicPath(absolutePath: string): string {
-  const publicDirPrefix = PUBLIC_DIR + '/';
+function outputDirFor(site: Site): string {
+  return join(getPublicDir(site, rootDir), 'images', 'generated');
+}
+
+function toPublicPath(absolutePath: string, site: Site): string {
+  const publicDirPrefix = getPublicDir(site, rootDir) + '/';
   if (absolutePath.startsWith(publicDirPrefix)) {
     return '/' + absolutePath.slice(publicDirPrefix.length);
   }
@@ -73,6 +81,10 @@ export const POST: APIRoute = async ({ request, url }) => {
     );
   }
 
+  // Site resolves from: explicit override in body > source entry's site > default.
+  const site: Site = resolveSite(body.site, resolveSite(source.site));
+  const DEFAULT_OUTPUT = outputDirFor(site);
+
   const id = randomUUID();
   const baseName = body.baseName ?? id.slice(0, 8);
   const formats: Format[] = body.formats ?? ['og'];
@@ -115,15 +127,16 @@ export const POST: APIRoute = async ({ request, url }) => {
       subtitle: body.subtitle,
       preset: body.preset,
       filters: body.filters,
+      site,
       variants,
     });
 
     const composited = variants
       .filter(v => v.overlay)
-      .map(v => ({ provider: 'dom', format: v.format, path: toPublicPath(v.outputPath) }));
+      .map(v => ({ provider: 'dom', format: v.format, path: toPublicPath(v.outputPath, site) }));
     const filtered = variants
       .filter(v => !v.overlay)
-      .map(v => toPublicPath(v.outputPath));
+      .map(v => toPublicPath(v.outputPath, site));
 
     const entry: LogEntry = {
       id,
@@ -146,6 +159,7 @@ export const POST: APIRoute = async ({ request, url }) => {
       templateSlug: source.templateSlug,
       notes: `rebaked from ${source.id.slice(0, 8)} via DOM`,
       parentEntryId: source.id,
+      site,
     };
     appendLog(entry);
 

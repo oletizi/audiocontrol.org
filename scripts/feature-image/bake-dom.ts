@@ -18,6 +18,8 @@ export interface BakeParams {
   subtitle?: string;
   preset?: string;
   filters?: Record<string, string>;
+  /** Site whose brand tokens drive the overlay. */
+  site?: string;
   variants: BakeVariant[];
 }
 
@@ -41,6 +43,7 @@ function buildBakeUrl(baseUrl: string, variant: BakeVariant, params: BakeParams)
   if (params.title) url.searchParams.set('title', params.title);
   if (params.subtitle) url.searchParams.set('subtitle', params.subtitle);
   if (params.preset) url.searchParams.set('preset', params.preset);
+  if (params.site) url.searchParams.set('site', params.site);
   url.searchParams.set('overlay', variant.overlay ? 'on' : 'off');
   for (const [k, v] of Object.entries(params.filters ?? {})) {
     if (v) url.searchParams.set(k, v);
