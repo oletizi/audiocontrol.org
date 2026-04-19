@@ -1,227 +1,116 @@
 ---
+/**
+ * audiocontrol logo — Service-Manual direction.
+ *
+ * Replaces the 80s-neon space-invader pixel art with a minimal amber
+ * mark that reads as a character on a VFD display. Two variants:
+ *
+ *   - indicator: a small pulsing amber square — "instrument powered on".
+ *     Default. Paired with the wordmark in the Header.
+ *
+ *   - glyph: a 5x5 pixel monogram ("A") rendered as a CSS grid of amber
+ *     cells with a phosphor halo. For slots that need a tiny graphic
+ *     identity (footer colophon, OG masthead).
+ *
+ * The wordmark itself lives in Header.astro, not here — this component
+ * is purely the graphic mark.
+ */
+
 interface Props {
-  variant?: 'full' | 'compact' | 'icon';
-  showTagline?: boolean;
+  variant?: 'indicator' | 'glyph';
+  /** Edge length of the glyph/indicator in rem. Defaults 0.75 (indicator) / 1.5 (glyph). */
+  size?: number;
+  /** Visible label for screen readers. */
+  label?: string;
 }
 
-const { variant = 'full', showTagline = false } = Astro.props;
+const { variant = 'indicator', size, label = 'audiocontrol.org' } = Astro.props;
 
-// Pixel art pattern for waveform/sampler icon (16x16 grid)
-const pattern = [
-  '................',
-  '....GGGG........',
-  '...G....G.......',
-  '...G.CC.G.......',
-  '...G.CC.G.......',
-  '....GGGG........',
-  '................',
-  '.D..C...C...C..D',
-  '.D.CC..CCC.CC..D',
-  'DDCCC.CCCCC.CCCDD',
-  'MCCCCCCCCCCCCCCCM',
-  'MM.CCC.CCC.CCC.MM',
-  'YY..C...C...C..YY',
-  'YY.............YY',
-  '.YY...........YY.',
-  '..YYYYYYYYYYYYY..',
+// 5x5 "A" pixel grid — '#' is an amber cell, '.' is empty.
+const GLYPH = [
+  '.###.',
+  '#...#',
+  '#####',
+  '#...#',
+  '#...#',
 ];
+const glyphCells = GLYPH.flatMap((row) => row.split('').map((c) => c === '#'));
 
-const colorMap: Record<string, string> = {
-  'C': 'p-cyan',
-  'M': 'p-magenta',
-  'G': 'p-green',
-  'Y': 'p-yellow',
-  'D': 'p-dim',
-  '.': ''
-};
-
-const pixels = pattern.flatMap(row =>
-  row.split('').map(char => colorMap[char] || '')
-);
+const indicatorSize = size ?? 0.75;
+const glyphSize = size ?? 1.5;
 ---
 
-{variant === 'full' && (
-  <div class="logo-container">
-    <div class="logo logo-full">
-      <div class="icon">
-        {pixels.map(colorClass => (
-          <div class={`pixel ${colorClass}`}></div>
-        ))}
-      </div>
-      <div class="text-group">
-        <div class="title">AUDIO<br />CONTROL</div>
-        <div class="subtitle">.ORG</div>
-      </div>
-    </div>
-    {showTagline && (
-      <div class="tagline">OPEN SOURCE TOOLS FOR VINTAGE GEAR</div>
-    )}
-  </div>
+{variant === 'indicator' && (
+  <span
+    class="logo-indicator"
+    role="img"
+    aria-label={label}
+    style={`--indicator-size: ${indicatorSize}rem;`}
+  />
 )}
 
-{variant === 'compact' && (
-  <div class="logo logo-compact">
-    <div class="icon">
-      {pixels.map(colorClass => (
-        <div class={`pixel ${colorClass}`}></div>
-      ))}
-    </div>
-    <div class="title">AUDIOCONTROL</div>
-  </div>
-)}
-
-{variant === 'icon' && (
-  <div class="logo logo-icon-only">
-    <div class="icon">
-      {pixels.map(colorClass => (
-        <div class={`pixel ${colorClass}`}></div>
-      ))}
-    </div>
-  </div>
+{variant === 'glyph' && (
+  <span
+    class="logo-glyph"
+    role="img"
+    aria-label={label}
+    style={`--glyph-size: ${glyphSize}rem;`}
+  >
+    {glyphCells.map((on) => (
+      <span class={on ? 'cell on' : 'cell'} aria-hidden="true"></span>
+    ))}
+  </span>
 )}
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-  .logo-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    font-family: 'Press Start 2P', monospace;
-    position: relative;
-  }
-
-  /* Full version */
-  .logo-full {
-    gap: 24px;
-    padding: 32px 48px;
-    background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
-    border: 4px solid #00ff88;
+  .logo-indicator {
+    display: inline-block;
+    width: var(--indicator-size);
+    height: var(--indicator-size);
+    background: hsl(var(--primary));
     box-shadow:
-      0 0 20px rgba(0, 255, 136, 0.3),
-      inset 0 0 40px rgba(0, 255, 136, 0.05);
+      0 0 10px hsl(var(--primary) / 0.6),
+      0 0 2px hsl(var(--primary) / 0.9);
+    animation: indicator-pulse 2.6s ease-in-out infinite;
+    flex-shrink: 0;
   }
 
-  .logo-full::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, #ff00ff, #00ffff, #00ff88, #ff00ff);
-    z-index: -1;
-    filter: blur(8px);
-    opacity: 0.5;
+  @keyframes indicator-pulse {
+    0%, 100% {
+      opacity: 0.65;
+      box-shadow: 0 0 6px hsl(var(--primary) / 0.4);
+    }
+    50% {
+      opacity: 1;
+      box-shadow:
+        0 0 14px hsl(var(--primary) / 0.75),
+        0 0 3px hsl(var(--primary) / 0.9);
+    }
   }
 
-  .logo-full::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.1) 2px,
-      rgba(0, 0, 0, 0.1) 4px
-    );
-    pointer-events: none;
+  @media (prefers-reduced-motion: reduce) {
+    .logo-indicator {
+      animation: none;
+      opacity: 0.95;
+    }
   }
 
-  .logo-full .icon {
-    width: 80px;
-    height: 80px;
-  }
-
-  .logo-full .title {
-    font-size: 28px;
-    letter-spacing: 4px;
-  }
-
-  /* Compact version */
-  .logo-compact {
-    gap: 16px;
-    padding: 16px 24px;
-    background: #0f0f1a;
-    border: 3px solid #00ff88;
-  }
-
-  .logo-compact .icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .logo-compact .title {
-    font-size: 16px;
-    letter-spacing: 2px;
-  }
-
-  /* Icon only version */
-  .logo-icon-only {
-    display: inline-flex;
-  }
-
-  .logo-icon-only .icon {
-    width: 64px;
-    height: 64px;
-  }
-
-  /* Pixel art icon */
-  .icon {
-    display: grid;
-    grid-template-columns: repeat(16, 1fr);
-    grid-template-rows: repeat(16, 1fr);
+  .logo-glyph {
+    display: inline-grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    width: var(--glyph-size);
+    height: var(--glyph-size);
     gap: 1px;
-    image-rendering: pixelated;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 6px hsl(var(--primary) / 0.35));
   }
 
-  .pixel {
+  .logo-glyph .cell {
     background: transparent;
   }
 
-  .p-cyan { background: hsl(174 90% 70%); box-shadow: 0 0 4px hsl(174 90% 70%); }
-  .p-magenta { background: hsl(4 90% 72%); box-shadow: 0 0 4px hsl(4 90% 72%); }
-  .p-green { background: hsl(152 80% 55%); box-shadow: 0 0 4px hsl(152 80% 55%); }
-  .p-yellow { background: hsl(45 90% 60%); box-shadow: 0 0 4px hsl(45 90% 60%); }
-  .p-dim { background: #334455; }
-
-  /* Text styles */
-  .text-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .title {
-    background: linear-gradient(180deg, #00ffff 0%, #00ff88 50%, #ffff00 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.5));
-  }
-
-  .subtitle {
-    font-size: 8px;
-    color: #ff00ff;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px #ff00ff;
-  }
-
-  .tagline {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 10px;
-    color: #00ffff;
-    letter-spacing: 1px;
-    opacity: 0.8;
+  .logo-glyph .cell.on {
+    background: hsl(var(--primary));
   }
 </style>

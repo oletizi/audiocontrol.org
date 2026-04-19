@@ -1,5 +1,6 @@
 ---
 import Layout from './Layout.astro';
+import '../styles/prose.css';
 
 interface Heading {
   depth: number;
@@ -27,7 +28,16 @@ interface Props {
   author?: string;
 }
 
-const { frontmatter, headings = [], title: directTitle, description: directDescription, date: directDate, datePublished: directDatePublished, dateModified: directDateModified, author: directAuthor } = Astro.props;
+const {
+  frontmatter,
+  headings = [],
+  title: directTitle,
+  description: directDescription,
+  date: directDate,
+  datePublished: directDatePublished,
+  dateModified: directDateModified,
+  author: directAuthor,
+} = Astro.props;
 const title = frontmatter?.title ?? directTitle ?? 'Blog';
 const description = frontmatter?.description ?? directDescription;
 const date = frontmatter?.date ?? directDate;
@@ -72,23 +82,29 @@ const blogPostingJsonLd = {
   image: schemaImage,
 };
 
-const tocHeadings = headings.filter(h => h.depth === 2);
+const tocHeadings = headings.filter((h) => h.depth === 2);
 ---
 
 <Layout title={title} description={description} image={socialImage} type="article" jsonLd={blogPostingJsonLd}>
   <div class="article-layout">
     {tocHeadings.length > 0 && (
-      <aside class="toc">
+      <aside class="toc" aria-label="Table of contents">
+        <p class="toc-header">In this article</p>
         <nav>
-          <div class="toc-header">In this article</div>
-          {tocHeadings.map(heading => (
+          {tocHeadings.map((heading) => (
             <a href={`#${heading.slug}`} class="toc-link">{heading.text}</a>
           ))}
         </nav>
       </aside>
     )}
-    <article class="blog-article">
-      {date && <p class="post-meta">{date}{author && ` · ${author}`}</p>}
+    <article class="prose blog-article">
+      {date && (
+        <p class="post-meta">
+          <span class="post-meta-date">{date}</span>
+          {author && <span class="post-meta-sep" aria-hidden="true">·</span>}
+          {author && <span class="post-meta-author">{author}</span>}
+        </p>
+      )}
       {featureImage && (
         <figure class="post-feature-image">
           <img src={featureImage} alt="" />
@@ -108,7 +124,7 @@ const tocHeadings = headings.filter(h => h.depth === 2);
 
   @media (min-width: 1024px) {
     .article-layout {
-      grid-template-columns: 200px 1fr;
+      grid-template-columns: 220px 1fr;
     }
   }
 
@@ -128,206 +144,55 @@ const tocHeadings = headings.filter(h => h.depth === 2);
   }
 
   .toc-header {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--fg);
-    margin-bottom: 1rem;
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid hsl(var(--border));
   }
 
   .toc-link {
     display: block;
-    color: var(--muted);
+    color: hsl(var(--muted-foreground));
     text-decoration: none;
     font-size: 0.85rem;
     line-height: 1.4;
     padding: 0.4rem 0 0.4rem 0.75rem;
     border-left: 2px solid transparent;
-    transition: color 0.15s, border-color 0.15s;
+    transition: color 0.15s ease, border-color 0.15s ease;
   }
 
   .toc-link:hover,
   .toc-link.active {
-    color: var(--fg);
-    border-left-color: var(--accent);
+    color: hsl(var(--foreground));
+    border-left-color: hsl(var(--primary));
   }
 
   .blog-article {
-    line-height: 1.7;
     min-width: 0;
   }
 
   .post-meta {
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-bottom: 2rem;
-  }
-
-  .post-feature-image {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
     margin: 0 0 2rem 0;
+    display: inline-flex;
+    gap: 0.6rem;
+    align-items: center;
   }
 
-  .post-feature-image img {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 21 / 10;
-    object-fit: cover;
-    object-position: center;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    box-shadow: var(--card-glow);
+  .post-meta-sep {
+    opacity: 0.5;
   }
 
-  .blog-article :global(h1) {
-    font-size: 2rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    line-height: 1.2;
-  }
-
-  .blog-article :global(h2) {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-top: 2.5rem;
-    margin-bottom: 1rem;
-    color: var(--fg);
-  }
-
-  .blog-article :global(h3) {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-top: 2rem;
-    margin-bottom: 0.75rem;
-    color: var(--fg);
-  }
-
-  .blog-article :global(p) {
-    margin-bottom: 1.25rem;
-    color: var(--fg);
-  }
-
-  .blog-article :global(ul),
-  .blog-article :global(ol) {
-    margin-bottom: 1.25rem;
-    padding-left: 1.5rem;
-  }
-
-  .blog-article :global(li) {
-    margin-bottom: 0.5rem;
-  }
-
-  .blog-article :global(strong) {
-    color: var(--fg);
-    font-weight: 600;
-  }
-
-  .blog-article :global(a) {
-    color: hsl(var(--accent));
-    text-decoration: none;
-  }
-
-  .blog-article :global(a:hover) {
-    text-decoration: underline;
-  }
-
-  .blog-article :global(hr) {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 2rem 0;
-  }
-
-  .blog-article :global(em) {
-    color: var(--muted);
-  }
-
-  .blog-article :global(code) {
-    background: var(--card-bg);
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.9em;
-  }
-
-  .blog-article :global(pre) {
-    background: var(--card-bg);
-    padding: 1rem;
-    border-radius: 8px;
-    overflow-x: auto;
-    margin-bottom: 1.25rem;
-  }
-
-  .blog-article :global(pre code) {
-    background: none;
-    padding: 0;
-  }
-
-  .blog-article :global(img) {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin: 1.5rem 0;
-    border: 1px solid var(--border);
-  }
-
-  .blog-article :global(table) {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin: 1.5rem 0;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-  }
-
-  .blog-article :global(th),
-  .blog-article :global(td) {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .blog-article :global(th) {
-    font-weight: 600;
-    color: var(--fg);
-    background: #323232;
-  }
-
-  .blog-article :global(tr:nth-child(even)) {
-    background: #1e1e1e;
-  }
-
-  .blog-article :global(tr:hover) {
-    background: rgba(74, 158, 255, 0.05);
-  }
-
-  .blog-article :global(tr:first-child th:first-child),
-  .blog-article :global(tr:first-child td:first-child) {
-    border-top-left-radius: 7px;
-  }
-
-  .blog-article :global(tr:first-child th:last-child),
-  .blog-article :global(tr:first-child td:last-child) {
-    border-top-right-radius: 7px;
-  }
-
-  .blog-article :global(tr:last-child td:first-child) {
-    border-bottom-left-radius: 7px;
-  }
-
-  .blog-article :global(tr:last-child td:last-child) {
-    border-bottom-right-radius: 7px;
-  }
-
-  .blog-article :global(figure) {
-    margin: 1.5rem 0;
-  }
-
-  .blog-article :global(figure img) {
-    margin: 0 0 0.5rem 0;
-  }
-
-  .blog-article :global(figcaption) {
-    font-size: 0.9rem;
-    color: var(--muted);
-    font-style: italic;
+  .post-meta-author {
+    color: hsl(var(--primary));
   }
 </style>
 
@@ -350,8 +215,8 @@ const tocHeadings = headings.filter(h => h.depth === 2);
       },
       {
         rootMargin: '-80px 0px -80% 0px',
-        threshold: 0
-      }
+        threshold: 0,
+      },
     );
 
     headings.forEach((heading) => observer.observe(heading));

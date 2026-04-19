@@ -25,6 +25,9 @@ pnpm-debug.log*
 .idea/
 test-results/
 
+# Playwright MCP scratch output (screenshots, snapshots, console logs)
+.playwright-mcp/
+
 # scratch output from feature-image CLI iterations (path follows publicDir split)
 src/sites/audiocontrol/public/images/generated/
 
