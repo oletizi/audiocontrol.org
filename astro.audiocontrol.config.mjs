@@ -26,6 +26,7 @@ const lastModified = {
 export default defineConfig({
   site: 'https://audiocontrol.org',
   srcDir: 'src/sites/audiocontrol',
+  publicDir: 'src/sites/audiocontrol/public',
   outDir: 'dist/audiocontrol',
   output: 'static',
   adapter: netlify(),

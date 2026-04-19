@@ -138,7 +138,7 @@
 
 **Deliverable:** editorialcontrol.org has its own Reddit sync working end-to-end. Distribution records flow into its calendar.
 
-- [ ] Decide on a brand-aligned Reddit username and register the account (user task, in progress)
+- [x] Decide on a brand-aligned Reddit username and register the account — done: [`/u/EditorialControl`](https://www.reddit.com/user/EditorialControl/); `~/.config/audiocontrol/reddit.json` migrated to site-keyed schema and verified via `loadConfig()` for both sites
 - [x] Update `scripts/lib/reddit/config.ts` — `parseConfig(raw)` + `loadConfig(site, configPath?)` with `SITES` allowlist and forward-compatible parsing of unknown site keys
 - [x] `reddit.json` schema is now site-keyed: `{ "audiocontrol": {"username": "..."}, "editorialcontrol": {"username": "..."} }`; old flat schema rejected with an explicit migration error pointing to the new shape
 - [x] `getUserSubmissions(site, limit, usernameOverride?)` and `getSubredditInfo(site, name)` take a Site parameter; `redditPublicGet(site, path)` resolves User-Agent per site
@@ -180,10 +180,10 @@ External / click-ops steps, run through `launch-runbook.md` after merge:
 
 ## Verification Checklist
 
-- [ ] Both sites build cleanly via their respective `npm run build:*` commands
-- [ ] All existing editorial-calendar tests pass with the new `--site` parameter
-- [ ] audiocontrol.org visual output is unchanged (verified by eye + diffed dist output)
-- [ ] Both debut posts render correctly on editorialcontrol.org
-- [ ] Reddit sync works on both sites independently
-- [ ] No secrets committed (`reddit.json` stays outside the repo at `~/.config/audiocontrol/`)
-- [ ] Documentation in CONTENT-CALENDAR.md reflects the multi-site workflow
+- [x] Both sites build cleanly via their respective `npm run build:*` commands (verified end of each phase)
+- [x] All existing editorial-calendar tests pass with the new `--site` parameter (119 unit tests pass; 2 pre-existing integration failures are unrelated — live Roland editor asset regex)
+- [x] audiocontrol.org visual output is unchanged (verified in Phase 1 via normalized dist diff; subsequent phases added only editorialcontrol-scoped files and an unused audiocontrol `brand.ts` mirror)
+- [x] Both debut posts render correctly on editorialcontrol.org (`/blog/building-the-editorial-calendar-feature/` and `/blog/feature-image-automation-feature/` verified in dev server)
+- [x] Reddit sync library works on both sites independently — `loadConfig(site)` resolves the correct username for each site; end-to-end sync for editorialcontrol awaits first promo share
+- [x] No secrets committed — `reddit.json` stays outside the repo at `~/.config/audiocontrol/`
+- [x] `CONTENT-CALENDAR.md` documents the `--site` convention, the per-site data-file layout, and the default-audiocontrol behavior

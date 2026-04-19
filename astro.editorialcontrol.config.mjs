@@ -9,6 +9,7 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://editorialcontrol.org',
   srcDir: 'src/sites/editorialcontrol',
+  publicDir: 'src/sites/editorialcontrol/public',
   outDir: 'dist/editorialcontrol',
   output: 'static',
   adapter: netlify(),

@@ -2,46 +2,11 @@
   command = "npm run build:audiocontrol"
   publish = "dist/audiocontrol"
 
-# Sitemap alias
-[[redirects]]
-  from = "/sitemap.xml"
-  to = "/sitemap-index.xml"
-  status = 301
-
-# Proxy Roland S-series editor to its dedicated Netlify app
-[[redirects]]
-  from = "/roland/s330/editor"
-  to = "https://roland-sxx0-editor.netlify.app/"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/roland/s330/editor/"
-  to = "https://roland-sxx0-editor.netlify.app/"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/roland/s330/editor/*"
-  to = "https://roland-sxx0-editor.netlify.app/:splat"
-  status = 200
-  force = true
-
-# Proxy S-550 editor to Roland S-series Netlify app
-[[redirects]]
-  from = "/roland/s550/editor"
-  to = "https://roland-sxx0-editor.netlify.app/"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/roland/s550/editor/"
-  to = "https://roland-sxx0-editor.netlify.app/"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/roland/s550/editor/*"
-  to = "https://roland-sxx0-editor.netlify.app/:splat"
-  status = 200
-  force = true
+# Per-site redirects live in each site's public directory so they only
+# apply to that site's build output:
+#   src/sites/audiocontrol/public/_redirects     — Roland editor proxies
+#   src/sites/editorialcontrol/public/_redirects — none yet
+#
+# Netlify's own netlify.toml applies to ALL deploys from this repo, so
+# any [[redirects]] added here would leak across both Netlify sites.
+# Keep this file limited to audiocontrol's default build settings.
