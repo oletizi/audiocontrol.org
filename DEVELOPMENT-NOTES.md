@@ -4,6 +4,48 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-18: editorialcontrol-site — Phase 1 (Multi-Site Source Layout + Build Split)
+### Feature: editorialcontrol-site
+### Worktree: audiocontrol.org-editorialcontrol-site
+
+**Goal:** Ship Phase 1 of the editorialcontrol-site feature — restructure the repo so two Astro builds (audiocontrol.org + editorialcontrol.org) run from the same tree, with a byte-equivalent audiocontrol build as the acceptance gate.
+
+**Accomplished:**
+- `git mv src/pages → src/sites/audiocontrol/pages`, and also moved `src/layouts`, `src/components`, `src/styles` under `src/sites/audiocontrol/`. Moving the shared dirs (not just pages) kept all ~20 relative imports (`../layouts/Layout.astro`, etc.) valid without a page-by-page rewrite; Phase 3's brand refactor can extract shared base layouts back to `src/layouts/` when editorialcontrol actually needs them.
+- Created `src/sites/editorialcontrol/pages/index.astro` — a dark-themed placeholder page describing the forthcoming sibling site.
+- Split `astro.config.mjs` → `astro.audiocontrol.config.mjs` (site `audiocontrol.org`, `srcDir: 'src/sites/audiocontrol'`, `outDir: 'dist/audiocontrol'`, existing sitemap config and lastModified map) + `astro.editorialcontrol.config.mjs` (site `editorialcontrol.org`, own `srcDir`/`outDir`, empty sitemap customPages). Deleted the original `astro.config.mjs`.
+- `package.json` scripts: `dev`, `dev:audiocontrol`, `dev:editorialcontrol`, `build` (runs both sites sequentially), `build:audiocontrol`, `build:editorialcontrol`, `preview` and `preview:*` variants — all pass the relevant `--config` explicitly.
+- `netlify.toml`: audiocontrol Netlify site now runs `build:audiocontrol` and publishes `dist/audiocontrol`. Editorialcontrol's Netlify UI config is deferred to Phase 6 / Launch.
+- Fixed relative imports broken by the depth change: `src/sites/audiocontrol/pages/api/dev/feature-image/{generate,log,workflow}.ts` (import paths went from 5 levels up to 7; `__dirname` math in `generate.ts` matched). `src/sites/audiocontrol/pages/dev/feature-image-preview.astro` filter import extended by 2 levels.
+- Verified audiocontrol output is byte-equivalent after normalizing Astro's auto-generated `data-astro-cid-*` hashes. Built a pre-split baseline, rebuilt, ran a normalized content diff: all HTML / sitemap / asset outputs are identical after normalization. CSS content pairs all match their pre-split counterparts byte-for-byte.
+- Verified editorialcontrol build emits a working placeholder (`dist/editorialcontrol/index.html`, favicons, sitemap).
+- Shipped a single commit `6596c8c` on `feature/editorialcontrol-site` and pushed.
+
+**Didn't Work:**
+- First build comparison was a naive path-by-path hash diff that flagged 23 HTML files and 3 CSS files as "changed" — which read alarming until I worked out that Astro derives `data-astro-cid-*` scoped-style hashes from source file paths. Moving files changed the cids, which changed the CSS selectors and the HTML data attributes, which changed the CSS filename hashes, which changed the `<link>` tags in the HTML. 26 "changes" — zero semantic difference. Had to write a normalizer that strips the cid hashes and asset filename hashes before diffing. Only then was the null-delta clear.
+- `git stash --include-untracked` rearranged renames into delete+add pairs on restore. Doesn't hurt the commit (git rename detection runs anyway), but the intermediate `git status` output was noisy and briefly looked like I'd lost the rename history.
+
+**Course Corrections:**
+- [PROCESS] Original read of the workplan was to move only `src/pages` (per its wording). The strict reading would have required touching every page to fix relative imports. The charitable reading ("everything audiocontrol-specific under `src/sites/audiocontrol/`") is what the workplan meant and what kept the diff minimal. I called it out in the commit message and in the workplan check-off so Phase 3 knows which layouts are shared vs per-site.
+- [PROCESS] Asked before deciding — I brought the `npm run build runs both sites` vs `default to audiocontrol` tradeoff to the user before editing package.json. Running both is what the workplan specifies, and the user confirmed "do it." Worth asking rather than picking silently.
+- [COMPLEXITY] Didn't spin up a path-alias system (`@/layouts`) or a shared-module extraction as part of Phase 1. That would have been scope creep; Phase 3 is where the layouts get refactored anyway. Phase 1 is restructure + build split, nothing more.
+
+**Quantitative:**
+- Messages: ~20
+- Commits: 1 (`6596c8c`) + 1 docs commit at session-end
+- Corrections: 0 from user this session (the course corrections above are self-identified patterns worth noting)
+- Files changed in the Phase 1 commit: 46 staged (41 renames, 2 modifications, 2 creates, 1 delete)
+- Acceptance tests: `npm test` 93 pass, 2 pre-existing failures (live Roland editor asset naming — unrelated)
+- Build verification: 125 files in pre-split dist, 125 in post-split dist; 99 identical by path+hash, 26 differ only in Astro scoped-cid hashes (normalized diff: zero)
+
+**Insights:**
+- **Astro's scoped-cid hashes are path-derived, not content-derived.** Moving files changes the cids even when the underlying .astro source is byte-identical. Any "build-equivalence" check for this project has to normalize those before diffing, or it'll report false positives forever. Worth remembering the next time we refactor directory structure — and worth documenting as part of the multi-site conventions.
+- **The `src/sites/<site>/` subtree wants to be self-contained by default.** The workplan's strict reading ("move only pages") would have required rewriting every page's relative imports. Moving the whole subtree instead preserved all the relative paths unchanged and gave each site a clean seam. Phase 3 can opt specific layouts *out* of the subtree (back to `src/layouts/`) when editorialcontrol genuinely shares a base layout. "Self-contained by default, extract shared parts when the second consumer appears" is the right order of operations.
+- **Baseline-capture belongs in the first 5 minutes, not at verification time.** I ran `npm run build` and hashed the dist before touching anything. That's the difference between "I have an acceptance gate" and "I'm hoping I didn't break anything." Two-minute investment, paid off when the CSS-hash panic hit — the baseline was already there to diff against.
+- **Two-build-from-one-repo is clean once `srcDir` and `outDir` are per-config.** No shared `dist/` collision, no Netlify confusion — each site points at its own `dist/<site>/` and that's it. The only cross-site surface is `public/` (both builds pull from the same static root), which means the editorialcontrol placeholder currently inherits audiocontrol's favicons. Phase 3 will want to address that — either per-site `publicDir` overrides or an explicit per-site public subtree.
+
+---
+
 ## 2026-04-18: Editorial Calendar — First End-to-End Workflow Run (Idea → Published → Image Handoff)
 ### Feature: editorial-calendar
 ### Worktree: audiocontrol.org-editorial-calendar

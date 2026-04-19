@@ -1,0 +1,158 @@
+---
+/**
+ * editorialcontrol footer — colophon treatment.
+ *
+ * Where audiocontrol's footer is a centered bar with social icons,
+ * this one is laid out like a magazine colophon: sibling site on
+ * one side, editorial promise on the other, separated by a rule.
+ */
+
+import Logo from './Logo.astro';
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="site-footer site-container">
+  <hr class="rule-single" />
+
+  <div class="colophon">
+    <div class="col col-brand">
+      <Logo variant="inline" />
+      <p class="note">A publication on building with AI agents.</p>
+    </div>
+
+    <div class="col col-sibling">
+      <p class="label">Sibling publication</p>
+      <a class="sibling-link" href="https://audiocontrol.org" rel="me">
+        audiocontrol.org
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <p class="note">Open source tools for vintage samplers.</p>
+    </div>
+
+    <div class="col col-meta">
+      <p class="label">Colophon</p>
+      <p class="meta">
+        Set in <span class="serif-em">Fraunces</span>, Inter, and JetBrains Mono.
+      </p>
+      <p class="meta">
+        Published from a terminal.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p class="copyright">© {currentYear} editorialcontrol.org</p>
+    <p class="edition-line">VOL. 01 / ISSUE 00 · PRE-PRESS</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 6rem;
+    padding-bottom: 3rem;
+  }
+
+  .colophon {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 2rem;
+    padding: 2rem 0;
+  }
+
+  @media (max-width: 720px) {
+    .colophon {
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+    }
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .col-brand .note {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 0.95rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0.25rem 0 0 0;
+    max-width: 24rem;
+  }
+
+  .label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 0.25rem 0;
+  }
+
+  .sibling-link {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: hsl(var(--foreground));
+    text-decoration: none;
+    transition: color 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .sibling-link .arrow {
+    color: hsl(var(--primary));
+    transition: transform 0.18s ease;
+    font-style: normal;
+    font-family: var(--font-mono);
+  }
+
+  .sibling-link:hover {
+    color: hsl(var(--primary));
+    text-decoration: none;
+  }
+
+  .sibling-link:hover .arrow {
+    transform: translateX(3px);
+  }
+
+  .col-sibling .note,
+  .col-meta .meta {
+    font-size: 0.85rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .serif-em {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: hsl(var(--accent));
+  }
+
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid hsl(var(--border));
+    flex-wrap: wrap;
+  }
+
+  .copyright,
+  .edition-line {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .edition-line {
+    color: hsl(var(--primary));
+  }
+</style>

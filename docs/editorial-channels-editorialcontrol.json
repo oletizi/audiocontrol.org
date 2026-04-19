@@ -1,0 +1,54 @@
+{
+  "_comment": "Curated map of topic tags to recommended distribution channels for editorialcontrol.org. Used by /editorial-reddit-opportunities to suggest where to cross-post. Add topics to CalendarEntry.topics to opt a post in. Entries here are hints — verify each subreddit's current rules before posting.",
+  "topics": {
+    "content-marketing": {
+      "reddit": [
+        { "channel": "r/ContentMarketing", "note": "thoughtful posts welcome; avoid bare promo" },
+        { "channel": "r/SaaS", "note": "founders/builders; self-promo Saturdays" },
+        { "channel": "r/SEO", "note": "moderation is strict; post must be actionable" },
+        { "channel": "r/marketing" },
+        { "channel": "r/Entrepreneur", "note": "huge; low signal unless story-driven" }
+      ]
+    },
+    "automation-workflow": {
+      "reddit": [
+        { "channel": "r/automation" },
+        { "channel": "r/productivity", "note": "self-promo allowed in niche threads only" },
+        { "channel": "r/ChatGPTCoding" },
+        { "channel": "r/SideProject", "note": "self-promo friendly" },
+        { "channel": "r/IndieHackers" }
+      ]
+    },
+    "ai-agents": {
+      "reddit": [
+        { "channel": "r/ClaudeAI" },
+        { "channel": "r/LocalLLaMA", "note": "research-leaning; no bare promo" },
+        { "channel": "r/artificial" },
+        { "channel": "r/ChatGPTCoding" },
+        { "channel": "r/cursor" }
+      ]
+    },
+    "claude": {
+      "reddit": [
+        { "channel": "r/ClaudeAI" },
+        { "channel": "r/Anthropic" }
+      ]
+    },
+    "agent-as-workflow": {
+      "reddit": [
+        { "channel": "r/ClaudeAI" },
+        { "channel": "r/ChatGPTCoding" },
+        { "channel": "r/cursor" },
+        { "channel": "r/devops", "note": "workflow/automation framing" },
+        { "channel": "r/ExperiencedDevs", "note": "quality bar is high; no promo" }
+      ]
+    },
+    "programming": {
+      "reddit": [
+        { "channel": "r/programming", "note": "strict mods; high quality bar" },
+        { "channel": "r/webdev" },
+        { "channel": "r/ExperiencedDevs" }
+      ]
+    }
+  }
+}

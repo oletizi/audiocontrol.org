@@ -5,6 +5,50 @@
  * Each stage represents a discrete step in the editorial workflow.
  */
 
+/**
+ * Known sites that host editorial content in this repo. Each site has its
+ * own calendar, channels file, and `src/sites/<site>/` subtree.
+ */
+export const SITES = ['audiocontrol', 'editorialcontrol'] as const;
+
+export type Site = (typeof SITES)[number];
+
+/** Default site used when a skill or script is invoked without --site. */
+export const DEFAULT_SITE: Site = 'audiocontrol';
+
+/** True if a value is a recognized site slug. */
+export function isSite(value: string): value is Site {
+  return (SITES as readonly string[]).includes(value);
+}
+
+/** Public hostname for a site (the bare domain, no protocol). */
+export function siteHost(site: Site): string {
+  return `${site}.org`;
+}
+
+/** Canonical base URL for a site, with trailing slash. */
+export function siteBaseUrl(site: Site): string {
+  return `https://${siteHost(site)}/`;
+}
+
+/**
+ * Resolve a user-supplied site argument to a Site. Undefined or empty
+ * falls back to DEFAULT_SITE; an unknown value throws with the list of
+ * valid sites so the caller sees what went wrong.
+ */
+export function assertSite(value: string | undefined | null): Site {
+  if (value === undefined || value === null || value === '') {
+    return DEFAULT_SITE;
+  }
+  if (!isSite(value)) {
+    throw new Error(
+      `Unknown --site "${value}". Valid sites: ${SITES.join(', ')}. ` +
+        `Default when omitted: ${DEFAULT_SITE}.`,
+    );
+  }
+  return value;
+}
+
 /** Ordered editorial stages — content moves forward through these. */
 export const STAGES = [
   'Ideas',
@@ -18,7 +62,7 @@ export type Stage = (typeof STAGES)[number];
 
 /** What kind of content a calendar entry represents.
  *
- * - `blog`    — content lives in this repo under `src/pages/blog/<slug>/`
+ * - `blog`    — content lives in this repo under `src/sites/<site>/pages/blog/<slug>/`
  * - `youtube` — video hosted on YouTube; `contentUrl` is the video URL
  * - `tool`    — standalone tool or app on audiocontrol.org (e.g. an editor page);
  *               `contentUrl` is the canonical page URL
@@ -54,7 +98,7 @@ export interface CalendarEntry {
   /**
    * Coarse topic tags used for cross-posting opportunity lookup.
    * Distinct from targetKeywords — these map to channels in
-   * `editorial-channels.json`, not to SEO targets.
+   * `editorial-channels-<site>.json`, not to SEO targets.
    */
   topics?: string[];
   /** ISO date string (YYYY-MM-DD) when published, if applicable */

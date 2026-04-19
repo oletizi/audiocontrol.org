@@ -6,14 +6,14 @@ import {
   generateFeatureImage,
   loadApiKeysFromConfig,
   type ProviderSelection,
-} from '../../../../../scripts/feature-image/pipeline.js';
-import { appendLog, type LogEntry } from '../../../../../scripts/feature-image/log.js';
+} from '../../../../../../../scripts/feature-image/pipeline.js';
+import { appendLog, type LogEntry } from '../../../../../../../scripts/feature-image/log.js';
 
 export const prerender = false;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// src/pages/api/dev/feature-image → repo root is 5 levels up
-const rootDir = join(__dirname, '..', '..', '..', '..', '..');
+// src/sites/audiocontrol/pages/api/dev/feature-image → repo root is 7 levels up
+const rootDir = join(__dirname, '..', '..', '..', '..', '..', '..', '..');
 const DEFAULT_OUTPUT = join(rootDir, 'public', 'images', 'generated');
 
 interface GenerateBody {

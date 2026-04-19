@@ -8,6 +8,10 @@ user_invocable: true
 
 Record a single social share of a published post in the editorial calendar. Interactive — prompt the user for each field.
 
+## Site
+
+Accepts `--site <slug>` (default: `audiocontrol`). Valid sites: `audiocontrol`, `editorialcontrol`. The share is recorded in `docs/editorial-calendar-<site>.md`. Unknown `--site` values error.
+
 ## Input
 
 Prompt the user one field at a time (do NOT expect positional arguments):
@@ -28,19 +32,20 @@ For Reddit specifically: `/editorial-reddit-sync` will pick up new submissions f
 
 ## Steps
 
-1. **Read the calendar**: Read `docs/editorial-calendar.md`
-2. **Validate the slug**: Must match an existing entry in the `## Published` stage.
+1. **Resolve site** via `assertSite()`.
+2. **Read the calendar**: `readCalendar(process.cwd(), site)` — reads `docs/editorial-calendar-<site>.md`.
+3. **Validate the slug**: Must match an existing entry in the `## Published` stage.
    - If the slug isn't in the calendar at all: report error with available Published slugs
    - If the slug is in a pre-Published stage: refuse — distributions are only recorded for shipped posts
-3. **Validate the platform**: must be one of `reddit`, `youtube`, `linkedin`, `instagram`
-4. **Collect remaining fields** via prompts (URL, optional notes)
-5. **Default the share date** to today (YYYY-MM-DD). Allow the user to override if they're backfilling.
-6. **Append the record** to the `## Distribution` section. The writer handles the column layout automatically — if any record now uses a channel, a `Channel` column appears in the table:
+4. **Validate the platform**: must be one of `reddit`, `youtube`, `linkedin`, `instagram`
+5. **Collect remaining fields** via prompts (URL, optional notes)
+6. **Default the share date** to today (YYYY-MM-DD). Allow the user to override if they're backfilling.
+7. **Append the record** to the `## Distribution` section. The writer handles the column layout automatically — if any record now uses a channel, a `Channel` column appears in the table:
    ```
    | slug | platform | url | YYYY-MM-DD | r/channel | notes |
    ```
-7. **Write the calendar**: Write `docs/editorial-calendar.md` with the new row appended
-8. **Report**: Confirm the record was added and show the row
+8. **Write the calendar**: `writeCalendar(process.cwd(), site, cal)` → `docs/editorial-calendar-<site>.md`
+9. **Report**: Confirm the record was added, the site, and show the row
 
 ## Important
 

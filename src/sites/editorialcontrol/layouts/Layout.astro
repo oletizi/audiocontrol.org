@@ -1,0 +1,154 @@
+---
+import '../styles/design-tokens.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { brand } from '../brand.js';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  jsonLd?: Record<string, unknown>;
+}
+
+const {
+  title = brand.name,
+  description = brand.tagline,
+  image = '/images/og-image.png',
+  type = 'website',
+  jsonLd: customJsonLd,
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const imageURL = new URL(image, Astro.site);
+
+const defaultJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: brand.name,
+  url: `https://${brand.name}`,
+  description: brand.tagline,
+  sameAs: [`https://audiocontrol.org`],
+};
+
+const jsonLd = customJsonLd ?? defaultJsonLd;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Fonts: Fraunces (editorial display), Inter (body), JetBrains Mono (meta).
+         Fraunces is new to this site; Inter + Mono mirror audiocontrol. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..600,30..100;1,9..144,400..600,30..100&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={imageURL} />
+    <meta property="og:site_name" content={brand.name} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalURL} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageURL} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        font-family: var(--font-body);
+        font-size: 16px;
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        scrollbar-gutter: stable;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        width: 100%;
+        /* A very subtle vignette to give the page "paper" presence. */
+        background:
+          radial-gradient(
+            ellipse 90% 60% at 50% -10%,
+            hsl(var(--primary) / 0.04) 0%,
+            transparent 60%
+          ),
+          hsl(var(--background));
+      }
+
+      :global(h1), :global(h2), :global(h3), :global(h4), :global(h5), :global(h6) {
+        font-family: var(--font-heading);
+        color: hsl(var(--foreground));
+        font-weight: 500;
+        letter-spacing: -0.015em;
+        margin: 0;
+      }
+
+      :global(p) {
+        margin: 0;
+        line-height: 1.65;
+      }
+
+      :global(a) {
+        color: hsl(var(--primary));
+        text-decoration: none;
+        text-decoration-color: hsl(var(--primary) / 0.4);
+        text-underline-offset: 0.2em;
+      }
+
+      :global(a:hover) {
+        text-decoration: underline;
+        text-decoration-color: hsl(var(--primary));
+      }
+
+      :global(::selection) {
+        background: hsl(var(--primary) / 0.35);
+        color: hsl(var(--foreground));
+      }
+
+      /* Tabular figures globally — dates, issue numbers, counts align. */
+      :global(time),
+      :global(.tabular) {
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+    <slot name="head" />
+  </head>
+  <body>
+    <Header />
+
+    <main>
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>

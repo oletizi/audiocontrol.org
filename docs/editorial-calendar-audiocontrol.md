@@ -17,9 +17,7 @@
 
 ## Drafting
 
-| Slug | Title | Description | Keywords | Topics | Source | Issue |
-|------|------|------|------|------|------|------|
-| building-the-editorial-calendar-feature | Building the Editorial Calendar Feature | A writeup of the editorial-calendar feature itself — why ad-hoc content creation needed a system, how the Ideas→Published lifecycle works, and how analytics, Reddit, and YouTube got wired into one virtuous loop. | AI content workflow automation, flexible editorial calendar for content teams, ship content faster with AI, build your own AI content stack | content-marketing, automation-workflow, claude | manual | #68 |
+*No entries.*
 
 ## Review
 
@@ -29,7 +27,6 @@
 
 | Slug | Title | Description | Keywords | Topics | Type | URL | Source | Published | Issue |
 |------|------|------|------|------|------|------|------|------|------|
-| feature-image-automation-feature | Feature Image Automation Feature | How we went from hand-cropping images to a two-way workflow pipeline between Claude Code skills and a local preview gallery for AI-generated feature images — the JSONL workflow queue, the state machine, and why dev-only Astro routes beat a dashboard app. | automated blog feature image generation, AI content marketing workflow, Claude Code skills image pipeline, lightweight content automation | ai-agents, claude, programming, content-marketing, automation-workflow | blog |  | manual | 2026-04-18 | #65 |
 | free-roland-s330-sampler-editor | A Free, Open Source Web Editor for the Roland S-330 Sampler | A guide to the Roland S-330 sampler and the open-source web editor for modern workflows. |  |  | blog |  | manual | 2025-01-15 |  |
 | roland-s-series-samplers | The Roland S-Series Samplers: A Complete Guide to the S-330, S-550, S-770, and W-30 | A comprehensive guide to Roland's S-series sampler family — from the affordable S-330 to the flagship S-770, including the W-30 workstation, original accessories, and modern editing tools. |  |  | blog |  | manual | 2025-02-15 |  |
 | roland-s330-sampler-editor-feb-2026-update | What's New in the Roland S-330 Web Editor: February 2026 | Real-time hardware sync, integrated video capture, debug tools, and quality-of-life improvements for the free S-330 sampler editor. |  |  | blog |  | manual | 2026-02-09 |  |

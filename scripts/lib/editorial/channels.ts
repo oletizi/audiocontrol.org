@@ -1,8 +1,8 @@
 /**
  * Curated cross-posting channel map loader.
  *
- * Reads `docs/editorial-channels.json` — a map of topic tags to recommended
- * platform channels (subreddits, etc.) — and exposes helpers to look up
+ * Each site has its own map at `docs/editorial-channels-<site>.json` — topic
+ * tags to recommended platform channels (subreddits, etc.). Helpers look up
  * candidates for a set of topics and diff them against already-shared
  * distributions.
  *
@@ -13,9 +13,7 @@
  */
 
 import { readFileSync } from 'fs';
-import type { DistributionRecord, Platform } from './types.js';
-
-const CHANNELS_FILENAME = 'docs/editorial-channels.json';
+import type { DistributionRecord, Platform, Site } from './types.js';
 
 export interface ChannelEntry {
   /** Canonical channel name as published in the curated file */
@@ -28,17 +26,18 @@ interface ChannelsFile {
   topics: Record<string, Partial<Record<Platform, ChannelEntry[]>>>;
 }
 
-export function channelsPath(rootDir: string): string {
-  return `${rootDir}/${CHANNELS_FILENAME}`;
+export function channelsPath(rootDir: string, site: Site): string {
+  return `${rootDir}/docs/editorial-channels-${site}.json`;
 }
 
 /** Load and parse the curated channels file from disk. */
-export function readChannels(rootDir: string): ChannelsFile {
-  const raw = readFileSync(channelsPath(rootDir), 'utf-8');
+export function readChannels(rootDir: string, site: Site): ChannelsFile {
+  const path = channelsPath(rootDir, site);
+  const raw = readFileSync(path, 'utf-8');
   const parsed = JSON.parse(raw) as ChannelsFile;
   if (!parsed || typeof parsed !== 'object' || !parsed.topics) {
     throw new Error(
-      `${CHANNELS_FILENAME} is missing a top-level "topics" object`,
+      `${path} is missing a top-level "topics" object`,
     );
   }
   return parsed;
