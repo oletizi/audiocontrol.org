@@ -14,7 +14,10 @@ export const prerender = false;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // src/sites/audiocontrol/pages/api/dev/feature-image → repo root is 7 levels up
 const rootDir = join(__dirname, '..', '..', '..', '..', '..', '..', '..');
-const DEFAULT_OUTPUT = join(rootDir, 'public', 'images', 'generated');
+// Per-site publicDir (matches astro.audiocontrol.config.mjs). Phase 14 will
+// parameterize this so editorialcontrol can write to its own public tree.
+const PUBLIC_DIR = join(rootDir, 'src', 'sites', 'audiocontrol', 'public');
+const DEFAULT_OUTPUT = join(PUBLIC_DIR, 'images', 'generated');
 
 interface GenerateBody {
   prompt?: string;
@@ -144,9 +147,9 @@ export const POST: APIRoute = async ({ request }) => {
  * e.g. /Users/.../public/images/generated/foo.png → /images/generated/foo.png
  */
 function toPublicPath(absolutePath: string): string {
-  const publicDir = join(rootDir, 'public') + '/';
-  if (absolutePath.startsWith(publicDir)) {
-    return '/' + absolutePath.slice(publicDir.length);
+  const publicDirPrefix = PUBLIC_DIR + '/';
+  if (absolutePath.startsWith(publicDirPrefix)) {
+    return '/' + absolutePath.slice(publicDirPrefix.length);
   }
   return absolutePath;
 }

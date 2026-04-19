@@ -2,14 +2,16 @@ import type { APIRoute } from 'astro';
 import { randomUUID } from 'crypto';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { appendLog, readLog, type LogEntry } from '../../../../../scripts/feature-image/log.js';
-import { bakeVariants, formatDims, type BakeVariant } from '../../../../../scripts/feature-image/bake-dom.js';
+import { appendLog, readLog, type LogEntry } from '../../../../../../../scripts/feature-image/log.js';
+import { bakeVariants, formatDims, type BakeVariant } from '../../../../../../../scripts/feature-image/bake-dom.js';
 
 export const prerender = false;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const rootDir = join(__dirname, '..', '..', '..', '..', '..');
-const DEFAULT_OUTPUT = join(rootDir, 'public', 'images', 'generated');
+const rootDir = join(__dirname, '..', '..', '..', '..', '..', '..', '..');
+// Per-site publicDir. Phase 14 will parameterize this by site.
+const PUBLIC_DIR = join(rootDir, 'src', 'sites', 'audiocontrol', 'public');
+const DEFAULT_OUTPUT = join(PUBLIC_DIR, 'images', 'generated');
 
 type Format = 'og' | 'youtube' | 'instagram';
 
@@ -26,9 +28,9 @@ interface RecompositeBody {
 }
 
 function toPublicPath(absolutePath: string): string {
-  const publicDir = join(rootDir, 'public') + '/';
-  if (absolutePath.startsWith(publicDir)) {
-    return '/' + absolutePath.slice(publicDir.length);
+  const publicDirPrefix = PUBLIC_DIR + '/';
+  if (absolutePath.startsWith(publicDirPrefix)) {
+    return '/' + absolutePath.slice(publicDirPrefix.length);
   }
   return absolutePath;
 }
