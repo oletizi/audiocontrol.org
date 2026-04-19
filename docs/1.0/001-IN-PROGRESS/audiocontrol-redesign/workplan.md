@@ -3,6 +3,17 @@
 **Feature slug:** `audiocontrol-redesign`
 **Branch:** `feature/audiocontrol-redesign`
 **Milestone:** audiocontrol.org Redesign
+**GitHub Issue:** oletizi/audiocontrol.org#79
+
+## GitHub Tracking
+
+| Phase | Issue |
+|-------|-------|
+| Parent | oletizi/audiocontrol.org#79 |
+| Phase 1: Design Foundation | oletizi/audiocontrol.org#80 |
+| Phase 2: Header, Footer, Navigation | oletizi/audiocontrol.org#81 |
+| Phase 3: Homepage Redesign | oletizi/audiocontrol.org#82 |
+| Phase 4: Content Pages | oletizi/audiocontrol.org#83 |
 
 ## Files Affected
 
