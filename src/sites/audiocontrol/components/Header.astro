@@ -1,25 +1,49 @@
 ---
 /**
- * Header component for the palette redesign
- * Features pixel art logo, styled title, and navigation
- * Sticky header that compresses on scroll
+ * audiocontrol header — Service-Manual direction.
+ *
+ * Layout: [indicator] wordmark [SIG:LIVE]  ···  nav
+ * Sticky bar with backdrop blur, scroll-compress (tagline collapses on
+ * scroll), functional mobile hamburger that reveals the nav as a second
+ * row. Shares structural grammar with editorialcontrol's header so the
+ * two sites read as siblings.
  */
 import Logo from './Logo.astro';
 ---
 
 <div class="header-wrapper">
   <header class="site-header site-container">
-    <a href="/" class="header-brand" aria-label="audiocontrol.org home">
-      <div class="header-logo" aria-hidden="true">
-        <Logo variant="icon" />
-      </div>
-      <div class="header-text">
-        <h1 class="site-title">audiocontrol<span class="org">.org</span></h1>
-        <p class="tagline">Open source audio tools.</p>
-      </div>
-    </a>
+    <div class="header-left">
+      <a href="/" class="header-brand" aria-label="audiocontrol.org home">
+        <Logo variant="indicator" />
+        <span class="wordmark">
+          <span class="site-title">
+            audiocontrol<span class="org">.org</span>
+          </span>
+          <span class="tagline">Open source audio tools.</span>
+        </span>
+      </a>
+      <span class="status-meta" aria-hidden="true">
+        <span class="status-label">SIG</span>
+        <span class="status-value">LIVE</span>
+      </span>
+    </div>
 
-    <nav class="site-nav" aria-label="Main navigation">
+    <button
+      class="nav-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="site-nav"
+      aria-label="Open menu"
+    >
+      <span class="nav-toggle-bars" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </button>
+
+    <nav id="site-nav" class="site-nav" aria-label="Main navigation">
       <a href="/blog/" class="nav-link">Blog</a>
       <a href="/hardware/" class="nav-link">Hardware</a>
       <a href="/docs/" class="nav-link">Docs</a>
@@ -30,6 +54,8 @@ import Logo from './Logo.astro';
 
 <script>
   const headerWrapper = document.querySelector('.header-wrapper');
+  const navToggle = document.querySelector<HTMLButtonElement>('.nav-toggle');
+  const siteNav = document.querySelector<HTMLElement>('#site-nav');
 
   const handleScroll = () => {
     if (window.scrollY > 10) {
@@ -41,6 +67,33 @@ import Logo from './Logo.astro';
 
   window.addEventListener('scroll', handleScroll, { passive: true });
   handleScroll();
+
+  const closeNav = () => {
+    navToggle?.setAttribute('aria-expanded', 'false');
+    navToggle?.setAttribute('aria-label', 'Open menu');
+    siteNav?.classList.remove('open');
+  };
+
+  const openNav = () => {
+    navToggle?.setAttribute('aria-expanded', 'true');
+    navToggle?.setAttribute('aria-label', 'Close menu');
+    siteNav?.classList.add('open');
+  };
+
+  navToggle?.addEventListener('click', () => {
+    const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+    if (expanded) closeNav(); else openNav();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeNav();
+  });
+
+  // Close when a nav link is activated (mobile)
+  siteNav?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', closeNav);
+  });
 </script>
 
 <style>
@@ -48,22 +101,15 @@ import Logo from './Logo.astro';
     position: sticky;
     top: 0;
     z-index: 100;
-    background: hsl(var(--background) / 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    background: hsl(var(--background) / 0.82);
+    backdrop-filter: blur(14px) saturate(1.1);
+    -webkit-backdrop-filter: blur(14px) saturate(1.1);
+    border-bottom: 1px solid hsl(var(--border) / 0.6);
+    transition: border-color 0.2s ease;
   }
 
-  .header-wrapper.scrolled .site-header {
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
-  }
-
-  .header-wrapper.scrolled .tagline {
-    opacity: 0;
-    height: 0;
-    margin: 0;
-    overflow: hidden;
+  .header-wrapper.scrolled {
+    border-bottom-color: hsl(var(--border));
   }
 
   .site-header {
@@ -71,7 +117,23 @@ import Logo from './Logo.astro';
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
     transition: padding 0.2s ease;
+  }
+
+  .header-wrapper.scrolled .site-header {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  /* --- Left cluster: logo + wordmark + status meta ------------------- */
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    min-width: 0;
   }
 
   .header-brand {
@@ -92,64 +154,107 @@ import Logo from './Logo.astro';
     border-radius: 0.25rem;
   }
 
-  .header-logo {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  .header-logo :global(.logo-icon-only) {
-    display: inline-flex;
-  }
-
-  .header-logo :global(.icon) {
-    width: 32px;
-    height: 32px;
-  }
-
-  .header-text {
+  .wordmark {
     display: flex;
     flex-direction: column;
+    line-height: 1.2;
   }
 
   .site-title {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 1.125rem;
-    font-weight: 700;
-    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    font-weight: 400;
     color: hsl(var(--foreground));
-    letter-spacing: -0.025em;
+    letter-spacing: 0;
   }
 
-  .org {
+  .site-title .org {
     color: hsl(var(--primary));
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.45);
   }
 
   .tagline {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 0.75rem;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
     color: hsl(var(--muted-foreground));
-    margin: 0;
-    transition: opacity 0.2s ease, height 0.2s ease;
+    letter-spacing: 0.04em;
+    transition: opacity 0.2s ease, max-height 0.2s ease;
+    max-height: 1rem;
+    overflow: hidden;
   }
+
+  .header-wrapper.scrolled .tagline {
+    opacity: 0;
+    max-height: 0;
+  }
+
+  /* Status meta — "SIG: LIVE" panel-label treatment. */
+  .status-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-left: 1rem;
+    border-left: 1px solid hsl(var(--border));
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .status-meta .status-label::after {
+    content: ':';
+    padding-left: 0.1em;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .status-meta .status-value {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 8px hsl(var(--primary) / 0.35);
+  }
+
+  /* --- Nav ---------------------------------------------------------- */
 
   .site-nav {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.75rem;
   }
 
   .nav-link {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 0.875rem;
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    letter-spacing: 0.06em;
     color: hsl(var(--muted-foreground));
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color 0.18s ease;
+    position: relative;
+    padding-bottom: 0.25rem;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 6px hsl(var(--primary) / 0.55);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.2s ease;
   }
 
   .nav-link:hover {
     color: hsl(var(--foreground));
     text-decoration: none;
+  }
+
+  .nav-link:hover::after,
+  .nav-link:focus-visible::after,
+  .nav-link[aria-current='page']::after {
+    transform: scaleX(1);
   }
 
   .nav-link:focus-visible {
@@ -159,16 +264,110 @@ import Logo from './Logo.astro';
     border-radius: 0.125rem;
   }
 
-  /* Mobile responsive */
-  @media (max-width: 640px) {
+  /* --- Mobile toggle ------------------------------------------------ */
+
+  .nav-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid hsl(var(--border));
+    padding: 0.5rem 0.65rem;
+    cursor: pointer;
+    color: hsl(var(--foreground));
+    transition: border-color 0.18s ease, background 0.18s ease;
+  }
+
+  .nav-toggle:hover,
+  .nav-toggle[aria-expanded='true'] {
+    border-color: hsl(var(--primary) / 0.6);
+    background: hsl(var(--primary) / 0.05);
+  }
+
+  .nav-toggle:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+
+  .nav-toggle-bars {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 18px;
+    height: 12px;
+  }
+
+  .nav-toggle-bars span {
+    display: block;
+    height: 1.5px;
+    background: hsl(var(--foreground));
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .nav-toggle[aria-expanded='true'] .nav-toggle-bars span:nth-child(1) {
+    transform: translateY(5px) rotate(45deg);
+  }
+  .nav-toggle[aria-expanded='true'] .nav-toggle-bars span:nth-child(2) {
+    opacity: 0;
+  }
+  .nav-toggle[aria-expanded='true'] .nav-toggle-bars span:nth-child(3) {
+    transform: translateY(-5px) rotate(-45deg);
+  }
+
+  /* --- Responsive --------------------------------------------------- */
+
+  @media (max-width: 720px) {
     .site-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 1rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      align-items: center;
+      gap: 0 0.75rem;
+    }
+
+    .header-left {
+      grid-row: 1;
+      grid-column: 1;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .status-meta {
+      display: none;
+    }
+
+    .nav-toggle {
+      display: inline-flex;
+      grid-row: 1;
+      grid-column: 2;
     }
 
     .site-nav {
-      display: none;
+      grid-row: 2;
+      grid-column: 1 / -1;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease, margin-top 0.25s ease;
+      margin-top: 0;
+    }
+
+    .site-nav.open {
+      max-height: 400px;
+      margin-top: 1rem;
+      border-top: 1px solid hsl(var(--border));
+      padding-top: 1rem;
+    }
+
+    .site-nav .nav-link {
+      padding: 0.65rem 0;
+      font-size: 0.95rem;
+      width: 100%;
+    }
+
+    .site-nav .nav-link::after {
+      right: auto;
+      width: 2rem;
     }
   }
 </style>

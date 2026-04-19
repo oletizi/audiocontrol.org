@@ -1,87 +1,547 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import { recentBlogPosts, formatBlogDate } from '../data/blog-posts';
 
 interface Project {
   name: string;
   description: string;
+  meta: string;
   status: 'available' | 'coming-soon';
   href?: string;
   image?: string;
 }
 
-const projects: Project[] = [
+const availableProjects: Project[] = [
   {
     name: 'Roland S-330',
-    description: 'Web-based editor for the Roland S-330 12-bit sampler',
+    description: 'Rack-mount 12-bit digital sampler. Web editor with real-time hardware sync, patch browsing, and filter/envelope visualization.',
+    meta: '1987 · 16-voice · 12-bit',
     status: 'available',
     href: '/roland/s330/editor',
     image: '/images/s330-screenshot.png',
   },
   {
     name: 'Roland S-550',
-    description: 'Web-based editor for the Roland S-550 12-bit sampler',
+    description: 'The S-330’s bigger sibling — more memory, VGA output, same family. Shares the editor UI with an expanded feature set.',
+    meta: '1987 · 16-voice · 16-bit',
     status: 'available',
     href: '/roland/s550/editor',
   },
+];
+
+const pendingProjects: Project[] = [
   {
     name: 'Akai S3000XL',
-    description: 'Web-based editor for the Akai S3000XL sampler',
+    description: 'The workhorse 90s rack sampler. MIDI-over-SCSI protocol reverse-engineered; editor under construction.',
+    meta: '1994 · 32-voice · 16-bit',
     status: 'coming-soon',
   },
   {
     name: 'Akai S5000',
-    description: 'Web-based editor for the Akai S5000/S6000 samplers',
+    description: 'Akai’s late-generation rack sampler with USB and 24-bit audio. Shared parameter model with the S6000.',
+    meta: '1999 · 64-voice · 24-bit',
     status: 'coming-soon',
   },
   {
     name: 'Roland JV-1080',
-    description: 'Web-based editor for the Roland JV-1080 synthesizer module',
+    description: 'Rack synthesizer module with expansion board slots. Patch editor and librarian in early exploration.',
+    meta: '1994 · 64-voice · synth',
     status: 'coming-soon',
   },
 ];
+
+const latest = recentBlogPosts(3);
+
+const availableCount = availableProjects.length;
+const pendingCount = pendingProjects.length;
 ---
 
-<Layout title="audiocontrol.org — Free Web Editors for Vintage Roland & Akai Samplers and Synthesizers" image="/images/og/index.png">
-  <section class="projects-section">
-    <h2 class="section-title">Projects</h2>
-    <div class="projects-grid">
-      {projects.map((project) => (
-        <ProjectCard
-          name={project.name}
-          description={project.description}
-          status={project.status}
-          href={project.href}
-          image={project.image}
-        />
+<Layout
+  title="audiocontrol.org — Free Web Editors for Vintage Roland & Akai Samplers and Synthesizers"
+  image="/images/og/index.png"
+>
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="hero-eyebrow">
+      <span class="signal-led" aria-hidden="true"></span>
+      <span>Audiocontrol — Service Manual</span>
+      <span class="hero-eyebrow-sep" aria-hidden="true">·</span>
+      <span>v1.0</span>
+    </p>
+    <h1 id="hero-title" class="hero-title">
+      Free web editors for the rack samplers<br />
+      <span class="phosphor">you already own.</span>
+    </h1>
+    <p class="hero-body">
+      The hardware is on the shelf. The original software is thirty years
+      gone. We write modern browser editors for the 12- and 16-bit samplers
+      that built late-80s and 90s records — open source, no install, and
+      coming back online one device at a time.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="/roland/s330/editor">
+        <span class="btn-arrow" aria-hidden="true">→</span>
+        <span>Open S-330 Editor</span>
+      </a>
+      <a class="btn btn-ghost" href="/hardware/">
+        <span class="btn-arrow" aria-hidden="true">↳</span>
+        <span>Browse Hardware</span>
+      </a>
+    </div>
+    <hr class="rule-ticked hero-rule" />
+    <dl class="hero-stats">
+      <div>
+        <dt>Available</dt>
+        <dd>{availableCount.toString().padStart(2, '0')}</dd>
+      </div>
+      <div>
+        <dt>In development</dt>
+        <dd>{pendingCount.toString().padStart(2, '0')}</dd>
+      </div>
+      <div>
+        <dt>Stack</dt>
+        <dd>Open source · Web-native</dd>
+      </div>
+      <div>
+        <dt>Install</dt>
+        <dd>None</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="block" aria-labelledby="available-label">
+    <header class="block-header">
+      <h2 id="available-label" class="panel-label panel-label--accent">Available Now</h2>
+      <p class="block-note">Web editors you can open in a browser today.</p>
+    </header>
+    <div class="projects-grid projects-grid--featured">
+      {availableProjects.map((project) => (
+        <ProjectCard {...project} />
       ))}
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="pending-label">
+    <header class="block-header">
+      <h2 id="pending-label" class="panel-label">In Development</h2>
+      <p class="block-note">Devices on the workbench. Sign up via GitHub Discussions for updates.</p>
+    </header>
+    <div class="projects-grid projects-grid--small">
+      {pendingProjects.map((project) => (
+        <ProjectCard {...project} />
+      ))}
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="latest-label">
+    <header class="block-header block-header--writing">
+      <h2 id="latest-label" class="panel-label">Latest Writing</h2>
+      <a class="block-link" href="/blog/">All posts <span aria-hidden="true">→</span></a>
+    </header>
+    <ul class="writing-list">
+      {latest.map((post) => (
+        <li class="writing-item">
+          <a class="writing-link" href={`/blog/${post.slug}/`}>
+            <time class="writing-date" datetime={post.datePublished}>
+              {formatBlogDate(post.datePublished)}
+            </time>
+            <h3 class="writing-title">{post.title}</h3>
+            <p class="writing-excerpt">{post.description}</p>
+            <span class="writing-cta" aria-hidden="true">Read article →</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="block community" aria-labelledby="community-label">
+    <header class="block-header">
+      <h2 id="community-label" class="panel-label">Community Channels</h2>
+      <p class="block-note">Open source. Talk to us. File issues.</p>
+    </header>
+    <div class="community-grid">
+      <a class="community-card" href="https://github.com/audiocontrol-org">
+        <span class="community-mark" aria-hidden="true">GH</span>
+        <span class="community-name">GitHub</span>
+        <span class="community-note">Source, issues, and discussions for every editor.</span>
+      </a>
+      <a class="community-card" href="https://discord.gg/VcYVYw74">
+        <span class="community-mark" aria-hidden="true">DC</span>
+        <span class="community-name">Discord</span>
+        <span class="community-note">Chat with the maintainers and other users.</span>
+      </a>
+      <a class="community-card" href="https://www.youtube.com/channel/UC-R2BUyyETyQDePk2KlxHJw">
+        <span class="community-mark" aria-hidden="true">YT</span>
+        <span class="community-name">YouTube</span>
+        <span class="community-note">Demos, walkthroughs, and teardown videos.</span>
+      </a>
     </div>
   </section>
 </Layout>
 
 <style>
-  .projects-section {
-    margin-top: 1rem;
+  /* --- Hero --------------------------------------------------------- */
+
+  .hero {
+    padding: 4rem 0 3.5rem;
+    max-width: 52rem;
   }
 
-  .section-title {
-    font-family: var(--font-heading);
-    font-size: 0.875rem;
-    font-weight: 500;
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
     color: hsl(var(--muted-foreground));
-    margin-bottom: 1.5rem;
+    margin: 0 0 2rem 0;
   }
+
+  .hero-eyebrow .signal-led {
+    width: 7px;
+    height: 7px;
+  }
+
+  .hero-eyebrow-sep {
+    opacity: 0.5;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4.2vw, 3.25rem);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: 0;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .hero-title .phosphor {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 22px hsl(var(--primary) / 0.35);
+  }
+
+  .hero-body {
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: hsl(var(--muted-foreground));
+    max-width: 40rem;
+    margin: 1.5rem 0 2rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 0 0 3rem 0;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.8rem 1.25rem;
+    border: 1px solid hsl(var(--border));
+    text-decoration: none;
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .btn-arrow {
+    color: hsl(var(--primary));
+    transition: transform 0.2s ease;
+  }
+
+  .btn-primary {
+    background: hsl(var(--primary) / 0.08);
+    border-color: hsl(var(--primary) / 0.5);
+    color: hsl(var(--foreground));
+  }
+
+  .btn-primary:hover {
+    background: hsl(var(--primary) / 0.14);
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 24px hsl(var(--primary) / 0.15);
+  }
+
+  .btn-primary:hover .btn-arrow {
+    transform: translateX(3px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .btn-ghost:hover {
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border-hover));
+  }
+
+  .btn-ghost:hover .btn-arrow {
+    transform: translateX(3px);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 3px;
+  }
+
+  .hero-rule {
+    max-width: 100%;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem 2rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .hero-stats > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .hero-stats dt {
+    font-family: var(--font-display);
+    font-size: 0.64rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .hero-stats dd {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: hsl(var(--foreground));
+    margin: 0;
+  }
+
+  @media (max-width: 720px) {
+    .hero {
+      padding: 2.5rem 0 2rem;
+    }
+    .hero-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* --- Blocks ------------------------------------------------------ */
+
+  .block {
+    padding: 2.5rem 0;
+  }
+
+  .block-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 1.5rem 0;
+    flex-wrap: wrap;
+  }
+
+  .block-header .panel-label {
+    margin: 0;
+  }
+
+  .block-note {
+    font-size: 0.9rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .block-link {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    transition: color 0.18s ease;
+  }
+
+  .block-link:hover {
+    color: hsl(var(--primary));
+    text-decoration: none;
+  }
+
+  /* --- Projects grid ----------------------------------------------- */
 
   .projects-grid {
     display: grid;
+    gap: 1.25rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 720px) {
+    .projects-grid--featured {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .projects-grid--small {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* --- Writing list ------------------------------------------------ */
+
+  .writing-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0;
+  }
+
+  .writing-item + .writing-item {
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .writing-link {
+    display: grid;
+    grid-template-columns: 7rem 1fr auto;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.18s ease;
+    align-items: baseline;
+  }
+
+  .writing-link:hover {
+    background: hsl(var(--card) / 0.45);
+    text-decoration: none;
+  }
+
+  .writing-link:hover .writing-title {
+    color: hsl(var(--primary));
+  }
+
+  .writing-date {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+  }
+
+  .writing-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: hsl(var(--foreground));
+    margin: 0;
+    line-height: 1.35;
+    transition: color 0.2s ease;
+  }
+
+  .writing-excerpt {
+    grid-column: 2 / 3;
+    font-size: 0.9rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0.4rem 0 0 0;
+    line-height: 1.55;
+  }
+
+  .writing-cta {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    transform: translateX(-0.3rem);
+  }
+
+  .writing-link:hover .writing-cta,
+  .writing-link:focus-visible .writing-cta {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  @media (max-width: 720px) {
+    .writing-link {
+      grid-template-columns: 1fr;
+      gap: 0.35rem;
+      padding: 1.5rem 0;
+    }
+    .writing-excerpt {
+      grid-column: 1 / -1;
+    }
+    .writing-cta {
+      display: none;
+    }
+  }
+
+  /* --- Community -------------------------------------------------- */
+
+  .community-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
   }
 
-  @media (min-width: 640px) {
-    .projects-grid {
-      grid-template-columns: repeat(2, 1fr);
+  @media (max-width: 720px) {
+    .community-grid {
+      grid-template-columns: 1fr;
     }
+  }
+
+  .community-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .community-card:hover {
+    border-color: hsl(var(--primary) / 0.55);
+    background: hsl(var(--card-hover));
+    transform: translateY(-2px);
+    box-shadow: var(--card-glow-hover);
+    text-decoration: none;
+  }
+
+  .community-mark {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    color: hsl(var(--primary));
+    text-transform: uppercase;
+  }
+
+  .community-name {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: hsl(var(--foreground));
+  }
+
+  .community-note {
+    font-size: 0.88rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.5;
   }
 </style>
