@@ -29,6 +29,13 @@ export interface PromptTemplate {
   archived?: boolean;
   /** Back-references to log entries that used this template successfully */
   examples: string[];
+  /**
+   * Which site this template is tuned for. When set, the picker should
+   * filter by this value. Omitted or null means "works for any site".
+   * Phase 14 adds full site-aware filtering; for now the field is
+   * carried on data but not yet enforced by the picker.
+   */
+  site?: 'audiocontrol' | 'editorialcontrol' | null;
 }
 
 export interface TemplateFitness {
