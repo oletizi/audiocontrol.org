@@ -24,7 +24,7 @@ This post is about the other option: building your own editorial calendar on top
 
 ## What owning the stack actually looks like
 
-For audiocontrol.org, the editorial calendar is a single Markdown file (`docs/editorial-calendar.md`) with one section per stage of the content lifecycle: **Ideas**, **Planned**, **Drafting**, **Review**, **Published**, plus a **Distribution** section tracking where each published post has been shared.
+The editorial calendar — one per site in this setup — is a single Markdown file (`docs/editorial-calendar-<site>.md`) with one section per stage of the content lifecycle: **Ideas**, **Planned**, **Drafting**, **Review**, **Published**, plus a **Distribution** section tracking where each published post has been shared. The same file format backs both audiocontrol.org and this publication.
 
 Each stage is a pipe-delimited Markdown table. Readable by a human, parseable by a script. No database, no API, no login screen. `git log` is the audit trail. `grep` is the search.
 
@@ -65,7 +65,7 @@ Automation drops the fixed cost per post. No hand-cropping feature images. No ma
 
 More posts shipped means more analytics data, which means `/editorial-suggest` surfaces more specific opportunities. A query at position 14 with 200 monthly impressions is a real signal; a query with 5 isn't. More specific suggestions sharpen the next batch of posts. The posts produce their own data. The system learns from itself.
 
-Concrete numbers: between January 2025 and March 2026, this site shipped three posts. In the first eighteen days of April 2026, once the automation had compounded enough to move content through without hand-cropping, hand-tracking, or hand-linking, it shipped seven. Same author. Same subject matter. Different friction floor.
+Concrete numbers: between January 2025 and March 2026, my audiocontrol.org blog shipped three posts. In the first eighteen days of April 2026, once the automation had compounded enough to move content through without hand-cropping, hand-tracking, or hand-linking, it shipped seven. Same author. Same subject matter. Different friction floor. The split to a sibling publication — the one you're reading — came right after that, because the content itself had started to drift into two audiences that deserved separate presses.
 
 This loop only works if friction stays low. SaaS friction, even a few minutes of it compounded across every post, breaks the loop. Friction is the thing automation is actually attacking, and it's the one measure vendor pricing doesn't capture at all.
 

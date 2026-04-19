@@ -1,64 +1,82 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 
-interface UpcomingTopic {
+interface BlogPost {
   number: string;
-  name: string;
-  sketch: string;
+  title: string;
+  description: string;
+  date: string;
+  datePublished: string;
+  slug: string;
+  image?: string;
+  tags?: string[];
 }
 
-const upcoming: UpcomingTopic[] = [
+const blogPosts: BlogPost[] = [
   {
     number: 'No. 01',
-    name: 'Building the editorial calendar',
-    sketch: 'How a single markdown file and a dozen skills replaced a to-do app and three half-finished Notion pages.',
+    title: 'Build Your Own AI Editorial Calendar',
+    description:
+      'AI in content marketing is table stakes; most workflows using it aren\'t fast or flexible enough to keep up. A concrete alternative: an editorial calendar built on top of a coding agent plus Markdown files and a weekend of work. Treat the agent like an in-house developer.',
+    date: 'April 2026',
+    datePublished: '2026-04-18',
+    slug: 'building-the-editorial-calendar-feature',
+    tags: ['AI agents', 'Editorial', 'Workflow', 'Claude'],
   },
   {
     number: 'No. 02',
-    name: 'Agents as workflow, not assistants',
-    sketch: 'The reframe that made the agent useful: stop asking it to help, start asking it to run the process.',
-  },
-  {
-    number: 'No. 03',
-    name: 'Dogfooding a dogfooding tool',
-    sketch: 'What broke when the editorial tool met its first real post, and why most of the failure was in the prose.',
+    title: 'Automating Around a Design Skills Gap',
+    description:
+      'The older feature images on my audiocontrol.org blog are rough. I\'m not a designer and I\'m not trying to become one. Closing the skills gap with automation, dropping the friction of shipping posts, and growing a design system by artificial selection.',
+    date: 'April 2026',
+    datePublished: '2026-04-18',
+    slug: 'feature-image-automation-feature',
+    tags: ['AI', 'Automation', 'Design', 'Workflow'],
   },
 ];
+
+const formatDate = (iso: string): string => {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+};
 ---
 
 <Layout
   title="The desk — editorialcontrol.org"
-  description="Pieces in progress and what's queued for the first issue. The press is warm; the first post ships soon."
+  description="Dispatches from editorialcontrol.org — a publication on building with AI agents."
 >
   <section class="desk site-container">
     <div class="desk-header">
       <p class="kicker">The desk</p>
-      <h1 class="desk-title">
-        Pre-press.
-      </h1>
+      <h1 class="desk-title">Dispatches.</h1>
       <p class="desk-lede">
-        The press is warm. No post has shipped <em>here</em> yet — the first issue is in
-        edit. Below: what's on the desk, with a sketch of each. When a piece clears review
-        it replaces its sketch with the real thing.
+        Pieces on building with AI agents — workflow patterns, editorial cadence, and the
+        automation that actually ships. Slowly published. Each one written by an agent and
+        finished by a human.
       </p>
       <hr class="rule-accent" />
     </div>
 
-    <ol class="queue">
-      {upcoming.map((u, i) => (
-        <li class={`queue-item ${i === 0 ? 'queue-item--lead' : ''}`}>
-          <div class="queue-meta">
-            <span class="queue-number tabular">{u.number}</span>
-            <span class="queue-status">{i === 0 ? 'In edit' : i === 1 ? 'Drafting' : 'Planned'}</span>
-          </div>
-          <h2 class="queue-name">{u.name}</h2>
-          <p class="queue-sketch">{u.sketch}</p>
-          {i === 0 && (
-            <div class="queue-progress" aria-hidden="true">
-              <div class="progress-bar"><div class="progress-fill"></div></div>
-              <span class="progress-label">~ 70%</span>
+    <ol class="posts">
+      {blogPosts.map((post) => (
+        <li class="post-item">
+          <a class="post-link" href={`/blog/${post.slug}/`}>
+            <div class="post-meta">
+              <span class="post-num tabular">{post.number}</span>
+              <time class="post-date tabular" datetime={post.datePublished}>
+                {formatDate(post.datePublished)}
+              </time>
             </div>
-          )}
+            <h2 class="post-title">{post.title}</h2>
+            <p class="post-description">{post.description}</p>
+            {post.tags && (
+              <ul class="post-tags" aria-label="Tags">
+                {post.tags.map((tag) => (
+                  <li class="post-tag">{tag}</li>
+                ))}
+              </ul>
+            )}
+          </a>
         </li>
       ))}
     </ol>
@@ -68,11 +86,11 @@ const upcoming: UpcomingTopic[] = [
     <aside class="dispatch-card">
       <p class="dispatch-kicker">The dispatch</p>
       <h2 class="dispatch-title">
-        Tell me to send you the first issue.
+        Want new issues delivered by hand?
       </h2>
       <p class="dispatch-body">
-        No form, no funnel. An email. Reply asks to be added; I reply when the first piece
-        is close.
+        No form, no funnel. An email. Reply asks to be added; I send new issues when they're
+        close to shipping.
       </p>
       <a class="dispatch-cta" href="mailto:orion@audiocontrol.org?subject=editorialcontrol%20dispatch">
         Write to the editor
@@ -86,7 +104,7 @@ const upcoming: UpcomingTopic[] = [
   .desk {
     padding-top: 3rem;
     padding-bottom: 4rem;
-    max-width: 56rem;
+    max-width: 58rem;
   }
 
   .desk-header {
@@ -114,20 +132,16 @@ const upcoming: UpcomingTopic[] = [
 
   .desk-lede {
     font-family: var(--font-display);
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-style: italic;
-    line-height: 1.45;
+    line-height: 1.5;
     color: hsl(var(--muted-foreground));
-    max-width: 38rem;
+    max-width: 40rem;
     margin: 0;
   }
 
-  .desk-lede em {
-    color: hsl(var(--accent));
-  }
-
-  /* ---- Queue ---- */
-  .queue {
+  /* ---- Post list ---- */
+  .posts {
     list-style: none;
     margin: 2rem 0 3rem 0;
     padding: 0;
@@ -135,94 +149,92 @@ const upcoming: UpcomingTopic[] = [
     flex-direction: column;
   }
 
-  .queue-item {
-    padding: 2rem 0;
+  .post-item {
     border-bottom: 1px solid hsl(var(--border));
   }
 
-  .queue-item--lead {
-    border-top: 2px solid hsl(var(--primary));
-    padding-top: 1.5rem;
+  .post-link {
+    display: block;
+    padding: 2rem 0;
+    text-decoration: none;
+    color: inherit;
+    border: 0;
+    transition: background 0.15s ease;
   }
 
-  .queue-meta {
+  .post-link:hover {
+    text-decoration: none;
+    background: hsl(var(--card-hover) / 0.35);
+  }
+
+  .post-link:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 4px;
+  }
+
+  .post-meta {
     display: flex;
     align-items: baseline;
     gap: 1.25rem;
     margin-bottom: 0.75rem;
   }
 
-  .queue-number {
+  .post-num {
     font-family: var(--font-mono);
     font-size: 0.85rem;
     letter-spacing: 0.08em;
     color: hsl(var(--primary));
   }
 
-  .queue-status {
+  .post-date {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
     color: hsl(var(--muted-foreground));
-    padding: 0.15rem 0.5rem;
-    border: 1px solid hsl(var(--border));
+    text-transform: uppercase;
   }
 
-  .queue-item--lead .queue-status {
-    color: hsl(var(--primary));
-    border-color: hsl(var(--primary) / 0.5);
-  }
-
-  .queue-name {
+  .post-title {
     font-family: var(--font-display);
-    font-size: clamp(1.5rem, 3vw, 2.1rem);
-    font-weight: 500;
-    line-height: 1.15;
-    margin: 0 0 0.6rem 0;
-    color: hsl(var(--foreground));
-  }
-
-  .queue-item--lead .queue-name {
     font-style: italic;
+    font-weight: 500;
+    font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+    line-height: 1.15;
+    margin: 0 0 0.7rem 0;
+    color: hsl(var(--foreground));
+    transition: color 0.15s ease;
   }
 
-  .queue-sketch {
+  .post-link:hover .post-title {
+    color: hsl(var(--primary));
+  }
+
+  .post-description {
     font-family: var(--font-body);
-    font-size: 1.02rem;
-    line-height: 1.55;
+    font-size: 1rem;
+    line-height: 1.6;
     color: hsl(var(--muted-foreground));
     max-width: 44rem;
+    margin: 0 0 0.9rem 0;
+  }
+
+  .post-tags {
+    list-style: none;
     margin: 0;
-  }
-
-  .queue-progress {
+    padding: 0;
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
+    flex-wrap: wrap;
+    gap: 0.6rem;
   }
 
-  .progress-bar {
-    height: 2px;
-    flex-grow: 1;
-    background: hsl(var(--border));
-    max-width: 18rem;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    width: 70%;
-    background: hsl(var(--primary));
-    box-shadow: 0 0 10px hsl(var(--primary) / 0.5);
-  }
-
-  .progress-label {
+  .post-tag {
     font-family: var(--font-mono);
     font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    color: hsl(var(--primary));
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    padding: 0.1rem 0.5rem;
+    border: 1px solid hsl(var(--border));
   }
 
   /* ---- Dispatch card ---- */
@@ -247,7 +259,7 @@ const upcoming: UpcomingTopic[] = [
     line-height: 1.25;
     margin: 0 0 0.85rem 0;
     color: hsl(var(--foreground));
-    max-width: 30rem;
+    max-width: 32rem;
   }
 
   .dispatch-body {

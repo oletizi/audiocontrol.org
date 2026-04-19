@@ -118,20 +118,21 @@
 
 **Deliverable:** Two posts live on editorialcontrol.org with their editorial calendar entries ported and tracking issues retitled.
 
-- [ ] Move `building-the-editorial-calendar-feature` to `src/sites/editorialcontrol/pages/blog/<slug>/` and migrate its calendar entry
-- [ ] Retitle tracking issue #68 to reference editorialcontrol.org
-- [ ] Revert audiocontrol's calendar entry for `building-the-editorial-calendar-feature` (remove)
-- [ ] Move `feature-image-automation-feature` to `src/sites/editorialcontrol/pages/blog/<slug>/`; reframe with the current agent-as-workflow thesis
-- [ ] Remove `feature-image-automation-feature` from audiocontrol's calendar and blog index
-- [ ] Generate feature images for both posts via the existing feature-image pipeline (targeting editorialcontrol now)
-- [ ] Add both to editorialcontrol's blog index
+- [x] `git mv` `building-the-editorial-calendar-feature` to `src/sites/editorialcontrol/pages/blog/<slug>/`; migrate its calendar entry
+- [x] Retitle tracking issue #68 to `[editorialcontrol] ...`; comment with migration summary; close on publish
+- [x] Remove `building-the-editorial-calendar-feature` Drafting row from audiocontrol calendar
+- [x] `git mv` `feature-image-automation-feature` to `src/sites/editorialcontrol/pages/blog/<slug>/`; light reframe (content already on-thesis: calendar-path reference updated to `docs/editorial-calendar-<site>.md`, "this site" references clarified to name audiocontrol.org where old images live)
+- [x] Remove `feature-image-automation-feature` Published row from audiocontrol calendar and remove its card from `src/sites/audiocontrol/pages/blog/index.astro`
+- [x] Create `src/sites/editorialcontrol/layouts/BlogLayout.astro` — essay-style layout with TOC, drop-cap on first paragraph, Fraunces/Inter typography, kicker/meta header
+- [x] Rewire `src/sites/editorialcontrol/pages/blog/index.astro` from the Phase 3 pre-press queue to a real blog index listing the two migrated posts
+- [ ] Generate feature images for both posts via the feature-image pipeline (deferred — pipeline is its own interactive workflow with gallery review; posts render cleanly without images for now)
 
 **Acceptance Criteria:**
-- Both posts render correctly on editorialcontrol.org
-- Both calendar entries are in Published stage on editorialcontrol's calendar
-- audiocontrol.org no longer references either post in its calendar, blog index, or pages
-- Feature images generated and applied to both posts
-- `/editorial-cross-link-review --site=editorialcontrol` reports no unreciprocated links
+- [x] Both posts render correctly at `/blog/<slug>/` on editorialcontrol.org
+- [x] Both calendar entries are in Published stage on editorialcontrol's calendar (`docs/editorial-calendar-editorialcontrol.md`)
+- [x] audiocontrol.org no longer references either post in its calendar or blog index
+- [ ] Feature images generated and applied to both posts (deferred)
+- [ ] `/editorial-cross-link-review --site=editorialcontrol` reports no unreciprocated links (not yet run; needs the feature-image pipeline and first Reddit distribution record first to have something to cross-link)
 
 ### Phase 5: Reddit / distribution setup
 
