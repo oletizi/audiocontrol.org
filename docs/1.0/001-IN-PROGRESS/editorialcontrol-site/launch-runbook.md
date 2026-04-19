@@ -106,16 +106,16 @@ the five or six URLs discovered.
 
 This is Phase 5(b) — the plumbing landed in Phase 5(a).
 
-1. **Register** a brand-aligned Reddit username for editorialcontrol
-   (e.g. `/u/editorialcontrol`, `/u/ec-orion`, whatever feels right).
+1. **Register** a brand-aligned Reddit username for editorialcontrol.
+   Done: [`/u/EditorialControl`](https://www.reddit.com/user/EditorialControl/).
    Warm it up a little before posting (Reddit rate-limits brand-new
    accounts on self-promo).
 2. **Update** `~/.config/audiocontrol/reddit.json` to the site-keyed
    schema:
    ```json
    {
-     "audiocontrol":    { "username": "your-existing-handle" },
-     "editorialcontrol": { "username": "the-new-handle" }
+     "audiocontrol":    { "username": "<your-existing-audiocontrol-handle>" },
+     "editorialcontrol": { "username": "EditorialControl" }
    }
    ```
    The loader throws a clear migration error if it still sees the old

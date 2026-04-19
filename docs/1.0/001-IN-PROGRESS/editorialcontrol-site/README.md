@@ -30,7 +30,7 @@ Stand up editorialcontrol.org as a sibling site to audiocontrol.org. One repo, t
 
 ## Open Questions
 
-- Brand-aligned Reddit username for editorialcontrol.org
+- ~~Brand-aligned Reddit username for editorialcontrol.org~~ — **Resolved (2026-04-18):** [`/u/EditorialControl`](https://www.reddit.com/user/EditorialControl/). Site-keyed `~/.config/audiocontrol/reddit.json` needs to pair it with the existing audiocontrol handle before first sync.
 - ~~Accent palette for editorialcontrol~~ — **Resolved (2026-04-18):** signal-green chartreuse (`hsl(74 82% 58%)`) primary + parchment cream (`hsl(38 32% 82%)`) accent on ink-near-black. Fraunces italic serif wordmark (new font), Inter body + JetBrains Mono meta shared with audiocontrol.
 - DEVELOPMENT-NOTES.md and ROADMAP.md — split per-site or repo-wide? (default: repo-wide)
 - ~~Default for skills invoked without `--site`~~ — **Resolved (2026-04-18):** default to `audiocontrol` when omitted. Preserves the behavior every existing skill invocation relies on; editorialcontrol operators pass `--site=editorialcontrol` explicitly.
