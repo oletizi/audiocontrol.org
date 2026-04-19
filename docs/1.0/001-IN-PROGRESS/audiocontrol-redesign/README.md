@@ -12,9 +12,9 @@ Visual redesign of audiocontrol.org to match the design quality of the sibling s
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 1 | Design Foundation — Tokens, Brand, Layout | Not Started |
-| 2 | Header, Footer, Navigation | Not Started |
-| 3 | Homepage Redesign | Not Started |
+| 1 | Design Foundation — Tokens, Brand, Layout | Complete |
+| 2 | Header, Footer, Navigation | Complete |
+| 3 | Homepage Redesign | In Progress |
 | 4 | Content Pages — Blog, Docs, Hardware, Device | Not Started |
 
 ## Documentation

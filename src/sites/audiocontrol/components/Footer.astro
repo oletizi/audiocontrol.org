@@ -1,114 +1,312 @@
 ---
 /**
- * Footer component for the palette redesign
- * Simple centered branding with social links
+ * audiocontrol footer — Service-Manual colophon treatment.
+ *
+ * Four-column grid: Brand / Projects / Sibling site / Community, with
+ * a bottom panel-label row for copyright and a build/version line.
+ * Responsive single-column at <720px. Drops the centered-bar-with-icons
+ * pattern in favor of something that reads as the back cover of a
+ * service manual: who made it, what the sibling is, how to reach us.
  */
 
+import Logo from './Logo.astro';
+
 const currentYear = new Date().getFullYear();
+
+const projectLinks: Array<{ label: string; href: string }> = [
+  { label: 'Roland S-330 Editor', href: '/roland/s330/editor' },
+  { label: 'Roland S-550 Editor', href: '/roland/s550/editor' },
+  { label: 'Hardware', href: '/hardware/' },
+  { label: 'Docs', href: '/docs/' },
+  { label: 'Blog', href: '/blog/' },
+];
 ---
 
 <footer class="site-footer">
-  <div class="footer-content">
-    <div class="footer-brand">
-      <span class="footer-logo">audiocontrol<span class="org">.org</span></span>
-      <span class="footer-divider">·</span>
-      <span class="footer-tagline">Open source audio tools</span>
-    </div>
+  <hr class="rule-hairline" />
 
-    <nav class="footer-links" aria-label="Social links">
-      <a href="https://github.com/audiocontrol-org" class="social-link" aria-label="GitHub">
-        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
-        </svg>
-      </a>
-      <a href="https://www.youtube.com/channel/UC-R2BUyyETyQDePk2KlxHJw" class="social-link" aria-label="YouTube">
-        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-        </svg>
-      </a>
-      <a href="https://discord.gg/VcYVYw74" class="social-link" aria-label="Discord">
-        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.947 2.418-2.157 2.418z"/>
-        </svg>
-      </a>
+  <div class="colophon">
+    <section class="col col-brand" aria-labelledby="footer-brand-label">
+      <p id="footer-brand-label" class="panel-label">Mark</p>
+      <div class="brand-row">
+        <Logo variant="glyph" size={1.35} />
+        <span class="brand-name">audiocontrol<span class="org">.org</span></span>
+      </div>
+      <p class="note">
+        Open source web tools for vintage Roland, Akai, and Yamaha
+        samplers and synthesizers.
+      </p>
+    </section>
+
+    <nav class="col col-projects" aria-labelledby="footer-projects-label">
+      <p id="footer-projects-label" class="panel-label">Projects</p>
+      <ul>
+        {projectLinks.map((link) => (
+          <li><a href={link.href}>{link.label}</a></li>
+        ))}
+      </ul>
     </nav>
 
-    <p class="copyright">&copy; {currentYear} audiocontrol.org</p>
+    <section class="col col-sibling" aria-labelledby="footer-sibling-label">
+      <p id="footer-sibling-label" class="panel-label">Sibling</p>
+      <a class="sibling-link" href="https://editorialcontrol.org" rel="me">
+        editorialcontrol.org
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <p class="note">
+        A publication on building with AI agents. Sister site, same stack.
+      </p>
+    </section>
+
+    <section class="col col-community" aria-labelledby="footer-community-label">
+      <p id="footer-community-label" class="panel-label">Community</p>
+      <ul class="social">
+        <li>
+          <a href="https://github.com/audiocontrol-org" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+            </svg>
+            GitHub
+          </a>
+        </li>
+        <li>
+          <a href="https://www.youtube.com/channel/UC-R2BUyyETyQDePk2KlxHJw" aria-label="YouTube">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+            </svg>
+            YouTube
+          </a>
+        </li>
+        <li>
+          <a href="https://discord.gg/VcYVYw74" aria-label="Discord">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.947 2.418-2.157 2.418z" />
+            </svg>
+            Discord
+          </a>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="footer-bottom">
+    <p class="copyright">© {currentYear} audiocontrol.org</p>
+    <p class="build-line">
+      <span class="build-label">BUILD</span>
+      <span class="build-value">{currentYear}.{String(new Date().getMonth() + 1).padStart(2, '0')}</span>
+      <span class="build-sep">·</span>
+      <span class="build-colophon">
+        Set in <em>Departure Mono</em>, IBM Plex Sans, and JetBrains Mono.
+      </span>
+    </p>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    margin-top: 4rem;
-    padding: 2rem 0;
-    border-top: 1px solid hsl(var(--border));
+    margin-top: 6rem;
+    padding-bottom: 2.5rem;
   }
 
-  .footer-content {
+  .colophon {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 2rem;
+    padding: 2.25rem 0 2rem;
+  }
+
+  @media (max-width: 900px) {
+    .colophon {
+      grid-template-columns: 1fr 1fr;
+      gap: 1.75rem;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .colophon {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .col {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 1.25rem;
-    text-align: center;
+    gap: 0.75rem;
+    min-width: 0;
   }
 
-  .footer-brand {
+  .col .panel-label {
+    margin: 0 0 0.25rem 0;
+  }
+
+  /* --- Brand column ----------------------------------------------- */
+
+  .brand-row {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
+    gap: 0.75rem;
   }
 
-  .footer-logo {
-    font-family: var(--font-heading);
-    font-size: 0.9375rem;
-    font-weight: 600;
+  .brand-name {
+    font-family: var(--font-display);
+    font-size: 1rem;
     color: hsl(var(--foreground));
   }
 
-  .footer-logo .org {
+  .brand-name .org {
     color: hsl(var(--primary));
+    text-shadow: 0 0 8px hsl(var(--primary) / 0.4);
   }
 
-  .footer-divider {
-    color: hsl(var(--muted-foreground));
-  }
-
-  .footer-tagline {
+  .col-brand .note {
     font-size: 0.875rem;
     color: hsl(var(--muted-foreground));
+    line-height: 1.55;
+    margin: 0;
+    max-width: 22rem;
   }
 
-  .footer-links {
+  /* --- Project + Community list styles ---------------------------- */
+
+  .col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     display: flex;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
-  .social-link {
+  .col ul a {
+    font-size: 0.875rem;
     color: hsl(var(--muted-foreground));
-    transition: color 0.2s;
-    border-radius: 0.25rem;
+    text-decoration: none;
+    transition: color 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
   }
 
-  .social-link:hover,
-  .social-link:focus-visible {
+  .col ul a:hover,
+  .col ul a:focus-visible {
     color: hsl(var(--foreground));
+    text-decoration: none;
   }
 
-  .social-link:focus-visible {
+  .col ul a:focus-visible {
     outline: 2px solid hsl(var(--primary));
     outline-offset: 2px;
   }
 
-  .social-link svg {
-    width: 1.25rem;
-    height: 1.25rem;
+  .social svg {
+    width: 1rem;
+    height: 1rem;
+    color: hsl(var(--muted-foreground));
+    transition: color 0.18s ease;
+    flex-shrink: 0;
   }
 
-  .copyright {
-    font-size: 0.75rem;
+  .social a:hover svg,
+  .social a:focus-visible svg {
+    color: hsl(var(--primary));
+  }
+
+  /* --- Sibling link ------------------------------------------------ */
+
+  .sibling-link {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: hsl(var(--foreground));
+    text-decoration: none;
+    transition: color 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .sibling-link .arrow {
+    color: hsl(var(--primary));
+    transition: transform 0.18s ease;
+  }
+
+  .sibling-link:hover {
+    color: hsl(var(--primary));
+    text-decoration: none;
+  }
+
+  .sibling-link:hover .arrow {
+    transform: translateX(3px);
+  }
+
+  .sibling-link:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 3px;
+    border-radius: 0.125rem;
+  }
+
+  .col-sibling .note {
+    font-size: 0.85rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* --- Bottom row -------------------------------------------------- */
+
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid hsl(var(--border));
+    flex-wrap: wrap;
+  }
+
+  .copyright,
+  .build-line {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: hsl(var(--muted-foreground));
     margin: 0;
+    line-height: 1.6;
+  }
+
+  .build-line {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+
+  .build-label {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .build-label::after {
+    content: ':';
+    padding-left: 0.1em;
+  }
+
+  .build-value {
+    color: hsl(var(--primary));
+  }
+
+  .build-sep {
+    opacity: 0.5;
+  }
+
+  .build-colophon {
+    text-transform: none;
+    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .build-colophon em {
+    font-style: normal;
+    color: hsl(var(--foreground));
   }
 </style>

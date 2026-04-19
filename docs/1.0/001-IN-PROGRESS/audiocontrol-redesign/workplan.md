@@ -34,35 +34,39 @@
 
 ### Phase 1: Design Foundation — Tokens, Brand, Layout
 
+**Status:** Complete (commit `c1bc552`, issue #80)
+
 **Deliverable:** New design tokens, brand config, and base Layout.astro with the redesigned visual foundation
 
-- [ ] Use `/frontend-design` to explore and select a display typeface for the audiocontrol domain
-- [ ] Update `brand.ts` with new display typeface, refined color palette
-- [ ] Update `design-tokens.css` with new palette, typographic utilities (rules, measures, atmospheric effects)
-- [ ] Update `Layout.astro` with new font loading, global styles, background atmosphere
-- [ ] Verify all existing pages render correctly with the new foundation
+- [x] Select display typeface — **Departure Mono** (SIL OFL, Apollo-era pixel mono) for wordmark + h1/h2 + panel labels; **IBM Plex Sans** for body + h3+
+- [x] Update `brand.ts` with new display typeface and warm Service-Manual palette (warm ink bg, phosphor amber primary, Roland-blue accent)
+- [x] Update `design-tokens.css` with new palette and full utility set (rules, panel labels, dimension bracket, signal LED, phosphor text, ticker, scanlines, grain, vignette)
+- [x] Update `Layout.astro` with self-hosted font preloads, heading stack, atmosphere classes on body, z-indexed content stacking
+- [x] Verify all existing pages render correctly (home, blog index, blog post, device page, docs, mobile)
 
 **Acceptance Criteria:**
-- New display typeface is loaded and applied to headings
-- Color palette has warmth and atmosphere (not flat solid background)
-- Design tokens include rule utilities, section markers, and atmospheric effects
-- All existing pages render without breakage
+- [x] New display typeface is loaded and applied to headings
+- [x] Color palette has warmth and atmosphere (not flat solid background)
+- [x] Design tokens include rule utilities, section markers, and atmospheric effects
+- [x] All existing pages render without breakage
 
 ### Phase 2: Header, Footer, Navigation
 
+**Status:** Complete (issue #81)
+
 **Deliverable:** Redesigned header with coherent wordmark and working mobile nav, informative footer
 
-- [ ] Use `/frontend-design` to redesign the Header component with new wordmark and mobile navigation
-- [ ] Use `/frontend-design` to redesign the Footer as an informative colophon
-- [ ] Update Logo.astro with a coherent wordmark treatment using the display typeface
-- [ ] Ensure mobile navigation is functional (not hidden)
-- [ ] Add scroll-responsive header behavior matching editorialcontrol's quality
+- [x] Redesign Header component with Departure Mono wordmark, amber signal-LED indicator, `SIG: LIVE` panel-label meta, underline-on-hover nav, scroll-compress
+- [x] Redesign Footer as four-column colophon (Mark / Projects / Sibling / Community) with build panel-label bottom row
+- [x] Rewrite Logo.astro: retires 80s-neon pixel-art alien; new `indicator` (pulsing amber LED) and `glyph` (5x5 amber "A" monogram) variants fit the instrumentation aesthetic
+- [x] Mobile hamburger toggle: animated bars → X, aria-expanded, Escape/link-click close, stacks nav below header
+- [x] Scroll-responsive header: padding compresses and tagline collapses above 10px scroll
 
 **Acceptance Criteria:**
-- Wordmark uses the display typeface and feels coherent with the site
-- Mobile navigation is accessible and functional
-- Footer includes project links, sibling site, community channels
-- Header contracts on scroll with smooth transitions
+- [x] Wordmark uses the display typeface and feels coherent with the site
+- [x] Mobile navigation is accessible and functional
+- [x] Footer includes project links, sibling site, community channels
+- [x] Header contracts on scroll with smooth transitions
 
 ### Phase 3: Homepage Redesign
 
