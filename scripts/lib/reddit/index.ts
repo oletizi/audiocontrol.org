@@ -1,7 +1,9 @@
 export {
   loadConfig,
+  parseConfig,
   buildUserAgent,
   type RedditConfig,
+  type SiteRedditConfig,
 } from './config.js';
 
 export {

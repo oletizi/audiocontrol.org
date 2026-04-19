@@ -29,7 +29,7 @@ Accepts `--site <slug>` (default: `audiocontrol`). Valid sites: `audiocontrol`, 
 7. **Split into shared vs unshared**:
    - `shared = alreadyShared(candidates, calendar.distributions.filter(d => d.slug === slug && d.platform === 'reddit'))`
    - `unshared = diffShared(candidates, those same distributions)`
-8. **Enrich unshared candidates** with subreddit metadata. For each candidate, call `getSubredditInfo(candidate.channel)` from `scripts/lib/reddit/client.ts`. Wrap each call in a try/catch — Reddit API may rate-limit, sub may be private, sub may not exist — and fall through with a `(enrichment failed)` marker rather than aborting the whole skill.
+8. **Enrich unshared candidates** with subreddit metadata. For each candidate, call `getSubredditInfo(site, candidate.channel)` from `scripts/lib/reddit/client.ts`. Wrap each call in a try/catch — Reddit API may rate-limit, sub may be private, sub may not exist — and fall through with a `(enrichment failed)` marker rather than aborting the whole skill. The `site` argument resolves the User-Agent username from the site-keyed Reddit config.
 9. **Report** in the format below.
 
 ## Report Format
@@ -57,6 +57,6 @@ Curated notes:
 
 - **The "Already shared" section must always be shown first and visually distinct** (the "DO NOT DUPLICATE" label). The whole point of this skill is to prevent the user from cross-posting to the same subreddit twice.
 - Channel comparison is case-insensitive and normalized — `r/SynthDIY`, `/r/synthdiy`, and `https://reddit.com/r/SynthDIY/` all collapse to the same key. Use `normalizeChannel` from `scripts/lib/editorial/channels.ts` when in doubt.
-- If Reddit credentials are not configured (`~/.config/audiocontrol/reddit.json` missing), degrade gracefully: skip the enrichment step and report candidates without subscriber counts. Do not fail the whole skill.
+- If Reddit credentials for the target site are not configured (file missing, or no entry for `--site`), degrade gracefully: skip the enrichment step and report candidates without subscriber counts. Do not fail the whole skill. If the file uses the old flat schema, `loadConfig` throws a migration hint — surface that to the user so they know to update the file.
 - This skill is **read-only**. It does not add distribution records — the user records shares via `/editorial-distribute` or `/editorial-reddit-sync`.
 - If the post's topics aren't in the curated file at all, report `(no candidates — topics X, Y not found in docs/editorial-channels-<site>.json)` and optionally suggest the user adds them.

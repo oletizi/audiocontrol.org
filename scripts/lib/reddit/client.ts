@@ -16,6 +16,7 @@
  */
 
 import { loadConfig, buildUserAgent } from './config.js';
+import type { Site } from '../editorial/types.js';
 
 const REDDIT_PUBLIC_BASE = 'https://www.reddit.com';
 
@@ -97,8 +98,8 @@ function toIsoDate(createdUtc: number): string {
   return new Date(createdUtc * 1000).toISOString().slice(0, 10);
 }
 
-async function redditPublicGet<T>(path: string): Promise<T> {
-  const config = loadConfig();
+async function redditPublicGet<T>(site: Site, path: string): Promise<T> {
+  const config = loadConfig(site);
   const userAgent = buildUserAgent(config.username);
 
   const url = new URL(`${REDDIT_PUBLIC_BASE}${path}`);
@@ -124,16 +125,19 @@ async function redditPublicGet<T>(path: string): Promise<T> {
 }
 
 /**
- * List the configured user's recent submissions (link + self posts).
+ * List the configured user's recent submissions (link + self posts) for a
+ * given site's Reddit account.
  *
  * Pages through `.json` listings until `limit` is reached or Reddit runs
- * out of results. If `username` is omitted we read it from the config file.
+ * out of results. The username is resolved from the site-keyed config; to
+ * hit a different username without touching config, pass `usernameOverride`.
  */
 export async function getUserSubmissions(
-  username?: string,
+  site: Site,
   limit: number = 100,
+  usernameOverride?: string,
 ): Promise<RedditSubmission[]> {
-  const effectiveUser = username ?? loadConfig().username;
+  const effectiveUser = usernameOverride ?? loadConfig(site).username;
   const results: RedditSubmission[] = [];
   let after: string | null = null;
 
@@ -142,7 +146,7 @@ export async function getUserSubmissions(
     const afterParam = after ? `&after=${after}` : '';
     const path: string = `/user/${encodeURIComponent(effectiveUser)}/submitted.json?limit=${pageSize}${afterParam}`;
     const listing: Listing<RedditSubmissionRaw> =
-      await redditPublicGet<Listing<RedditSubmissionRaw>>(path);
+      await redditPublicGet<Listing<RedditSubmissionRaw>>(site, path);
     const children = listing.data.children;
     if (children.length === 0) break;
 
@@ -185,11 +189,18 @@ function extractSelfPromoHints(...texts: Array<string | undefined>): string[] {
   return [...hits];
 }
 
-/** Fetch subscriber count and self-promo hints for a subreddit via /r/<name>/about.json. */
-export async function getSubredditInfo(name: string): Promise<SubredditInfo> {
+/**
+ * Fetch subscriber count and self-promo hints for a subreddit via
+ * /r/<name>/about.json. `site` is used to build the User-Agent from that
+ * site's configured Reddit username (Reddit requires a descriptive UA).
+ */
+export async function getSubredditInfo(
+  site: Site,
+  name: string,
+): Promise<SubredditInfo> {
   const normalized = name.replace(/^\/?r\//i, '').replace(/\/$/, '');
   const path = `/r/${encodeURIComponent(normalized)}/about.json`;
-  const response = await redditPublicGet<{ data: SubredditAboutRaw }>(path);
+  const response = await redditPublicGet<{ data: SubredditAboutRaw }>(site, path);
   const data = response.data;
   return {
     name: canonicalSubreddit(data.display_name),

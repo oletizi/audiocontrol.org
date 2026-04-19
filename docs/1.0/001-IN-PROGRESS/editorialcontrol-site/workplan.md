@@ -138,13 +138,15 @@
 
 **Deliverable:** editorialcontrol.org has its own Reddit sync working end-to-end. Distribution records flow into its calendar.
 
-- [ ] Decide on a brand-aligned Reddit username and register the account
-- [ ] Update `scripts/lib/reddit/config.ts` to support site-keyed credential lookup
-- [ ] Update `reddit.json` schema (site-keyed structure)
-- [ ] Update `/editorial-reddit-sync` and `/editorial-reddit-opportunities` to resolve the right username per site
-- [ ] Seed the editorialcontrol Reddit account with at least one promotional share (to have data for first sync)
-- [ ] Run `/editorial-reddit-sync --site=editorialcontrol` and confirm attribution
-- [ ] Finalize the subreddit list in `editorial-channels-editorialcontrol.json`
+- [ ] Decide on a brand-aligned Reddit username and register the account (user task, in progress)
+- [x] Update `scripts/lib/reddit/config.ts` — `parseConfig(raw)` + `loadConfig(site, configPath?)` with `SITES` allowlist and forward-compatible parsing of unknown site keys
+- [x] `reddit.json` schema is now site-keyed: `{ "audiocontrol": {"username": "..."}, "editorialcontrol": {"username": "..."} }`; old flat schema rejected with an explicit migration error pointing to the new shape
+- [x] `getUserSubmissions(site, limit, usernameOverride?)` and `getSubredditInfo(site, name)` take a Site parameter; `redditPublicGet(site, path)` resolves User-Agent per site
+- [x] `/editorial-reddit-sync` and `/editorial-reddit-opportunities` SKILL.md updated: site-keyed prerequisites section, `loadConfig(site)` described, `getUserSubmissions(site, 200)` / `getSubredditInfo(site, ...)` call patterns
+- [x] Unit tests: `test/reddit/config.test.ts` covers parseConfig (both sites, single site, whitespace trim, migration error, malformed JSON, wrong top-level type, missing username, forward-compat with unknown site keys), loadConfig (filesystem path override for tests, missing file, missing-site error with currently-configured sites listed, old-schema pass-through), and buildUserAgent
+- [ ] Seed the editorialcontrol Reddit account with at least one promotional share (requires account)
+- [ ] Run `/editorial-reddit-sync --site=editorialcontrol` and confirm attribution (requires account + seed)
+- [ ] Finalize the subreddit list in `editorial-channels-editorialcontrol.json` (current curated list of 6 topics will iterate after first real sync feedback)
 
 **Acceptance Criteria:**
 - `/editorial-reddit-sync --site=editorialcontrol` runs clean and attributes at least one submission

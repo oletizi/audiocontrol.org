@@ -17,7 +17,7 @@ Stand up editorialcontrol.org as a sibling site to audiocontrol.org. One repo, t
 | 2 | Multi-site editorial calendar library | Implementation complete |
 | 3 | editorialcontrol branding + core pages | Implementation complete |
 | 4 | Content migration (2 posts) | Implementation complete (feature images + cross-link review deferred) |
-| 5 | Reddit / distribution (multi-account) | Not Started |
+| 5 | Reddit / distribution (multi-account) | Code plumbing complete; account + seed + first sync pending (Orion) |
 | 6 | Launch (DNS + HTTPS + sitemap) | Not Started |
 
 ## Dependencies

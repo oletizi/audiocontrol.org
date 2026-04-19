@@ -10,15 +10,20 @@ Query the Reddit API for the configured user's recent submissions, match each to
 
 ## Site
 
-Accepts `--site <slug>` (default: `audiocontrol`). Valid sites: `audiocontrol`, `editorialcontrol`. The site determines the calendar file and — more importantly — the **host** used to match submission URLs (`audiocontrol.org` vs `editorialcontrol.org`). Per-site Reddit username / credential lookup is a Phase 5 concern; until then the shared `~/.config/audiocontrol/reddit.json` is used for both sites. Unknown `--site` values error.
+Accepts `--site <slug>` (default: `audiocontrol`). Valid sites: `audiocontrol`, `editorialcontrol`. The site determines the calendar file, the **host** used to match submission URLs (`audiocontrol.org` vs `editorialcontrol.org`), and the **Reddit username** that gets queried (per-site via the site-keyed Reddit config). Unknown `--site` values error.
 
 ## Prerequisites
 
-`~/.config/audiocontrol/reddit.json` must exist with **one** field — your Reddit username:
+`~/.config/audiocontrol/reddit.json` must exist with a site-keyed schema:
 
 ```json
-{ "username": "your-reddit-username" }
+{
+  "audiocontrol":    { "username": "your-audiocontrol-reddit-handle" },
+  "editorialcontrol": { "username": "your-editorialcontrol-reddit-handle" }
+}
 ```
+
+Only the site you're syncing needs to be present. Running with `--site=editorialcontrol` will fail with a clear error if there's no `editorialcontrol` entry. The old flat schema (`{ "username": "..." }`) is also rejected with an explicit migration hint — no silent fallback.
 
 That's the entire setup. No Reddit app, no password, no OAuth, no 2FA concerns. We use Reddit's public `.json` endpoints — they're rate-limited but more than sufficient for periodic sync.
 
@@ -27,7 +32,7 @@ If the file is missing, the skill throws with a clear error telling the user how
 ## Steps
 
 1. **Resolve site** via `assertSite()` and derive `host = siteHost(site)`.
-2. **Fetch submissions**: call `getUserSubmissions(undefined, 200)` from `scripts/lib/reddit/client.ts` — reads the username from config and returns up to 200 of the user's most recent submissions. No authentication step.
+2. **Fetch submissions**: call `getUserSubmissions(site, 200)` from `scripts/lib/reddit/client.ts` — resolves the site's username via `loadConfig(site)` and returns up to 200 of that user's most recent submissions. No authentication step.
 3. **Read the calendar** via `readCalendar(process.cwd(), site)`.
 4. **Match each submission to a Published calendar entry**:
    - **Blog match**: submission `url` or `selftext` contains `<host>/blog/<slug>/` where `<slug>` exists as a Published blog entry for this site. Extract the slug using `slugFromBlogUrl(url, host)`.
