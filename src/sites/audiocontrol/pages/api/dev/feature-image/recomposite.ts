@@ -7,13 +7,18 @@ import { bakeVariants, formatDims, type BakeVariant } from '../../../../../../..
 import {
   type Site,
   resolveSite,
-  getPublicDir,
+  getGalleryPublicDir,
 } from '../../../../../../../scripts/feature-image/sites.js';
 
 export const prerender = false;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, '..', '..', '..', '..', '..', '..', '..');
+
+// Scratch output always lands in the gallery's host site publicDir so the
+// dev server can serve what it just wrote. See sites.ts GALLERY_HOST_SITE.
+const GALLERY_PUBLIC_DIR = getGalleryPublicDir(rootDir);
+const DEFAULT_OUTPUT = join(GALLERY_PUBLIC_DIR, 'images', 'generated');
 
 type Format = 'og' | 'youtube' | 'instagram';
 
@@ -31,12 +36,8 @@ interface RecompositeBody {
   site?: string;
 }
 
-function outputDirFor(site: Site): string {
-  return join(getPublicDir(site, rootDir), 'images', 'generated');
-}
-
-function toPublicPath(absolutePath: string, site: Site): string {
-  const publicDirPrefix = getPublicDir(site, rootDir) + '/';
+function toPublicPath(absolutePath: string): string {
+  const publicDirPrefix = GALLERY_PUBLIC_DIR + '/';
   if (absolutePath.startsWith(publicDirPrefix)) {
     return '/' + absolutePath.slice(publicDirPrefix.length);
   }
@@ -83,7 +84,6 @@ export const POST: APIRoute = async ({ request, url }) => {
 
   // Site resolves from: explicit override in body > source entry's site > default.
   const site: Site = resolveSite(body.site, resolveSite(source.site));
-  const DEFAULT_OUTPUT = outputDirFor(site);
 
   const id = randomUUID();
   const baseName = body.baseName ?? id.slice(0, 8);
@@ -133,10 +133,10 @@ export const POST: APIRoute = async ({ request, url }) => {
 
     const composited = variants
       .filter(v => v.overlay)
-      .map(v => ({ provider: 'dom', format: v.format, path: toPublicPath(v.outputPath, site) }));
+      .map(v => ({ provider: 'dom', format: v.format, path: toPublicPath(v.outputPath) }));
     const filtered = variants
       .filter(v => !v.overlay)
-      .map(v => toPublicPath(v.outputPath, site));
+      .map(v => toPublicPath(v.outputPath));
 
     const entry: LogEntry = {
       id,

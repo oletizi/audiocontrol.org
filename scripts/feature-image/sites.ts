@@ -51,6 +51,19 @@ export function getPublicDir(site: Site, repoRoot: string): string {
 }
 
 /**
+ * The publicDir the dev-only gallery is served from. Scratch generation
+ * output lives here regardless of the target site because the gallery page
+ * can only serve files from a single site's public tree (it lives under
+ * audiocontrol). The `site` dimension is persisted on LogEntry and only
+ * affects where /feature-image-apply copies approved files (into the
+ * correct site's public/images/blog/<slug>/ tree).
+ */
+export const GALLERY_HOST_SITE: Site = 'audiocontrol';
+export function getGalleryPublicDir(repoRoot: string): string {
+  return getPublicDir(GALLERY_HOST_SITE, repoRoot);
+}
+
+/**
  * Infer a site from a source-file path. Looks for `src/sites/<site>/`.
  * Used by /feature-image-blog to pick up the site from a post path.
  */

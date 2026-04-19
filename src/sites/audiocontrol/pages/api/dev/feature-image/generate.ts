@@ -12,7 +12,7 @@ import {
   type Site,
   DEFAULT_SITE,
   resolveSite,
-  getPublicDir,
+  getGalleryPublicDir,
 } from '../../../../../../../scripts/feature-image/sites.js';
 
 export const prerender = false;
@@ -21,20 +21,24 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // src/sites/audiocontrol/pages/api/dev/feature-image → repo root is 7 levels up
 const rootDir = join(__dirname, '..', '..', '..', '..', '..', '..', '..');
 
-function outputDirFor(site: Site): string {
-  return join(getPublicDir(site, rootDir), 'images', 'generated');
-}
+// Scratch generation output always lands in the gallery's host site
+// publicDir so the dev server can actually serve the files it just wrote.
+// The `site` dimension on LogEntry captures target-brand intent;
+// /feature-image-apply routes COPIES into the correct per-site tree when
+// the user approves.
+const GALLERY_PUBLIC_DIR = getGalleryPublicDir(rootDir);
+const DEFAULT_OUTPUT = join(GALLERY_PUBLIC_DIR, 'images', 'generated');
 
-function toPublicPath(absolutePath: string, site: Site): string {
-  const publicDirPrefix = getPublicDir(site, rootDir) + '/';
+function toPublicPath(absolutePath: string): string {
+  const publicDirPrefix = GALLERY_PUBLIC_DIR + '/';
   if (absolutePath.startsWith(publicDirPrefix)) {
     return '/' + absolutePath.slice(publicDirPrefix.length);
   }
   return absolutePath;
 }
 
-function toPublicPaths(paths: string[], site: Site): string[] {
-  return paths.map(p => toPublicPath(p, site));
+function toPublicPaths(paths: string[]): string[] {
+  return paths.map(toPublicPath);
 }
 
 interface GenerateBody {
@@ -82,7 +86,7 @@ export const POST: APIRoute = async ({ request }) => {
   const site: Site = resolveSite(body.site);
   const id = randomUUID();
   const baseName = body.baseName ?? id.slice(0, 8);
-  const outputDir = body.outputDir ?? outputDirFor(site);
+  const outputDir = body.outputDir ?? DEFAULT_OUTPUT;
 
   const startedAt = new Date().toISOString();
   try {
@@ -114,12 +118,12 @@ export const POST: APIRoute = async ({ request }) => {
       formats: body.formats,
       outputDir,
       outputs: {
-        raw: toPublicPaths(result.raw, site),
-        filtered: toPublicPaths(result.filtered, site),
+        raw: toPublicPaths(result.raw),
+        filtered: toPublicPaths(result.filtered),
         composited: result.composited.map(c => ({
           provider: c.provider,
           format: c.format,
-          path: toPublicPath(c.path, site),
+          path: toPublicPath(c.path),
         })),
       },
       durationMs: result.durationMs,
