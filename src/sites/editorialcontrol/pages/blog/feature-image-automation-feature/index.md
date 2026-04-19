@@ -11,9 +11,9 @@ tags: ["AI", "Automation", "Design", "Workflow"]
 
 # Your Brand Survives the First Generation. Does It Survive the Hundredth?
 
-The site you're reading was designed by Claude Code. The feature images on it weren't — not because the generator can't make them, but because generation alone doesn't hold a brand together across a hundred posts.
+The site you're reading was designed by Claude Code. The feature images on it weren't — not because an image model can't make them, but because generation alone doesn't hold a brand together across a hundred posts. (Claude Code doesn't generate images natively; the pipeline here calls DALL-E 3 or FLUX from inside a Claude Code skill.)
 
-Most posts about AI-generated feature images stop at the generator: pick a model, write a prompt, get an image. That works for the first image. By the twentieth, the set has drifted. By the hundredth, every image is individually plausible, and the set doesn't hang together — there's no visual identity left to drift from.
+Ask an image model for a feature image and you'll get something usable. Ask it twenty times across twenty posts and the set starts to drift. By the hundredth image, every one is individually plausible, and the set doesn't hang together — there's no visual identity left to drift from.
 
 Two pieces of infrastructure are missing from the usual workflow. A human gate cheap enough to actually use, so the best generation gets picked instead of the first acceptable one. And a design system that gets sharper every time you use it, so the set converges toward a visual language instead of drifting away from one.
 
@@ -62,16 +62,20 @@ No database. No framework. Just Astro, two server endpoints that 404 in prod, an
 
 Two JSONL files back the whole thing, checked into the repo:
 
-- `.feature-image-history.jsonl` — every generation ever run. One line per record. The raw audit log, and the substrate fitness scores are computed from.
+- `.feature-image-history.jsonl` — every generation ever run. One line per record. The raw audit log, and the substrate that fitness scores are computed from.
 - `.feature-image-pipeline.jsonl` — workflow items with state transitions. One record per state change.
 
-Every workflow item moves through four states:
+The whole state machine is a TypeScript union:
 
-```
-open → decided → applied | cancelled
+```typescript
+export type WorkflowState =
+  | 'open'       // agent has enqueued; user is iterating
+  | 'decided'    // user has picked an approved generation
+  | 'applied'    // agent has wired it into the post
+  | 'cancelled';
 ```
 
-`open` means the agent has enqueued a post and I'm expected to iterate and pick one. `decided` means I've marked an approved generation for this workflow. `applied` means `/feature-image-apply` has copied the image, updated frontmatter, and wired the blog index card.
+Each line of `.feature-image-pipeline.jsonl` is a `WorkflowItem` keyed to one of those states, appended on every transition.
 
 Why files instead of a database: zero infrastructure, inspectable with `tail -f` and `jq`, the schema is a TypeScript type, and rewriting history is `git`. But the load-bearing reason is that these files are the substrate the library learns from — losing them would mean losing the selection history. Version control makes that hard to do by accident.
 
@@ -103,22 +107,10 @@ And the library has a second property the rest of the system doesn't: it gets sh
 
 The generator, the gate, and the library are all running. The JSONL audit log and the workflow state machine are running. Rating, fitness scoring, and weighted suggestion are running. The skills are in use.
 
-What isn't: the library is young. The fitness scores are based on a few dozen generations, not a few thousand. Convergence is a claim about where this goes, not a claim about where it is. The older feature images on this site are still the old, hand-made ones. New posts go through the pipeline. Somewhere between the two is where the system has to prove out — not by making me a designer, but by making "not a designer" good enough.
+What isn't yet: the library is young. Fitness scores are based on a few dozen generations, not a few thousand. Convergence is a claim about where this goes, not a claim about where it is.
 
 ## Why this matters beyond feature images
 
-The pattern generalizes. For any AI-assisted workflow where output is high-variance and the human can't articulate the target in advance, three pieces are load-bearing: a generator, a gate cheap enough to actually use, and a population of parameterizations under selection pressure. The generator is the easy part. The gate and the library are the missing infrastructure. Build those, and a fourth thing happens on its own: the system gets sharper without anyone having to plan for it.
+The pattern generalizes past images. Any creative identity that has to survive across many AI-assisted sessions — voice, tone, house style, visual language — has the same shape of problem: per-session quality is a different job than cross-session coherence, and no amount of better prompting at the point of use will fix the second one. Feature images are one instance. Headline style is another. An editorial voice, kept recognizable across a hundred posts written with AI assistance, is another.
 
-## Show our work
-
-The `WorkflowState` union is the whole state machine:
-
-```typescript
-export type WorkflowState =
-  | 'open'       // agent has enqueued; user is iterating
-  | 'decided'    // user has picked an approved generation
-  | 'applied'    // agent has wired it into the post
-  | 'cancelled';
-```
-
-Each line of `.feature-image-pipeline.jsonl` is a `WorkflowItem` keyed to one of those states, appended on every transition. The full `WorkflowItem` interface, the `SKILL.md` files, and the pipeline module are available as gists on request.
+The load-bearing pieces are the same every time: a generator, a gate cheap enough to actually use, and a population of parameterizations under selection pressure. The generator is the easy part. The gate and the library are the missing infrastructure. Build those, and a fourth thing happens on its own — the system gets sharper without anyone having to plan for it.
