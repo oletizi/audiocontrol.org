@@ -30,6 +30,15 @@ templates:
     preset: retro-crt
     provider: flux
     examples: []
+  - slug: cubiste-nouveau
+    name: cubiste-nouveau
+    description: Um... when you want something abstract and intersting, with a cubist meets art nouveau flavor
+    tags: []
+    prompt: Irregular cluster of geometric panels at varied scales and orientations — a loose population of candidates under selection pressure, not arranged on a grid. Flat vector style with subtle gradients. Muted palette of deep indigo, teal, and warm off-white. Organic spacing, overlapping shapes at slight angles, some panels fading at their edges. Minimal lines, no text, no literal machinery or AI imagery. Slight grain texture. Evokes iteration, refinement, and organic variation without being on-the-nose.
+    preset: retro-crt
+    provider: dom-bake
+    examples:
+      - 9e1b865a-1e2a-49e0-b45b-8b9e0007e445
   - slug: data-packet-network
     name: Data Packet Network
     description: Layered translucent data packets flowing through a wireframe node network. Suggests investigation, protocol analysis, signal tracing. Good for debugging, reverse engineering, networking, and protocol deep-dive posts.
