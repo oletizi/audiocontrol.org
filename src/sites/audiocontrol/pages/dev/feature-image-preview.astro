@@ -2,6 +2,8 @@
 export const prerender = false;
 
 import { PRESETS, FILTER_REGISTRY } from '../../../../../scripts/feature-image/filters/index.js';
+import { brand as audiocontrolBrand } from '../../brand.js';
+import { brand as editorialcontrolBrand } from '../../../editorialcontrol/brand.js';
 import '../../styles/og-preview.css';
 
 if (import.meta.env.PROD) {
@@ -10,6 +12,15 @@ if (import.meta.env.PROD) {
 
 const presets = Object.keys(PRESETS);
 const filterNames = Object.keys(FILTER_REGISTRY);
+
+// Brand tokens exposed to the client so live DOM previews can emit the
+// same --og-* custom properties the Astro OGPreview component emits on
+// the bake route. Keeps the preview visually aligned with what the bake
+// will produce.
+const siteBrands = {
+  audiocontrol: audiocontrolBrand,
+  editorialcontrol: editorialcontrolBrand,
+};
 ---
 
 <!doctype html>
@@ -318,6 +329,59 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     .btn-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
     /* ── Template picker ───────────────────────────────────────────────────── */
+    /* Site picker (two-option radio group) */
+    .site-picker-section { display: flex; flex-direction: column; gap: 0.4rem; }
+    .site-picker-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-3);
+    }
+    .site-picker {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+    }
+    .site-option {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.15rem;
+      padding: 0.55rem 0.7rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      color: var(--text-1);
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s;
+      min-width: 0;
+    }
+    .site-option:hover { background: var(--bg-3); border-color: var(--edge-hi); }
+    .site-option.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+      background: rgba(47, 184, 168, 0.06);
+    }
+    .site-option .site-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-0);
+    }
+    .site-option.selected .site-name { color: var(--accent); }
+    .site-option .site-tagline {
+      font-size: 0.65rem;
+      color: var(--text-3);
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
     /* Template picker grid (replaces the old dropdown) */
     .tpl-picker-section { display: flex; flex-direction: column; gap: 0.4rem; }
     .tpl-picker-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
@@ -1294,6 +1358,20 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       <div id="active-wf-banner" style="display: none;"></div>
 
       <form id="gen-form">
+        <div class="site-picker-section">
+          <span class="site-picker-label">Site</span>
+          <div class="site-picker" role="radiogroup" aria-label="Target site">
+            <button type="button" class="site-option" data-site="audiocontrol" role="radio" aria-checked="true" title="audiocontrol.org — Departure Mono / phosphor amber / Roland-blue accent">
+              <span class="site-name">audiocontrol</span>
+              <span class="site-tagline">service-manual / flight-instrumentation</span>
+            </button>
+            <button type="button" class="site-option" data-site="editorialcontrol" role="radio" aria-checked="false" title="editorialcontrol.org — Fraunces serif / chartreuse / parchment cream">
+              <span class="site-name">editorialcontrol</span>
+              <span class="site-tagline">publication-dark / editorial</span>
+            </button>
+          </div>
+        </div>
+
         <div class="tpl-picker-section">
           <div class="tpl-picker-head">
             <span class="tpl-picker-label">Template</span>
@@ -1393,8 +1471,38 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     </div>
   </main>
 
+  <!-- Expose per-site brand tokens to the client JS so live DOM previews
+       can emit the same --og-* custom properties the bake route sees. -->
+  <script id="site-brands" type="application/json" set:html={JSON.stringify(siteBrands)}></script>
+
   <script>
     // ── State ──────────────────────────────────────────────────────────────
+    const SITE_BRANDS = (() => {
+      const el = document.getElementById('site-brands');
+      try { return JSON.parse(el?.textContent || '{}'); } catch { return {}; }
+    })();
+
+    function brandStyle(site) {
+      const b = SITE_BRANDS[site];
+      if (!b) return '';
+      return [
+        `--og-primary: hsl(${b.colors.primary})`,
+        `--og-accent: hsl(${b.colors.accent})`,
+        `--og-foreground: hsl(${b.colors.foreground})`,
+        `--og-muted-foreground: hsl(${b.colors.mutedForeground})`,
+        `--og-background: hsl(${b.colors.background})`,
+        `--og-card: hsl(${b.colors.card})`,
+        `--og-border: hsl(${b.colors.border})`,
+        `--og-font-display: ${b.typography.display}`,
+        `--og-font-body: ${b.typography.body}`,
+        `--og-font-mono: ${b.typography.mono}`,
+      ].join('; ');
+    }
+
+    function brandName(site) {
+      return SITE_BRANDS[site]?.name ?? site;
+    }
+
     const form = document.getElementById('gen-form');
     const genBtn = document.getElementById('gen-btn');
     const genStatusEl = document.getElementById('gen-status');
@@ -1421,6 +1529,35 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     const templateGrid = document.getElementById('template-grid');
     const templateMeta = document.getElementById('template-meta');
     const candidatePills = document.getElementById('candidate-pills');
+
+    // ── Site picker (Phase 14) ─────────────────────────────────────────────
+    // One of 'audiocontrol' | 'editorialcontrol'. Persisted to localStorage
+    // so the last-used site sticks across reloads.
+    let activeSite = localStorage.getItem('fi-active-site') === 'editorialcontrol'
+      ? 'editorialcontrol'
+      : 'audiocontrol';
+
+    function renderSitePicker() {
+      document.querySelectorAll('.site-option').forEach(btn => {
+        const s = btn.dataset.site;
+        const selected = s === activeSite;
+        btn.classList.toggle('selected', selected);
+        btn.setAttribute('aria-checked', selected ? 'true' : 'false');
+      });
+    }
+
+    function setActiveSite(site) {
+      activeSite = site === 'editorialcontrol' ? 'editorialcontrol' : 'audiocontrol';
+      localStorage.setItem('fi-active-site', activeSite);
+      renderSitePicker();
+      // Template picker filters by site — re-render if templates are loaded.
+      if (allTemplates.length > 0) renderTemplateGrid();
+    }
+
+    document.querySelectorAll('.site-option').forEach(btn => {
+      btn.addEventListener('click', () => setActiveSite(btn.dataset.site));
+    });
+    renderSitePicker();
 
     // ── Drawers ────────────────────────────────────────────────────────────
     function openDrawer(drawer, other) {
@@ -1551,7 +1688,22 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         return;
       }
 
-      for (const t of allTemplates) {
+      // Filter: show templates whose site matches the active site, plus
+      // templates with no site (work anywhere). Archived templates hidden.
+      const visibleTemplates = allTemplates.filter(t => {
+        if (t.archived) return false;
+        if (!t.site) return true;
+        return t.site === activeSite;
+      });
+
+      if (visibleTemplates.length === 0) {
+        templateGrid.innerHTML = `<div class="tpl-empty">No templates for site <strong>${escapeHtml(activeSite)}</strong> yet. Save an approved entry as a template to seed the library.</div>`;
+        renderTemplateMeta();
+        renderCandidatePills();
+        return;
+      }
+
+      for (const t of visibleTemplates) {
         const card = document.createElement('button');
         card.type = 'button';
         card.className = 'tpl-card';
@@ -2350,6 +2502,9 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       const grain = draft.grain ?? defaults.grain;
       const overlay = draft.overlay ?? 'on';
       const format = draft.format ?? 'og';
+      const site = (draft.site === 'editorialcontrol' || entry.site === 'editorialcontrol')
+        ? 'editorialcontrol'
+        : 'audiocontrol';
 
       const title = (typeof draft.title === 'string' ? draft.title : (entry.title ?? ''));
       const subtitle = (typeof draft.subtitle === 'string' ? draft.subtitle : (entry.subtitle ?? ''));
@@ -2359,7 +2514,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
             ${subtitle ? `<div class="og-subtitle">${escapeHtml(subtitle)}</div>` : ''}
             <div class="og-brand-row">
               <img class="og-logo" src="/favicon.svg" alt="" />
-              <div class="og-brand-text">audiocontrol.org</div>
+              <div class="og-brand-text">${escapeHtml(brandName(site))}</div>
             </div>
           </div>`
         : '';
@@ -2372,7 +2527,9 @@ const filterNames = Object.keys(FILTER_REGISTRY);
              data-scanlines="${escapeAttr(scanlines)}"
              data-grain="${escapeAttr(grain)}"
              data-overlay="${escapeAttr(overlay === true ? 'on' : overlay)}"
-             data-preset="${escapeAttr(preset)}">
+             data-preset="${escapeAttr(preset)}"
+             data-site="${site}"
+             style="${escapeAttr(brandStyle(site))}">
           <img class="og-bg" src="${escapeAttr(rawPath)}?t=${Date.now()}" alt="" loading="lazy" />
           <div class="og-layer og-vignette"></div>
           <div class="og-layer og-scanlines"></div>
@@ -2724,6 +2881,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       const f = PRESET_FILTERS[preset];
       const title = entry.title ?? '';
       const subtitle = entry.subtitle ?? '';
+      const site = entry.site === 'editorialcontrol' ? 'editorialcontrol' : 'audiocontrol';
       return `
         <div class="live-preview">
           <div class="og-preview editable"
@@ -2734,7 +2892,9 @@ const filterNames = Object.keys(FILTER_REGISTRY);
                data-scanlines="${f.scanlines}"
                data-grain="${f.grain}"
                data-overlay="on"
-               data-preset="${preset}">
+               data-preset="${preset}"
+               data-site="${site}"
+               style="${escapeAttr(brandStyle(site))}">
             <img class="og-bg" src="${escapeAttr(rawPath)}" alt="" />
             <div class="og-layer og-vignette"></div>
             <div class="og-layer og-scanlines"></div>
@@ -2744,7 +2904,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
               <textarea class="og-subtitle-input" rows="1" placeholder="Subtitle">${escapeHtml(subtitle)}</textarea>
               <div class="og-brand-row">
                 <img class="og-logo" src="/favicon.svg" alt="" />
-                <div class="og-brand-text">audiocontrol.org</div>
+                <div class="og-brand-text">${escapeHtml(brandName(site))}</div>
               </div>
             </div>
           </div>
@@ -2752,6 +2912,10 @@ const filterNames = Object.keys(FILTER_REGISTRY);
             <div class="control-row">
               <label title="Preview aspect ratio — OG 1200×630, YouTube 1280×720, Instagram 1080×1080"><span>Format</span><select data-ctl="format"><option value="og">og</option><option value="youtube">youtube</option><option value="instagram">instagram</option></select></label>
               <label title="Preset sets all filter values at once; individual selectors below override"><span>Preset</span><select data-ctl="preset">${Object.keys(PRESET_FILTERS).map(n => `<option value="${n}"${n === preset ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+              <label title="Bake with this site's brand (fonts, palette, logo text). Switch to explore the same raw image under a different brand."><span>Site</span><select data-ctl="site">
+                <option value="audiocontrol"${site === 'audiocontrol' ? ' selected' : ''}>audiocontrol</option>
+                <option value="editorialcontrol"${site === 'editorialcontrol' ? ' selected' : ''}>editorialcontrol</option>
+              </select></label>
               <label class="cb" title="Show or hide the title/subtitle/brand overlay panel"><input type="checkbox" data-ctl="overlay" checked /> Overlay</label>
             </div>
             <div class="control-row">
@@ -2803,6 +2967,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         scanlines: previewEl.dataset.scanlines,
         grain: previewEl.dataset.grain,
         overlay: previewEl.dataset.overlay,
+        site: previewEl.dataset.site,
         allFormats: !!(allFormatsCb && allFormatsCb.checked),
       };
     }
@@ -2813,7 +2978,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       const subtitleEl = previewEl.querySelector('.og-subtitle-input');
       if (titleEl && typeof draft.title === 'string') titleEl.value = draft.title;
       if (subtitleEl && typeof draft.subtitle === 'string') subtitleEl.value = draft.subtitle;
-      const keys = ['format', 'preset', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay'];
+      const keys = ['format', 'preset', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay', 'site'];
       for (const k of keys) {
         if (draft[k] !== undefined) {
           previewEl.dataset[k] = draft[k];
@@ -2821,6 +2986,16 @@ const filterNames = Object.keys(FILTER_REGISTRY);
           if (sel && sel.tagName === 'SELECT') sel.value = draft[k];
           if (sel && sel.type === 'checkbox') sel.checked = draft[k] === 'on' || draft[k] === true;
         }
+      }
+      // If draft restored a different site, re-emit brand tokens inline.
+      if (typeof draft.site === 'string') {
+        const site = draft.site === 'editorialcontrol' ? 'editorialcontrol' : 'audiocontrol';
+        const style = brandStyle(site);
+        const existing = previewEl.getAttribute('style') || '';
+        const withoutBrand = existing.split(';').filter(s => !s.trim().startsWith('--og-')).join(';').trim();
+        previewEl.setAttribute('style', withoutBrand + (withoutBrand ? '; ' : '') + style);
+        const nameEl = previewEl.querySelector('.og-brand-text');
+        if (nameEl) nameEl.textContent = brandName(site);
       }
       const allFormatsCb = controls.querySelector('[data-ctl="all-formats"]');
       if (allFormatsCb && typeof draft.allFormats === 'boolean') allFormatsCb.checked = draft.allFormats;
@@ -2867,6 +3042,19 @@ const filterNames = Object.keys(FILTER_REGISTRY);
               if (sel) sel.value = f[k];
             }
           } else if (ctl === 'overlay') previewEl.dataset.overlay = el.checked ? 'on' : 'off';
+          else if (ctl === 'site') {
+            const site = el.value === 'editorialcontrol' ? 'editorialcontrol' : 'audiocontrol';
+            previewEl.dataset.site = site;
+            // Re-emit the inline brand custom properties so fonts/colors swap live.
+            const style = brandStyle(site);
+            // Preserve any non-brand inline styles (e.g. width/height).
+            const existing = previewEl.getAttribute('style') || '';
+            const withoutBrand = existing.split(';').filter(s => !s.trim().startsWith('--og-')).join(';').trim();
+            previewEl.setAttribute('style', withoutBrand + (withoutBrand ? '; ' : '') + style);
+            // Update the brand-text footer to the new site name.
+            const nameEl = previewEl.querySelector('.og-brand-text');
+            if (nameEl) nameEl.textContent = brandName(site);
+          }
           else if (filterCtls.includes(ctl)) previewEl.dataset[ctl] = el.value;
           persistDraft();
         });
@@ -2888,6 +3076,9 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       for (const k of ['grade', 'phosphor', 'vignette', 'scanlines', 'grain']) filters[k] = previewEl.dataset[k];
       const allFormatsCb = controls.querySelector('[data-ctl="all-formats"]');
       const formats = allFormatsCb && allFormatsCb.checked ? ['og', 'youtube', 'instagram'] : [previewEl.dataset.format || 'og'];
+      // Let the focused-mode site switcher on the preview override the
+      // entry's inherited site; fall back to entry.site or activeSite.
+      const site = previewEl.dataset.site || entry.site || activeSite;
 
       commitBtn.disabled = true;
       statusEl.textContent = 'Baking…';
@@ -2896,7 +3087,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         const res = await fetch('/api/dev/feature-image/recomposite', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ sourceEntryId: entry.id, title, subtitle, preset, filters, overlay, formats }),
+          body: JSON.stringify({ sourceEntryId: entry.id, title, subtitle, preset, filters, overlay, formats, site }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || `status ${res.status}`);
@@ -2979,6 +3170,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       if (entry.title) document.getElementById('title').value = entry.title;
       if (entry.subtitle) document.getElementById('subtitle').value = entry.subtitle;
       if (entry.formats) document.getElementById('formats').value = entry.formats;
+      if (entry.site) setActiveSite(entry.site);
       document.querySelectorAll('input[name=filters]').forEach(cb => { cb.checked = false; });
       if (entry.filters && !entry.preset) {
         const picks = entry.filters.split(',').map(s => s.trim());
@@ -3003,6 +3195,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         subtitle: (formData.get('subtitle') || '').toString().trim() || undefined,
         formats: (formData.get('formats') || 'og').toString(),
         templateSlug: activeTemplate?.slug,
+        site: activeSite,
       };
       if (!body.prompt) {
         genStatusEl.textContent = 'Prompt is required.';
