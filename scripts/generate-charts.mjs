@@ -3,7 +3,7 @@ import { writeFileSync, mkdirSync } from "fs";
 
 const width = 800;
 const height = 480;
-const outDir = "public/images/blog/claude-vs-codex";
+const outDir = "src/sites/audiocontrol/public/images/blog/claude-vs-codex";
 mkdirSync(outDir, { recursive: true });
 
 const chartJSNodeCanvas = new ChartJSNodeCanvas({

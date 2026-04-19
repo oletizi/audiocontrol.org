@@ -1,0 +1,139 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Contact — editorialcontrol.org"
+  description="How to write to the editor."
+>
+  <section class="contact site-container">
+    <p class="kicker">Contact</p>
+    <h1 class="contact-title">
+      Write in.
+    </h1>
+
+    <hr class="rule-accent" />
+
+    <div class="contact-body">
+      <p class="contact-lede">
+        For letters to the editor, tips, corrections, or "you should write about this":
+      </p>
+
+      <a class="contact-email" href="mailto:orion@audiocontrol.org?subject=editorialcontrol">
+        orion@audiocontrol.org
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+
+      <p class="contact-note">
+        I answer everything, though sometimes slowly. If you want to be on the dispatch
+        list for new issues, say so in the subject line and I'll add you by hand.
+      </p>
+
+      <hr class="rule-single" />
+
+      <p class="contact-meta">
+        The publication's sibling is <a href="https://audiocontrol.org">audiocontrol.org</a>.
+        Anything about samplers, SCSI, or vintage audio hardware belongs there.
+      </p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .contact {
+    padding-top: 4rem;
+    padding-bottom: 6rem;
+    max-width: 44rem;
+  }
+
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    margin: 0 0 1rem 0;
+  }
+
+  .contact-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(3rem, 8vw, 5rem);
+    line-height: 1;
+    margin: 0 0 1.5rem 0;
+    color: hsl(var(--foreground));
+  }
+
+  .contact-body {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .contact-lede {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-style: italic;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.45;
+  }
+
+  .contact-email {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-family: var(--font-mono);
+    font-size: clamp(1rem, 2.2vw, 1.15rem);
+    color: hsl(var(--primary));
+    padding: 0.75rem 1.1rem;
+    border: 1px solid hsl(var(--primary) / 0.45);
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    text-decoration: none;
+    margin: 0.5rem 0;
+  }
+
+  .contact-email:hover {
+    background: hsl(var(--primary));
+    color: hsl(var(--background));
+    border-color: hsl(var(--primary));
+    text-decoration: none;
+  }
+
+  .contact-email .arrow {
+    transition: transform 0.18s ease;
+  }
+
+  .contact-email:hover .arrow {
+    transform: translateX(3px);
+  }
+
+  .contact-note {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: hsl(var(--foreground) / 0.88);
+  }
+
+  .contact-meta {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 0.95rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .contact-meta a {
+    color: hsl(var(--accent));
+    text-decoration: none;
+    border-bottom: 1px solid hsl(var(--accent) / 0.35);
+    transition: border-color 0.15s ease;
+  }
+
+  .contact-meta a:hover {
+    border-bottom-color: hsl(var(--accent));
+    text-decoration: none;
+  }
+</style>

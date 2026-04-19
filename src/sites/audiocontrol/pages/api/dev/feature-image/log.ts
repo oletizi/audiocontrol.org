@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { readLog, updateLog, type LogStatus } from '../../../../../scripts/feature-image/log.js';
+import { readLog, updateLog, type LogStatus } from '../../../../../../../scripts/feature-image/log.js';
 
 export const prerender = false;
 

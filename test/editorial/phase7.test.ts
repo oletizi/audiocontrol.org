@@ -1,7 +1,7 @@
 /**
  * Unit tests for Phase 7 additions:
  * - extractLinksFromHtml (cheerio-based, tolerant of malformed HTML)
- * - extractAudioControlLinksFromMarkdown (markdown-relative + absolute)
+ * - extractSiteLinksFromMarkdown (markdown-relative + absolute)
  * - canonicalizeUrl
  * - auditCrossLinks with tool entries: fetches page, extracts links,
  *   resolves against unified byContentUrl index
@@ -11,11 +11,13 @@ import { describe, it, expect } from 'vitest';
 import {
   auditCrossLinks,
   canonicalizeUrl,
-  extractAudioControlLinksFromMarkdown,
+  extractSiteLinksFromMarkdown,
   extractLinksFromHtml,
   type CalendarEntry,
   type EditorialCalendar,
 } from '../../scripts/lib/editorial/index.js';
+
+const HOST = 'audiocontrol.org';
 
 describe('extractLinksFromHtml (cheerio)', () => {
   it('extracts href, src, and bare URLs', () => {
@@ -94,17 +96,17 @@ describe('extractLinksFromHtml (cheerio)', () => {
   });
 });
 
-describe('extractAudioControlLinksFromMarkdown', () => {
-  it('extracts absolute audiocontrol.org URLs', () => {
+describe('extractSiteLinksFromMarkdown', () => {
+  it('extracts absolute host-matching URLs', () => {
     const md = `See https://audiocontrol.org/blog/foo/ for details.`;
-    expect(extractAudioControlLinksFromMarkdown(md)).toEqual([
+    expect(extractSiteLinksFromMarkdown(md, HOST)).toEqual([
       'https://audiocontrol.org/blog/foo/',
     ]);
   });
 
-  it('extracts markdown-style relative links to site paths', () => {
+  it('extracts markdown-style relative links and prepends the host', () => {
     const md = `Try the [S-330 editor](/roland/s330/editor) or [blog post](/blog/foo/).`;
-    const urls = extractAudioControlLinksFromMarkdown(md);
+    const urls = extractSiteLinksFromMarkdown(md, HOST);
     expect(urls).toContain('https://audiocontrol.org/roland/s330/editor');
     expect(urls).toContain('https://audiocontrol.org/blog/foo/');
   });
@@ -114,7 +116,7 @@ describe('extractAudioControlLinksFromMarkdown', () => {
 [Absolute](https://audiocontrol.org/blog/foo/)
 [Relative](/blog/bar/)
 `;
-    const urls = extractAudioControlLinksFromMarkdown(md);
+    const urls = extractSiteLinksFromMarkdown(md, HOST);
     expect(urls).toContain('https://audiocontrol.org/blog/foo/');
     expect(urls).toContain('https://audiocontrol.org/blog/bar/');
   });
@@ -173,6 +175,7 @@ describe('auditCrossLinks with tool entries', () => {
       distributions: [],
     };
     const report = await auditCrossLinks({
+      site: 'audiocontrol',
       calendar: cal,
       fetchBlogMarkdown: () => null,
       fetchVideoDescription: async () => '',
@@ -191,6 +194,7 @@ describe('auditCrossLinks with tool entries', () => {
       distributions: [],
     };
     const report = await auditCrossLinks({
+      site: 'audiocontrol',
       calendar: cal,
       fetchBlogMarkdown: () => 'A post with no links.',
       fetchVideoDescription: async () => '',
@@ -208,6 +212,7 @@ describe('auditCrossLinks with tool entries', () => {
       distributions: [],
     };
     const report = await auditCrossLinks({
+      site: 'audiocontrol',
       calendar: cal,
       fetchBlogMarkdown: () =>
         'Try the [editor](/roland/s330/editor) to hear it.',
@@ -225,6 +230,7 @@ describe('auditCrossLinks with tool entries', () => {
       distributions: [],
     };
     const report = await auditCrossLinks({
+      site: 'audiocontrol',
       calendar: cal,
       fetchBlogMarkdown: () => 'no links',
       fetchVideoDescription: async () => '',
@@ -255,6 +261,7 @@ describe('auditCrossLinks with tool entries', () => {
       distributions: [],
     };
     const report = await auditCrossLinks({
+      site: 'audiocontrol',
       calendar: cal,
       fetchBlogMarkdown: () => null,
       fetchVideoDescription: async () => '',
@@ -269,6 +276,7 @@ describe('auditCrossLinks with tool entries', () => {
       distributions: [],
     };
     const report = await auditCrossLinks({
+      site: 'audiocontrol',
       calendar: cal,
       fetchBlogMarkdown: () => null,
       fetchVideoDescription: async () => '',

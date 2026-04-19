@@ -18,10 +18,17 @@
 import { load as cheerioLoad } from 'cheerio';
 import {
   effectiveContentType,
+  siteHost,
   type CalendarEntry,
   type EditorialCalendar,
+  type Site,
 } from './types.js';
 import { extractVideoId } from '../youtube/client.js';
+
+/** Escape a string for safe inclusion in a regex. */
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 // ---------------------------------------------------------------------------
 // Link extraction
@@ -46,33 +53,36 @@ export function extractYouTubeLinksFromMarkdown(md: string): string[] {
 }
 
 /**
- * Find any audiocontrol.org URL in a plain-text blob (YouTube descriptions,
- * blog MD that uses full URLs, anywhere URLs appear in raw text).
+ * Find any URL pointing at the given host in a plain-text blob (YouTube
+ * descriptions, blog MD that uses full URLs, anywhere URLs appear in raw
+ * text).
  *
- * Replaces the Phase 6 `extractBlogLinksFromDescription`, which only
- * matched `/blog/<slug>/` paths and silently dropped tool URLs.
+ * `host` is the bare domain, e.g. `audiocontrol.org`.
  */
-export function extractAudioControlLinksFromText(text: string): string[] {
+export function extractSiteLinksFromText(text: string, host: string): string[] {
   const urls = new Set<string>();
-  const pattern = /https?:\/\/(?:www\.)?audiocontrol\.org\/[^\s"')\]<>]*/gi;
+  const pattern = new RegExp(
+    `https?://(?:www\\.)?${escapeRegex(host)}/[^\\s"')\\]<>]*`,
+    'gi',
+  );
   for (const m of text.matchAll(pattern)) urls.add(m[0]);
   return [...urls];
 }
 
 /**
- * Find audiocontrol.org URLs in blog markdown — both absolute URLs
- * and markdown-link relative paths like `[text](/roland/s330/editor)`
- * (which resolve to the site's own pages).
+ * Find URLs pointing at the given host in blog markdown — both absolute
+ * URLs and markdown-link relative paths like `[text](/roland/s330/editor)`
+ * (which resolve against the site's own host).
  */
-export function extractAudioControlLinksFromMarkdown(md: string): string[] {
+export function extractSiteLinksFromMarkdown(md: string, host: string): string[] {
   const urls = new Set<string>();
 
-  for (const url of extractAudioControlLinksFromText(md)) urls.add(url);
+  for (const url of extractSiteLinksFromText(md, host)) urls.add(url);
 
   // [text](/path/...) — markdown link to a relative site path
   const relativePattern = /\]\((\/[^\s)]+)\)/g;
   for (const m of md.matchAll(relativePattern)) {
-    urls.add(`https://audiocontrol.org${m[1]}`);
+    urls.add(`https://${host}${m[1]}`);
   }
 
   return [...urls];
@@ -145,11 +155,13 @@ export function extractLinksFromHtml(html: string, baseUrl?: string): string[] {
   return [...absolute];
 }
 
-/** Extract the slug from an audiocontrol.org/blog/ URL. */
-export function slugFromBlogUrl(url: string): string | null {
-  const match = url.match(
-    /^https?:\/\/(?:www\.)?audiocontrol\.org\/blog\/([a-z0-9-]+)\/?/i,
+/** Extract the slug from a site's `/blog/<slug>/` URL. */
+export function slugFromBlogUrl(url: string, host: string): string | null {
+  const pattern = new RegExp(
+    `^https?://(?:www\\.)?${escapeRegex(host)}/blog/([a-z0-9-]+)/?`,
+    'i',
   );
+  const match = url.match(pattern);
   return match ? match[1] : null;
 }
 
@@ -187,13 +199,16 @@ export function canonicalizeUrl(url: string): string {
   return `${u.protocol}//${u.hostname.toLowerCase()}${path}${query}`;
 }
 
-function buildByContentUrl(entries: CalendarEntry[]): Map<string, CalendarEntry> {
+function buildByContentUrl(
+  entries: CalendarEntry[],
+  host: string,
+): Map<string, CalendarEntry> {
   const map = new Map<string, CalendarEntry>();
   for (const e of entries) {
     const type = effectiveContentType(e);
     const url =
       type === 'blog'
-        ? `https://audiocontrol.org/blog/${e.slug}/`
+        ? `https://${host}/blog/${e.slug}/`
         : e.contentUrl;
     if (!url) continue;
     map.set(canonicalizeUrl(url), e);
@@ -249,6 +264,8 @@ export interface EntryAudit {
 }
 
 export interface AuditCrossLinksInput {
+  /** Site whose content is being audited (determines the "own" host for link extraction). */
+  site: Site;
   calendar: EditorialCalendar;
   /** Resolve a blog slug to its markdown body. Return null if unavailable. */
   fetchBlogMarkdown: (slug: string) => string | null;
@@ -275,11 +292,12 @@ export interface AuditReport {
 export async function auditCrossLinks(
   input: AuditCrossLinksInput,
 ): Promise<AuditReport> {
-  const { calendar, fetchBlogMarkdown, fetchVideoDescription, fetchToolPage } = input;
+  const { site, calendar, fetchBlogMarkdown, fetchVideoDescription, fetchToolPage } = input;
+  const host = siteHost(site);
   const published = calendar.entries.filter((e) => e.stage === 'Published');
 
   const byVideoId = buildByVideoId(published);
-  const byContentUrl = buildByContentUrl(published);
+  const byContentUrl = buildByContentUrl(published, host);
 
   const recordOutbound = (
     outbound: OutboundLink[],
@@ -311,7 +329,7 @@ export async function auditCrossLinks(
         for (const url of extractYouTubeLinksFromMarkdown(md)) {
           recordOutbound(outbound, url, entry.slug);
         }
-        for (const url of extractAudioControlLinksFromMarkdown(md)) {
+        for (const url of extractSiteLinksFromMarkdown(md, host)) {
           recordOutbound(outbound, url, entry.slug);
         }
       }
@@ -327,7 +345,7 @@ export async function auditCrossLinks(
           errors.push(`fetching description for ${entry.slug}: ${message}`);
         }
         if (desc !== null) {
-          for (const url of extractAudioControlLinksFromText(desc)) {
+          for (const url of extractSiteLinksFromText(desc, host)) {
             recordOutbound(outbound, url, entry.slug);
           }
         }

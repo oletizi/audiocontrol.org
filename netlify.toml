@@ -1,47 +1,14 @@
-[build]
-  command = "npm run build"
-  publish = "dist"
-
-# Sitemap alias
-[[redirects]]
-  from = "/sitemap.xml"
-  to = "/sitemap-index.xml"
-  status = 301
-
-# Proxy Roland S-series editor to its dedicated Netlify app
-[[redirects]]
-  from = "/roland/s330/editor"
-  to = "https://roland-sxx0-editor.netlify.app/"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/roland/s330/editor/"
-  to = "https://roland-sxx0-editor.netlify.app/"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/roland/s330/editor/*"
-  to = "https://roland-sxx0-editor.netlify.app/:splat"
-  status = 200
-  force = true
-
-# Proxy S-550 editor to Roland S-series Netlify app
-[[redirects]]
-  from = "/roland/s550/editor"
-  to = "https://roland-sxx0-editor.netlify.app/"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/roland/s550/editor/"
-  to = "https://roland-sxx0-editor.netlify.app/"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/roland/s550/editor/*"
-  to = "https://roland-sxx0-editor.netlify.app/:splat"
-  status = 200
-  force = true
+# This repo is a multi-site Astro tree (audiocontrol.org + editorialcontrol.org).
+# A repo-level netlify.toml applies to every Netlify site deployed from the
+# repository, and its values beat per-site UI settings. To avoid one site's
+# build command or redirects leaking into the other, this file is kept empty.
+#
+# Each Netlify site's build command and publish dir are configured in the
+# Netlify UI:
+#   audiocontrol.org     → command: npm run build:audiocontrol     publish: dist/audiocontrol
+#   editorialcontrol.org → command: npm run build:editorialcontrol publish: dist/editorialcontrol
+#
+# Per-site redirects live in each site's own public directory so they only
+# apply to that site's build output:
+#   src/sites/audiocontrol/public/_redirects     — Roland editor proxies, sitemap alias
+#   src/sites/editorialcontrol/public/_redirects — sitemap alias

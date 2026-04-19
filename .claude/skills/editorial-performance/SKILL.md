@@ -8,9 +8,14 @@ user_invocable: true
 
 Pull analytics for published posts and flag those needing attention.
 
+## Site
+
+Accepts `--site <slug>` (default: `audiocontrol`). Valid sites: `audiocontrol`, `editorialcontrol`. Reads the site's calendar; the analytics backend is whatever is configured today (site-specific analytics credentials are a Phase 6 / launch concern for editorialcontrol — until then, editorialcontrol runs produce no data). Unknown `--site` values error.
+
 ## Steps
 
-1. **Read the calendar**: Read `docs/editorial-calendar.md` to get the list of Published entries
+1. **Resolve site** via `assertSite()`.
+2. **Read the calendar**: `readCalendar(process.cwd(), site)` — reads `docs/editorial-calendar-<site>.md` to get the list of Published entries
 2. **Run analytics**: Execute `tsx scripts/analytics-report.ts --json` to fetch live analytics data
 3. **Match posts to metrics**: For each published post, gather:
    - Pageviews and sessions (Umami/GA4)

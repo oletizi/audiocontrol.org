@@ -5,7 +5,6 @@ import netlify from '@astrojs/netlify';
 
 import sitemap from '@astrojs/sitemap';
 
-// https://astro.build/config
 // Last modified dates for sitemap
 const lastModified = {
   '/': '2026-02-09',
@@ -23,8 +22,12 @@ const lastModified = {
   '/roland/w30/': '2025-01-15',
 };
 
+// https://astro.build/config
 export default defineConfig({
   site: 'https://audiocontrol.org',
+  srcDir: 'src/sites/audiocontrol',
+  publicDir: 'src/sites/audiocontrol/public',
+  outDir: 'dist/audiocontrol',
   output: 'static',
   adapter: netlify(),
   integrations: [

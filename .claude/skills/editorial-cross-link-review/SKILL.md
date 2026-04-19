@@ -8,14 +8,19 @@ user_invocable: true
 
 For each Published calendar entry, check what it links to and whether those links reciprocate. A healthy state: every blog post that embeds a video's URL also has that video's description linking back to the post, and vice versa. Gaps mean readers/viewers can't hop between the two.
 
+## Site
+
+Accepts `--site <slug>` (default: `audiocontrol`). Valid sites: `audiocontrol`, `editorialcontrol`. The site selects the calendar to audit and the host used when scanning blog markdown / video descriptions for internal references. Unknown `--site` values error.
+
 ## Steps
 
-1. **Read the calendar** via `readCalendar(process.cwd())`.
-2. **Build a blog-markdown loader**: given a slug, read `src/pages/blog/<slug>/index.md` and return its content. Return `null` on read errors.
-3. **Build a video-description loader**: given a `contentUrl`, call `getVideoMetadata(url)` from `scripts/lib/youtube/client.ts` and return the `description` field. Catch and swallow errors — return `null` for that entry instead, and let the audit record it.
-4. **Build a tool-page loader**: given a `contentUrl`, call `fetchHtml(url)` from `scripts/lib/http/fetch-page.ts` and return the response body. Catch and swallow errors — return `null` for that entry.
-5. **Run the audit**: `auditCrossLinks({ calendar, fetchBlogMarkdown, fetchVideoDescription, fetchToolPage })` from `scripts/lib/editorial/crosslinks.ts`.
-6. **Report** the results using the format below.
+1. **Resolve site** via `assertSite()`.
+2. **Read the calendar** via `readCalendar(process.cwd(), site)`.
+3. **Build a blog-markdown loader**: given a slug, read `src/sites/<site>/pages/blog/<slug>/index.md` and return its content. Return `null` on read errors.
+4. **Build a video-description loader**: given a `contentUrl`, call `getVideoMetadata(url)` from `scripts/lib/youtube/client.ts` and return the `description` field. Catch and swallow errors — return `null` for that entry instead, and let the audit record it.
+5. **Build a tool-page loader**: given a `contentUrl`, call `fetchHtml(url)` from `scripts/lib/http/fetch-page.ts` and return the response body. Catch and swallow errors — return `null` for that entry.
+6. **Run the audit**: `auditCrossLinks({ site, calendar, fetchBlogMarkdown, fetchVideoDescription, fetchToolPage })` from `scripts/lib/editorial/crosslinks.ts`. The audit uses `site` to derive the host so blog/video/tool link extraction matches the right domain.
+7. **Report** the results using the format below.
 
 ## Report Format
 
@@ -31,7 +36,7 @@ Cross-link Audit (N Published entries)
 
 ⚠ Video links to blog, but blog doesn't link back:
   s330-video → s330-post
-    (missing in src/pages/blog/s330-post/index.md)
+    (missing in src/sites/<site>/pages/blog/s330-post/index.md)
 
 ⚠ Outbound link does not resolve to any calendar entry:
   s330-post links to https://youtu.be/UNKNOWN_VIDEO_ID
@@ -46,10 +51,10 @@ Group sections exactly as above. Omit any section that has no items. If everythi
 
 ## Important
 
-- **Read-only** — do not modify `docs/editorial-calendar.md` or any blog markdown files.
+- **Read-only** — do not modify `docs/editorial-calendar-<site>.md` or any blog markdown files.
 - **Don't fail the whole audit on one bad fetch**: if the YouTube API errors for one video or the tool page fails to load, record the error against that entry and move on. Users will want to see partial results.
-- **Unresolved outbound links** (a YouTube URL in a blog post that doesn't match any known video calendar entry, or an audiocontrol.org URL that doesn't match any known entry) should prompt the user to consider adding it as a calendar entry — that's the main way the calendar grows.
+- **Unresolved outbound links** (a YouTube URL in a blog post that doesn't match any known video calendar entry, or a same-host URL that doesn't match any known entry) should prompt the user to consider adding it as a calendar entry — that's the main way the calendar grows.
 - **Blog entries without markdown files** should still report (as errors) — missing markdown usually means the blog post is tracked in the calendar but not yet written.
-- **Unified URL resolution**: YouTube URLs match by video ID (so `youtu.be/X` and `youtube.com/watch?v=X` resolve to the same entry); audiocontrol.org URLs match by canonical `contentUrl` (case-insensitive hostname, trailing-slash-normalized). Blog entries auto-derive their canonical URL from slug.
+- **Unified URL resolution**: YouTube URLs match by video ID (so `youtu.be/X` and `youtube.com/watch?v=X` resolve to the same entry); same-host URLs match by canonical `contentUrl` (case-insensitive hostname, trailing-slash-normalized). Blog entries auto-derive their canonical URL as `https://<site-host>/blog/<slug>/`.
 - **Tool-page extraction uses cheerio** — robust to malformed HTML. `href`/`src` attributes and bare URLs in text are all captured; `<script>` and `<style>` contents are explicitly excluded.
 - If `~/.config/audiocontrol/youtube-key.txt` is missing, the skill throws with setup instructions from `scripts/lib/youtube/config.ts`. No silent degradation.

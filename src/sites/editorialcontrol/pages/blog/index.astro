@@ -1,0 +1,301 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+interface BlogPost {
+  number: string;
+  title: string;
+  description: string;
+  date: string;
+  datePublished: string;
+  slug: string;
+  image?: string;
+  tags?: string[];
+}
+
+const blogPosts: BlogPost[] = [
+  {
+    number: 'No. 01',
+    title: 'Build Your Own AI Editorial Calendar',
+    description:
+      'AI in content marketing is table stakes; most workflows using it aren\'t fast or flexible enough to keep up. A concrete alternative: an editorial calendar built on top of a coding agent plus Markdown files and a weekend of work. Treat the agent like an in-house developer.',
+    date: 'April 2026',
+    datePublished: '2026-04-18',
+    slug: 'building-the-editorial-calendar-feature',
+    tags: ['AI agents', 'Editorial', 'Workflow', 'Claude'],
+  },
+  {
+    number: 'No. 02',
+    title: 'Automating Around a Design Skills Gap',
+    description:
+      'The older feature images on my audiocontrol.org blog are rough. I\'m not a designer and I\'m not trying to become one. Closing the skills gap with automation, dropping the friction of shipping posts, and growing a design system by artificial selection.',
+    date: 'April 2026',
+    datePublished: '2026-04-18',
+    slug: 'feature-image-automation-feature',
+    tags: ['AI', 'Automation', 'Design', 'Workflow'],
+  },
+];
+
+const formatDate = (iso: string): string => {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+};
+---
+
+<Layout
+  title="The desk — editorialcontrol.org"
+  description="Dispatches from editorialcontrol.org — a publication on building with AI agents."
+>
+  <section class="desk site-container">
+    <div class="desk-header">
+      <p class="kicker">The desk</p>
+      <h1 class="desk-title">Dispatches.</h1>
+      <p class="desk-lede">
+        Pieces on building with AI agents — workflow patterns, editorial cadence, and the
+        automation that actually ships. Slowly published. Each one written by an agent and
+        finished by a human.
+      </p>
+      <hr class="rule-accent" />
+    </div>
+
+    <ol class="posts">
+      {blogPosts.map((post) => (
+        <li class="post-item">
+          <a class="post-link" href={`/blog/${post.slug}/`}>
+            <div class="post-meta">
+              <span class="post-num tabular">{post.number}</span>
+              <time class="post-date tabular" datetime={post.datePublished}>
+                {formatDate(post.datePublished)}
+              </time>
+            </div>
+            <h2 class="post-title">{post.title}</h2>
+            <p class="post-description">{post.description}</p>
+            {post.tags && (
+              <ul class="post-tags" aria-label="Tags">
+                {post.tags.map((tag) => (
+                  <li class="post-tag">{tag}</li>
+                ))}
+              </ul>
+            )}
+          </a>
+        </li>
+      ))}
+    </ol>
+
+    <hr class="rule-double" />
+
+    <aside class="dispatch-card">
+      <p class="dispatch-kicker">The dispatch</p>
+      <h2 class="dispatch-title">
+        Want new issues delivered by hand?
+      </h2>
+      <p class="dispatch-body">
+        No form, no funnel. An email. Reply asks to be added; I send new issues when they're
+        close to shipping.
+      </p>
+      <a class="dispatch-cta" href="mailto:orion@audiocontrol.org?subject=editorialcontrol%20dispatch">
+        Write to the editor
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </aside>
+  </section>
+</Layout>
+
+<style>
+  .desk {
+    padding-top: 3rem;
+    padding-bottom: 4rem;
+    max-width: 58rem;
+  }
+
+  .desk-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    margin: 0 0 0.85rem 0;
+  }
+
+  .desk-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 1;
+    color: hsl(var(--foreground));
+    margin: 0 0 1.25rem 0;
+  }
+
+  .desk-lede {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-style: italic;
+    line-height: 1.5;
+    color: hsl(var(--muted-foreground));
+    max-width: 40rem;
+    margin: 0;
+  }
+
+  /* ---- Post list ---- */
+  .posts {
+    list-style: none;
+    margin: 2rem 0 3rem 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .post-item {
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .post-link {
+    display: block;
+    padding: 2rem 0;
+    text-decoration: none;
+    color: inherit;
+    border: 0;
+    transition: background 0.15s ease;
+  }
+
+  .post-link:hover {
+    text-decoration: none;
+    background: hsl(var(--card-hover) / 0.35);
+  }
+
+  .post-link:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 4px;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .post-num {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    color: hsl(var(--primary));
+  }
+
+  .post-date {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+  }
+
+  .post-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+    line-height: 1.15;
+    margin: 0 0 0.7rem 0;
+    color: hsl(var(--foreground));
+    transition: color 0.15s ease;
+  }
+
+  .post-link:hover .post-title {
+    color: hsl(var(--primary));
+  }
+
+  .post-description {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: hsl(var(--muted-foreground));
+    max-width: 44rem;
+    margin: 0 0 0.9rem 0;
+  }
+
+  .post-tags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .post-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    padding: 0.1rem 0.5rem;
+    border: 1px solid hsl(var(--border));
+  }
+
+  /* ---- Dispatch card ---- */
+  .dispatch-card {
+    padding: 2rem 0 0 0;
+  }
+
+  .dispatch-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    margin: 0 0 0.75rem 0;
+  }
+
+  .dispatch-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    line-height: 1.25;
+    margin: 0 0 0.85rem 0;
+    color: hsl(var(--foreground));
+    max-width: 32rem;
+  }
+
+  .dispatch-body {
+    font-family: var(--font-body);
+    color: hsl(var(--muted-foreground));
+    max-width: 34rem;
+    margin: 0 0 1.25rem 0;
+  }
+
+  .dispatch-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    padding: 0.65rem 1rem;
+    border: 1px solid hsl(var(--primary) / 0.5);
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    text-decoration: none;
+  }
+
+  .dispatch-cta:hover {
+    background: hsl(var(--primary));
+    color: hsl(var(--background));
+    border-color: hsl(var(--primary));
+    text-decoration: none;
+  }
+
+  .dispatch-cta .arrow {
+    transition: transform 0.18s ease;
+  }
+
+  .dispatch-cta:hover .arrow {
+    transform: translateX(3px);
+  }
+</style>
