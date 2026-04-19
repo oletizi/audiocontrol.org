@@ -8,6 +8,7 @@ dateModified: "2026-04-17"
 author: "Orion Letizi"
 image: "/images/blog/what-2400-session-taught-us-about-agent-workflow/feature-filtered.png"
 socialImage: "/images/blog/what-2400-session-taught-us-about-agent-workflow/feature-og.png"
+tags: ["AI", "Claude", "Workflow", "Process"]
 ---
 # Instructions Are Not Enough: What 2,400 Sessions Taught Us About AI Agent Workflow
 

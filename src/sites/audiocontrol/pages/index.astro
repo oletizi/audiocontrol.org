@@ -1,7 +1,32 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import { recentBlogPosts, formatBlogDate } from '../data/blog-posts';
+interface BlogPostFrontmatter {
+  title: string;
+  description: string;
+  date: string;
+  datePublished: string;
+  dateModified?: string;
+  author?: string;
+  image?: string;
+  socialImage?: string;
+  tags?: string[];
+  layout: string;
+}
+
+const postModules = import.meta.glob<{ frontmatter: BlogPostFrontmatter }>('./blog/**/index.md', { eager: true });
+
+const allPosts = Object.entries(postModules)
+  .map(([filepath, mod]) => ({
+    ...mod.frontmatter,
+    slug: filepath.replace(/^\.\/blog\//, '').replace(/\/index\.md$/, ''),
+  }))
+  .sort((a, b) => b.datePublished.localeCompare(a.datePublished));
+
+const formatBlogDate = (dateStr: string): string => {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+};
 
 interface Project {
   name: string;
@@ -51,7 +76,7 @@ const pendingProjects: Project[] = [
   },
 ];
 
-const latest = recentBlogPosts(3);
+const latest = allPosts.slice(0, 3);
 
 const availableCount = availableProjects.length;
 const pendingCount = pendingProjects.length;

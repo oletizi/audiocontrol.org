@@ -1,6 +1,32 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { blogPosts, formatBlogDate } from '../../data/blog-posts';
+
+interface BlogPostFrontmatter {
+  title: string;
+  description: string;
+  date: string;
+  datePublished: string;
+  dateModified?: string;
+  author?: string;
+  image?: string;
+  socialImage?: string;
+  tags?: string[];
+  layout: string;
+}
+
+const postModules = import.meta.glob<{ frontmatter: BlogPostFrontmatter }>('./**/index.md', { eager: true });
+
+const blogPosts = Object.entries(postModules)
+  .map(([filepath, mod]) => ({
+    ...mod.frontmatter,
+    slug: filepath.replace(/^\.\//, '').replace(/\/index\.md$/, ''),
+  }))
+  .sort((a, b) => b.datePublished.localeCompare(a.datePublished));
+
+const formatBlogDate = (dateStr: string): string => {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+};
 ---
 
 <Layout

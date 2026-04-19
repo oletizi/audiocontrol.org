@@ -6,6 +6,7 @@ date: "April 2026"
 datePublished: "2026-04-18"
 dateModified: "2026-04-18"
 author: "Orion Letizi"
+tags: ["AI", "Automation", "Design", "Workflow"]
 ---
 
 # AI Can Generate Your Feature Images. It Can't Design Your Site.
