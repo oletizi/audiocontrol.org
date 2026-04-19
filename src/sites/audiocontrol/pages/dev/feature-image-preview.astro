@@ -3213,9 +3213,14 @@ const siteBrands = {
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || `status ${res.status}`);
-        genStatusEl.textContent = `Done in ${json.entry.durationMs}ms.`;
+        genStatusEl.textContent = `Generated in ${json.entry.durationMs}ms. Opening for review…`;
         genStatusEl.className = '';
+        // Close the Generate drawer and focus the new entry so the user lands
+        // on the thing they just made, with all the review actions visible
+        // (rate, iterate, approve, submit for workflow, commit).
+        closeDrawer(drawerGenerate);
         await refreshGallery();
+        if (json.entry?.id) focusEntry(json.entry.id);
       } catch (err) {
         genStatusEl.textContent = `Error: ${err.message}`;
         genStatusEl.className = 'error';
