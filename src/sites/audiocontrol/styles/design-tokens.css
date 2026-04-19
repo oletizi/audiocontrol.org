@@ -1,47 +1,109 @@
 /*
- * Design Tokens - audiocontrol.org Palette Redesign
- * Based on design prototype: https://github.com/audiocontrol-org/audiocontrol-palette-design
+ * Design Tokens — audiocontrol.org
+ *
+ * Mirror of src/sites/audiocontrol/brand.ts. See that file for palette
+ * rationale. Aesthetic direction: service-manual / flight-instrumentation.
+ * Warm-ink background, warm cream foreground, phosphor amber primary,
+ * Roland-blue accent. Display typography rides on Departure Mono (Apollo-
+ * era pixel mono) for the identity voice; body reads on IBM Plex Sans;
+ * JetBrains Mono continues to carry code and tabular meta.
  */
 
 :root {
+  color-scheme: dark;
+
   /* Layout */
   --container-max-width: 1400px;
   --container-padding: 2rem;
+  --measure-reading: 36rem; /* Long-form prose measure. */
+  --measure-narrow: 28rem;  /* Standalone essays / pull quotes. */
 
-  /* Background colors */
-  --background: 220 20% 10%;
-  --card: 220 18% 13%;
-  --card-hover: 220 18% 16%;
+  /* Background — warm near-black with faint amber cast */
+  --background: 30 12% 7%;
+  --card: 30 14% 11%;
+  --card-hover: 30 14% 14%;
 
-  /* Foreground colors */
-  --foreground: 210 20% 82%;
-  --muted-foreground: 215 12% 48%;
+  /* Foreground — warm cream off-white (phosphor-on-ink, not grey-on-slate) */
+  --foreground: 35 18% 88%;
+  --muted-foreground: 30 10% 55%;
 
-  /* Accent colors */
-  --primary: 174 60% 46%;         /* Teal */
-  --accent: 4 70% 62%;            /* Coral */
+  /* Accents */
+  --primary: 35 95% 62%;          /* Phosphor amber (VFD / flight instrument) */
+  --accent: 215 55% 55%;           /* Roland-blue — used sparingly */
 
-  /* Border colors */
-  --border: 220 15% 20%;
-  --border-hover: 220 15% 30%;
+  /* Borders — hairline weight */
+  --border: 30 10% 18%;
+  --border-hover: 30 10% 28%;
 
-  /* Badge colors */
-  --badge-available: 152 60% 42%;
-  --badge-available-bg: 152 60% 15%;
-  --badge-coming: 45 60% 50%;
-  --badge-coming-bg: 220 15% 18%;
+  /* Badge colors — retuned to the warm palette */
+  --badge-available: 152 55% 55%;
+  --badge-available-bg: 152 40% 13%;
+  --badge-coming: 35 80% 55%;
+  --badge-coming-bg: 30 14% 14%;
+
+  /* Rule weights — for hairlines and panel rules */
+  --rule-hairline: 1px;
+  --rule-medium: 2px;
+  --rule-heavy: 3px;
 
   /* Typography */
-  --font-mono: "JetBrains Mono", monospace;
-  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-heading: var(--font-mono);
+  --font-display: "Departure Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-heading: var(--font-display);
 
-  /* Glow effects */
-  --card-glow: 0 0 0 1px hsl(var(--border)), 0 8px 32px -8px hsl(0 0% 0% / 0.5);
-  --card-glow-hover: 0 0 0 1px hsl(var(--primary) / 0.3), 0 8px 40px -8px hsl(var(--primary) / 0.15);
+  /* Card glow — retuned warm */
+  --card-glow: 0 0 0 1px hsl(var(--border)), 0 10px 36px -12px hsl(0 0% 0% / 0.65);
+  --card-glow-hover: 0 0 0 1px hsl(var(--primary) / 0.35), 0 12px 44px -10px hsl(var(--primary) / 0.18);
+
+  /* Phosphor halo — for amber text highlights (used with --phosphor class) */
+  --phosphor-glow: 0 0 14px hsl(var(--primary) / 0.35), 0 0 2px hsl(var(--primary) / 0.55);
 }
 
-/* Shared container class - used by header and main content for consistent alignment */
+/* --- Font faces (self-hosted) ------------------------------------------- */
+
+@font-face {
+  font-family: 'Departure Mono';
+  src: url('/fonts/departure-mono-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('/fonts/ibm-plex-sans-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('/fonts/ibm-plex-sans-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('/fonts/ibm-plex-sans-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('/fonts/ibm-plex-sans-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --- Shared container --------------------------------------------------- */
+
 .site-container {
   box-sizing: border-box;
   width: 100%;
@@ -50,7 +112,154 @@
   padding: var(--container-padding);
 }
 
-/* Glow utility classes */
+/* --- Rule utilities ----------------------------------------------------- */
+
+.rule-hairline {
+  border: 0;
+  border-top: var(--rule-hairline) solid hsl(var(--border));
+  margin: 1.5rem 0;
+}
+
+.rule-double {
+  border: 0;
+  border-top: var(--rule-hairline) solid hsl(var(--border));
+  border-bottom: var(--rule-hairline) solid hsl(var(--border));
+  height: 5px;
+  margin: 2rem 0;
+}
+
+/* Short amber underscore — signature accent rule. */
+.rule-accent {
+  border: 0;
+  border-top: var(--rule-medium) solid hsl(var(--primary));
+  width: 3rem;
+  margin: 1.25rem 0;
+  box-shadow: 0 0 8px hsl(var(--primary) / 0.4);
+}
+
+/* Ticked rule — hairline with vertical tick marks at the ends, evoking
+ * the fiducial marks on a service-manual schematic. */
+.rule-ticked {
+  position: relative;
+  height: 1px;
+  margin: 2rem 0;
+  background: hsl(var(--border));
+}
+
+.rule-ticked::before,
+.rule-ticked::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  width: 1px;
+  height: 11px;
+  background: hsl(var(--border));
+}
+
+.rule-ticked::before {
+  left: 0;
+}
+
+.rule-ticked::after {
+  right: 0;
+}
+
+/* --- Panel label -------------------------------------------------------- */
+
+/* The pixel-display voice: use for eyebrows above sections, meta labels,
+ * and panel-style section headers. All-caps, tracked, small. */
+.panel-label {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.panel-label--accent {
+  color: hsl(var(--primary));
+  text-shadow: var(--phosphor-glow);
+}
+
+/* --- Dimension-bracket section opener ----------------------------------- */
+
+/* A section opener framed by short corner hairlines — reads as a callout
+ * on a technical drawing rather than a flat heading. Apply to a wrapping
+ * element; the pseudo-elements draw the brackets. */
+.dimension-bracket {
+  position: relative;
+  padding: 1.25rem 1.5rem 0.75rem;
+}
+
+.dimension-bracket::before,
+.dimension-bracket::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  border-color: hsl(var(--primary) / 0.6);
+  border-style: solid;
+  border-width: 0;
+}
+
+.dimension-bracket::before {
+  left: 0;
+  border-top-width: var(--rule-medium);
+  border-left-width: var(--rule-medium);
+}
+
+.dimension-bracket::after {
+  right: 0;
+  border-top-width: var(--rule-medium);
+  border-right-width: var(--rule-medium);
+}
+
+/* --- Signal LED --------------------------------------------------------- */
+
+/* Tiny amber dot that pulses — reads as a powered-on status lamp. */
+.signal-led {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  box-shadow: var(--phosphor-glow);
+  vertical-align: middle;
+  animation: signal-led-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes signal-led-pulse {
+  0%, 100% {
+    opacity: 0.55;
+    box-shadow: 0 0 6px hsl(var(--primary) / 0.35);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 16px hsl(var(--primary) / 0.75), 0 0 3px hsl(var(--primary) / 0.8);
+  }
+}
+
+/* Legacy alias used by existing components. */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* --- Phosphor text accent ---------------------------------------------- */
+
+.phosphor {
+  color: hsl(var(--primary));
+  text-shadow: var(--phosphor-glow);
+}
+
+/* --- Card glow ---------------------------------------------------------- */
+
 .card-glow {
   box-shadow: var(--card-glow);
   transition: box-shadow 0.3s ease, border-color 0.3s ease;
@@ -65,16 +274,101 @@
   border-color: hsl(var(--primary) / 0.5);
 }
 
-/* Animated pulse glow for status indicators */
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 1;
-  }
+/* --- Atmosphere: grain, scanlines, vignette ----------------------------- */
+
+/* Applied globally from Layout.astro via body classes. Each layer is an
+ * isolated utility so individual pages can opt out if needed. */
+
+/* Warm film-grain — extremely faint. Radial dot pattern for low cost. */
+.atmosphere-grain {
+  position: relative;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+.atmosphere-grain::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.035;
+  background-image: radial-gradient(circle at 1px 1px, hsl(35 30% 70%) 1px, transparent 0);
+  background-size: 3px 3px;
+  mix-blend-mode: overlay;
+}
+
+/* Whisper scanlines — barely-there horizontal stripes, invoking CRT/VFD
+ * display refresh without the kitsch. Sits above content at very low alpha. */
+.atmosphere-scanlines::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    hsl(0 0% 0% / 0.06) 2px,
+    hsl(0 0% 0% / 0.06) 3px
+  );
+  mix-blend-mode: multiply;
+}
+
+/* Warm vignette — radial amber-to-deep-ink, focuses attention and adds
+ * atmosphere. Set on the body background, not a pseudo, so it scrolls
+ * with the document and composites under the scanlines + grain. */
+.atmosphere-vignette {
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      hsl(35 35% 10%) 0%,
+      hsl(var(--background)) 55%,
+      hsl(30 15% 4%) 120%
+    ),
+    hsl(var(--background));
+  background-attachment: fixed;
+}
+
+/* --- Ticker (used in masthead / footer) --------------------------------- */
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.ticker {
+  overflow: hidden;
+  border-top: var(--rule-hairline) solid hsl(var(--border));
+  border-bottom: var(--rule-hairline) solid hsl(var(--border));
+  padding: 0.5rem 0;
+}
+
+.ticker-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker 80s linear infinite;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+}
+
+.ticker-track > span {
+  padding-right: 3rem;
+}
+
+.ticker-track .ticker-mark {
+  color: hsl(var(--primary));
+  padding: 0 0.75rem 0 0;
+}
+
+/* --- Reduced motion ----------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-led,
+  .animate-pulse-glow,
+  .ticker-track {
+    animation: none;
+  }
 }

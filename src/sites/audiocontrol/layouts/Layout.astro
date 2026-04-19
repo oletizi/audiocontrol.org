@@ -53,6 +53,9 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/fonts/departure-mono-regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin />
 
     <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -89,40 +92,21 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
       gtag('config', 'G-2N7X29Y1RN');
     </script>
     <style>
-      @font-face {
-        font-family: 'Inter';
-        src: url('/fonts/inter-regular.woff2') format('woff2');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      @font-face {
-        font-family: 'Inter';
-        src: url('/fonts/inter-medium.woff2') format('woff2');
-        font-weight: 500;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      @font-face {
-        font-family: 'Inter';
-        src: url('/fonts/inter-semibold.woff2') format('woff2');
-        font-weight: 600;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      @font-face {
-        font-family: 'Inter';
-        src: url('/fonts/inter-bold.woff2') format('woff2');
-        font-weight: 700;
-        font-style: normal;
-        font-display: swap;
-      }
+      /* Departure Mono + IBM Plex Sans @font-face live in design-tokens.css. */
 
       :global(h1), :global(h2), :global(h3), :global(h4), :global(h5), :global(h6) {
         font-family: var(--font-heading);
+        font-weight: 400;
+        letter-spacing: 0.01em;
+        line-height: 1.15;
+      }
+
+      :global(h3), :global(h4), :global(h5), :global(h6) {
+        /* Smaller headings read better in the body face at weight 600
+         * than in Departure Mono at small pixel sizes. */
+        font-family: var(--font-body);
+        font-weight: 600;
+        letter-spacing: 0;
       }
 
       *,
@@ -134,7 +118,6 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
       html {
         font-family: var(--font-body);
         font-size: 16px;
-        background: hsl(var(--background));
         color: hsl(var(--foreground));
         scrollbar-gutter: stable;
       }
@@ -143,6 +126,7 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
         min-height: 100vh;
         margin: 0;
         width: 100%;
+        position: relative;
       }
 
       h1, h2, p {
@@ -157,10 +141,24 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
       a:hover {
         text-decoration: underline;
       }
+
+      /* Ensure content stacks above the atmosphere overlays. */
+      :global(header),
+      :global(main),
+      :global(footer) {
+        position: relative;
+        z-index: 3;
+      }
+
+      /* Selection uses phosphor amber. */
+      :global(::selection) {
+        background: hsl(var(--primary) / 0.35);
+        color: hsl(var(--foreground));
+      }
     </style>
     <slot name="head" />
   </head>
-  <body>
+  <body class="atmosphere-vignette atmosphere-grain atmosphere-scanlines">
     <Header />
 
     <div class="site-container">
