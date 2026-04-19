@@ -1,9 +1,10 @@
 # editorialcontrol-site
 
-**Status:** In Progress
+**Status:** In Review ([PR #77](https://github.com/oletizi/audiocontrol.org/pull/77))
 **Feature Branch:** `feature/editorialcontrol-site`
 **Worktree:** `~/work/audiocontrol-work/audiocontrol.org-editorialcontrol-site`
 **GitHub Issue:** oletizi/audiocontrol.org#69
+**Pull Request:** oletizi/audiocontrol.org#77
 
 ## Overview
 
