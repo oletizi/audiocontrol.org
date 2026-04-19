@@ -1,6 +1,6 @@
 ---
 layout: ../../../layouts/BlogLayout.astro
-title: "AI Can Generate Your Feature Images. It Can't Design Your Site."
+title: "Your Brand Survives the First Generation. Does It Survive the Hundredth?"
 description: "Most AI-generated feature image workflows stop at the generator. That's the easy half. The missing infrastructure is a human gate cheap enough to actually use, and a design system that gets sharper every time you use it."
 date: "April 2026"
 datePublished: "2026-04-18"
@@ -9,7 +9,7 @@ author: "Orion Letizi"
 tags: ["AI", "Automation", "Design", "Workflow"]
 ---
 
-# AI Can Generate Your Feature Images. It Can't Design Your Site.
+# Your Brand Survives the First Generation. Does It Survive the Hundredth?
 
 Most posts about AI-generated feature images stop at the generator: pick a model, write a prompt, get an image. That's the easy half. The half that actually determines whether your site ends up with a coherent visual identity — or fifteen one-off images that drift in whichever direction the current panic pointed you — is the half nobody talks about.
 
