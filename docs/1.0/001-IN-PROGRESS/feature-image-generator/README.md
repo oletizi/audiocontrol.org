@@ -32,4 +32,18 @@ Automates the creation of feature images for blog posts, pages, and social media
 | 12. DOM Preview & Commit-to-PNG | #67 | Complete |
 | 13. Conversation Thread with Claude | #76 | Complete |
 | 14. Multi-Site Feature Images | #85 | Complete |
-| 15. Journal Records (one file per entry) | #99 | Not Started |
+| 15. Journal Records (one file per entry) | #99 | Complete |
+
+## Storage layout
+
+The three append-only logs that drive this feature live on disk as one JSON file per entry under `journal/`:
+
+```
+journal/
+├── history/     # LogEntry records (generation history + fitness data)
+├── pipeline/    # WorkflowItem records (blog + iterate workflow states)
+├── threads/     # ThreadMessage records (focus-mode conversation)
+└── MIGRATED.txt # receipt from the one-shot JSONL → per-entry migration
+```
+
+Each file is named `<normalized-ISO-ts>-<id>.json` (colons + dots in the timestamp become dashes for filesystem portability). Filename sort order equals chronological order. The shared helper is `scripts/feature-image/journal.ts`; `log.ts`, `workflow.ts`, and `threads.ts` all delegate to it. Don't introduce a fourth monolithic JSONL for any new record type — go through `journal.ts` too.

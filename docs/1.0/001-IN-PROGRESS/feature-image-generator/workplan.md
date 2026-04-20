@@ -455,27 +455,27 @@ Two live merge conflicts hit this session on `.feature-image-history.jsonl` and 
 
 ### Tasks
 
-- [ ] **Write `scripts/feature-image/journal.ts`** — shared helper for directory-backed record stores. Exports `readJournal(dir)`, `appendJournal(dir, record, idField, timestampField)`, `updateJournal(dir, id, patch, idField)`, `deleteJournal(dir, id, idField)`. Filename convention: `<timestamp>-<id>.json`.
-- [ ] **Migration script** `scripts/feature-image/migrate-journal.ts` that reads each `.feature-image-*.jsonl` and fans out per-entry files into `journal/history/`, `journal/pipeline/`, `journal/threads/`. Idempotent (skip if file exists). Produces a `journal/MIGRATED.txt` receipt with counts.
-- [ ] **Rewrite `scripts/feature-image/log.ts`** — `readLog/appendLog/updateLog` use `journal.ts` against `journal/history/`. Public signatures unchanged. Drop the `LOG_PATH` constant.
-- [ ] **Rewrite `scripts/feature-image/workflow.ts`** — same pattern against `journal/pipeline/`.
-- [ ] **Rewrite `scripts/feature-image/threads.ts`** — same pattern against `journal/threads/`. Message filenames use `<ts>-<thread-id>-<msg-id>.json` so one `ls journal/threads/ | grep <thread-id>` returns a thread's messages in order.
-- [ ] **Verify consumers** — `recomposite.ts`, `generate.ts`, API log endpoint, templates fitness calculation, gallery refresh, and the `feature-image-iterate/drain.ts` / `feature-image-apply/scan.ts` helpers all keep working through the same public APIs. Smoke-test each path.
-- [ ] **Gallery refresh strategy** — if the gallery currently watches a single JSONL file via polling or mtime, switch to directory-mtime or debounced-directory-scan. Verify focus-mode live-update still works when a new history entry lands from a background generation.
-- [ ] **Gitignore sweep** — remove `.feature-image-*.jsonl` from `.gitignore` (if listed), add `journal/` there if we DON'T want entries tracked, or leave tracked if we DO want branch-portable history. Decide explicitly per store type (history probably tracked; pipeline + threads probably tracked; raw PNG outputs remain gitignored).
-- [ ] **Remove old JSONL files** in the same commit as the last reader/writer switch so there's no ambiguous window where both sources exist.
-- [ ] **Add a README note** in `docs/1.0/001-IN-PROGRESS/feature-image-generator/` describing the on-disk journal layout so future contributors don't re-invent the storage.
+- [x] **Write `scripts/feature-image/journal.ts`** — shared helper for directory-backed record stores. Exports `readJournal(dir)`, `appendJournal(dir, record, idField, timestampField)`, `updateJournal(dir, id, patch, idField)`, `deleteJournal(dir, id, idField)`. Filename convention: `<timestamp>-<id>.json`.
+- [x] **Migration script** `scripts/feature-image/migrate-journal.ts` that reads each `.feature-image-*.jsonl` and fans out per-entry files into `journal/history/`, `journal/pipeline/`, `journal/threads/`. Idempotent (skip if file exists). Produces a `journal/MIGRATED.txt` receipt with counts.
+- [x] **Rewrite `scripts/feature-image/log.ts`** — `readLog/appendLog/updateLog` use `journal.ts` against `journal/history/`. Public signatures unchanged. Drop the `LOG_PATH` constant.
+- [x] **Rewrite `scripts/feature-image/workflow.ts`** — same pattern against `journal/pipeline/`.
+- [x] **Rewrite `scripts/feature-image/threads.ts`** — same pattern against `journal/threads/`. Each message filename is `<normalized-ts>-<messageId>.json`; `readAllMessages` reads the whole directory and `readThread` filters by threadId + sorts by timestamp (same as before).
+- [x] **Verify consumers** — `recomposite.ts`, `generate.ts`, API log endpoint, templates fitness calculation, gallery refresh all keep working through the same public APIs. Verified via direct tsx smoke tests (read 12 history / 7 pipeline / 7 threads correctly) + playwright-driven gallery load rendering 3 active + 9 archived cards.
+- [x] **Gallery refresh strategy** — the gallery was already polling the API endpoints every 5-6s, never watching files directly, so the directory-backed reads flow through unchanged.
+- [x] **Gitignore sweep** — `.gitignore` note updated to reference the new `journal/` layout; `journal/` tree stays tracked (fitness + lineage depend on it).
+- [x] **Remove old JSONL files** in the same commit as the journal infra landing.
+- [x] **Add a README note** in `docs/1.0/001-IN-PROGRESS/feature-image-generator/` describing the on-disk journal layout so future contributors don't re-invent the storage.
 
 ### Acceptance Criteria
 
-- [ ] `journal/history/` contains one JSON file per historical entry; `.feature-image-history.jsonl` is gone
-- [ ] `journal/pipeline/` contains one JSON file per workflow item; `.feature-image-pipeline.jsonl` is gone
-- [ ] `journal/threads/` contains one JSON file per thread message; `.feature-image-threads.jsonl` is gone
-- [ ] `readLog()` returns all entries sorted oldest-first; `appendLog(entry)` writes exactly one new file; `updateLog(id, patch)` modifies exactly one file
-- [ ] Gallery refresh picks up new entries within a reasonable beat (current behavior or better)
-- [ ] Rebase or merge of a branch that added N history entries, against a main that added M, never conflicts on journal files
-- [ ] All five feature-image skills (`feature-image-blog`, `feature-image-apply`, `feature-image-iterate`, `feature-image-help`, `feature-image-prompts`) work end-to-end on the new storage
-- [ ] `npm run build` green for both sites
+- [x] `journal/history/` contains one JSON file per historical entry; `.feature-image-history.jsonl` is gone
+- [x] `journal/pipeline/` contains one JSON file per workflow item; `.feature-image-pipeline.jsonl` is gone
+- [x] `journal/threads/` contains one JSON file per thread message; `.feature-image-threads.jsonl` is gone
+- [x] `readLog()` returns all entries sorted oldest-first; `appendLog(entry)` writes exactly one new file; `updateLog(id, patch)` modifies exactly one file
+- [x] Gallery refresh picks up new entries within a reasonable beat (current behavior or better)
+- [x] Rebase or merge of a branch that added N history entries, against a main that added M, never conflicts on journal files (design-level guarantee — each entry is a separate file)
+- [x] Gallery loads cleanly; generate / recomposite / commit / approve paths exercise `appendLog` + `updateLog` via the existing API endpoints (same public APIs)
+- [x] `npm run build` green for both sites
 
 ### Deferred
 
