@@ -30,6 +30,8 @@ test-results/
 
 # scratch output from feature-image CLI iterations (path follows publicDir split)
 src/sites/audiocontrol/public/images/generated/
+# legacy path for the same scratch output (some CLI invocations write here)
+public/images/generated/
 
 # (note: .feature-image-history.jsonl and .feature-image-pipeline.jsonl
 # are intentionally NOT gitignored — they hold the generation history
