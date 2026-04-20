@@ -32,12 +32,31 @@ const terminal = workflows
   .slice(0, 10);
 
 let calendarEntries: CalendarEntry[] = [];
+let distributions: ReturnType<typeof readCalendar>['distributions'] = [];
 try {
   const cal = readCalendar(process.cwd(), SITE);
   calendarEntries = cal.entries;
+  distributions = cal.distributions;
 } catch (e) {
   console.error('[editorial-studio] failed to read calendar:', e);
 }
+
+// Shortform coverage matrix: which Published entries have shortform copy
+// on each platform. Used by the "Short form" panel below Published.
+const PLATFORMS_ORDER = ['reddit', 'linkedin', 'youtube', 'instagram'] as const;
+type ShortformPlatform = (typeof PLATFORMS_ORDER)[number];
+const shortformCoverage = new Map<string, Set<ShortformPlatform>>();
+for (const d of distributions) {
+  if (!d.shortform) continue;
+  if (!(PLATFORMS_ORDER as readonly string[]).includes(d.platform)) continue;
+  const set = shortformCoverage.get(d.slug) ?? new Set();
+  set.add(d.platform as ShortformPlatform);
+  shortformCoverage.set(d.slug, set);
+}
+// Sort published entries by datePublished descending for the matrix.
+const publishedBlogEntries = calendarEntries
+  .filter(e => e.stage === 'Published' && effectiveContentType(e) === 'blog')
+  .sort((a, b) => (b.datePublished ?? '').localeCompare(a.datePublished ?? ''));
 
 // Index active workflows by slug for fast per-entry lookup.
 const activeWorkflowsBySlug = new Map<string, DraftWorkflowItem[]>();
@@ -292,6 +311,52 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
           );
         })}
 
+        {publishedBlogEntries.length > 0 && (
+          <section class="er-section">
+            <h2 class="er-section-title">
+              <span>Short form · coverage</span>
+              <span class="count">{publishedBlogEntries.length} × {PLATFORMS_ORDER.length}</span>
+            </h2>
+            <table class="er-sf-matrix">
+              <thead>
+                <tr>
+                  <th scope="col" class="er-sf-slug-col">slug</th>
+                  {PLATFORMS_ORDER.map(p => (
+                    <th scope="col" class={`er-sf-platform er-sf-platform-${p}`}>{p}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {publishedBlogEntries.map(entry => {
+                  const covered = shortformCoverage.get(entry.slug) ?? new Set();
+                  return (
+                    <tr>
+                      <th scope="row" class="er-sf-slug">{entry.slug}</th>
+                      {PLATFORMS_ORDER.map(p => {
+                        const has = covered.has(p);
+                        return (
+                          <td class={`er-sf-cell ${has ? 'er-sf-cell-covered' : 'er-sf-cell-empty'}`}>
+                            {has ? (
+                              <span class="er-sf-check" title={`${p} copy drafted`}>✓</span>
+                            ) : (
+                              <button
+                                class="er-copy-btn er-sf-draft-btn"
+                                type="button"
+                                data-copy={`/editorial-shortform-draft --site ${SITE} ${entry.slug} ${p}`}
+                                title={`copy /editorial-shortform-draft for ${p}`}
+                              >draft</button>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
+        )}
+
         {approved.length > 0 && (
           <section class="er-section">
             <h2 class="er-section-title">
@@ -469,6 +534,60 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
       color: var(--er-paper) !important;
       border-color: var(--er-stamp-green) !important;
     }
+
+    /* Shortform coverage matrix */
+    .er-sf-matrix {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--er-font-display);
+      font-size: 0.85rem;
+      margin-top: var(--er-space-1);
+    }
+    .er-sf-matrix th,
+    .er-sf-matrix td {
+      padding: var(--er-space-1) var(--er-space-2);
+      text-align: left;
+      border-bottom: var(--er-rule-thin);
+    }
+    .er-sf-matrix thead th {
+      font-family: var(--er-font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--er-faded);
+      font-weight: 500;
+      border-bottom: var(--er-rule-med);
+      padding-bottom: 0.25rem;
+    }
+    .er-sf-slug-col { width: auto; }
+    .er-sf-slug {
+      font-family: var(--er-font-display);
+      font-variation-settings: "opsz" 36, "wght" 500;
+      font-weight: normal;
+      color: var(--er-ink);
+    }
+    .er-sf-platform { text-align: center !important; }
+    .er-sf-platform-reddit    { color: #E26A3A; }
+    .er-sf-platform-youtube   { color: #C2322A; }
+    .er-sf-platform-linkedin  { color: #2A4B7C; }
+    .er-sf-platform-instagram { color: #9B3D73; }
+    .er-sf-cell {
+      text-align: center;
+      vertical-align: middle;
+      width: 6rem;
+    }
+    .er-sf-check {
+      color: var(--er-stamp-green);
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+    .er-sf-draft-btn {
+      opacity: 0.5;
+      padding: 0.15rem 0.45rem !important;
+      font-size: 0.65rem !important;
+    }
+    .er-sf-draft-btn:hover { opacity: 1; }
+    .er-sf-cell-covered { background: rgba(46, 93, 69, 0.06); }
   </style>
 
   <script is:inline>
