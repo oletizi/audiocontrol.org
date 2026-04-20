@@ -1,0 +1,24 @@
+Editorial-review journal migration receipt
+written: 2026-04-20T23:41:13.644Z
+
+Legacy JSONL files fanned out into per-entry JSON under
+  journal/editorial/pipeline/
+  journal/editorial/history/
+
+Pipeline:
+  source        .editorial-draft-pipeline.jsonl
+  sourceExists  true
+  sourceBytes   0
+  recordsRead   0
+  written       0
+  skipped       0
+
+History:
+  source        .editorial-draft-history.jsonl
+  sourceExists  true
+  sourceBytes   0
+  recordsRead   0
+  written       0
+  skipped       0
+
+After verifying these counts, the legacy JSONL files can be removed.

@@ -1,6 +1,6 @@
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
+import { appendJournal, readJournal } from '../journal/index.js';
 import type { Platform, Site } from '../editorial/types.js';
 import {
   isValidTransition,
@@ -12,58 +12,82 @@ import {
   type DraftWorkflowState,
   type OriginatedBy,
 } from './types.js';
+import {
+  envelopeFor,
+  unwrap,
+  type JournaledHistoryEntry,
+} from './journal-mappers.js';
 
-export const PIPELINE_FILENAME = '.editorial-draft-pipeline.jsonl';
-export const HISTORY_FILENAME = '.editorial-draft-history.jsonl';
+/*
+ * Storage: two journal directories under `journal/editorial/`. Each
+ * workflow snapshot and each history event lives in its own file; the
+ * shared `scripts/lib/journal/` module handles filename routing and
+ * in-place updates. This replaces the pre-Phase-14c monolithic
+ * `.editorial-draft-{history,pipeline}.jsonl` files at the repo root
+ * which produced merge conflicts whenever two branches appended in
+ * parallel.
+ *
+ * The public API here is unchanged: `readWorkflows`, `readHistory`,
+ * `createWorkflow`, `transitionState`, `appendVersion`, and friends all
+ * still accept a `rootDir` and return the same shapes. Callers (the
+ * handlers, report builder, Astro route frontmatter, skills, 60 tests)
+ * are unaware the storage changed.
+ */
 
+export const PIPELINE_DIR = 'journal/editorial/pipeline';
+export const HISTORY_DIR = 'journal/editorial/history';
+
+/**
+ * Path to the pipeline journal directory for `rootDir`.
+ *
+ * Pre-Phase-14c this returned a JSONL file path; callers that wrote to
+ * it directly (one malformed-input test) now need to manipulate files
+ * *inside* this directory. The export name stays the same to keep the
+ * public API stable.
+ */
 export function pipelinePath(rootDir: string): string {
-  return join(rootDir, PIPELINE_FILENAME);
+  return join(rootDir, PIPELINE_DIR);
 }
 
+/** Path to the history journal directory for `rootDir`. */
 export function historyPath(rootDir: string): string {
-  return join(rootDir, HISTORY_FILENAME);
-}
-
-function readJsonl<T>(path: string): T[] {
-  if (!existsSync(path)) return [];
-  const content = readFileSync(path, 'utf-8');
-  const entries: T[] = [];
-  for (const line of content.split('\n')) {
-    const trimmed = line.trim();
-    if (trimmed.length === 0) continue;
-    try {
-      entries.push(JSON.parse(trimmed) as T);
-    } catch {
-      // malformed line — skip, don't abort the whole read
-    }
-  }
-  return entries;
-}
-
-function appendJsonl(path: string, entry: unknown): void {
-  appendFileSync(path, JSON.stringify(entry) + '\n', 'utf-8');
+  return join(rootDir, HISTORY_DIR);
 }
 
 /**
- * Read the pipeline file. Each line is a `DraftWorkflowItem` snapshot;
- * later snapshots for the same id supersede earlier ones. Returns the
- * latest snapshot per workflow id.
+ * Read the pipeline directory. Under the journal scheme each workflow
+ * lives in its own file, so there is no "latest wins over earlier
+ * snapshots" semantic — readers get one record per id by construction.
+ * State transitions overwrite the existing file in place.
  */
 export function readWorkflows(rootDir: string): DraftWorkflowItem[] {
-  const snapshots = readJsonl<DraftWorkflowItem>(pipelinePath(rootDir));
-  const latest = new Map<string, DraftWorkflowItem>();
-  for (const snap of snapshots) {
-    latest.set(snap.id, snap);
-  }
-  return [...latest.values()];
+  return readJournal<DraftWorkflowItem>(pipelinePath(rootDir), {
+    timestampField: 'createdAt',
+  });
 }
 
+/** Read the full history log, oldest first. */
 export function readHistory(rootDir: string): DraftHistoryEntry[] {
-  return readJsonl<DraftHistoryEntry>(historyPath(rootDir));
+  const envelopes = readJournal<JournaledHistoryEntry>(historyPath(rootDir));
+  return envelopes.map(unwrap);
 }
 
 export function readWorkflow(rootDir: string, id: string): DraftWorkflowItem | null {
   return readWorkflows(rootDir).find(w => w.id === id) ?? null;
+}
+
+function writeWorkflow(rootDir: string, workflow: DraftWorkflowItem): void {
+  appendJournal(pipelinePath(rootDir), workflow, {
+    idField: 'id',
+    timestampField: 'createdAt',
+  });
+}
+
+function writeHistory(rootDir: string, entry: DraftHistoryEntry): void {
+  appendJournal(historyPath(rootDir), envelopeFor(entry), {
+    idField: 'id',
+    timestampField: 'timestamp',
+  });
 }
 
 export interface CreateWorkflowParams {
@@ -123,12 +147,12 @@ export function createWorkflow(
     updatedAt: now,
   };
 
-  appendJsonl(pipelinePath(rootDir), item);
-  appendJsonl(historyPath(rootDir), {
+  writeWorkflow(rootDir, item);
+  writeHistory(rootDir, {
     kind: 'workflow-created',
     at: now,
     workflow: item,
-  } satisfies DraftHistoryEntry);
+  });
 
   const v1: DraftVersion = {
     version: 1,
@@ -136,12 +160,12 @@ export function createWorkflow(
     createdAt: now,
     originatedBy: params.initialOriginatedBy ?? 'agent',
   };
-  appendJsonl(historyPath(rootDir), {
+  writeHistory(rootDir, {
     kind: 'version',
     at: now,
     workflowId: item.id,
     version: v1,
-  } satisfies DraftHistoryEntry);
+  });
 
   return item;
 }
@@ -155,8 +179,9 @@ export function listOpen(rootDir: string, site?: Site): DraftWorkflowItem[] {
 
 /**
  * Transition a workflow to a new state. Validates against VALID_TRANSITIONS
- * and appends both a pipeline snapshot and a history event. Throws on
- * invalid transitions or unknown ids.
+ * and appends a history event. Under the journal scheme the workflow's
+ * file is overwritten in place (one file per workflow) rather than
+ * appending a new snapshot to a JSONL.
  */
 export function transitionState(
   rootDir: string,
@@ -172,14 +197,14 @@ export function transitionState(
   }
   const now = new Date().toISOString();
   const updated: DraftWorkflowItem = { ...current, state: to, updatedAt: now };
-  appendJsonl(pipelinePath(rootDir), updated);
-  appendJsonl(historyPath(rootDir), {
+  writeWorkflow(rootDir, updated);
+  writeHistory(rootDir, {
     kind: 'workflow-state',
     at: now,
     workflowId,
     from: current.state,
     to,
-  } satisfies DraftHistoryEntry);
+  });
   return updated;
 }
 
@@ -203,28 +228,28 @@ export function appendVersion(
     createdAt: now,
     originatedBy,
   };
-  appendJsonl(historyPath(rootDir), {
+  writeHistory(rootDir, {
     kind: 'version',
     at: now,
     workflowId,
     version,
-  } satisfies DraftHistoryEntry);
+  });
   const updated: DraftWorkflowItem = {
     ...current,
     currentVersion: version.version,
     updatedAt: now,
   };
-  appendJsonl(pipelinePath(rootDir), updated);
+  writeWorkflow(rootDir, updated);
   return version;
 }
 
 /** Append an annotation to history. Does not transition state. */
 export function appendAnnotation(rootDir: string, annotation: DraftAnnotation): void {
-  appendJsonl(historyPath(rootDir), {
+  writeHistory(rootDir, {
     kind: 'annotation',
     at: annotation.createdAt,
     annotation,
-  } satisfies DraftHistoryEntry);
+  });
 }
 
 export function readVersions(rootDir: string, workflowId: string): DraftVersion[] {
@@ -267,13 +292,14 @@ export function readAnnotations(
 }
 
 /**
- * Rewrite the pipeline file with a de-duplicated, latest-wins list.
- * Cosmetic compaction; correctness doesn't depend on it.
+ * No-op under the journal scheme. Retained for API stability: a few
+ * scripts and documentation references still invoke it. Pre-Phase-14c
+ * this rewrote the JSONL file with de-duplicated latest-wins snapshots;
+ * now each workflow lives in its own file so `readWorkflows` already
+ * returns one record per id and there is nothing to compact.
  */
-export function compactPipeline(rootDir: string): void {
-  const latest = readWorkflows(rootDir);
-  const lines = latest.map(w => JSON.stringify(w)).join('\n');
-  writeFileSync(pipelinePath(rootDir), latest.length > 0 ? lines + '\n' : '', 'utf-8');
+export function compactPipeline(_rootDir: string): void {
+  // intentionally empty — journal storage de-duplicates by construction
 }
 
 /** Mint an annotation with a server-assigned id and timestamp. */

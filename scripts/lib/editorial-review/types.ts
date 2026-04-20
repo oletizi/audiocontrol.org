@@ -118,7 +118,8 @@ export interface DraftWorkflowItem {
 }
 
 /**
- * A single append-only entry in `.editorial-draft-history.jsonl`.
+ * A single entry in the editorial-review history journal (one JSON file
+ * per entry under `journal/editorial/history/` as of Phase 14c).
  * Discriminated by `kind` so we can interleave versions, annotations,
  * and workflow transitions in one stream.
  */
