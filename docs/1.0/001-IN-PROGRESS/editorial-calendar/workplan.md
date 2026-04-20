@@ -23,6 +23,7 @@
 | Phase 11: Short-form Review (Social Posts) | oletizi/audiocontrol.org#93 |
 | Phase 12: Voice-Library Feedback Signal | oletizi/audiocontrol.org#94 |
 | Phase 13: Editorial Studio (unified dashboard) | oletizi/audiocontrol.org#96 |
+| Phase 14: Studio as calendar command center + journal migration | oletizi/audiocontrol.org#102 |
 
 ## Files Affected
 
@@ -71,6 +72,12 @@
 - `.claude/skills/editorial-review-help/SKILL.md` — pipeline state + next action (Phase 10)
 - `.claude/skills/editorial-shortform-draft/SKILL.md` — draft short-form post (Phase 11)
 - `.claude/skills/editorial-review-report/SKILL.md` — annotation category aggregates (Phase 12)
+- `scripts/lib/journal/index.ts` — extracted from `scripts/feature-image/journal.ts`; shared directory-backed record store (Phase 14)
+- `scripts/lib/editorial-review/migrate-journal.ts` — one-shot idempotent migration from the two JSONL files to the journal tree (Phase 14)
+- `journal/editorial/history/` + `journal/editorial/pipeline/` — per-entry record directories (Phase 14)
+- `journal/editorial/MIGRATED.txt` — migration receipt (Phase 14)
+- `scripts/lib/editorial-calendar-actions/types.ts` + `handlers.ts` — mechanical state-transition handlers for Phase 14 endpoints
+- `src/sites/<site>/pages/api/dev/editorial-calendar/draft.ts` + `publish.ts` — Phase 14 HTTP endpoints on both sites
 
 ## Implementation Phases
 
@@ -761,3 +768,68 @@ No new user-invocable skills in this phase. `/editorial-review-help` and `/edito
 - Voice-drift panel respects the ≥5 sample threshold
 - Route 404s in prod
 - No regressions to Phase 8–12 behavior
+
+### Phase 14: Studio as calendar command center + journal migration
+
+**Deliverable:** The Editorial Studio becomes the situation room for the whole calendar — shows every entry grouped by stage with a next-move hint, drives mechanical state transitions via HTTP endpoints, and keeps cognitive work (drafting, revising, approving prose) in Claude Code. Concurrent with this, the editorial-review JSONL store is decomposed into per-entry files under `journal/editorial/` per the feature-image Phase 15 pattern, pre-empting merge-conflict pain.
+
+**Motivation:** Post-Phase-13 the studio only sees the editorial-review pipeline's state; calendar stages (Ideas / Planned / Drafting / Review / Published) are invisible there. Operators bounce between `/editorial-status` in Claude Code and the studio URL. Merging this view gives one surface for "where is everything and what's the next move?" The journal migration is a timely add-on: feature-image Phase 15 landed on main last week and we know the two review JSONLs will eventually hit the same merge-conflict wall.
+
+**Scope splits into four sub-deliverables, shipped as one PR.**
+
+#### 14a. Calendar stage panels (read-only)
+
+- [ ] Studio reads the full calendar (all stages) in addition to the existing workflow fetch
+- [ ] Column layout: Ideas · Planned · Drafting · Review · Published, each a scrollable list of entries
+- [ ] Per-entry row surfaces: slug, title, stage-specific metadata (target keywords for Planned; issue number for Drafting/Review; publish date for Published), has-file indicator, active-workflow state + link if present
+- [ ] "Next move" column shows either a copy-to-clipboard Claude Code command (for cognitive actions) OR a button (for mechanical actions once 14b lands)
+- [ ] Filter + search from Phase 13 continues to work against the expanded list
+
+**Acceptance:** a freshly-loaded studio shows at least one entry in every stage column that currently has data, without requiring the operator to run `/editorial-status`.
+
+#### 14b. Mechanical-action endpoints + buttons
+
+- [ ] Add `scripts/lib/editorial-calendar-actions/` — `types.ts` (request/response shapes), `handlers.ts` (`handleDraftStart`, `handlePublish`), mirroring the thin-handler pattern from `scripts/lib/editorial-review/handlers.ts`
+- [ ] `handleDraftStart(rootDir, { site, slug })` — validates slug via the existing `SLUG_RE`, reads the Planned entry, calls `scaffoldBlogPost`, creates the GH issue via `gh` (or returns the issue draft payload for the operator to execute), writes the calendar. Returns `{ entry, postPath, issueNumber? }` or `{ error }`
+- [ ] `handlePublish(rootDir, { site, slug })` — flips stage to Published, sets `datePublished` to today, closes the GH issue. Returns `{ entry }` or `{ error }`
+- [ ] Wire `POST /api/dev/editorial-calendar/draft` and `/publish` on both sites (thin wrappers, identical across sites modulo nothing — they take site in the body)
+- [ ] Studio rows gain a button for each mechanical action applicable to that stage; button POSTs the endpoint, reloads on success, toasts on error
+- [ ] Unit tests for `handleDraftStart` and `handlePublish` — happy path, 400 on missing args, 404 on unknown slug, 409 if stage transition is illegal (e.g. publishing a Drafting entry that hasn't been reviewed yet — or do we allow it? Open question below)
+
+**Acceptance:** from a Planned entry with just a calendar row, the operator clicks "Scaffold draft" in the studio, the blog file appears on disk, the GH issue is created, the entry moves to Drafting, and the studio reloads with the row now in the Drafting column.
+
+#### 14c. Journal migration for editorial-review
+
+- [ ] Extract `scripts/feature-image/journal.ts` → `scripts/lib/journal/index.ts` as a shared generic record-store module. It already takes `dir` + optional `timestampField`, so no API change needed; update the feature-image import to the new path.
+- [ ] `scripts/lib/editorial-review/pipeline.ts` — switch `readWorkflows`/`readHistory` (and their writers) from JSONL append to journal directory. Paths: `journal/editorial/history/` and `journal/editorial/pipeline/`.
+- [ ] Public API stays identical — downstream callers (`handlers.ts`, `report.ts`, route frontmatter, skills) do not change.
+- [ ] `scripts/lib/editorial-review/migrate-journal.ts` — one-shot idempotent migration. Reads the two legacy JSONL files, writes per-entry JSON under `journal/editorial/`, creates `journal/editorial/MIGRATED.txt` with per-store counts and a timestamp. Running it again is a no-op (skip when MIGRATED.txt exists, or re-verify and exit clean).
+- [ ] `--dry-run` flag previews without writing
+- [ ] Update `.gitignore` note — remove the "candidate for same migration" line, replace with "post-Phase-14: editorial-review journal lives under `journal/editorial/`, intentionally tracked"
+- [ ] Delete the legacy `.editorial-draft-history.jsonl` and `.editorial-draft-pipeline.jsonl` files after a clean migration run + verification
+- [ ] Unit tests — migration correctness (JSONL → journal produces identical records when read back), idempotence (second run is a no-op), `--dry-run` produces no writes
+- [ ] All 60 existing editorial-review tests continue to pass against the new store (they should, since the API is unchanged)
+
+**Acceptance:** after migration, `.editorial-draft-*.jsonl` are gone; `journal/editorial/` has all prior records as individual JSON files; every editorial-review test passes without changes to the test code.
+
+#### 14d. Polish
+
+- [ ] Short-form draft queue panel — matrix of Published entries × platforms (reddit/linkedin/youtube/instagram), cell shaded if `DistributionRecord.shortform` is populated for that (slug, platform) tuple. Empty cells surface the exact `/editorial-shortform-draft` command.
+- [ ] Column-jump keyboard shortcuts — `1`–`5` focuses the matching stage column; add to the shortcuts overlay
+- [ ] GH issue status per entry (optional, only if cheap) — display the issue's open/closed status inline next to the issue number
+
+**Acceptance:** operator can see shortform coverage at a glance; pressing `3` jumps to the Drafting column.
+
+#### Open questions (resolve before coding)
+
+- Should `handlePublish` require the entry to already be in `Review` stage, or allow directly from `Drafting`? (Proposed: **allow from either** — the review pipeline (editorial-review extension) and the calendar stages (original feature) are orthogonal; blocking on calendar-stage `Review` would require the operator to run an explicit "mark for review" action we don't have a skill for. Revisit if it causes confusion.)
+- Should `handleDraftStart` call `gh` directly, or return an issue draft for the operator to create manually? (Proposed: **call `gh` directly** — the operator already authenticated once for the existing `/editorial-draft` skill, and we're replicating that skill's behavior. Add a `--skip-gh-issue` flag on the endpoint for testing.)
+- Journal migration: migrate-and-delete in one step, or two phases (migrate, verify, then delete)? (Proposed: **one PR, two commits**: first commit lands journal + migration; second commit deletes the JSONLs after the migration runs clean.)
+- Share `scripts/lib/journal/` with feature-image-generator now, or extract later? (Proposed: **share now** — the module on main is already generic; moving it costs ~5 minutes of path updates.)
+
+#### Verification
+
+- [ ] `npm run build` clean on both sites
+- [ ] `npx vitest run` — all existing tests pass; new tests for `handleDraftStart`, `handlePublish`, and the migration script
+- [ ] Manual end-to-end: empty-calendar → add → plan → draft (from the studio) → write content → draft-review → iterate → approve → publish (from the studio); all without running `/editorial-status` or hand-editing JSONL files
+- [ ] Journal migration: run on a branch copy of the current JSONLs, diff the reconstructed records against the originals — zero content drift
