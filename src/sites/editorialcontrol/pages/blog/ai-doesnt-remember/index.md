@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/BlogLayout.astro
-title: "Your Brand Survives the First Generation. Does It Survive the Hundredth?"
-description: "Most AI-generated feature image workflows stop at the generator. That's the easy half. The missing infrastructure is a human gate cheap enough to actually use, and a design system that gets sharper every time you use it."
+title: "AI Doesn't Remember"
+description: "Brand consistency is an in-process problem. On the in-process infrastructure that keeps AI-assisted content from drifting off-brand across a hundred independent sessions."
 date: "April 2026"
 datePublished: "2026-04-18"
 dateModified: "2026-04-18"
