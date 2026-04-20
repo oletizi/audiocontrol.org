@@ -1,7 +1,13 @@
 ---
 export const prerender = false;
 
-import OGPreview, { type PresetName, type FilterState, type Site } from '../../../../components/dev/OGPreview.astro';
+import OGPreview, {
+  type PresetName,
+  type FilterState,
+  type Site,
+  type OverlayPosition,
+  isOverlayPosition,
+} from '../../../../components/dev/OGPreview.astro';
 import { readLog } from '../../../../../scripts/feature-image/log.js';
 import '../../styles/og-preview.css';
 
@@ -19,6 +25,9 @@ const title = p.get('title') ?? '';
 const subtitle = p.get('subtitle') ?? '';
 const preset = (p.get('preset') as PresetName | null) || undefined;
 const overlay = p.get('overlay') !== 'off';
+const overlayPositionParam = p.get('overlayPosition');
+const overlayPosition: OverlayPosition =
+  isOverlayPosition(overlayPositionParam) ? overlayPositionParam : 'bottom';
 
 const siteParam = p.get('site');
 const validSites: Site[] = ['audiocontrol', 'editorialcontrol'];
@@ -112,6 +121,7 @@ const fontHead = effectiveSite === 'editorialcontrol'
     preset={preset}
     filters={filters}
     overlay={overlay}
+    overlayPosition={overlayPosition}
     site={effectiveSite}
     width={w}
     height={h}

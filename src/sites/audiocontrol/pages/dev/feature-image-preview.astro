@@ -2950,6 +2950,7 @@ const siteBrands = {
       const scanlines = draft.scanlines ?? defaults.scanlines;
       const grain = draft.grain ?? defaults.grain;
       const overlay = draft.overlay ?? 'on';
+      const overlayPosition = draft.overlayPosition ?? entry.overlayPosition ?? 'bottom';
       const format = draft.format ?? 'og';
       const site = (draft.site === 'editorialcontrol' || entry.site === 'editorialcontrol')
         ? 'editorialcontrol'
@@ -2976,6 +2977,7 @@ const siteBrands = {
              data-scanlines="${escapeAttr(scanlines)}"
              data-grain="${escapeAttr(grain)}"
              data-overlay="${escapeAttr(overlay === true ? 'on' : overlay)}"
+             data-overlay-position="${escapeAttr(overlayPosition)}"
              data-preset="${escapeAttr(preset)}"
              data-site="${site}"
              style="${escapeAttr(brandStyle(site))}">
@@ -3264,6 +3266,7 @@ const siteBrands = {
           grain: previewEl.dataset.grain,
         },
         overlay: previewEl.dataset.overlay === 'on',
+        overlayPosition: previewEl.dataset.overlayPosition || entry.overlayPosition || 'bottom',
       };
     }
 
@@ -3362,6 +3365,7 @@ const siteBrands = {
                data-scanlines="${f.scanlines}"
                data-grain="${f.grain}"
                data-overlay="on"
+               data-overlay-position="${escapeAttr(entry.overlayPosition || 'bottom')}"
                data-preset="${preset}"
                data-site="${site}"
                style="${escapeAttr(brandStyle(site))}">
@@ -3387,6 +3391,7 @@ const siteBrands = {
                 <option value="editorialcontrol"${site === 'editorialcontrol' ? ' selected' : ''}>editorialcontrol</option>
               </select></label>
               <label class="cb" title="Show or hide the title/subtitle/brand overlay panel"><input type="checkbox" data-ctl="overlay" checked /> Overlay</label>
+              <label title="Where the text panel sits on the image. 'full' drops the accent rule and covers the whole image."><span>Position</span><select data-ctl="overlayPosition">${selectOptions(['bottom','middle','top','left','left-two-thirds','left-one-third','right','right-two-thirds','right-one-third','full'], entry.overlayPosition || 'bottom')}</select></label>
             </div>
             <div class="control-row">
               <label title="Color grade — saturation, hue shift, brightness"><span>Grade</span><select data-ctl="grade">${selectOptions(['none','crt','teal-amber','heavy'], f.grade)}</select></label>
@@ -3437,6 +3442,7 @@ const siteBrands = {
         scanlines: previewEl.dataset.scanlines,
         grain: previewEl.dataset.grain,
         overlay: previewEl.dataset.overlay,
+        overlayPosition: previewEl.dataset.overlayPosition,
         site: previewEl.dataset.site,
         allFormats: !!(allFormatsCb && allFormatsCb.checked),
       };
@@ -3448,7 +3454,7 @@ const siteBrands = {
       const subtitleEl = previewEl.querySelector('.og-subtitle-input');
       if (titleEl && typeof draft.title === 'string') titleEl.value = draft.title;
       if (subtitleEl && typeof draft.subtitle === 'string') subtitleEl.value = draft.subtitle;
-      const keys = ['format', 'preset', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay', 'site'];
+      const keys = ['format', 'preset', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay', 'overlayPosition', 'site'];
       for (const k of keys) {
         if (draft[k] !== undefined) {
           previewEl.dataset[k] = draft[k];
@@ -3512,6 +3518,7 @@ const siteBrands = {
               if (sel) sel.value = f[k];
             }
           } else if (ctl === 'overlay') previewEl.dataset.overlay = el.checked ? 'on' : 'off';
+          else if (ctl === 'overlayPosition') previewEl.dataset.overlayPosition = el.value;
           else if (ctl === 'site') {
             const site = el.value === 'editorialcontrol' ? 'editorialcontrol' : 'audiocontrol';
             previewEl.dataset.site = site;
@@ -3541,6 +3548,7 @@ const siteBrands = {
       const title = titleInput ? titleInput.value : '';
       const subtitle = subtitleInput ? subtitleInput.value : '';
       const overlay = previewEl.dataset.overlay === 'on';
+      const overlayPosition = previewEl.dataset.overlayPosition || 'bottom';
       const preset = previewEl.dataset.preset || undefined;
       const filters = {};
       for (const k of ['grade', 'phosphor', 'vignette', 'scanlines', 'grain']) filters[k] = previewEl.dataset[k];
@@ -3557,7 +3565,7 @@ const siteBrands = {
         const res = await fetch('/api/dev/feature-image/recomposite', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ sourceEntryId: entry.id, title, subtitle, preset, filters, overlay, formats, site }),
+          body: JSON.stringify({ sourceEntryId: entry.id, title, subtitle, preset, filters, overlay, overlayPosition, formats, site }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || `status ${res.status}`);
@@ -3842,6 +3850,7 @@ const siteBrands = {
       let preset = entry.preset || undefined;
       let filters = {};
       let overlay = true;
+      let overlayPosition = entry.overlayPosition || 'bottom';
       let site = entry.site || activeSite;
       if (previewEl) {
         const titleEl = previewEl.querySelector('.og-title-input');
@@ -3853,6 +3862,7 @@ const siteBrands = {
           filters[k] = previewEl.dataset[k];
         }
         overlay = previewEl.dataset.overlay !== 'off';
+        overlayPosition = previewEl.dataset.overlayPosition || overlayPosition;
         site = previewEl.dataset.site || site;
       }
 
@@ -3875,7 +3885,7 @@ const siteBrands = {
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
             sourceEntryId: entry.id,
-            title, subtitle, preset, filters, overlay, site,
+            title, subtitle, preset, filters, overlay, overlayPosition, site,
             formats: ['og', 'youtube', 'instagram'],
             includeFilteredVariant: true,
           }),
