@@ -2,12 +2,21 @@
 export const prerender = false;
 
 import '../../../../shared/editorial-review.css';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import {
   buildReport,
   readWorkflows,
   type DraftWorkflowItem,
 } from '../../../../../scripts/lib/editorial-review/index.js';
 import { readCalendar } from '../../../../../scripts/lib/editorial/calendar.js';
+import {
+  STAGES,
+  effectiveContentType,
+  hasRepoContent,
+  type CalendarEntry,
+  type Stage,
+} from '../../../../../scripts/lib/editorial/types.js';
 
 if (import.meta.env.PROD) {
   return new Response('Not Found', { status: 404 });
@@ -16,50 +25,60 @@ if (import.meta.env.PROD) {
 const SITE = 'audiocontrol';
 
 const workflows = readWorkflows(process.cwd()).filter(w => w.site === SITE);
-const pending = workflows.filter(
-  w => w.state !== 'applied' && w.state !== 'cancelled' && w.state !== 'approved',
-);
 const approved = workflows.filter(w => w.state === 'approved');
 const terminal = workflows
   .filter(w => w.state === 'applied' || w.state === 'cancelled')
   .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
   .slice(0, 10);
 
-pending.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-
-let startableSlugs: Array<{ slug: string; title: string }> = [];
+let calendarEntries: CalendarEntry[] = [];
 try {
   const cal = readCalendar(process.cwd(), SITE);
-  const activeLongformSlugs = new Set(
-    workflows
-      .filter(
-        w =>
-          w.contentKind === 'longform' &&
-          w.state !== 'applied' &&
-          w.state !== 'cancelled',
-      )
-      .map(w => w.slug),
-  );
-  startableSlugs = cal.entries
-    .filter(e => e.stage === 'Published' && !activeLongformSlugs.has(e.slug))
-    .map(e => ({ slug: e.slug, title: e.title ?? e.slug }))
-    .sort((a, b) => a.slug.localeCompare(b.slug));
+  calendarEntries = cal.entries;
 } catch (e) {
   console.error('[editorial-studio] failed to read calendar:', e);
 }
+
+// Index active workflows by slug for fast per-entry lookup.
+const activeWorkflowsBySlug = new Map<string, DraftWorkflowItem[]>();
+for (const w of workflows) {
+  if (w.state === 'applied' || w.state === 'cancelled') continue;
+  const list = activeWorkflowsBySlug.get(w.slug) ?? [];
+  list.push(w);
+  activeWorkflowsBySlug.set(w.slug, list);
+}
+
+function longformWorkflow(slug: string): DraftWorkflowItem | undefined {
+  return activeWorkflowsBySlug.get(slug)?.find(w => w.contentKind === 'longform');
+}
+
+function entryHasFile(entry: CalendarEntry): boolean {
+  if (!hasRepoContent(effectiveContentType(entry))) return false;
+  const path = join(
+    process.cwd(),
+    'src', 'sites', SITE, 'pages', 'blog', entry.slug, 'index.md',
+  );
+  return existsSync(path);
+}
+
+// Group entries by stage (preserve stage order).
+const entriesByStage = new Map<Stage, CalendarEntry[]>();
+for (const stage of STAGES) entriesByStage.set(stage, []);
+for (const e of calendarEntries) entriesByStage.get(e.stage)?.push(e);
 
 const report = buildReport(process.cwd(), { site: SITE });
 const totalTerminal = report.all.approvedCount + report.all.cancelledCount;
 const hasEnoughSignal = totalTerminal >= 5;
 const topTwo = report.topCategories.filter(c => c.count > 0).slice(0, 2);
 
-// Press-check volume/issue — simple rolling counter based on terminal count.
+// Press-check masthead metadata.
 const volume = '01';
 const issueNum = String(workflows.length).padStart(2, '0');
-
-// Dating in editorial style
 const now = new Date();
-const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const monthNames = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December',
+];
 const issueDate = `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
 
 function fmtRelTime(iso: string): string {
@@ -83,6 +102,15 @@ function workflowLink(w: DraftWorkflowItem): string {
 function stateLabel(state: string): string {
   return state.replace('-', ' ');
 }
+
+// Ornament per stage — adds a tiny mark of visual identity.
+const STAGE_ORNAMENTS: Record<Stage, string> = {
+  Ideas: '◇',
+  Planned: '§',
+  Drafting: '✎',
+  Review: '※',
+  Published: '✓',
+};
 ---
 
 <!doctype html>
@@ -106,7 +134,9 @@ function stateLabel(state: string): string {
     <div class="er-masthead-meta">
       <span>{issueDate}</span>
       <span class="sep">·</span>
-      <span>{pending.length} on the desk</span>
+      <span>{calendarEntries.length} on the calendar</span>
+      <span class="sep">·</span>
+      <span>{activeWorkflowsBySlug.size} in review</span>
       <span class="sep">·</span>
       <span>{approved.length} awaiting press</span>
     </div>
@@ -118,93 +148,158 @@ function stateLabel(state: string): string {
       <input
         type="search"
         data-filter-input
-        placeholder="slug, platform, channel…"
+        placeholder="slug, title…"
         autocomplete="off"
       />
 
-      <span class="er-filter-label" style="margin-left: auto;">State</span>
+      <span class="er-filter-label" style="margin-left: auto;">Stage</span>
       <div class="er-chips" role="tablist">
-        <button class="er-chip" aria-pressed="true" data-state-chip="all">all</button>
-        <button class="er-chip" data-state-chip="open">open</button>
-        <button class="er-chip" data-state-chip="in-review">in-review</button>
-        <button class="er-chip" data-state-chip="iterating">iterating</button>
+        <button class="er-chip" aria-pressed="true" data-stage-chip="all">all</button>
+        {STAGES.map(s => (
+          <button class="er-chip" data-stage-chip={s}>{s.toLowerCase()}</button>
+        ))}
       </div>
     </section>
 
     <div class="er-layout">
       <div>
-        <section class="er-section">
-          <h2 class="er-section-title">
-            <span>The desk</span>
-            <span class="ornament">※</span>
-            <span class="count">№ <span data-pending-count>{pending.length}</span></span>
-          </h2>
+        {STAGES.map(stage => {
+          const stageEntries = entriesByStage.get(stage) ?? [];
+          return (
+            <section class="er-section" data-stage-section={stage}>
+              <h2 class="er-section-title">
+                <span>{stage}</span>
+                <span class="ornament">{STAGE_ORNAMENTS[stage]}</span>
+                <span class="count">№ {stageEntries.length}</span>
+              </h2>
 
-          {pending.length === 0 ? (
-            <div class="er-empty" data-empty-when="pending">
-              The desk is clear.<br />Start a new galley from the sidebar, or wait for the next draft.
-            </div>
-          ) : (
-            <div data-pending-list>
-              {pending.map((w, i) => (
-                <a
-                  class="er-row"
-                  href={workflowLink(w)}
-                  data-slug={w.slug}
-                  data-state={w.state}
-                  data-kind={w.contentKind}
-                  data-platform={w.platform ?? ''}
-                  data-channel={w.channel ?? ''}
-                  data-search={[
-                    w.slug,
-                    w.contentKind,
-                    w.platform ?? '',
-                    w.channel ?? '',
-                    w.state,
-                  ].join(' ').toLowerCase()}
-                >
-                  <span class="er-row-num">№ {String(i + 1).padStart(2, '0')}</span>
-                  <span class="er-row-slug">{w.slug}</span>
-                  <span class="er-row-kind">
-                    {w.contentKind}
-                    {w.contentKind === 'shortform' && w.platform && (
-                      <span class="er-row-channel"> · {w.platform}{w.channel ? ` · ${w.channel}` : ''}</span>
-                    )}
-                  </span>
-                  <span class={`er-stamp er-stamp-${w.state}`}>{stateLabel(w.state)}</span>
-                  <span class="er-row-ts">{fmtRelTime(w.updatedAt)}</span>
-                  {w.state === 'iterating' && (
-                    <span class="er-row-hint">
-                      Next · <code>/editorial-iterate --site {SITE} {w.slug}</code>
-                    </span>
-                  )}
-                </a>
-              ))}
-              <div class="er-empty" data-empty-when="filter" hidden>
-                Nothing matches this filter.
-              </div>
-            </div>
-          )}
-        </section>
+              {stageEntries.length === 0 ? (
+                <div class="er-empty" style="padding: 1rem 0.25rem; font-size: 0.95rem;">
+                  {stage === 'Ideas' && 'No open ideas. Run /editorial-add to capture one.'}
+                  {stage === 'Planned' && 'Nothing planned. /editorial-plan <slug> to promote an idea.'}
+                  {stage === 'Drafting' && 'No posts in drafting.'}
+                  {stage === 'Review' && 'Nothing in review stage.'}
+                  {stage === 'Published' && 'No published posts yet.'}
+                </div>
+              ) : (
+                stageEntries.map((entry, i) => {
+                  const kind = effectiveContentType(entry);
+                  const hasFile = entryHasFile(entry);
+                  const wf = longformWorkflow(entry.slug);
+                  const search = [
+                    entry.slug,
+                    entry.title,
+                    (entry.targetKeywords ?? []).join(' '),
+                    kind,
+                  ].join(' ').toLowerCase();
+                  return (
+                    <div
+                      class="er-calendar-row"
+                      data-stage={stage}
+                      data-slug={entry.slug}
+                      data-search={search}
+                    >
+                      <span class="er-row-num">№ {String(i + 1).padStart(2, '0')}</span>
+                      <div class="er-calendar-body">
+                        <span class="er-row-slug">
+                          {wf ? (
+                            <a href={workflowLink(wf)}>{entry.slug}</a>
+                          ) : entry.slug}
+                        </span>
+                        <span class="er-calendar-title">{entry.title}</span>
+                        {entry.targetKeywords && entry.targetKeywords.length > 0 && stage === 'Planned' && (
+                          <span class="er-calendar-meta">
+                            <em>kw:</em> {entry.targetKeywords.join(', ')}
+                          </span>
+                        )}
+                        {entry.issueNumber && entry.issueNumber > 0 && (
+                          <span class="er-calendar-meta">issue #{entry.issueNumber}</span>
+                        )}
+                        {entry.datePublished && stage === 'Published' && (
+                          <span class="er-calendar-meta">{entry.datePublished}</span>
+                        )}
+                        {kind !== 'blog' && (
+                          <span class="er-calendar-meta er-calendar-meta-kind">{kind}</span>
+                        )}
+                      </div>
+                      <span class="er-calendar-status">
+                        {hasRepoContent(kind) && (
+                          <span
+                            class={`er-file-dot er-file-${hasFile ? 'yes' : 'no'}`}
+                            title={hasFile ? 'blog file present' : 'no blog file'}
+                          >●</span>
+                        )}
+                        {wf && (
+                          <span class={`er-stamp er-stamp-${wf.state}`}>
+                            {stateLabel(wf.state)} v{wf.currentVersion}
+                          </span>
+                        )}
+                      </span>
+                      <span class="er-calendar-action">
+                        {stage === 'Ideas' && (
+                          <button
+                            class="er-btn er-btn-small er-copy-btn"
+                            type="button"
+                            data-copy={`/editorial-plan --site ${SITE} ${entry.slug}`}
+                            title="copy command"
+                          >plan →</button>
+                        )}
+                        {stage === 'Planned' && !hasFile && (
+                          <button
+                            class="er-btn er-btn-small er-btn-primary"
+                            type="button"
+                            data-action="scaffold-draft"
+                            data-slug={entry.slug}
+                          >scaffold →</button>
+                        )}
+                        {stage === 'Planned' && hasFile && (
+                          <button
+                            class="er-btn er-btn-small er-copy-btn"
+                            type="button"
+                            data-copy={`/editorial-draft --site ${SITE} ${entry.slug}`}
+                          >copy /draft</button>
+                        )}
+                        {(stage === 'Drafting' || stage === 'Review') && !wf && (
+                          <button
+                            class="er-btn er-btn-small er-copy-btn"
+                            type="button"
+                            data-copy={`/editorial-draft-review --site ${SITE} ${entry.slug}`}
+                          >copy /review</button>
+                        )}
+                        {(stage === 'Drafting' || stage === 'Review') && (
+                          <button
+                            class="er-btn er-btn-small er-btn-approve"
+                            type="button"
+                            data-action="mark-published"
+                            data-slug={entry.slug}
+                            title="flip to Published + close GH issue"
+                          >publish →</button>
+                        )}
+                        {stage === 'Published' && !wf && (
+                          <button
+                            class="er-btn er-btn-small er-copy-btn"
+                            type="button"
+                            data-copy={`/editorial-draft-review --site ${SITE} ${entry.slug}`}
+                            title="re-review a published post"
+                          >re-review</button>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
+            </section>
+          );
+        })}
 
-        <section class="er-section">
-          <h2 class="er-section-title">
-            <span>Awaiting press</span>
-            <span class="count">№ {approved.length}</span>
-          </h2>
-
-          {approved.length === 0 ? (
-            <div class="er-empty">
-              Nothing approved and pending apply.
-            </div>
-          ) : (
-            approved.map(w => (
-              <a
-                class="er-row"
-                href={workflowLink(w)}
-                data-slug={w.slug}
-                data-state={w.state}
-              >
+        {approved.length > 0 && (
+          <section class="er-section">
+            <h2 class="er-section-title">
+              <span>Awaiting press</span>
+              <span class="count">№ {approved.length}</span>
+            </h2>
+            {approved.map(w => (
+              <a class="er-row" href={workflowLink(w)} data-slug={w.slug} data-state={w.state}>
                 <span class="er-row-num">→</span>
                 <span class="er-row-slug">{w.slug}</span>
                 <span class="er-row-kind">
@@ -222,20 +317,17 @@ function stateLabel(state: string): string {
                   </code>
                 </span>
               </a>
-            ))
-          )}
-        </section>
+            ))}
+          </section>
+        )}
 
-        <section class="er-section">
-          <h2 class="er-section-title">
-            <span>Recent proofs</span>
-            <span class="count">last {terminal.length}</span>
-          </h2>
-
-          {terminal.length === 0 ? (
-            <div class="er-empty">No finished proofs yet.</div>
-          ) : (
-            terminal.map(w => (
+        {terminal.length > 0 && (
+          <section class="er-section">
+            <h2 class="er-section-title">
+              <span>Recent proofs</span>
+              <span class="count">last {terminal.length}</span>
+            </h2>
+            {terminal.map(w => (
               <div class="er-row" data-state={w.state}>
                 <span class="er-row-num">—</span>
                 <span class="er-row-slug" style="color: var(--er-ink-soft);">{w.slug}</span>
@@ -248,36 +340,13 @@ function stateLabel(state: string): string {
                 <span class={`er-stamp er-stamp-${w.state}`}>{w.state}</span>
                 <span class="er-row-ts">{fmtRelTime(w.updatedAt)}</span>
               </div>
-            ))
-          )}
-        </section>
+            ))}
+          </section>
+        )}
       </div>
 
       <aside>
-        <section class="er-slip">
-          <div class="er-slip-header">Request for copy</div>
-          <h3 class="er-slip-title">Start a new galley</h3>
-          <p style="font-size: 0.85rem; color: var(--er-ink-soft); margin: 0 0 var(--er-space-2); font-family: var(--er-font-display); font-variation-settings: 'opsz' 18, 'wght' 400;">
-            Pick a Published entry without an active workflow.
-          </p>
-          {startableSlugs.length === 0 ? (
-            <div class="er-slip-hint" style="font-style: italic;">
-              No eligible slugs — every Published entry already has a review in flight, or the calendar is empty.
-            </div>
-          ) : (
-            <form data-start-form>
-              <select name="slug" required>
-                {startableSlugs.map(s => <option value={s.slug}>{s.slug}</option>)}
-              </select>
-              <button type="submit" class="er-btn er-btn-primary">
-                Start review →
-              </button>
-              <div class="er-slip-hint" data-start-hint></div>
-            </form>
-          )}
-        </section>
-
-        <section class="er-drift" style="margin-top: var(--er-space-4);">
+        <section class="er-drift">
           <div class="er-drift-label">Voice-drift · signal</div>
           {hasEnoughSignal && topTwo.length > 0 ? (
             <>
@@ -321,101 +390,255 @@ function stateLabel(state: string): string {
     </div>
   </main>
 
+  <div class="er-toast" data-toast hidden></div>
   <div class="er-poll-indicator" data-poll>auto-refresh · 10s</div>
+
+  <style>
+    .er-calendar-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      align-items: start;
+      gap: var(--er-space-2);
+      padding: var(--er-space-2) var(--er-space-3);
+      border-bottom: var(--er-rule-thin);
+    }
+    .er-calendar-row:first-of-type { border-top: var(--er-rule-thin); }
+    .er-calendar-row:hover { background: rgba(26,22,20,0.03); }
+    .er-calendar-row[hidden] { display: none !important; }
+    .er-calendar-body {
+      min-width: 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      column-gap: var(--er-space-2);
+      row-gap: 0.2rem;
+    }
+    .er-calendar-body .er-row-slug {
+      font-family: var(--er-font-display);
+      font-variation-settings: "opsz" 36, "wght" 500;
+      font-size: 1.05rem;
+    }
+    .er-calendar-title {
+      font-family: var(--er-font-display);
+      font-style: italic;
+      font-variation-settings: "opsz" 24, "wght" 400;
+      font-size: 0.95rem;
+      color: var(--er-ink-soft);
+    }
+    .er-calendar-meta {
+      font-family: var(--er-font-mono);
+      font-size: 0.68rem;
+      color: var(--er-faded);
+      letter-spacing: 0.04em;
+      text-transform: lowercase;
+    }
+    .er-calendar-meta em {
+      font-style: normal;
+      color: var(--er-ink-soft);
+      margin-right: 0.2em;
+    }
+    .er-calendar-meta-kind {
+      background: var(--er-paper-2);
+      padding: 0.1em 0.4em;
+      border-radius: 2px;
+    }
+    .er-calendar-status {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--er-space-1);
+      white-space: nowrap;
+    }
+    .er-file-dot {
+      font-size: 0.7rem;
+      line-height: 1;
+    }
+    .er-file-yes { color: var(--er-stamp-green); }
+    .er-file-no  { color: var(--er-faded-2); }
+    .er-calendar-action {
+      display: inline-flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .er-copy-btn {
+      font-family: var(--er-font-mono);
+      font-size: 0.7rem !important;
+    }
+    .er-copy-btn.copied {
+      background: var(--er-stamp-green) !important;
+      color: var(--er-paper) !important;
+      border-color: var(--er-stamp-green) !important;
+    }
+  </style>
 
   <script is:inline>
     (function () {
-      // ----- Filters -----
-      const input = document.querySelector('[data-filter-input]');
-      const chips = Array.from(document.querySelectorAll('[data-state-chip]'));
-      const rows = Array.from(document.querySelectorAll('[data-pending-list] .er-row'));
-      const filterEmpty = document.querySelector('[data-empty-when="filter"]');
-      const pendingCount = document.querySelector('[data-pending-count]');
-
-      let activeState = 'all';
-      let searchQuery = '';
-
-      function applyFilter() {
-        let shown = 0;
-        for (const row of rows) {
-          const search = row.dataset.search || '';
-          const state = row.dataset.state || '';
-          const matchSearch = !searchQuery || search.includes(searchQuery);
-          const matchState = activeState === 'all' || state === activeState;
-          const visible = matchSearch && matchState;
-          row.hidden = !visible;
-          if (visible) shown++;
-        }
-        if (filterEmpty) {
-          filterEmpty.hidden = shown > 0 || rows.length === 0;
-        }
-        if (pendingCount) {
-          pendingCount.textContent = shown + (shown === rows.length ? '' : ' of ' + rows.length);
-        }
+      // ----- Toast -----
+      const toastEl = document.querySelector('[data-toast]');
+      function showToast(msg, isError) {
+        if (!toastEl) return;
+        toastEl.textContent = msg;
+        toastEl.classList.toggle('error', !!isError);
+        toastEl.hidden = false;
+        setTimeout(() => { toastEl.hidden = true; }, 4000);
       }
 
-      if (input) {
-        input.addEventListener('input', () => {
-          searchQuery = input.value.toLowerCase().trim();
-          applyFilter();
-        });
-      }
-
-      for (const chip of chips) {
-        chip.addEventListener('click', () => {
-          chips.forEach(c => c.setAttribute('aria-pressed', 'false'));
-          chip.setAttribute('aria-pressed', 'true');
-          activeState = chip.dataset.stateChip;
-          applyFilter();
-        });
-      }
-
-      // ----- Start-new form -----
-      const form = document.querySelector('[data-start-form]');
-      if (form) {
-        form.addEventListener('submit', async (ev) => {
-          ev.preventDefault();
-          const slug = form.querySelector('select[name="slug"]').value;
-          const hint = form.querySelector('[data-start-hint]');
-          const button = form.querySelector('button[type="submit"]');
-          button.disabled = true;
-          hint.textContent = 'Setting the type…';
+      // ----- Copy-to-clipboard buttons -----
+      document.querySelectorAll('.er-copy-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const text = btn.dataset.copy || '';
+          if (!text) return;
           try {
-            const res = await fetch('/api/dev/editorial-review/start-longform', {
+            await navigator.clipboard.writeText(text);
+            const original = btn.textContent;
+            btn.classList.add('copied');
+            btn.textContent = 'copied ✓';
+            setTimeout(() => {
+              btn.classList.remove('copied');
+              btn.textContent = original;
+            }, 1500);
+          } catch (e) {
+            showToast('Clipboard unavailable — copy manually: ' + text, true);
+          }
+        });
+      });
+
+      // ----- Scaffold-draft buttons (Planned → Drafting via 14b endpoint) -----
+      document.querySelectorAll('[data-action="scaffold-draft"]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const slug = btn.dataset.slug;
+          btn.disabled = true;
+          const originalText = btn.textContent;
+          btn.textContent = 'scaffolding…';
+          try {
+            const res = await fetch('/api/dev/editorial-calendar/draft', {
               method: 'POST',
               headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ site: 'audiocontrol', slug }),
+              body: JSON.stringify({ site: document.body.dataset.site, slug }),
             });
             const body = await res.json();
             if (!res.ok) {
-              hint.textContent = 'Failed · ' + (body.error || res.status);
-              button.disabled = false;
+              showToast(body.error || ('Scaffold failed: ' + res.status), true);
+              btn.disabled = false;
+              btn.textContent = originalText;
               return;
             }
-            window.location.href = '/dev/editorial-review/' + slug;
+            showToast('Scaffolded ' + body.relativePath +
+              (body.issueNumber ? ' · issue #' + body.issueNumber : ''));
+            setTimeout(() => window.location.reload(), 900);
           } catch (e) {
-            hint.textContent = 'Network error: ' + e.message;
-            button.disabled = false;
+            showToast('Network error: ' + e.message, true);
+            btn.disabled = false;
+            btn.textContent = originalText;
           }
+        });
+      });
+
+      // ----- Mark-published buttons (Drafting/Review → Published) -----
+      document.querySelectorAll('[data-action="mark-published"]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const slug = btn.dataset.slug;
+          if (!confirm('Publish ' + slug + '? This sets datePublished and closes the GH issue.')) return;
+          btn.disabled = true;
+          const originalText = btn.textContent;
+          btn.textContent = 'publishing…';
+          try {
+            const res = await fetch('/api/dev/editorial-calendar/publish', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ site: document.body.dataset.site, slug }),
+            });
+            const body = await res.json();
+            if (!res.ok) {
+              showToast(body.error || ('Publish failed: ' + res.status), true);
+              btn.disabled = false;
+              btn.textContent = originalText;
+              return;
+            }
+            showToast('Published ' + slug +
+              (body.closedIssue ? ' · closed #' + body.closedIssue : ''));
+            setTimeout(() => window.location.reload(), 900);
+          } catch (e) {
+            showToast('Network error: ' + e.message, true);
+            btn.disabled = false;
+            btn.textContent = originalText;
+          }
+        });
+      });
+
+      // ----- Filter: search + stage chips -----
+      const searchInput = document.querySelector('[data-filter-input]');
+      const stageChips = Array.from(document.querySelectorAll('[data-stage-chip]'));
+      const allCalRows = Array.from(document.querySelectorAll('.er-calendar-row'));
+      const stageSections = Array.from(document.querySelectorAll('[data-stage-section]'));
+      let activeStage = 'all';
+      let searchQuery = '';
+
+      function applyFilter() {
+        const stageCounts = new Map();
+        for (const row of allCalRows) {
+          const slug = row.dataset.slug || '';
+          const stage = row.dataset.stage || '';
+          const searchBlob = row.dataset.search || '';
+          const matchSearch = !searchQuery || searchBlob.includes(searchQuery);
+          const matchStage = activeStage === 'all' || stage === activeStage;
+          const visible = matchSearch && matchStage;
+          row.hidden = !visible;
+          if (visible) stageCounts.set(stage, (stageCounts.get(stage) || 0) + 1);
+        }
+        // Hide entire stage sections when they have no visible rows under a filter.
+        for (const sec of stageSections) {
+          const stage = sec.dataset.stageSection;
+          const sectionEmpty = stageCounts.get(stage) === undefined || stageCounts.get(stage) === 0;
+          const originalEmpty = !allCalRows.some(r => r.dataset.stage === stage);
+          sec.hidden = sectionEmpty && !originalEmpty;
+        }
+      }
+      if (searchInput) searchInput.addEventListener('input', () => {
+        searchQuery = searchInput.value.toLowerCase().trim();
+        applyFilter();
+      });
+      for (const chip of stageChips) {
+        chip.addEventListener('click', () => {
+          stageChips.forEach(c => c.setAttribute('aria-pressed', 'false'));
+          chip.setAttribute('aria-pressed', 'true');
+          activeStage = chip.dataset.stageChip;
+          applyFilter();
         });
       }
 
-      // ----- Polling: reload every 10s when user is idle -----
-      const pollIndicator = document.querySelector('[data-poll]');
+      // ----- Keyboard shortcuts: 1-5 jump to stage columns -----
+      document.addEventListener('keydown', (ev) => {
+        const target = ev.target;
+        if (target instanceof HTMLInputElement ||
+            target instanceof HTMLTextAreaElement ||
+            target instanceof HTMLSelectElement) return;
+        if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+        const stageIndex = ['1','2','3','4','5'].indexOf(ev.key);
+        if (stageIndex >= 0 && stageSections[stageIndex]) {
+          ev.preventDefault();
+          stageSections[stageIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+
+      // ----- Polling: reload every 10s when idle -----
       let lastInteraction = Date.now();
-      function bumpInteraction() { lastInteraction = Date.now(); }
       ['input', 'focus', 'keydown', 'mousedown'].forEach(ev => {
-        document.addEventListener(ev, bumpInteraction, { passive: true, capture: true });
+        document.addEventListener(ev, () => { lastInteraction = Date.now(); },
+          { passive: true, capture: true });
       });
       setInterval(() => {
-        // Skip reload if the user touched something in the last 4 seconds
-        // or if the search box has content (they're filtering).
         if (Date.now() - lastInteraction < 4000) return;
-        if (input && input.value.trim().length > 0) return;
+        if (searchInput && searchInput.value.trim().length > 0) return;
+        const pollIndicator = document.querySelector('[data-poll]');
         if (pollIndicator) pollIndicator.classList.add('polling');
         window.location.reload();
       }, 10000);
     })();
+  </script>
+  <span data-site-marker hidden id="__site" data-site={SITE}></span>
+  <script is:inline>
+    document.body.dataset.site = document.getElementById('__site').dataset.site;
   </script>
 </body>
 </html>
