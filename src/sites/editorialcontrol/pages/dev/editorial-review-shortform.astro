@@ -1,0 +1,219 @@
+---
+export const prerender = false;
+
+import {
+  listOpen,
+  readVersions,
+  type DraftVersion,
+  type DraftWorkflowItem,
+} from '../../../../../scripts/lib/editorial-review/index.js';
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+
+const SITE = 'editorialcontrol';
+
+const open = listOpen(process.cwd(), SITE).filter(
+  (w) => w.contentKind === 'shortform',
+);
+
+type Card = {
+  workflow: DraftWorkflowItem;
+  currentVersion: DraftVersion | null;
+};
+
+const cards: Card[] = open.map((w) => {
+  const versions = readVersions(process.cwd(), w.id);
+  const currentVersion = versions.find((v) => v.version === w.currentVersion) ?? null;
+  return { workflow: w, currentVersion };
+});
+
+cards.sort((a, b) => b.workflow.updatedAt.localeCompare(a.workflow.updatedAt));
+
+const byPlatform = new Map<string, Card[]>();
+for (const card of cards) {
+  const key = card.workflow.platform ?? 'other';
+  const list = byPlatform.get(key) ?? [];
+  list.push(card);
+  byPlatform.set(key, list);
+}
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Editorial Shortform Review — dev</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: #141820;
+      color: #c4ced8;
+      font-family: 'Inter', system-ui, sans-serif;
+      line-height: 1.5;
+    }
+    h1, h2 { font-family: 'JetBrains Mono', monospace; margin-top: 0; }
+    h1 { color: #2fb8a8; }
+    h2 { color: #c4ced8; margin-top: 2rem; border-bottom: 1px solid #2a323e; padding-bottom: 0.25rem; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .card { border: 1px solid #2a323e; border-radius: 4px; padding: 1rem; margin-bottom: 1rem; background: #1a1f29; }
+    .card-meta { font-family: monospace; font-size: 0.85rem; color: #a0aab4; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .card-meta strong { color: #c4ced8; }
+    .card-meta code { background: #2a323e; padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.85em; }
+    textarea { width: 100%; min-height: 8rem; background: #141820; color: #e8eef5; border: 1px solid #2a323e; border-radius: 3px; padding: 0.5rem; font: inherit; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; resize: vertical; }
+    textarea:focus { border-color: #2fb8a8; outline: none; }
+    .actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
+    .btn { background: #1f2630; color: #c4ced8; border: 1px solid #2a323e; padding: 0.3rem 0.7rem; border-radius: 3px; font: inherit; font-size: 0.8rem; cursor: pointer; }
+    .btn:hover:not(:disabled) { background: #2a323e; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-approve { border-color: #2fb8a8; color: #2fb8a8; }
+    .btn-approve:hover:not(:disabled) { background: #2fb8a8; color: #141820; }
+    .btn-reject { border-color: #b45a5a; color: #e2b4b4; }
+    .btn-reject:hover:not(:disabled) { background: #b45a5a; color: #fff; }
+    .hint { font-size: 0.75rem; color: #a0aab4; margin-left: 0.5rem; }
+    .empty { color: #a0aab4; font-style: italic; padding: 2rem; text-align: center; }
+    .state-badge { padding: 0.1em 0.4em; border-radius: 3px; font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.05em; }
+    .state-open { background: #2a323e; color: #c4ced8; }
+    .state-in-review { background: #1f3a3a; color: #2fb8a8; }
+    .state-iterating { background: #3a2e1f; color: #e2b88c; }
+    .state-approved { background: #1f3a2a; color: #6fd89b; }
+    .toast { position: fixed; top: 1rem; right: 1rem; padding: 0.6rem 1rem; border-radius: 3px; background: #1f3a3a; color: #2fb8a8; border: 1px solid #2fb8a8; font-size: 0.85rem; }
+    .toast.error { background: #3a1f1f; color: #e2b4b4; border-color: #b45a5a; }
+  </style>
+</head>
+<body>
+  <h1>Shortform Review — {SITE}</h1>
+  <p style="color: #a0aab4;">
+    Open short-form workflows. Edit the text, then Save as new version, Approve, Iterate, or Reject.
+    {cards.length === 0 ? 'No active shortform workflows — start one with /editorial-shortform-draft.' : null}
+  </p>
+
+  {cards.length === 0 ? (
+    <div class="empty">No active shortform workflows.</div>
+  ) : (
+    Array.from(byPlatform.entries()).map(([platform, list]) => (
+      <section>
+        <h2>{platform} ({list.length})</h2>
+        {list.map(({ workflow, currentVersion }) => (
+          <div class="card" data-workflow-id={workflow.id} data-before-version={workflow.currentVersion}>
+            <div class="card-meta">
+              <strong>{workflow.slug}</strong>
+              {workflow.channel && (<><span>·</span><code>{workflow.channel}</code></>)}
+              <span>·</span>
+              <span class={`state-badge state-${workflow.state}`}>{workflow.state}</span>
+              <span>·</span>
+              <span>v{workflow.currentVersion}</span>
+            </div>
+            <textarea data-text>{currentVersion?.markdown ?? ''}</textarea>
+            <div class="actions">
+              <button type="button" class="btn btn-approve" data-action="save">Save as new version</button>
+              <button type="button" class="btn btn-approve" data-action="approve">Approve</button>
+              <button type="button" class="btn" data-action="iterate">Iterate</button>
+              <button type="button" class="btn btn-reject" data-action="reject">Reject</button>
+              <span class="hint" data-hint></span>
+            </div>
+          </div>
+        ))}
+      </section>
+    ))
+  )}
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script is:inline>
+    (function () {
+      const toast = document.getElementById('toast');
+      function showToast(msg, isError) {
+        toast.textContent = msg;
+        toast.classList.toggle('error', !!isError);
+        toast.hidden = false;
+        setTimeout(() => { toast.hidden = true; }, 4000);
+      }
+
+      async function post(path, body) {
+        const res = await fetch(path, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const json = await res.json();
+        return { ok: res.ok, status: res.status, body: json };
+      }
+
+      async function ensureInReview(workflowId, currentState) {
+        if (currentState !== 'open') return true;
+        const r = await post('/api/dev/editorial-review/decision', {
+          workflowId, to: 'in-review',
+        });
+        return r.ok;
+      }
+
+      document.querySelectorAll('.card').forEach((card) => {
+        const workflowId = card.dataset.workflowId;
+        const beforeVersion = parseInt(card.dataset.beforeVersion, 10);
+        const textarea = card.querySelector('[data-text]');
+        const hint = card.querySelector('[data-hint]');
+        const stateBadge = card.querySelector('.state-badge');
+        const state = stateBadge.textContent.trim();
+        const originalText = textarea.value;
+
+        card.querySelector('[data-action="save"]').addEventListener('click', async () => {
+          if (textarea.value === originalText) {
+            showToast('No changes to save', true);
+            return;
+          }
+          hint.textContent = 'Saving…';
+          const r = await post('/api/dev/editorial-review/version', {
+            workflowId, beforeVersion, afterMarkdown: textarea.value,
+          });
+          if (!r.ok) { showToast(r.body.error || 'Save failed', true); hint.textContent = ''; return; }
+          showToast('Saved v' + r.body.version.version);
+          window.location.reload();
+        });
+
+        card.querySelector('[data-action="approve"]').addEventListener('click', async () => {
+          const bridged = await ensureInReview(workflowId, state);
+          if (!bridged) { showToast('Could not transition to in-review', true); return; }
+          await post('/api/dev/editorial-review/annotate', {
+            type: 'approve', workflowId, version: beforeVersion,
+          });
+          const r = await post('/api/dev/editorial-review/decision', {
+            workflowId, to: 'approved',
+          });
+          if (!r.ok) { showToast(r.body.error || 'Approve failed', true); return; }
+          showToast('Approved. Run /editorial-approve in Claude Code to write to calendar.');
+          setTimeout(() => window.location.reload(), 1200);
+        });
+
+        card.querySelector('[data-action="iterate"]').addEventListener('click', async () => {
+          const bridged = await ensureInReview(workflowId, state);
+          if (!bridged) { showToast('Could not transition to in-review', true); return; }
+          const r = await post('/api/dev/editorial-review/decision', {
+            workflowId, to: 'iterating',
+          });
+          if (!r.ok) { showToast(r.body.error || 'Iterate failed', true); return; }
+          alert('Run /editorial-iterate <slug> in Claude Code to generate v' + (beforeVersion + 1));
+          window.location.reload();
+        });
+
+        card.querySelector('[data-action="reject"]').addEventListener('click', async () => {
+          const reason = window.prompt('Optional reason:') || '';
+          if (reason) {
+            await post('/api/dev/editorial-review/annotate', {
+              type: 'reject', workflowId, version: beforeVersion, reason,
+            });
+          }
+          const r = await post('/api/dev/editorial-review/decision', {
+            workflowId, to: 'cancelled',
+          });
+          if (!r.ok) { showToast(r.body.error || 'Reject failed', true); return; }
+          window.location.reload();
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
