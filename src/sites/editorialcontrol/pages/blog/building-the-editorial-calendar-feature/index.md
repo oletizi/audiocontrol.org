@@ -6,6 +6,7 @@ date: "April 2026"
 datePublished: "2026-04-18"
 dateModified: "2026-04-18"
 author: "Orion Letizi"
+tags: ["AI agents", "Editorial", "Workflow", "Claude"]
 ---
 
 # Your Content Workflow Is Already Obsolete. Your AI Agent Is the Replacement.

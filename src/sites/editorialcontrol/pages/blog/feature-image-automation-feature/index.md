@@ -1,42 +1,41 @@
 ---
 layout: ../../../layouts/BlogLayout.astro
-title: "AI Can Generate Your Feature Images. It Can't Design Your Site."
+title: "Your Brand Survives the First Generation. Does It Survive the Hundredth?"
 description: "Most AI-generated feature image workflows stop at the generator. That's the easy half. The missing infrastructure is a human gate cheap enough to actually use, and a design system that gets sharper every time you use it."
 date: "April 2026"
 datePublished: "2026-04-18"
 dateModified: "2026-04-18"
 author: "Orion Letizi"
+tags: ["AI", "Automation", "Design", "Workflow"]
 ---
 
-# AI Can Generate Your Feature Images. It Can't Design Your Site.
+# Your Brand Survives the First Generation. Does It Survive the Hundredth?
 
-Most posts about AI-generated feature images stop at the generator: pick a model, write a prompt, get an image. That's the easy half. The half that actually determines whether your site ends up with a coherent visual identity — or fifteen one-off images that drift in whichever direction the current panic pointed you — is the half nobody talks about.
+The site you're reading was designed by Claude Code. The feature images on it weren't — not because an image model can't make them, but because generation alone doesn't hold a brand together across a hundred posts. (Claude Code doesn't generate images natively; the pipeline here calls DALL-E 3 or FLUX from inside a Claude Code skill.)
+
+Ask an image model for a feature image and you'll get something usable. Ask it twenty times across twenty posts and the set starts to drift. By the hundredth image, every one is individually plausible, and the set doesn't hang together — there's no visual identity left to drift from.
 
 Two pieces of infrastructure are missing from the usual workflow. A human gate cheap enough to actually use, so the best generation gets picked instead of the first acceptable one. And a design system that gets sharper every time you use it, so the set converges toward a visual language instead of drifting away from one.
 
-This post is about both, and about the generator that feeds them. The visible results will lag — the older feature images on this site are still the old, hand-made ones, and they give away the truth: I made them by hand, I'm not a designer, and it shows. The point is the approach: AI as the generator, a cheap iteration surface so a non-designer can actually pick good ones, and a prompt library evolving under selection pressure toward a visual language I couldn't have written down upfront.
+This post is about both, and about the generator that feeds them.
 
 ## Why the generator isn't the bottleneck
 
-It's tempting to think the problem with AI feature images is the model. Get a better model, get better images. But the generator is the easy half of the problem, and the skills gap makes that obvious.
+It's tempting to think the problem with AI feature images is the model. Get a better model, get better images. But the generator is the easy half because it only solves half of the problem.
 
-I've tried to get better at visual design. It never sticks. Not enough reps, not enough taste built up, not enough interest in the parts that aren't technical. Every one-off hand-made feature image is an exercise in ad-hoc choices: which color, which crop, which font size, which background. Consistency across fifteen posts isn't something I'm going to achieve with an artisanal approach, because I don't have the internal standard to apply consistently.
-
-Automation isn't a substitute for design skill. It's a way to bake in consistency where I can't provide it manually, and a way to raise the floor when I can't move the ceiling.
-
-But a pure generator doesn't do that. A generator with no gate produces noise on average — AI output is high-variance, with a long tail of excellent results and a long tail of nonsense, and you don't know which you got until you see it. A generator with no design system produces fifteen unrelated images, because every prompt starts from scratch and whatever "on-brand" instinct the session had at the start decays as context fades.
+Two distinct problems live inside feature-image production. **Per-generation quality** — is this specific image good enough to ship? And **cross-generation consistency** — does the set of images from this publication cohere into a recognizable visual identity over hundreds of posts? A steered-well generator handles the first. It can produce on-brand output when the prompt tells it what on-brand means. What a generator alone can't do is carry that "on-brand" context across a hundred independent sessions. Each new session starts from whatever instinct the current prompt captures, which decays as context fades, which is why the set drifts.
 
 The quality problem and the consistency problem are different problems. The gate fixes the first. The library fixes the second.
 
 ## Friction is the other half of the story
 
-The skills gap alone wouldn't have driven this. I'd have kept making mediocre images and moved on. What pushed this up the priority list was friction.
+Drift alone wouldn't have driven this. I'd have kept making mediocre images and moved on. What pushed this up the priority list was friction.
 
 Every manual feature image is an interruption. Open the post. Open a background generator. Pick a crop. Open Figma. Position the title. Pick a color. Export OG, YouTube, Instagram. Wire them into the frontmatter. Update the blog index card.
 
 Fifteen minutes when it goes well. Forty-five when it doesn't. Multiply by every post and you get the soft backlog that kills a publishing cadence — posts sit in drafting because the feature image is still to-do, momentum dies, the queue of ideas outpaces the queue of shipped work.
 
-A fixed-cost step becomes nearly free, and the threshold for "worth shipping" drops with it. Small ideas become postable, because the feature-image overhead isn't the rate-limiting step anymore. The skills-gap framing is about quality; the friction framing is about whether the post ships at all. Both matter, but friction matters first — you can't iterate on what you didn't ship.
+A fixed-cost step becomes nearly free, and the threshold for "worth shipping" drops with it. Small ideas become postable, because the feature-image overhead isn't the rate-limiting step anymore. The drift framing is about what the published set looks like; the friction framing is about whether the set exists at all. Both matter, but friction matters first — you can't iterate on what you didn't ship.
 
 ## The pipeline, end to end
 
@@ -63,16 +62,20 @@ No database. No framework. Just Astro, two server endpoints that 404 in prod, an
 
 Two JSONL files back the whole thing, checked into the repo:
 
-- `.feature-image-history.jsonl` — every generation ever run. One line per record. The raw audit log, and the substrate fitness scores are computed from.
+- `.feature-image-history.jsonl` — every generation ever run. One line per record. The raw audit log, and the substrate that fitness scores are computed from.
 - `.feature-image-pipeline.jsonl` — workflow items with state transitions. One record per state change.
 
-Every workflow item moves through four states:
+The whole state machine is a TypeScript union:
 
-```
-open → decided → applied | cancelled
+```typescript
+export type WorkflowState =
+  | 'open'       // agent has enqueued; user is iterating
+  | 'decided'    // user has picked an approved generation
+  | 'applied'    // agent has wired it into the post
+  | 'cancelled';
 ```
 
-`open` means the agent has enqueued a post and I'm expected to iterate and pick one. `decided` means I've marked an approved generation for this workflow. `applied` means `/feature-image-apply` has copied the image, updated frontmatter, and wired the blog index card.
+Each line of `.feature-image-pipeline.jsonl` is a `WorkflowItem` keyed to one of those states, appended on every transition.
 
 Why files instead of a database: zero infrastructure, inspectable with `tail -f` and `jq`, the schema is a TypeScript type, and rewriting history is `git`. But the load-bearing reason is that these files are the substrate the library learns from — losing them would mean losing the selection history. Version control makes that hard to do by accident.
 
@@ -104,22 +107,10 @@ And the library has a second property the rest of the system doesn't: it gets sh
 
 The generator, the gate, and the library are all running. The JSONL audit log and the workflow state machine are running. Rating, fitness scoring, and weighted suggestion are running. The skills are in use.
 
-What isn't: the library is young. The fitness scores are based on a few dozen generations, not a few thousand. Convergence is a claim about where this goes, not a claim about where it is. The older feature images on this site are still the old, hand-made ones. New posts go through the pipeline. Somewhere between the two is where the system has to prove out — not by making me a designer, but by making "not a designer" good enough.
+What isn't yet: the library is young. Fitness scores are based on a few dozen generations, not a few thousand. Convergence is a claim about where this goes, not a claim about where it is.
 
 ## Why this matters beyond feature images
 
-The pattern generalizes. For any AI-assisted workflow where output is high-variance and the human can't articulate the target in advance, three pieces are load-bearing: a generator, a gate cheap enough to actually use, and a population of parameterizations under selection pressure. The generator is the easy part. The gate and the library are the missing infrastructure. Build those, and a fourth thing happens on its own: the system gets sharper without anyone having to plan for it.
+The pattern generalizes past images. Any creative identity that has to survive across many AI-assisted sessions — voice, tone, house style, visual language — has the same shape of problem: per-session quality is a different job than cross-session coherence, and no amount of better prompting at the point of use will fix the second one. Feature images are one instance. Headline style is another. An editorial voice, kept recognizable across a hundred posts written with AI assistance, is another.
 
-## Show our work
-
-The `WorkflowState` union is the whole state machine:
-
-```typescript
-export type WorkflowState =
-  | 'open'       // agent has enqueued; user is iterating
-  | 'decided'    // user has picked an approved generation
-  | 'applied'    // agent has wired it into the post
-  | 'cancelled';
-```
-
-Each line of `.feature-image-pipeline.jsonl` is a `WorkflowItem` keyed to one of those states, appended on every transition. The full `WorkflowItem` interface, the `SKILL.md` files, and the pipeline module are available as gists on request.
+The load-bearing pieces are the same every time: a generator, a gate cheap enough to actually use, and a population of parameterizations under selection pressure. The generator is the easy part. The gate and the library are the missing infrastructure. Build those, and a fourth thing happens on its own — the system gets sharper without anyone having to plan for it.

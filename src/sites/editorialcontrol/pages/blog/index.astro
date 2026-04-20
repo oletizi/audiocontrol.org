@@ -1,39 +1,37 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 
-interface BlogPost {
-  number: string;
+interface BlogPostFrontmatter {
   title: string;
   description: string;
   date: string;
   datePublished: string;
-  slug: string;
-  image?: string;
+  dateModified?: string;
+  author?: string;
   tags?: string[];
+  layout: string;
 }
 
-const blogPosts: BlogPost[] = [
-  {
-    number: 'No. 01',
-    title: 'Build Your Own AI Editorial Calendar',
-    description:
-      'AI in content marketing is table stakes; most workflows using it aren\'t fast or flexible enough to keep up. A concrete alternative: an editorial calendar built on top of a coding agent plus Markdown files and a weekend of work. Treat the agent like an in-house developer.',
-    date: 'April 2026',
-    datePublished: '2026-04-18',
-    slug: 'building-the-editorial-calendar-feature',
-    tags: ['AI agents', 'Editorial', 'Workflow', 'Claude'],
-  },
-  {
-    number: 'No. 02',
-    title: 'Automating Around a Design Skills Gap',
-    description:
-      'The older feature images on my audiocontrol.org blog are rough. I\'m not a designer and I\'m not trying to become one. Closing the skills gap with automation, dropping the friction of shipping posts, and growing a design system by artificial selection.',
-    date: 'April 2026',
-    datePublished: '2026-04-18',
-    slug: 'feature-image-automation-feature',
-    tags: ['AI', 'Automation', 'Design', 'Workflow'],
-  },
-];
+const postModules = import.meta.glob<{ frontmatter: BlogPostFrontmatter }>('./**/index.md', { eager: true });
+
+const blogPosts = Object.entries(postModules)
+  .map(([filepath, mod]) => ({
+    frontmatter: mod.frontmatter,
+    slug: filepath.replace(/^\.\//, '').replace(/\/index\.md$/, ''),
+  }))
+  .sort((a, b) => {
+    const dateA = new Date(a.frontmatter.datePublished);
+    const dateB = new Date(b.frontmatter.datePublished);
+    return dateA.getTime() - dateB.getTime();
+  })
+  .map((post, i) => ({
+    number: `No. ${String(i + 1).padStart(2, '0')}`,
+    title: post.frontmatter.title,
+    description: post.frontmatter.description,
+    datePublished: post.frontmatter.datePublished,
+    slug: post.slug,
+    tags: post.frontmatter.tags,
+  }));
 
 const formatDate = (iso: string): string => {
   const d = new Date(iso + 'T00:00:00');

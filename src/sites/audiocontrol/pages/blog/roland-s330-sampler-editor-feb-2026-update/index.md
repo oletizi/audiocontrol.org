@@ -6,6 +6,7 @@ date: "February 2026"
 datePublished: "2026-02-09"
 dateModified: "2026-02-09"
 author: "Orion Letizi"
+tags: ["Roland", "S-330", "Release"]
 ---
 
 # What's New in the S-330 Web Editor

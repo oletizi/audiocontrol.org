@@ -6,6 +6,8 @@ date: "January 2025"
 datePublished: "2025-01-15"
 dateModified: "2025-01-15"
 author: "Orion Letizi"
+image: "/images/s-330-feature.jpg"
+tags: ["Roland", "S-330", "Open Source"]
 ---
 
 # A Modern Web Editor for the S-330, Roland's Underdog 80's 12-bit Sampler
