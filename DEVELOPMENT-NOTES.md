@@ -4,6 +4,49 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-20: Editorial Calendar — editorial-review extension (Phases 8–12 planning; Phase 8 complete; Phase 9 tasks 1–3)
+### Feature: editorial-calendar (editorial-review extension)
+### Worktree: audiocontrol.org-editorial-calendar
+
+**Goal:** Finish the editor's-pass work on the feature-image post; review and install the two voice copywriting skills from the downloaded zip; extend the editorial-calendar feature with Phases 8–12 (`editorial-review` — an analog of feature-image-generator for prose); begin implementation starting with Phase 8 infrastructure.
+
+**Accomplished:**
+
+- **Feature-image post shipped to PR #89.** Applied finishing edits (rework opening to lead with the drift claim and resolve the generator/Claude-Code ambiguity by naming DALL-E 3 / FLUX; tighten "What's actually running"; fold "Show our work" into "queue is a file"; fix "substrate that fitness scores are computed from" copy error; rewrite generalization to name specific instances — voice, tone, headline style, editorial voice). Also committed the user's author-pass rewrites on top (three-problem framing: per-artifact quality, cross-artifact consistency, process friction + decision fatigue; "Friction first"; line-wrap pass).
+- **Installed two copywriting skills** from `~/Downloads/copywriter-skills.zip` after a review: `audiocontrol-voice` (service-manual aesthetic) and `editorialcontrol-voice` (magazine voice), each with a SKILL.md + `references/` directory of calibrated excerpts from real site text. Includes a `voice-vs-audiocontrol.md` reference specifically to prevent register bleed between the two siblings. Committed to `feature/editorial-calendar` — PR deferred until they prove out in practice.
+- **Extended editorial-calendar with Phases 8–12** (`editorial-review`). PRD, workplan, and README updated; five GitHub issues created (#90–#94). Scope: JSONL draft pipeline, dev-only annotation UI, orchestration skills for the review loop, short-form (social) review, voice-library feedback signal. Skill family renames existing `/editorial-review` → `/editorial-status` to free the namespace.
+- **Phase 8 complete (issue #90 closed).** Seven tasks, six commits: skill rename + reference updates; types module (state machine + discriminated-union annotation types + history entry union); pipeline module following the `rootDir` first-arg convention (mirrors `scripts/lib/editorial/calendar.ts`); barrel export; tracked empty JSONL files + gitignore note; dev-only route stubs on both sites; server endpoints (annotate / annotations / decision) backed by a shared `handlers.ts`. 36 unit tests (state machine + pipeline round-trip + handler validation + success/404/409 paths). Build clean; dev 200, prod 404 verified.
+- **Phase 9 tasks 1–3 complete.** Added workflow GET endpoint (`handleGetWorkflow` — fetch by id or by (site, slug) + contentKind + platform + channel) and version POST endpoint (`handleCreateVersion` — operator edit-mode submission that server-computes a reversible `lineDiff` and appends both a new `DraftVersion` and an `edit` annotation). Rendered the draft in the real `BlogLayout.astro` via a dynamic-import remark→rehype pipeline. Sticky review banner with site/slug, state, version selector (`?v=N`), and a Phase-9-scaffold note. Error banner for missing workflows with the exact `/editorial-draft-review` command to fix it. End-to-end verified against a test workflow on the editorialcontrol dev server.
+
+**Didn't Work:**
+
+- **`git add -A` in the skill-rename commit** picked up stray untracked `public/images/generated/*.png` files from a prior feature-image CLI run. The existing gitignore only covered the site-scoped path (`src/sites/audiocontrol/public/images/generated/`), not the bare `public/images/generated/` path. Had to follow up with a second commit (`bcf2196`) that `git rm --cached`'d the files and added the legacy path to gitignore.
+- **Astro frontmatter `import` placement gotcha.** Placing imports *after* a top-level `return` (in this case, the `import.meta.env.PROD` 404 guard) caused esbuild to fail with a misleading `Unterminated string literal` error at an arbitrary line/column that didn't correspond to anything in the source. Symptoms: reducing the file to 15 lines still triggered the error at line 34. Root cause discovered by copying the working `feature-image-preview.astro` pattern (imports before guard) and incrementally adding the original code back. Documented in the commit body and both route files were rewritten with imports first.
+- **`@astrojs/markdown-remark`'s `createMarkdownProcessor` broke the Netlify SSR bundler** when imported from an Astro page frontmatter. Same class of bundling issue with `remark-parse`. Worked around by extracting the markdown render to `scripts/lib/editorial-review/render.ts` (not re-exported from the barrel to avoid transitive contamination) and importing it via `await import(...)` inside the page frontmatter. Dynamic imports in the Astro SSR context avoid the build-time bundle resolution entirely.
+
+**Course Corrections:**
+
+- [PROCESS] **Started with `git add -A` against the CLAUDE.md convention.** The project explicitly prefers adding files by name to avoid accidentally committing sensitive or stray files. The PNG fallout was small but exactly the failure mode the convention guards against. Self-corrected in a follow-up commit; worth remembering.
+- [COMPLEXITY] **Initial feature slug choice `editorial-review` collided with the existing `/editorial-review` status skill.** User flagged the namespace conflict. Resolved by keeping `editorial-review` as the feature slug and renaming the existing skill to `/editorial-status` — arguably a cleaner name for what it does. Two-step trade: slightly more refactor, but gets a better name for the display skill *and* the feature slug. Right call.
+- [DOCUMENTATION] **Flagged a minor nit during the voice-skill review that turned out to be a misreading.** The `audiocontrol-voice` skill uses `"Open source · Web-native"` as a signature phrase; I flagged this because audiocontrol.org the site isn't open source. User clarified: audiocontrol.org is *about* the open-source `@audiocontrol-org/audiocontrol` project. The signature is accurate. Nit withdrawn. Lesson: when a copy decision looks like a factual error but sits on top of a site I've seen ten times, check my own model first before flagging.
+
+**Quantitative:**
+- Messages: ~25 user messages (continued session across a prior context-reset)
+- Commits: 13 on `feature/editorial-calendar` (tree at `3a6b5e9`)
+- Corrections: 1 substantive from user (the skill-namespace collision), 1 gentle correction (Open-source nit)
+- Tests added: 47 total in `test/editorial-review/` (7 types + 14 pipeline + 15 handlers + 11 additional handler tests for Phase 9)
+- Test status: 166/168 unit pass (2 pre-existing integration failures hitting live Netlify editor assets — unrelated)
+- Files created: 14+ new files in `scripts/lib/editorial-review/`, `src/sites/*/pages/api/dev/editorial-review/`, `src/sites/*/pages/dev/editorial-review/`, `.claude/skills/audiocontrol-voice/`, `.claude/skills/editorialcontrol-voice/`
+
+**Insights:**
+
+- **The feature-image-generator pipeline is a strong template for convergence-by-iteration AI-assisted workflows.** Phase 8 of editorial-review mirrored its shape almost exactly — JSONL history + pipeline files, dev-only Astro routes with a PROD-guard 404, thin endpoint wrappers calling into a shared handlers module, rootDir-parameterized functions for testability. Writing Phase 8 took hours, not days, because the shape was decided. The same template will probably apply to future AI-in-the-loop tooling (analytics review, schema-review, etc.).
+- **Install calibrated voice skills rather than rolling your own if the source is trustworthy.** The two downloaded voice skills were built from real site text. Rolling an equivalent in-session would have meant 4–8 hours of careful drafting and calibration against samples — and the result would be my model of what the voice is, not what the voice actually is on the page. When an artifact is already calibrated to a source you can verify, install it and revise from real use.
+- **Astro's SSR bundler has real sharp edges that don't show up until build time.** Two different bundling failures in one session — import-order and ESM-transitive — both with misleading error messages. The meta-lesson: when an Astro page fails to build with an error that doesn't match what's in the source, suspect (a) import-ordering at the frontmatter boundary and (b) any ESM-only package pulled in transitively. Fix (a) by putting all imports first; fix (b) by moving the problematic module out of the barrel and using a dynamic `import()` at the call site.
+- **Delegate UI work, keep plumbing in-house.** Phase 9 tasks 1–3 (two endpoints + rendering in BlogLayout) were tight, well-specified, and came out clean written directly. Phase 9 tasks 4–6 (selection-to-comment overlay, edit-mode toggle, polling, tests) are genuinely UI work — character-offset math, client-side JS, sidebar layout — where `ui-engineer` will produce better output than hand-coding in a long-running session. Good natural handoff boundary.
+
+---
+
 ## 2026-04-18: editorialcontrol-site — Phase 1 (Multi-Site Source Layout + Build Split)
 ### Feature: editorialcontrol-site
 ### Worktree: audiocontrol.org-editorialcontrol-site

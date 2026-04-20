@@ -23,7 +23,7 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 6 | YouTube as First-Class Content + Cross-link Audit | Complete |
 | 7 | Tool Cross-link Audit | Complete |
 | 8 | Draft Review Pipeline + Surface Scaffolding | Complete |
-| 9 | Longform Annotation UI | Planned |
+| 9 | Longform Annotation UI | In Progress (3/6 tasks) |
 | 10 | Orchestration Skills for the Review Loop | Planned |
 | 11 | Short-form Review (Social Posts) | Planned |
 | 12 | Voice-Library Feedback Signal | Planned |

@@ -492,25 +492,32 @@ No new user-invocable skills in this phase. This is UI work that the Phase 10 sk
 
 #### Implementation
 
-- [ ] Mount the draft's markdown through the real blog layout (Astro collections or direct import), so the operator sees the post as it will ship — feature image, headings, typography, spacing
+Phase 9 adds two server endpoints beyond the three scaffolded in Phase 8, to support the UI:
+
+- [x] `GET /api/dev/editorial-review/workflow` — fetch workflow + versions by id or (site, slug). `handleGetWorkflow` in `scripts/lib/editorial-review/handlers.ts`
+- [x] `POST /api/dev/editorial-review/version` — operator edit-mode submission. Server appends a new `DraftVersion` with `originatedBy='operator'` and records an edit annotation carrying a line-level diff. `handleCreateVersion` + `lineDiff` / `applyLineDiff` helpers
+
+Then the UI:
+
+- [x] Mount the draft's markdown through the real blog layout. Route fetches workflow via `handleGetWorkflow`, parses the current version's frontmatter, renders the body through a remark→rehype pipeline, and mounts the result inside `BlogLayout.astro`. Feature image, headings, typography, spacing match production. Sticky review banner shows site/slug, state, version selector, and a "Phase 9 scaffold" note
 - [ ] Select-to-comment overlay:
   - [ ] Client-side selection capture → range (character offsets against the MD source, not the rendered HTML)
   - [ ] Margin-note sidebar: list of comments, each highlighted in the text when hovered
   - [ ] Category selector per comment (values from Phase 12 — for now, free text with a planned taxonomy)
 - [ ] Edit-mode toggle:
   - [ ] Textarea shows raw MD of the current version
-  - [ ] On submit, server computes a diff against the prior version and stores both the new version and the diff
-  - [ ] Edit-mode submissions create a new `DraftVersion` with `originatedBy: 'operator'`
-- [ ] Version selector: dropdown or tab strip; selecting a prior version re-renders the page at that version
+  - [ ] On submit, POST `/api/dev/editorial-review/version` (server already computes diff + appends `DraftVersion`)
+  - [ ] Edit-mode submissions create a new `DraftVersion` with `originatedBy: 'operator'` (endpoint already enforces this)
+- [x] Version selector: ?v=N URL param + clickable tab strip in the sticky banner (current version highlighted)
 - [ ] Controls: **Approve** (records `approve` annotation, transitions state to `approved`), **Iterate** (records state transition to `iterating`, surfaces next-step text: "run `/editorial-iterate <slug>` in Claude Code"), **Reject** (cancels workflow)
 - [ ] Polling or SSE for annotation updates when the operator refreshes after the agent has iterated
 
 #### Tests
 
+- [x] Edit-mode diff is reversible (applying the diff to the before-version yields the after-version) — tested via `lineDiff`/`applyLineDiff` round-trip for addition/substitution/deletion/multi-line MD
 - [ ] Character-offset ranges survive a round-trip through serialization
-- [ ] Edit-mode diff is reversible (applying the diff to the before-version yields the after-version)
 - [ ] Approving from an older version than the current is flagged as an operator error (with a confirmation prompt in UI; not an automatic bypass)
-- [ ] Prod build returns 404 for `/dev/editorial-review/*`
+- [ ] Prod build returns 404 for `/dev/editorial-review/*` (Phase 8 endpoints verified; route stubs verified; Phase 9 full-UI verification still pending)
 
 **Acceptance Criteria**
 
