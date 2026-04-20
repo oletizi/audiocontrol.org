@@ -483,6 +483,51 @@ Two live merge conflicts hit this session on `.feature-image-history.jsonl` and 
 - Indexing files (e.g. `journal/history/INDEX.json`) to speed up reads — only if directory scan shows measurable cost
 - Cross-tool format-sharing (e.g. reusing the same journal for the editorial calendar) — out of scope
 
+## Phase 16: Studio Redesign — Service-Manual Aesthetic + ProgressTape (#103)
+
+**Deliverable:** The Feature Image Studio stops reading as generic dev-tool dark mode and starts reading as the audiocontrol house voice — service-manual / flight-instrumentation. The 4000-line single-page tool splits into five linked routes with a shared chrome. Every long-running operation routes through a new `ProgressTape` primitive that gives the operator rich real-time feedback (numbered stages, live elapsed, EMA-driven estimated remaining, cancel affordance).
+
+### Motivation
+
+The Studio accreted 15 phases of feature work on a palette and typography stack that has no relationship to audiocontrol.org itself — cool-grey backgrounds, teal accent, Inter + JetBrains Mono. Departure Mono (the house display face) is loaded in the bake route but never in the Studio UI. Hierarchy breaks down in focus mode (seven register changes with no visual rhythm), semantic color is accidental (green means both `APPROVED` and `GENERATED`), and long-running operations — Approve bakes three social formats via Playwright — surface progress through a right-side drawer that's easy to miss.
+
+Design review + full plan live in `docs/1.0/001-IN-PROGRESS/feature-image-generator/studio-redesign-plan.md`. The commitment is one bold aesthetic direction executed with precision, not a comfortable incremental polish.
+
+### Concepts
+
+- **Service-manual aesthetic.** Annotated chrome (part numbers, stage labels, unit indicators). Tabular figures on readouts. Paper-ruled backdrops under thread composers. Stamped status chips. Etched typographic hierarchy. Motion moments at significant events (approve = amber-glow stamp).
+- **Route-split IA.** `/dev/studio` (gallery), `/dev/studio/focus/[id]` (focus canvas), `/dev/studio/generate`, `/dev/studio/templates`, `/dev/studio/help`. Top-nav bezel across all routes. Workflows drawer stays as a cross-route concern, reworked as a sliding service-manual tab sticker.
+- **`ProgressTape` primitive.** The flagship feedback shape. Fixed to viewport bottom, ~72px active height, collapses to a 4px rule + summary stamp when idle. Fills left-to-right like a reel-to-reel tape. Numbered stage markers with hairline rules between. Cancel affordance on safe-to-cancel operations. Shared component used by generate, recomposite, approve, and apply-via-skill.
+- **Target-site indicator.** `--studio-target` CSS variable switches amber ↔ chartreuse based on active target site. Chrome stays audiocontrol-branded. Header carries a hard-to-miss TARGET readout.
+
+### Tasks
+
+- [ ] **Commit 1 — Foundation.** `src/sites/audiocontrol/styles/studio-tokens.css` with full token set (bg/ink/primary/accent/target/status). `src/sites/audiocontrol/layouts/StudioLayout.astro` with header bezel, top nav, target readout, grain background, mount point for the progress tape, font-face declarations for Departure Mono + IBM Plex Sans + JetBrains Mono. No functional routes yet; just the foundation.
+- [ ] **Commit 2 — ProgressTape primitive.** `src/sites/audiocontrol/components/studio/ProgressTape.astro` + `progress-tape.ts` client module. Accepts `stages[]` prop, exposes `start(idx) / complete(idx) / fail(idx, error) / cancel()` imperative API. Live elapsed + ETA tick. Operation-keyed EMA persisted to localStorage. Demo harness at `/dev/studio/proto/progress` that exercises fake multi-step operations so the tape's aesthetic can be iterated in isolation.
+- [ ] **Commit 3 — `/dev/studio` gallery.** Main route. Timeline-ordered history wall (rule-lines between date blocks). Cards rebuilt: stamped status chips (`✓ APPROVED` with amber glow, `✗ REJECTED` with struck-through treatment, `GENERATED` neutral), annotated action rows (Focus / Approve / Reject / overflow menu). Workflow tab sticker on the right edge with stamped tab numeral and badge count. Reads from existing `/api/dev/feature-image/log` + `/workflow` endpoints.
+- [ ] **Commit 4 — `/dev/studio/focus/[id]`.** Image hero LEFT inside a letterbox rule-frame with format tabs above (og / youtube / instagram). DIP-switch panel RIGHT: annotated parameter list (PARAM / VALUE / UNIT) covering preset, grade, phosphor, vignette, scanlines, grain, position, align, overlay. Paper-ruled thread composer BELOW with a distinct background register. Approve flow wired to `ProgressTape` — bake 3 formats → mark approved → submit workflow decision. Keyboard shortcuts preserved (ESC, Cmd/Ctrl+Enter, Enter/Space).
+- [ ] **Commit 5 — `/dev/studio/generate` + `/dev/studio/templates` + `/dev/studio/help`.** Generate: ground-school specimen-sheet layout — labeled fieldsets, unit indicators, mono readouts beside inputs. Templates: first-class panel with fitness graph, lineage tree, inline preview, tag filters. Help: the existing help content promoted to its own document route, re-typeset in the service-manual voice (numbered flow, hanging-indent skill index, keyboard-shortcut table).
+- [ ] **Commit 6 — Cutover.** Redirect `/dev/feature-image-preview` → `/dev/studio` via Astro's redirect config. Delete `src/sites/audiocontrol/pages/dev/feature-image-preview.astro` (4000 lines retired). Update README + feature docs with the new route list + design notes. Verify gallery refresh / thread polling / workflow polling all still work against the same endpoints.
+
+### Acceptance Criteria
+
+- [ ] `/dev/studio` renders the history wall; cards use the new stamped status chips + annotated action rows; archived entries stay hidden behind the `show N archived` toggle (current behavior preserved)
+- [ ] `/dev/studio/focus/[id]` loads with the image-hero + DIP-switch layout; overlay position/align/filter edits persist; commit + approve both route through `ProgressTape`
+- [ ] `ProgressTape` appears at viewport bottom during any long-running operation; shows live elapsed + ETA with tabular figures; collapses to a 4px rule with the last operation's summary stamp when idle; cancel affordance only appears on safe-to-cancel operations
+- [ ] TARGET indicator in the header reads AUDIOCONTROL or EDITORIALCONTROL clearly; `--studio-target` CSS variable switches amber ↔ chartreuse based on active target
+- [ ] `/dev/feature-image-preview` redirects to `/dev/studio` (keeps muscle memory intact; bookmarks survive)
+- [ ] `npm run build` green for both sites
+- [ ] No changes to any API endpoint, journal storage layout, or Claude Code skill
+- [ ] Old 4000-line `feature-image-preview.astro` deleted; new routes total under 2500 lines across 5–8 files (hard budget — if the redesign overshoots this, it's over-designed)
+
+### Deferred
+
+- Keyboard-shortcut palette (`?` overlay listing every shortcut)
+- Command bar / `Cmd+K` action launcher
+- Multi-select operations on gallery cards (bulk archive, bulk reject)
+- Per-site chrome modes (audiocontrol vs editorialcontrol chrome swap) — rejected in the plan; target indicator is sufficient
+- Motion reduced-motion override (should land with commit 4's approve-stamp animation but is deferred if it grows scope)
+
 ## File Structure
 
 ```

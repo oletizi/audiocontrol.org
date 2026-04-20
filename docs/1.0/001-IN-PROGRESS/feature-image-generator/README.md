@@ -33,6 +33,7 @@ Automates the creation of feature images for blog posts, pages, and social media
 | 13. Conversation Thread with Claude | #76 | Complete |
 | 14. Multi-Site Feature Images | #85 | Complete |
 | 15. Journal Records (one file per entry) | #99 | Complete (PR [#100](https://github.com/oletizi/audiocontrol.org/pull/100)) |
+| 16. Studio Redesign (service-manual + ProgressTape) | #103 | Not Started |
 
 ## Storage layout
 
