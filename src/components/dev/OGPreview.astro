@@ -26,6 +26,27 @@ export interface FilterState {
 export type PresetName = 'none' | 'subtle' | 'retro-crt' | 'teal-amber' | 'heavy-crt';
 export type Site = 'audiocontrol' | 'editorialcontrol';
 
+export type OverlayPosition = 'bottom' | 'middle' | 'top' | 'left' | 'right' | 'left-one-third' | 'left-two-thirds' | 'right-one-third' | 'right-two-thirds' | 'full';
+
+export const OVERLAY_POSITIONS: readonly OverlayPosition[] = ['bottom', 'middle', 'top', 'left', 'left-two-thirds', 'left-one-third', 'right', 'right-two-thirds', 'right-one-third', 'full'] as const;
+
+export function isOverlayPosition(v: unknown): v is OverlayPosition {
+  return typeof v === 'string' && (OVERLAY_POSITIONS as readonly string[]).includes(v);
+}
+
+/**
+ * How the text stack anchors within the panel. `auto` follows the
+ * position's natural default (bottom/left/right anchor bottom, top
+ * anchors top, middle/full anchor center). Explicit values override.
+ */
+export type OverlayAlign = 'auto' | 'top' | 'center' | 'bottom';
+
+export const OVERLAY_ALIGNS: readonly OverlayAlign[] = ['auto', 'top', 'center', 'bottom'] as const;
+
+export function isOverlayAlign(v: unknown): v is OverlayAlign {
+  return typeof v === 'string' && (OVERLAY_ALIGNS as readonly string[]).includes(v);
+}
+
 export function presetToFilters(preset: PresetName): FilterState {
   switch (preset) {
     case 'none':
@@ -72,6 +93,16 @@ interface Props {
   filters?: FilterState;
   preset?: PresetName;
   overlay?: boolean;
+  /**
+   * Where the text panel sits. 'bottom' is the historical default and keeps
+   * the thin primary-color top rule. 'full' covers the whole image and drops
+   * the accent rule. Left/right variants are vertical strips at half width;
+   * the one-third / two-thirds variants are asymmetric splits where the
+   * narrow side scales text down via --og-text-scale.
+   */
+  overlayPosition?: OverlayPosition;
+  /** Vertical anchor for the text stack inside the panel. */
+  overlayAlign?: OverlayAlign;
   editable?: boolean;
   id?: string;
   site?: Site;
@@ -88,6 +119,8 @@ const {
   filters,
   preset,
   overlay = true,
+  overlayPosition = 'bottom',
+  overlayAlign = 'auto',
   editable = false,
   id,
   site = 'audiocontrol',
@@ -124,6 +157,8 @@ const inlineStyle = dimStyle + brandStyle(brand);
   data-scanlines={effective.scanlines}
   data-grain={effective.grain}
   data-overlay={overlay ? 'on' : 'off'}
+  data-overlay-position={overlayPosition}
+  data-overlay-align={overlayAlign}
   data-preset={preset ?? ''}
   data-site={site}
   id={id}

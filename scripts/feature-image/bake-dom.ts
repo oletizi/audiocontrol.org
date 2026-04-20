@@ -2,6 +2,20 @@ import { chromium, type Browser } from 'playwright';
 import { join } from 'path';
 import { mkdir } from 'fs/promises';
 
+export type OverlayPosition =
+  | 'bottom'
+  | 'middle'
+  | 'top'
+  | 'left'
+  | 'right'
+  | 'left-one-third'
+  | 'left-two-thirds'
+  | 'right-one-third'
+  | 'right-two-thirds'
+  | 'full';
+
+export type OverlayAlign = 'auto' | 'top' | 'center' | 'bottom';
+
 export interface BakeVariant {
   format: 'og' | 'youtube' | 'instagram';
   width: number;
@@ -20,6 +34,10 @@ export interface BakeParams {
   filters?: Record<string, string>;
   /** Site whose brand tokens drive the overlay. */
   site?: string;
+  /** Where the text panel sits. Defaults to 'bottom' on the bake page. */
+  overlayPosition?: OverlayPosition;
+  /** Vertical anchor inside the panel. 'auto' follows the position default. */
+  overlayAlign?: OverlayAlign;
   variants: BakeVariant[];
 }
 
@@ -45,6 +63,8 @@ function buildBakeUrl(baseUrl: string, variant: BakeVariant, params: BakeParams)
   if (params.preset) url.searchParams.set('preset', params.preset);
   if (params.site) url.searchParams.set('site', params.site);
   url.searchParams.set('overlay', variant.overlay ? 'on' : 'off');
+  if (params.overlayPosition) url.searchParams.set('overlayPosition', params.overlayPosition);
+  if (params.overlayAlign) url.searchParams.set('overlayAlign', params.overlayAlign);
   for (const [k, v] of Object.entries(params.filters ?? {})) {
     if (v) url.searchParams.set(k, v);
   }

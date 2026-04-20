@@ -103,33 +103,114 @@
 .og-preview[data-grain="on"]    .og-grain { opacity: 0.08; }
 .og-preview[data-grain="heavy"] .og-grain { opacity: 0.12; }
 
-/* ── Text overlay panel (bottom) ──────────────────────────────────────
+/* ── Text overlay panel ───────────────────────────────────────────────
  * Panel bg is derived from the site's background token (ink-near-black
- * either way) with alpha; top rule uses the site's primary as a hairline
- * brand cue. Both respect the site's typography stack. */
+ * either way) with alpha; an accent rule on the interior edge uses the
+ * site's primary as a hairline brand cue. Position variants reshape the
+ * panel (bottom / top / middle strip, left / right columns at three
+ * widths, or full-bleed). Narrow columns scale type down via
+ * --og-text-scale; the default (1) applies to full-width panels. */
 .og-preview .og-text-panel {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
   padding: 5cqw;
   background: color-mix(in oklch, var(--og-background) 82%, transparent);
-  border-top: 0.25cqw solid var(--og-primary);
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: 1.3cqw;
   z-index: 2;
+  --og-text-scale: 1;
 }
 
 .og-preview[data-overlay="off"] .og-text-panel {
   display: none;
 }
 
+/* ── Position variants ──
+ * Each rule sets only the geometry + the brand-accent edge. Defaults above
+ * supply the rest. Borders use the site's primary (chartreuse / amber);
+ * editorialcontrol overrides to parchment-cream further down. */
+
+/* Full-width horizontal strips */
+.og-preview[data-overlay-position="bottom"] .og-text-panel {
+  left: 0; right: 0; bottom: 0;
+  border-top: 0.25cqw solid var(--og-primary);
+}
+.og-preview[data-overlay-position="top"] .og-text-panel {
+  left: 0; right: 0; top: 0;
+  border-bottom: 0.25cqw solid var(--og-primary);
+  justify-content: flex-start;
+}
+.og-preview[data-overlay-position="middle"] .og-text-panel {
+  left: 0; right: 0; top: 35%; bottom: 35%;
+  border-top: 0.25cqw solid var(--og-primary);
+  border-bottom: 0.25cqw solid var(--og-primary);
+  justify-content: center;
+}
+
+/* Vertical strips (narrow text columns — scale text down) */
+.og-preview[data-overlay-position="left"] .og-text-panel {
+  left: 0; top: 0; bottom: 0; width: 50%;
+  border-right: 0.25cqw solid var(--og-primary);
+  --og-text-scale: 0.82;
+}
+.og-preview[data-overlay-position="right"] .og-text-panel {
+  right: 0; top: 0; bottom: 0; width: 50%;
+  border-left: 0.25cqw solid var(--og-primary);
+  --og-text-scale: 0.82;
+}
+.og-preview[data-overlay-position="left-two-thirds"] .og-text-panel {
+  left: 0; top: 0; bottom: 0; width: 66.667%;
+  border-right: 0.25cqw solid var(--og-primary);
+  --og-text-scale: 0.95;
+}
+.og-preview[data-overlay-position="right-two-thirds"] .og-text-panel {
+  right: 0; top: 0; bottom: 0; width: 66.667%;
+  border-left: 0.25cqw solid var(--og-primary);
+  --og-text-scale: 0.95;
+}
+.og-preview[data-overlay-position="left-one-third"] .og-text-panel {
+  left: 0; top: 0; bottom: 0; width: 33.333%;
+  border-right: 0.25cqw solid var(--og-primary);
+  --og-text-scale: 0.58;
+  padding: 3.5cqw;
+  gap: 1cqw;
+}
+.og-preview[data-overlay-position="right-one-third"] .og-text-panel {
+  right: 0; top: 0; bottom: 0; width: 33.333%;
+  border-left: 0.25cqw solid var(--og-primary);
+  --og-text-scale: 0.58;
+  padding: 3.5cqw;
+  gap: 1cqw;
+}
+
+/* Full-bleed — no accent, panel covers the whole image */
+.og-preview[data-overlay-position="full"] .og-text-panel {
+  inset: 0;
+  border: 0;
+  justify-content: center;
+  background: color-mix(in oklch, var(--og-background) 78%, transparent);
+}
+
+/* ── Explicit vertical-align overrides ──
+ * data-overlay-align defaults to "auto" (no-op — position rules above
+ * supply the natural anchor). Explicit top/center/bottom win via
+ * specificity parity with the position rules (matching twice). */
+.og-preview[data-overlay-align="top"] .og-text-panel {
+  justify-content: flex-start;
+}
+.og-preview[data-overlay-align="center"] .og-text-panel {
+  justify-content: center;
+}
+.og-preview[data-overlay-align="bottom"] .og-text-panel {
+  justify-content: flex-end;
+}
+
 .og-preview .og-title {
   font-family: var(--og-font-display);
   font-weight: 700;
   color: var(--og-foreground);
-  font-size: 4.3cqw;
+  font-size: calc(4.3cqw * var(--og-text-scale, 1));
   line-height: 1.25;
   margin: 0;
   letter-spacing: 0.01em;
@@ -139,7 +220,7 @@
   font-family: var(--og-font-body);
   font-weight: 700;
   color: var(--og-muted-foreground);
-  font-size: 2.5cqw;
+  font-size: calc(2.5cqw * var(--og-text-scale, 1));
   line-height: 1.3;
   margin: 0;
 }
@@ -157,15 +238,15 @@
 }
 
 .og-preview .og-logo {
-  width: 2.4cqw;
-  height: 2.4cqw;
+  width: calc(2.4cqw * var(--og-text-scale, 1));
+  height: calc(2.4cqw * var(--og-text-scale, 1));
   object-fit: contain;
 }
 
 .og-preview .og-brand-text {
   font-family: var(--og-font-mono);
   font-weight: 700;
-  font-size: 1.8cqw;
+  font-size: calc(1.8cqw * var(--og-text-scale, 1));
   color: var(--og-muted-foreground);
   letter-spacing: 0.01em;
 }
@@ -190,7 +271,7 @@
   font-family: var(--og-font-display);
   font-weight: 700;
   color: var(--og-foreground);
-  font-size: 4.3cqw;
+  font-size: calc(4.3cqw * var(--og-text-scale, 1));
   line-height: 1.25;
   letter-spacing: 0.01em;
 }
@@ -199,7 +280,7 @@
   font-family: var(--og-font-body);
   font-weight: 700;
   color: var(--og-muted-foreground);
-  font-size: 2.5cqw;
+  font-size: calc(2.5cqw * var(--og-text-scale, 1));
   line-height: 1.3;
 }
 
@@ -227,7 +308,12 @@
   letter-spacing: -0.005em;
 }
 .og-preview[data-site="editorialcontrol"] .og-text-panel {
-  border-top-color: var(--og-accent); /* Parchment-cream rule, not chartreuse. */
+  /* Parchment-cream rule across every edge variant (chartreuse is the
+   * editor's pencil — too loud for an always-on hairline). */
+  border-top-color: var(--og-accent);
+  border-bottom-color: var(--og-accent);
+  border-left-color: var(--og-accent);
+  border-right-color: var(--og-accent);
 }
 
 /* ── Aspect ratio variants ── */

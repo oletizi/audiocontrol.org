@@ -88,10 +88,13 @@ Write a JSON payload to a tmp file. Example shapes:
     "preset": "teal-amber",
     "filters": { "grade": "teal-amber", "phosphor": "off", "vignette": "subtle", "scanlines": "off", "grain": "light" },
     "overlay": true,
+    "overlayPosition": "bottom",
     "formats": ["og"]
   }
 }
 ```
+
+`overlayPosition` accepts `bottom` | `middle` | `top` | `left` | `right` | `left-two-thirds` | `right-two-thirds` | `left-one-third` | `right-one-third` | `full`. Pull from the snapshot if the user has been iterating on position; otherwise inherit from the source entry (default `bottom`).
 
 **Clarify** (text-only, no generation):
 ```json

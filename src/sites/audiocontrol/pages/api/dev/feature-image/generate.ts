@@ -14,6 +14,7 @@ import {
   resolveSite,
   getGalleryPublicDir,
 } from '../../../../../../../scripts/feature-image/sites.js';
+import type { OverlayPosition, OverlayAlign } from '../../../../../../../scripts/feature-image/bake-dom.js';
 
 export const prerender = false;
 
@@ -57,6 +58,16 @@ interface GenerateBody {
   outputDir?: string;
   parentEntryId?: string;
   site?: string;
+  /**
+   * Where the text panel sits. Captured on the log entry so a subsequent
+   * DOM rebake (via recomposite or the approve flow) can re-apply the
+   * position without losing it. The satori composite path in pipeline.ts
+   * still renders a bottom-anchored panel; the authoritative output is
+   * the DOM bake.
+   */
+  overlayPosition?: OverlayPosition;
+  /** Vertical anchor inside the panel. 'auto' follows the position default. */
+  overlayAlign?: OverlayAlign;
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -131,6 +142,8 @@ export const POST: APIRoute = async ({ request }) => {
       templateSlug: body.templateSlug,
       parentEntryId: body.parentEntryId,
       site,
+      overlayPosition: body.overlayPosition,
+      overlayAlign: body.overlayAlign,
     };
     appendLog(entry);
 

@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { appendLog, readLog, type LogEntry } from '../../../../../../../scripts/feature-image/log.js';
-import { bakeVariants, formatDims, type BakeVariant } from '../../../../../../../scripts/feature-image/bake-dom.js';
+import { bakeVariants, formatDims, type BakeVariant, type OverlayPosition, type OverlayAlign } from '../../../../../../../scripts/feature-image/bake-dom.js';
 import {
   type Site,
   resolveSite,
@@ -29,6 +29,8 @@ interface RecompositeBody {
   preset?: string;
   filters?: Record<string, string>;
   overlay?: boolean;
+  overlayPosition?: OverlayPosition;
+  overlayAlign?: OverlayAlign;
   formats?: Format[];
   includeFilteredVariant?: boolean;
   baseName?: string;
@@ -128,6 +130,8 @@ export const POST: APIRoute = async ({ request, url }) => {
       preset: body.preset,
       filters: body.filters,
       site,
+      overlayPosition: body.overlayPosition,
+      overlayAlign: body.overlayAlign,
       variants,
     });
 
@@ -160,6 +164,8 @@ export const POST: APIRoute = async ({ request, url }) => {
       notes: `rebaked from ${source.id.slice(0, 8)} via DOM`,
       parentEntryId: source.id,
       site,
+      overlayPosition: body.overlayPosition,
+      overlayAlign: body.overlayAlign,
     };
     appendLog(entry);
 
