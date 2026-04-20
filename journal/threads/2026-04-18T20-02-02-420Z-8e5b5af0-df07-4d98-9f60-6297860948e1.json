@@ -1,0 +1,21 @@
+{
+  "threadId": "15da2dfe-e56f-4dd5-be7e-fec39252277f",
+  "timestamp": "2026-04-18T20:02:02.420Z",
+  "role": "user",
+  "text": "This is better than the previous iteration, but I wish the geometric pattern wasn't so regular.",
+  "snapshot": {
+    "title": "DOM Bake Test",
+    "subtitle": "Phase 12 proof",
+    "prompt": "Abstract grid composition of nine square panels, each showing a slightly different geometric variation — a population of candidates under selection pressure. Flat vector style with subtle gradients. Muted palette of deep indigo, teal, and warm off-white. Minimal lines, no text, no literal machinery or AI imagery. Slight grain texture. Evokes iteration, refinement, and design-system evolution without being on-the-nose.",
+    "preset": "retro-crt",
+    "filters": {
+      "grade": "crt",
+      "phosphor": "on",
+      "vignette": "on",
+      "scanlines": "on",
+      "grain": "on"
+    },
+    "overlay": true
+  },
+  "messageId": "8e5b5af0-df07-4d98-9f60-6297860948e1"
+}

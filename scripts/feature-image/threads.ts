@@ -1,11 +1,12 @@
-import { readFileSync, existsSync, appendFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { randomUUID } from 'crypto';
 import { readLog, type LogEntry } from './log.js';
+import { appendJournal, readJournal } from './journal.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, '..', '..');
-const THREADS_PATH = join(rootDir, '.feature-image-threads.jsonl');
+const THREADS_DIR = join(rootDir, 'journal', 'threads');
 
 export type ThreadRole = 'user' | 'assistant';
 
@@ -19,6 +20,12 @@ export interface ThreadSnapshot {
 }
 
 export interface ThreadMessage {
+  /**
+   * Unique id for this message. Synthesized on append if the caller
+   * doesn't provide one — thread messages didn't carry an id in the
+   * JSONL era; the journal layer needs one for filename routing.
+   */
+  messageId?: string;
   threadId: string;
   timestamp: string;
   role: ThreadRole;
@@ -29,24 +36,14 @@ export interface ThreadMessage {
   snapshot?: ThreadSnapshot;
 }
 
+/** Directory where thread messages are stored (one JSON file per message). */
 export function getThreadsPath(): string {
-  return THREADS_PATH;
+  return THREADS_DIR;
 }
 
-/** Read all thread messages, oldest first. Empty array if the file doesn't exist. */
+/** Read all thread messages, oldest first. Empty array if nothing has been logged yet. */
 export function readAllMessages(): ThreadMessage[] {
-  if (!existsSync(THREADS_PATH)) return [];
-  const content = readFileSync(THREADS_PATH, 'utf-8');
-  const lines = content.split('\n').filter(l => l.trim().length > 0);
-  const messages: ThreadMessage[] = [];
-  for (const line of lines) {
-    try {
-      messages.push(JSON.parse(line) as ThreadMessage);
-    } catch {
-      // skip malformed
-    }
-  }
-  return messages;
+  return readJournal<ThreadMessage>(THREADS_DIR);
 }
 
 /**
@@ -74,7 +71,10 @@ export function readThread(threadId: string): ThreadMessage[] {
     .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 }
 
-/** Append a single message to the thread JSONL. */
+/** Append a single message to the thread journal. Synthesizes a messageId if missing. */
 export function appendMessage(message: ThreadMessage): void {
-  appendFileSync(THREADS_PATH, JSON.stringify(message) + '\n', 'utf-8');
+  const withId: ThreadMessage = message.messageId
+    ? message
+    : { ...message, messageId: randomUUID() };
+  appendJournal(THREADS_DIR, withId, { idField: 'messageId' });
 }

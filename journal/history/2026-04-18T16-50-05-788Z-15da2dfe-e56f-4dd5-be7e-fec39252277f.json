@@ -1,0 +1,29 @@
+{
+  "id": "15da2dfe-e56f-4dd5-be7e-fec39252277f",
+  "timestamp": "2026-04-18T16:50:05.788Z",
+  "prompt": "Abstract grid composition of nine square panels, each showing a slightly different geometric variation — a population of candidates under selection pressure. Flat vector style with subtle gradients. Muted palette of deep indigo, teal, and warm off-white. Minimal lines, no text, no literal machinery or AI imagery. Slight grain texture. Evokes iteration, refinement, and design-system evolution without being on-the-nose.",
+  "provider": "dom-bake",
+  "preset": "retro-crt",
+  "title": "DOM Bake Test",
+  "subtitle": "Phase 12 proof",
+  "formats": "og",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-feature-image-generator/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/7bc18fed-raw.png"
+    ],
+    "filtered": [
+      "/images/generated/phase12-test-filtered.png"
+    ],
+    "composited": [
+      {
+        "provider": "dom",
+        "format": "og",
+        "path": "/images/generated/phase12-test-og.png"
+      }
+    ]
+  },
+  "durationMs": 2619,
+  "notes": "This is better than the previous iteration, but I wish the geometric pattern wasn't so regular.",
+  "archived": true
+}

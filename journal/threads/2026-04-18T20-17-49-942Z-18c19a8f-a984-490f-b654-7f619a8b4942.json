@@ -1,0 +1,7 @@
+{
+  "threadId": "15da2dfe-e56f-4dd5-be7e-fec39252277f",
+  "timestamp": "2026-04-18T20:17:49.942Z",
+  "role": "assistant",
+  "text": "You already did step one — the 5-star rating is the selection signal. Next: click \"Save as template\" on this entry. That captures the prompt + preset + provider as a reusable library record. From then on, the Generate drawer's Template dropdown will show it (with its fitness score updating as future generations using it get rated). When you want a variant, Fork the template — it clones with a parent reference, so the library grows as a lineage tree where good prompts beget good prompts and low-rated ones fade out of the default picker. The lineage across actual generations is also tracked (this entry's parent chain goes back to the original grid attempt via parentEntryId), so you can always see the path that led here.",
+  "messageId": "18c19a8f-a984-490f-b654-7f619a8b4942"
+}

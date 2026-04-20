@@ -1,0 +1,10 @@
+# Journal migration — 2026-04-20T22:42:05.971Z
+
+Each store fanned out from its legacy JSONL into per-entry JSON files.
+
+- history    read=12 written=12 skipped=0
+- pipeline   read=7 written=7 skipped=0
+- threads    read=7 written=7 skipped=0
+
+Once every reader is rewired to the journal/ directory, the source
+.feature-image-*.jsonl files can be deleted.

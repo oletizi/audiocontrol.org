@@ -1,0 +1,34 @@
+{
+  "id": "48c28aed-ba5d-41f6-b6a0-b2152f73820d",
+  "type": "feature-image-iterate",
+  "createdAt": "2026-04-18T20:02:02.420Z",
+  "createdBy": "user",
+  "state": "applied",
+  "context": {
+    "threadId": "15da2dfe-e56f-4dd5-be7e-fec39252277f",
+    "sourceEntryId": "15da2dfe-e56f-4dd5-be7e-fec39252277f",
+    "userFeedback": "This is better than the previous iteration, but I wish the geometric pattern wasn't so regular.",
+    "snapshot": {
+      "title": "DOM Bake Test",
+      "subtitle": "Phase 12 proof",
+      "prompt": "Abstract grid composition of nine square panels, each showing a slightly different geometric variation — a population of candidates under selection pressure. Flat vector style with subtle gradients. Muted palette of deep indigo, teal, and warm off-white. Minimal lines, no text, no literal machinery or AI imagery. Slight grain texture. Evokes iteration, refinement, and design-system evolution without being on-the-nose.",
+      "preset": "retro-crt",
+      "filters": {
+        "grade": "crt",
+        "phosphor": "on",
+        "vignette": "on",
+        "scanlines": "on",
+        "grain": "on"
+      },
+      "overlay": true
+    }
+  },
+  "application": {
+    "appliedAt": "2026-04-18T20:03:42.303Z",
+    "changedFiles": [
+      "public/images/generated/ca8eccec-raw.png",
+      "public/images/generated/ca8eccec-filtered.png",
+      "public/images/generated/ca8eccec-og.png"
+    ]
+  }
+}
