@@ -1,41 +1,115 @@
 ---
 export const prerender = false;
 
+import BlogLayout from '../../../layouts/BlogLayout.astro';
+import {
+  handleGetWorkflow,
+  type DraftVersion,
+  type DraftWorkflowItem,
+} from '../../../../../../scripts/lib/editorial-review/index.js';
+
 if (import.meta.env.PROD) {
   return new Response('Not Found', { status: 404 });
 }
 
 const { slug } = Astro.params;
+const versionParam = Astro.url.searchParams.get('v');
+
+const SITE = 'editorialcontrol';
+
+const fetched = handleGetWorkflow(process.cwd(), {
+  id: null,
+  site: SITE,
+  slug: slug ?? null,
+  contentKind: 'longform',
+  platform: null,
+  channel: null,
+});
+
+let workflow: DraftWorkflowItem | null = null;
+let versions: DraftVersion[] = [];
+let currentVersion: DraftVersion | null = null;
+let renderedHtml = '';
+let fm: Record<string, string> = {};
+let errorMessage: string | null = null;
+
+if (fetched.status === 200) {
+  const body = fetched.body as { workflow: DraftWorkflowItem; versions: DraftVersion[] };
+  workflow = body.workflow;
+  versions = body.versions;
+
+  const requested = versionParam ? parseInt(versionParam, 10) : workflow.currentVersion;
+  currentVersion = versions.find(v => v.version === requested) ?? versions[versions.length - 1];
+
+  if (currentVersion) {
+    const render = await import('../../../../../../scripts/lib/editorial-review/render.js');
+    const parsed = render.parseDraftFrontmatter(currentVersion.markdown);
+    fm = parsed.frontmatter;
+    renderedHtml = await render.renderMarkdownToHtml(parsed.body);
+  }
+} else {
+  errorMessage = (fetched.body as { error: string }).error;
+}
 ---
 
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Editorial Review — dev</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 2rem;
-      background: #141820;
-      color: #c4ced8;
-      font-family: 'Inter', system-ui, sans-serif;
-      line-height: 1.5;
-    }
-    h1 { color: #2fb8a8; margin-top: 0; }
-    code { background: #1f2530; padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.9em; }
-  </style>
-</head>
-<body>
-  <h1>Editorial Review — editorialcontrol</h1>
-  <p>Slug: <code>{slug}</code></p>
-  <p>Phase 8 scaffold. The annotation UI lands in Phase 9.</p>
-  <p>Available endpoints:</p>
-  <ul>
-    <li><code>POST /api/dev/editorial-review/annotate</code></li>
-    <li><code>GET /api/dev/editorial-review/annotations?workflowId=…&amp;version=…</code></li>
-    <li><code>POST /api/dev/editorial-review/decision</code></li>
-  </ul>
-</body>
-</html>
+{errorMessage ? (
+  <div class="review-error">
+    <h1>Editorial Review — dev</h1>
+    <p><strong>Slug:</strong> <code>{slug}</code></p>
+    <div class="review-error-box">
+      <p><strong>No workflow found.</strong></p>
+      <p>{errorMessage}</p>
+      <p>To create one, run <code>/editorial-draft-review {slug}</code> in Claude Code.</p>
+    </div>
+  </div>
+) : (
+  <>
+    <div data-review-banner>
+      <strong>review</strong>
+      <span class="review-dot">·</span>
+      {workflow?.site}/{workflow?.slug}
+      <span class="review-dot">·</span>
+      state: <code>{workflow?.state}</code>
+      <span class="review-dot">·</span>
+      version: <code>{currentVersion?.version} / {workflow?.currentVersion}</code>
+      {versions.length > 1 && (
+        <span class="version-nav">
+          {versions.map(v => {
+            const isActive = v.version === currentVersion?.version;
+            return (
+              <a href={`?v=${v.version}`} class={isActive ? 'version-link active' : 'version-link'}>
+                v{v.version}
+              </a>
+            );
+          })}
+        </span>
+      )}
+      <span class="review-note">Phase 9 scaffold — annotation UI in next task</span>
+    </div>
+    <BlogLayout
+      frontmatter={{
+        title: fm.title ?? `Draft: ${slug}`,
+        description: fm.description,
+        date: fm.date,
+        datePublished: fm.datePublished,
+        dateModified: fm.dateModified,
+        author: fm.author,
+        image: fm.image,
+        socialImage: fm.socialImage,
+      }}
+    >
+      <Fragment set:html={renderedHtml} />
+    </BlogLayout>
+  </>
+)}
+
+<style>
+  [data-review-banner] { position: sticky; top: 0; z-index: 100; background: #141820; color: #c4ced8; border-bottom: 1px solid #2a323e; padding: 0.5rem 1rem; font-family: monospace; font-size: 0.85rem; }
+  [data-review-banner] .version-nav { margin-left: 1rem; }
+  [data-review-banner] .version-link { margin-right: 0.5rem; color: #c4ced8; text-decoration: none; }
+  [data-review-banner] .version-link.active { color: #2fb8a8; }
+  [data-review-banner] .review-note { margin-left: 1rem; opacity: 0.6; }
+  [data-review-banner] .review-dot { margin: 0 0.75rem; }
+  .review-error { max-width: 48rem; margin: 4rem auto; padding: 2rem; font-family: system-ui, sans-serif; }
+  .review-error-box { border: 1px solid #b45a5a; padding: 1rem; border-radius: 4px; background: #1f1616; color: #e2b4b4; }
+</style>
