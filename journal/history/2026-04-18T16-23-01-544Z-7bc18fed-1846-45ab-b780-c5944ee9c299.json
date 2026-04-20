@@ -1,0 +1,29 @@
+{
+  "id": "7bc18fed-1846-45ab-b780-c5944ee9c299",
+  "timestamp": "2026-04-18T16:23:01.544Z",
+  "prompt": "Abstract grid composition of nine square panels, each showing a slightly different geometric variation — a population of candidates under selection pressure. Flat vector style with subtle gradients. Muted palette of deep indigo, teal, and warm off-white. Minimal lines, no text, no literal machinery or AI imagery. Slight grain texture. Evokes iteration, refinement, and design-system evolution without being on-the-nose.",
+  "provider": "flux",
+  "preset": "retro-crt",
+  "title": "Automating Around a Design Skills Gap",
+  "subtitle": "The older feature images on this site are rough. I'm not a designer and I'm not trying to become one. Closing the skills gap with automation, dropping the friction of shipping posts, and growing a design system by artificial selection.",
+  "formats": "og",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-feature-image-generator/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/7bc18fed-raw.png"
+    ],
+    "filtered": [
+      "/images/generated/7bc18fed-filtered.png"
+    ],
+    "composited": [
+      {
+        "provider": "flux",
+        "format": "og",
+        "path": "/images/generated/7bc18fed-og.png"
+      }
+    ]
+  },
+  "durationMs": 11723,
+  "status": "generated",
+  "archived": true
+}

@@ -1,0 +1,21 @@
+{
+  "threadId": "912b1bac-98cb-4552-916f-2768f53d85fe",
+  "timestamp": "2026-04-20T19:34:48.060Z",
+  "role": "user",
+  "text": "Let's use this image as the feature image for the /blog/ai-doesnt-remember post on editorialcontrol.org",
+  "snapshot": {
+    "title": "AI Doesn't Remember",
+    "subtitle": "Brand consistency is an in-process problem.",
+    "prompt": "Abstract typographic column field, vertical columns of stacked\nhorizontal bars of varying length suggesting blocks of set\ntext without being readable, parchment-cream and muted\nchartreuse tones on a deep cool ink-near-black background,\ngenerous vertical rhythm, carefully-tuned column gutters, hand-\nruled quality to the block edges, composition weighted to the\nupper two-thirds with quiet open measure below, faint grid\nruling, editorial publication page abstraction, no text no\nwords no letters no typography no labels no people no objects",
+    "preset": "retro-crt",
+    "filters": {
+      "grade": "crt",
+      "phosphor": "on",
+      "vignette": "on",
+      "scanlines": "on",
+      "grain": "on"
+    },
+    "overlay": true
+  },
+  "messageId": "b6e58c32-a59b-4e3e-820a-e835c2ea3b0c"
+}

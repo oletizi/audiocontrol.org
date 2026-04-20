@@ -1,0 +1,45 @@
+{
+  "id": "d426f588-b1ff-4610-97e5-5740e83419be",
+  "timestamp": "2026-04-20T22:19:44.937Z",
+  "prompt": "Abstract page-margin composition, a series of thin parallel\nvertical rules in varying weights and lengths suggesting the\ngutter and margin structure of a printed publication page,\nparchment-cream lines on deep cool ink-near-black background,\na single signal-green chartreuse highlight line offset from\nthe rest, controlled asymmetric balance, compositional weight\nin the upper half, faint horizontal baseline grid softening\ntoward the lower third, editorial publication abstraction, no\ntext no words no letters no typography no labels no people\nno objects",
+  "provider": "dom-bake",
+  "preset": "retro-crt",
+  "filters": "{\"grade\":\"crt\",\"phosphor\":\"on\",\"vignette\":\"on\",\"scanlines\":\"on\",\"grain\":\"on\"}",
+  "title": "The Agent Is the Workflow",
+  "subtitle": "Stop bolting AI onto your content process. Make the agent do it.",
+  "formats": "og,youtube,instagram",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-feature-image-generator/src/sites/audiocontrol/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/0d9d0767-raw.png"
+    ],
+    "filtered": [
+      "/images/generated/d426f588-filtered.png"
+    ],
+    "composited": [
+      {
+        "provider": "dom",
+        "format": "og",
+        "path": "/images/generated/d426f588-og.png"
+      },
+      {
+        "provider": "dom",
+        "format": "youtube",
+        "path": "/images/generated/d426f588-youtube.png"
+      },
+      {
+        "provider": "dom",
+        "format": "instagram",
+        "path": "/images/generated/d426f588-instagram.png"
+      }
+    ]
+  },
+  "durationMs": 4846,
+  "status": "approved",
+  "templateSlug": "pull-quote",
+  "notes": "rebaked from 0d9d0767 via DOM",
+  "parentEntryId": "0d9d0767-0009-4bac-ae7c-911fffa99904",
+  "site": "editorialcontrol",
+  "overlayPosition": "left-two-thirds",
+  "overlayAlign": "auto"
+}

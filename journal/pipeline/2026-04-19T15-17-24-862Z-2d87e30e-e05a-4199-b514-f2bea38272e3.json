@@ -1,0 +1,23 @@
+{
+  "id": "2d87e30e-e05a-4199-b514-f2bea38272e3",
+  "type": "feature-image-blog",
+  "createdAt": "2026-04-19T15:17:24.862Z",
+  "createdBy": "agent",
+  "state": "cancelled",
+  "context": {
+    "postPath": "src/sites/editorialcontrol/pages/blog/feature-image-automation-feature/index.md",
+    "slug": "feature-image-automation-feature",
+    "site": "editorialcontrol",
+    "title": "AI Can Generate Your Feature Images. It Can't Design Your Site.",
+    "description": "Most AI-generated feature image workflows stop at the generator. That's the easy half. The missing infrastructure is a human gate cheap enough to actually use, and a design system that gets sharper every time you use it.",
+    "suggestedPrompt": "Abstract editorial proof-mark constellation, scattered minimalist line-drawing glyphs that read as copy-editor symbols without being literal, rendered in parchment-cream with occasional signal-green chartreuse highlights on a deep cool ink-near-black background, dry-ink quality to the line work, faint underlying grid ruling that softens toward the edges, arrangement clustered in the upper two-thirds with generous negative space below, publication-dark atmosphere, a sense of selection pressure — some marks brighter than others, as if a choice is being made, no text, no words, no letters, no typography, no labels",
+    "suggestedPreset": "subtle",
+    "suggestedTemplateSlug": "proof-constellation",
+    "candidateTemplates": [
+      "proof-constellation",
+      "tracked-changes",
+      "margin-rules"
+    ],
+    "notes": "Site: editorialcontrol. Thesis of the post is the human gate + prompt-library selection pressure; proof-constellation reads directly as review/selection glyphs and was chosen as baseline. tracked-changes and margin-rules are alternates for AI-iteration or publication-infrastructure framings. All three filter matches are editorialcontrol-tagged with zero usage — they'll all float to top of the picker. Post tags: AI, Automation, Design, Workflow (matched only workflow against proof-constellation — sample set is new)."
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "b8ae62a9-bd7d-447c-b416-fcb9e334f26c",
+  "timestamp": "2026-04-19T15:45:15.855Z",
+  "prompt": "Abstract tracked-changes revision marks, flowing horizontal\nsignal-green chartreuse strokes underlining and striking\nthrough invisible text, scattered warm parchment-cream caret\nmarks and small annotations drifting in the margins, ink-bleed\nsoftness at each stroke edge, cool ink-near-black background,\neditorial revision-pass atmosphere, sparse and intentional\nplacement, compositional weight in the upper half with quiet\nmeasure below, no text no words no letters no typography no\nlabels no people no objects",
+  "provider": "flux",
+  "preset": "subtle",
+  "formats": "og",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-feature-image-generator/src/sites/editorialcontrol/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/b8ae62a9-raw.png"
+    ],
+    "filtered": [
+      "/images/generated/b8ae62a9-filtered.png"
+    ],
+    "composited": []
+  },
+  "durationMs": 3849,
+  "status": "rejected",
+  "site": "editorialcontrol",
+  "archived": true
+}

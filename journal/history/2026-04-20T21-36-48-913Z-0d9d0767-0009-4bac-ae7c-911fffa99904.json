@@ -1,0 +1,30 @@
+{
+  "id": "0d9d0767-0009-4bac-ae7c-911fffa99904",
+  "timestamp": "2026-04-20T21:36:48.913Z",
+  "prompt": "Abstract page-margin composition, a series of thin parallel\nvertical rules in varying weights and lengths suggesting the\ngutter and margin structure of a printed publication page,\nparchment-cream lines on deep cool ink-near-black background,\na single signal-green chartreuse highlight line offset from\nthe rest, controlled asymmetric balance, compositional weight\nin the upper half, faint horizontal baseline grid softening\ntoward the lower third, editorial publication abstraction, no\ntext no words no letters no typography no labels no people\nno objects",
+  "provider": "flux",
+  "preset": "subtle",
+  "title": "Your Content Workflow Is Already Obsolete. Your AI Agent Is the Replacement.",
+  "subtitle": "AI in content marketing is table stakes; most workflows using it aren't fast or flexible enough to keep up. The third option: stop treating AI as a feature bolted onto your workflow and start treating the agent as the workflow. An editorial calendar built on top of a coding agent (Claude Code, Codex, Cursor, any of them), Markdown files, and a weekend of work.",
+  "formats": "og",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-feature-image-generator/src/sites/audiocontrol/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/0d9d0767-raw.png"
+    ],
+    "filtered": [
+      "/images/generated/0d9d0767-filtered.png"
+    ],
+    "composited": [
+      {
+        "provider": "flux",
+        "format": "og",
+        "path": "/images/generated/0d9d0767-og.png"
+      }
+    ]
+  },
+  "durationMs": 8084,
+  "status": "generated",
+  "templateSlug": "pull-quote",
+  "site": "editorialcontrol"
+}
