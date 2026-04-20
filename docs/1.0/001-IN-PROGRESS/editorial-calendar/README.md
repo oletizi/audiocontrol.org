@@ -1,9 +1,10 @@
 # Editorial Calendar
 
-**Status:** All Phases Complete (ready for `/feature-complete`)
+**Status:** All Phases Complete — PR #98 open (editorial-review extension 8-13)
 **Feature Branch:** `feature/editorial-calendar`
 **GitHub Issue:** oletizi/audiocontrol.org#29 (parent)
-**Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7)
+**Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7), #89 (content edits)
+**Open PR:** [#98 — editorial-review pipeline + studio dashboard](https://github.com/oletizi/audiocontrol.org/pull/98) (Phases 8-13)
 
 ## Overview
 
