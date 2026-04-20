@@ -1490,6 +1490,114 @@ const siteBrands = {
     .card-thumb .og-preview .og-subtitle,
     .card-thumb .og-preview .og-brand-row { pointer-events: none; }
 
+    /* ── Help widget ─────────────────────────────────────────────────────── */
+    .help-toggle {
+      background: var(--bg-2);
+      color: var(--text-2);
+      border: 1px solid var(--edge);
+      border-radius: 999px;
+      width: 1.5rem;
+      height: 1.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .help-toggle:hover { background: var(--bg-3); color: var(--text-0); border-color: var(--edge-hi); }
+    .help-toggle[aria-expanded="true"] { background: var(--accent); color: var(--bg-0); border-color: var(--accent); }
+
+    .help-card {
+      margin: 0 0 1.25rem;
+      padding: 1.1rem 1.25rem 1.25rem;
+      background: var(--bg-1);
+      border: 1px solid var(--edge);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+    }
+    .help-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.6rem;
+    }
+    .help-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+    }
+    .help-close {
+      background: transparent;
+      border: none;
+      color: var(--text-3);
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 0 0.35rem;
+      cursor: pointer;
+      border-radius: var(--radius);
+    }
+    .help-close:hover { background: var(--bg-3); color: var(--text-0); }
+    .help-lede {
+      margin: 0 0 1rem;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--text-1);
+      max-width: 58rem;
+    }
+
+    .help-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem 1.5rem;
+    }
+    @media (min-width: 1200px) {
+      .help-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    .help-col { min-width: 0; }
+    .help-subhead {
+      margin: 0 0 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-3);
+    }
+
+    .help-steps {
+      margin: 0;
+      padding-left: 1.1rem;
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: var(--text-1);
+    }
+    .help-steps li { margin-bottom: 0.55rem; }
+    .help-steps li:last-child { margin-bottom: 0; }
+    .help-steps strong { color: var(--text-0); font-weight: 600; }
+    .help-steps em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+    .help-dl { margin: 0; font-size: 0.78rem; line-height: 1.5; }
+    .help-dl dt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text-0);
+      margin-top: 0.5rem;
+    }
+    .help-dl dt:first-child { margin-top: 0; }
+    .help-dl dt code { color: var(--accent); background: var(--bg-2); padding: 0 0.3rem; border-radius: 3px; }
+    .help-dl dd {
+      margin: 0.15rem 0 0;
+      color: var(--text-2);
+    }
+
     /* ── Misc ──────────────────────────────────────────────────────────────── */
     .hint { color: var(--text-3); font-size: 0.75rem; }
     .err {
@@ -1514,6 +1622,7 @@ const siteBrands = {
     <div class="app-meta">
       <span>log <code>.feature-image-history.jsonl</code></span>
       <span>wf <code>.feature-image-pipeline.jsonl</code></span>
+      <button type="button" class="help-toggle" id="help-toggle" title="What is this? How does the workflow work?" aria-label="Help" aria-expanded="false">?</button>
     </div>
   </header>
 
@@ -1649,6 +1758,73 @@ const siteBrands = {
   <!-- Main stage -->
   <main class="stage">
     <div class="stage-inner">
+      <section class="help-card" id="help-card" hidden aria-hidden="true">
+        <div class="help-head">
+          <span class="help-title">Feature Image Studio</span>
+          <button type="button" class="help-close" id="help-close" aria-label="Close help">×</button>
+        </div>
+        <p class="help-lede">Generate, iterate on, and approve AI-generated feature images for blog posts on either site (audiocontrol or editorialcontrol). The gallery lives under audiocontrol's dev server but targets either site — brand palette, typography, and logo switch per-site.</p>
+
+        <div class="help-grid">
+          <div class="help-col">
+            <h4 class="help-subhead">Workflow</h4>
+            <ol class="help-steps">
+              <li><strong>Start</strong> — Open the <em>Generate</em> drawer (left) to generate freely, or invoke <code>/feature-image-blog &lt;post-path&gt;</code> in Claude Code to enqueue a workflow targeting a specific post.</li>
+              <li><strong>Iterate</strong> — Click a thumbnail to focus an entry. Edit title / subtitle / filters / site live. Send a message in the thread composer to have Claude propose variants.</li>
+              <li><strong>Approve</strong> — Click <em>Approve</em> (in focus mode) to bake all three social variants (og / youtube / instagram), mark the entry approved, and decide any active workflow.</li>
+              <li><strong>Apply</strong> — Run <code>/feature-image-apply</code> in Claude Code. Approved entries get copied into the target post's public dir + wired into frontmatter.</li>
+            </ol>
+          </div>
+
+          <div class="help-col">
+            <h4 class="help-subhead">Skills</h4>
+            <dl class="help-dl">
+              <dt><code>/feature-image-blog &lt;post&gt;</code></dt>
+              <dd>Start a workflow for a blog post. Infers site from the path or URL host.</dd>
+              <dt><code>/feature-image-iterate</code></dt>
+              <dd>Drain pending thread messages. Run after sending feedback in the gallery.</dd>
+              <dt><code>/feature-image-apply</code></dt>
+              <dd>Route approved entries + decided workflows into their target posts.</dd>
+              <dt><code>/feature-image-prompts</code></dt>
+              <dd>Browse the prompt-template library (ranked by fitness).</dd>
+              <dt><code>/feature-image-help</code></dt>
+              <dd>Report current pipeline state (workflow items, recent history).</dd>
+            </dl>
+          </div>
+
+          <div class="help-col">
+            <h4 class="help-subhead">Gallery actions</h4>
+            <dl class="help-dl">
+              <dt>Focus</dt>
+              <dd>Click the thumbnail or button to open an entry with live preview + controls.</dd>
+              <dt>Approve</dt>
+              <dd>Bakes 3 social formats + marks approved. Canonical gesture.</dd>
+              <dt>Reject</dt>
+              <dd>Marks rejected; no bake.</dd>
+              <dt>★ Rate</dt>
+              <dd>1–5. Feeds the prompt-library fitness ranker.</dd>
+              <dt>Commit (focus)</dt>
+              <dd>Bakes current edits without approving. Good for iterating on a specific variant.</dd>
+              <dt>Send (thread)</dt>
+              <dd>Asks Claude to iterate. Snapshots your current preview state.</dd>
+              <dt>Copy as input</dt>
+              <dd>Loads this entry's params into the Generate form.</dd>
+              <dt>Save as template</dt>
+              <dd>Adds this entry's prompt to the library for reuse.</dd>
+            </dl>
+          </div>
+
+          <div class="help-col">
+            <h4 class="help-subhead">Keyboard</h4>
+            <dl class="help-dl">
+              <dt>ESC</dt><dd>Close focus mode / close drawers.</dd>
+              <dt>Cmd/Ctrl + Enter</dt><dd>Send thread message.</dd>
+              <dt>Enter / Space</dt><dd>When a thumbnail is focused, open focus mode.</dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+
       <div class="stage-head">
         <span class="stage-label" id="stage-label">History</span>
         <span class="stage-count" id="stage-count"></span>
@@ -3696,6 +3872,23 @@ const siteBrands = {
         genBtn.disabled = false;
       }
     });
+
+    // ── Help widget ────────────────────────────────────────────────────────
+    // Collapsible overview card at the top of the stage. Default open on
+    // first visit; state persisted in localStorage so it doesn't nag.
+    const helpToggle = document.getElementById('help-toggle');
+    const helpCard = document.getElementById('help-card');
+    const helpClose = document.getElementById('help-close');
+    function applyHelpState(open) {
+      helpCard.hidden = !open;
+      helpCard.setAttribute('aria-hidden', open ? 'false' : 'true');
+      helpToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      localStorage.setItem('fi-help-open', open ? 'open' : 'closed');
+    }
+    const savedHelp = localStorage.getItem('fi-help-open');
+    applyHelpState(savedHelp === null ? true : savedHelp === 'open');
+    helpToggle.addEventListener('click', () => applyHelpState(helpCard.hidden));
+    helpClose.addEventListener('click', () => applyHelpState(false));
 
     // ── Boot ───────────────────────────────────────────────────────────────
     refreshTemplates();
