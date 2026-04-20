@@ -799,7 +799,8 @@ const siteBrands = {
       background: var(--bg-1);
       border: 1px solid var(--edge);
       border-radius: var(--radius);
-      overflow: hidden;
+      /* overflow: visible so the ⋯ dropdown can escape the card. Thumbs
+       * round themselves via .card-thumb { overflow: hidden; border-radius }. */
       transition: border-color 0.15s, transform 0.15s;
     }
     .card:hover { border-color: var(--edge-hi); }
