@@ -48,6 +48,33 @@ Content creation for audiocontrol.org is ad hoc with no schedule, no procedure, 
 - **Generalized audiocontrol.org link resolution**: any audiocontrol.org URL (blog, tool, or future types) can be resolved to its calendar entry via a unified `contentUrl` index. Not limited to `/blog/<slug>/` paths
 - **Lightweight HTML extraction**: regex-based extraction of `<a href>` and bare URLs from static HTML, no DOM parser dependency
 
+## In Scope (Phases 8–12 addition: editorial-review)
+
+Analog of the feature-image-generator pipeline for prose: a dev-only web surface plus a Claude Code skill family that together let the operator annotate, edit, and iterate blog drafts, dispatches, and short-form social posts to publication — with the voice skills (`audiocontrol-voice`, `editorialcontrol-voice`) doing the drafting.
+
+- **Draft review pipeline**: append-only `.editorial-draft-history.jsonl` and `.editorial-draft-pipeline.jsonl` mirror the feature-image storage model. `DraftWorkflowState` = `open → in-review → iterating → approved → applied | cancelled`. Drafts are first-class workflow items with a version history. Files are checked into the repo — they are the substrate for Phase 12 fitness signals and must not be lost.
+- **Longform annotation UI**: dev-only Astro route renders the draft in its real blog layout. Select-to-comment (highlight a range, attach a margin note) and toggle-to-edit mode (raw MD textarea; submit captures a diff). Version selector flips between v1, v2, v3 to audit the iteration history. 404s in prod.
+- **Orchestration skills**: `/editorial-draft-review <slug>` enqueues an existing draft; `/editorial-iterate <slug>` reads open annotations + the appropriate voice skill and produces a new version; `/editorial-approve <slug>` writes the approved version to the real file but **does not commit or push** (per operator preference — merge-conflict cost is higher for prose than for images). `/editorial-review-cancel` and `/editorial-review-help` round out the family.
+- **Short-form (Reddit, YouTube description, LinkedIn, newsletter)**: same pipeline, different UI surface. `DraftWorkflowItem` gains `contentKind: 'longform' | 'shortform'` + `platform?` + `channel?`. Short-form drafts are keyed to a `DistributionRecord`. A separate dev-only list view (not per-slug) shows all open short-form drafts. Origination: `/editorial-shortform-draft <slug> <platform> [channel]` drafts the post using the voice skill + calendar context.
+- **Voice-library feedback signal**: annotations carry an optional `category` tag (`voice-drift`, `missing-receipt`, `tutorial-framing`, `saas-vocabulary`, `fake-authority`, `other`). An aggregate report shows which categories are most frequent across approved drafts, identifying which voice-skill principles are producing the most drift. Analogous to feature-image Phase 11 (fitness scoring on prompt templates).
+- **Skill rename to free the namespace**: existing `/editorial-review` (status display) renames to `/editorial-status`. Frees `editorial-review` for the feature and arguably a cleaner name for the display skill.
+- **Both sites**: routes and skills work for audiocontrol.org and editorialcontrol.org. Site-aware like the rest of the editorial calendar.
+
+## In Scope (Phase 13 addition: editorial-studio)
+
+Unified dev-only dashboard analogous to `/dev/feature-image-preview`, so the operator has one URL that shows the whole review pipeline at a glance rather than two specialized routes (per-slug longform, shortform list).
+
+- **Unified dashboard at `/dev/editorial-studio`** (both sites) — single dev-only SSR page, 404 in prod via the existing guard pattern.
+- **Pending panel** — all non-terminal workflows (open / in-review / iterating / approved) across longform and shortform, grouped by state, sorted by `updatedAt` descending. Each row is a link to the per-slug route (longform) or the shortform list (shortform).
+- **Approved-pending-apply panel** — approved workflows awaiting `/editorial-approve`, with the exact command to run.
+- **Start-new longform form** — dropdown of Published calendar entries that don't yet have an active longform workflow → submit enqueues via a new `handleStartLongform` handler (reads the blog file, calls `createWorkflow`). For shortform, the dashboard shows command hints — agent-driven drafting stays on `/editorial-shortform-draft`.
+- **Voice-drift mini-panel** — top-2 categories from `buildReport()` for this site, shown only when the sample size is meaningful (≥5 terminal workflows).
+- **Recent terminal panel** — last ~10 `applied` / `cancelled` workflows, so the operator sees recent history without scrolling a separate report.
+
+One new POST endpoint: `/api/dev/editorial-review/start-longform` — takes `{ site, slug }`, reads the draft file, calls `createWorkflow`, returns the created workflow. Thin wrapper around a shared handler so both sites' endpoint files stay boilerplate.
+
+**Out of scope for Phase 13:** polling for live updates, shortform drafting from the dashboard form (agent-driven, stays on `/editorial-shortform-draft`), filters/search across the pending list. These can extend the studio later if the UX gets cramped.
+
 ## Deferred Scope
 
 - **Reddit auto-posting (Tier 3)**: programmatically submitting link posts to subreddits. Documented in detail in the [workplan](./workplan.md#deferred-tier-3--auto-posting-to-reddit). Deferred indefinitely — operational risk (bot bans, spam filters), per-subreddit rule complexity, and limited value-add over manual posting outweigh the automation benefit. A clipboard-helper alternative is proposed there if partial automation becomes interesting later.
@@ -71,7 +98,6 @@ Each editorial action is a separate Claude Code skill, composed like UNIX tools.
 | `/editorial-help` | 1 | Show the editorial workflow and calendar status |
 | `/editorial-add` | 1 | Add an entry to the Ideas stage |
 | `/editorial-plan` | 1 | Move an entry to Planned, set target keywords |
-| `/editorial-review` | 1 | Show calendar status across all stages |
 | `/editorial-draft` | 2 | Scaffold blog post directory and move to Drafting |
 | `/editorial-publish` | 2 | Mark entry as Published with date, close GitHub issue |
 | `/editorial-suggest` | 3 | Pull analytics, identify content opportunities |
@@ -82,6 +108,14 @@ Each editorial action is a separate Claude Code skill, composed like UNIX tools.
 | `/editorial-reddit-opportunities` | 5 | For a published post, list relevant subreddits not yet distributed to, enriched with live subreddit metadata |
 | `/editorial-cross-link-review` | 6 | Audit bidirectional linking between blog posts and YouTube videos, flag missing reciprocal links |
 | `/editorial-cross-link-review` (extended) | 7 | Same skill; Phase 7 adds tool-page analysis and generalized audiocontrol.org link resolution |
+| `/editorial-status` (renamed from `/editorial-review`) | 8 | Show calendar status across all stages |
+| `/editorial-draft-review` | 10 | Enqueue an existing draft for review; print the dev URL |
+| `/editorial-iterate` | 10 | Read open annotations + voice skill; produce and append a new draft version |
+| `/editorial-approve` | 10 | Write the approved version to the real file (no git operations) |
+| `/editorial-review-cancel` | 10 | Cancel an open review workflow; leave file untouched |
+| `/editorial-review-help` | 10 | Report pipeline state and next action |
+| `/editorial-shortform-draft` | 11 | Draft a short-form post (Reddit/YouTube desc/LinkedIn/newsletter) for a published entry |
+| `/editorial-review-report` | 12 | Aggregate annotation categories across approved drafts; surface voice-drift signals |
 
 ### Calendar Format
 
@@ -98,6 +132,7 @@ Structured markdown file with tables per stage. Each entry includes: title, slug
 - `automated-analytics` feature — required for `suggest` and `performance` commands (Phase 3)
 - `feature-image-generator` feature — optionally invoked during `draft` stage (future enhancement)
 - Existing blog post conventions (BlogLayout.astro, directory structure in src/pages/blog/)
+- Voice skills (`audiocontrol-voice`, `editorialcontrol-voice`) — required by `/editorial-iterate` and `/editorial-shortform-draft` (Phases 10–11) for voice-consistent drafting and revision
 
 ## Open Questions
 
