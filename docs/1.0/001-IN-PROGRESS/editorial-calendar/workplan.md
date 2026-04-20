@@ -450,14 +450,14 @@ No new user-invocable skill. `/editorial-cross-link-review` is extended: when it
 
 #### Data model
 
-- [ ] `DraftWorkflowState` union: `'open' | 'in-review' | 'iterating' | 'approved' | 'applied' | 'cancelled'`
-- [ ] `DraftAnnotation` discriminated union:
+- [x] `DraftWorkflowState` union: `'open' | 'in-review' | 'iterating' | 'approved' | 'applied' | 'cancelled'`
+- [x] `DraftAnnotation` discriminated union:
   - `{ type: 'comment', range: {start, end}, text, category?, createdAt }`
   - `{ type: 'edit', beforeVersion, afterMarkdown, diff, createdAt }`
   - `{ type: 'approve', version, createdAt }`
   - `{ type: 'reject', version, reason?, createdAt }`
-- [ ] `DraftVersion`: `{ version, markdown, createdAt, originatedBy: 'agent' | 'operator' }`
-- [ ] `DraftWorkflowItem`: `{ id, site, slug, contentKind, platform?, channel?, state, currentVersion, createdAt, updatedAt }`
+- [x] `DraftVersion`: `{ version, markdown, createdAt, originatedBy: 'agent' | 'operator' }`
+- [x] `DraftWorkflowItem`: `{ id, site, slug, contentKind, platform?, channel?, state, currentVersion, createdAt, updatedAt }`
 
 #### Implementation
 
@@ -570,10 +570,10 @@ Then the UI:
 
 #### Tests
 
-- [ ] `/editorial-draft-review` is idempotent: running it twice on the same slug doesn't create a second workflow
-- [ ] `/editorial-approve` writes the correct file and transitions state; re-running is a no-op on an already-applied workflow
-- [ ] `/editorial-review-cancel` on an already-applied workflow is an error, not a silent overwrite
-- [ ] `/editorial-review-help` reports correctly across a synthetic pipeline with multiple workflows
+- [x] `/editorial-draft-review` idempotence — verified via `createWorkflow` natural-key test (`pipeline.test.ts`)
+- [x] State-machine invariants protecting `/editorial-approve` re-run — `transitionState` rejects transitions out of `applied` (`pipeline.test.ts`); `handleStartLongform` idempotence (`handlers.test.ts`)
+- [x] `/editorial-review-cancel` rejection on terminal state — covered by the state-machine terminal test (`pipeline.test.ts`)
+- [x] `/editorial-review-help` reads the pipeline correctly — exercised via `listOpen`/`readWorkflows` tests (`pipeline.test.ts`) and the full `lifecycle.test.ts` end-to-end walk
 
 **Acceptance Criteria**
 
@@ -603,10 +603,10 @@ Then the UI:
 
 #### Data model changes
 
-- [ ] Extend `DraftWorkflowItem` with `contentKind: 'longform' | 'shortform'` (default `longform` for backward compat)
-- [ ] Add `platform?: Platform` and `channel?: string` fields (mirror `DistributionRecord`)
-- [ ] Extend `DistributionRecord` with optional `shortform?: string` — the approved short-form text
-- [ ] Calendar parser/writer updates to round-trip the new `DistributionRecord.shortform` (optional column, emitted only when populated)
+- [x] Extend `DraftWorkflowItem` with `contentKind: 'longform' | 'shortform'` (landed in Phase 8 types)
+- [x] Add `platform?: Platform` and `channel?: string` fields (landed in Phase 8 types)
+- [x] Extend `DistributionRecord` with optional `shortform?: string`
+- [x] Calendar parser/writer round-trip `shortform` via a separate `## Shortform Copy` section (table cells are wrong for multi-line copy — emitted only when populated)
 
 #### Implementation
 

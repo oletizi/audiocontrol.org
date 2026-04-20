@@ -2,6 +2,9 @@
 export const prerender = false;
 
 import { PRESETS, FILTER_REGISTRY } from '../../../../../scripts/feature-image/filters/index.js';
+import { brand as audiocontrolBrand } from '../../brand.js';
+import { brand as editorialcontrolBrand } from '../../../editorialcontrol/brand.js';
+import '../../styles/og-preview.css';
 
 if (import.meta.env.PROD) {
   return new Response('Not Found', { status: 404 });
@@ -9,6 +12,15 @@ if (import.meta.env.PROD) {
 
 const presets = Object.keys(PRESETS);
 const filterNames = Object.keys(FILTER_REGISTRY);
+
+// Brand tokens exposed to the client so live DOM previews can emit the
+// same --og-* custom properties the Astro OGPreview component emits on
+// the bake route. Keeps the preview visually aligned with what the bake
+// will produce.
+const siteBrands = {
+  audiocontrol: audiocontrolBrand,
+  editorialcontrol: editorialcontrolBrand,
+};
 ---
 
 <!doctype html>
@@ -16,106 +28,1676 @@ const filterNames = Object.keys(FILTER_REGISTRY);
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Feature Image Preview — dev</title>
+  <title>Feature Image — Studio</title>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
+  <style is:global>
+    /* ── Design tokens ─────────────────────────────────────────────────────── */
+    :root {
+      --bg-0: #0b0e13;
+      --bg-1: #121620;
+      --bg-2: #181d28;
+      --bg-3: #212836;
+      --edge: #232a37;
+      --edge-hi: #323a4a;
+      --text-0: #e8edf3;
+      --text-1: #c4ced8;
+      --text-2: #8892a0;
+      --text-3: #6b7280;
+      --accent: #2fb8a8;
+      --accent-hi: #3fcdbc;
+      --warning: #f5a142;
+      --danger: #e47373;
+      --success: #5fd1a3;
+      --rating: #f5c542;
+      --drawer-w: 380px;
+      --handle-w: 32px;
+      --radius: 6px;
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      padding: 2rem;
-      background: #141820;
-      color: #c4ced8;
+      padding: 0;
+      background: var(--bg-0);
+      color: var(--text-1);
       font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--accent); }
+
+    button, input, select, textarea { font: inherit; }
+
+    /* ── App chrome ────────────────────────────────────────────────────────── */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem calc(var(--handle-w) + 1rem);
+      background: var(--bg-0);
+      border-bottom: 1px solid var(--edge);
+      backdrop-filter: blur(8px);
+    }
+    .app-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-2);
+    }
+    .app-title strong { color: var(--accent); font-weight: 700; letter-spacing: 0.18em; }
+    .app-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      display: flex;
+      gap: 1rem;
+    }
+    .app-meta code { color: var(--text-2); }
+
+    /* ── Stage (main gallery area) ─────────────────────────────────────────── */
+    .stage {
+      min-height: calc(100vh - 3.2rem);
+      padding: 1.25rem calc(var(--handle-w) + 1rem);
+      display: flex;
+      justify-content: center;
+    }
+    .stage-inner {
+      width: 100%;
+      max-width: 780px;
+    }
+    .stage-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--edge);
+    }
+    .stage-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-3);
+    }
+    .stage-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+    }
+
+    /* ── Drawers ───────────────────────────────────────────────────────────── */
+    .drawer {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: calc(var(--drawer-w) + var(--handle-w));
+      display: flex;
+      background: var(--bg-1);
+      border-color: var(--edge);
+      z-index: 10;
+      transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-lg);
+    }
+    .drawer-left  { left: 0;  transform: translateX(calc(-1 * var(--drawer-w))); border-right: 1px solid var(--edge); }
+    .drawer-right { right: 0; flex-direction: row; transform: translateX(var(--drawer-w)); border-left: 1px solid var(--edge); }
+    .drawer-left.open  { transform: translateX(0); }
+    .drawer-right.open { transform: translateX(0); }
+
+    .drawer-content {
+      width: var(--drawer-w);
+      overflow-y: auto;
+      padding: 1rem 1.1rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--edge-hi) transparent;
+    }
+    .drawer-content::-webkit-scrollbar { width: 8px; }
+    .drawer-content::-webkit-scrollbar-thumb { background: var(--edge-hi); border-radius: 4px; }
+
+    .drawer-handle {
+      width: var(--handle-w);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-1);
+      border: none;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      position: relative;
+    }
+    .drawer-left  .drawer-handle { border-left: 1px solid var(--edge); }
+    .drawer-right .drawer-handle { border-right: 1px solid var(--edge); }
+    .drawer-handle:hover { background: var(--bg-2); color: var(--text-0); }
+    .drawer-handle .handle-label {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      user-select: none;
+    }
+    .drawer-handle .handle-chevron {
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      transition: transform 0.2s ease;
+      color: var(--accent);
+    }
+    .drawer.open .drawer-handle .handle-chevron { transform: rotate(180deg); }
+    .drawer-handle .handle-badge {
+      position: absolute;
+      top: 0.6rem;
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: 1.5rem;
+      padding: 0.1rem 0.35rem;
+      background: var(--accent);
+      color: var(--bg-0);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+      border-radius: 999px;
+      text-align: center;
+      line-height: 1.3;
+      display: none;
+    }
+    .drawer-handle .handle-badge.visible { display: block; }
+
+    .scrim {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 10, 0.55);
+      backdrop-filter: blur(3px);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9;
+      transition: opacity 0.2s ease;
+    }
+    .scrim.visible { opacity: 1; pointer-events: auto; }
+
+    /* ── Stepped progress drawer ─────────────────────────────────────────── */
+    /* Slides in from the right with a higher z-index than other drawers, so
+     * an in-flight Approve flow overlays the workflow drawer. Stays open on
+     * completion showing the final state; user clicks Done to dismiss. */
+    .step-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(440px, 92vw);
+      background: var(--bg-1);
+      border-left: 1px solid var(--edge);
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-lg);
+      transform: translateX(100%);
+      transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .step-drawer[hidden] { display: flex; transform: translateX(100%); }
+    .step-drawer.open { transform: translateX(0); }
+
+    .step-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 1rem 1.1rem 0.85rem;
+      border-bottom: 1px solid var(--edge);
+    }
+    .step-head-titles { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+    .step-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+    }
+    .step-timers {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      display: flex;
+      gap: 0.35rem;
+    }
+    .step-eta.tight { color: var(--warning); }
+    .step-close {
+      background: transparent;
+      border: none;
+      color: var(--text-3);
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 0 0.4rem;
+      cursor: pointer;
+      border-radius: var(--radius);
+    }
+    .step-close:hover { background: var(--bg-3); color: var(--text-0); }
+
+    .step-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.85rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+    .step-row {
+      display: grid;
+      grid-template-columns: 1.4rem 1fr auto;
+      column-gap: 0.7rem;
+      align-items: start;
+      padding: 0.6rem 0.7rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .step-row.active   { border-color: var(--accent); background: rgba(47, 184, 168, 0.06); }
+    .step-row.complete { border-color: rgba(95, 209, 163, 0.35); }
+    .step-row.failed   { border-color: var(--danger); background: rgba(228, 115, 115, 0.05); }
+    .step-row.pending .step-icon,
+    .step-row.pending .step-label { opacity: 0.55; }
+
+    .step-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      flex-shrink: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: var(--bg-3);
+      color: var(--text-3);
+      border: 1px solid var(--edge-hi);
+      line-height: 1;
+    }
+    .step-row.active   .step-icon { background: var(--accent); color: var(--bg-0); border-color: var(--accent); animation: step-pulse 1.2s ease-in-out infinite; }
+    .step-row.complete .step-icon { background: var(--success); color: var(--bg-0); border-color: var(--success); }
+    .step-row.failed   .step-icon { background: var(--danger); color: var(--bg-0); border-color: var(--danger); }
+
+    @keyframes step-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(47, 184, 168, 0.45); }
+      50%      { box-shadow: 0 0 0 5px rgba(47, 184, 168, 0); }
+    }
+
+    .step-body { min-width: 0; }
+    .step-label {
+      font-size: 0.85rem;
+      color: var(--text-0);
+      line-height: 1.3;
+      font-weight: 500;
+    }
+    .step-detail {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      margin-top: 0.25rem;
+      line-height: 1.4;
+    }
+    .step-row.active .step-detail { color: var(--text-2); }
+    .step-row.failed .step-detail { color: var(--danger); }
+
+    .step-progress {
+      margin-top: 0.4rem;
+      height: 3px;
+      background: var(--bg-3);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .step-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.25s linear;
+      width: 0;
+    }
+
+    .step-elapsed-self {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-3);
+      align-self: center;
+      min-width: 3ch;
+      text-align: right;
+    }
+    .step-row.complete .step-elapsed-self { color: var(--success); }
+
+    .step-summary {
+      padding: 0.75rem 1.1rem;
+      border-top: 1px solid var(--edge);
+      font-size: 0.8rem;
+      color: var(--text-1);
       line-height: 1.5;
     }
-    h1, h2 { font-family: 'JetBrains Mono', monospace; }
-    h1 { margin-top: 0; color: #2fb8a8; }
-    h2 { color: #c4ced8; margin-top: 2rem; }
-    .layout { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; max-width: 1800px; margin: 0 auto; }
-    @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
-    form { display: flex; flex-direction: column; gap: 1rem; }
-    label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: #a0aab4; }
-    label span { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    input, select, textarea {
-      font: inherit;
-      background: #1c2028;
-      color: #e0e6ed;
-      border: 1px solid #2a3038;
-      border-radius: 4px;
-      padding: 0.5rem 0.75rem;
+    .step-summary.ok    { color: var(--success); }
+    .step-summary.error { color: var(--danger); }
+
+    .step-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      padding: 0.75rem 1.1rem;
+      border-top: 1px solid var(--edge);
     }
-    textarea { min-height: 8rem; resize: vertical; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
-    input:focus, select:focus, textarea:focus { outline: 1px solid #2fb8a8; border-color: #2fb8a8; }
-    button {
-      font: inherit;
+
+    /* ── Drawer content typography ─────────────────────────────────────────── */
+    .drawer h2 {
+      margin: 0 0 0.25rem 0;
       font-family: 'JetBrains Mono', monospace;
-      background: #2fb8a8;
-      color: #0a0c10;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 4px;
-      cursor: pointer;
+      font-size: 0.9rem;
       font-weight: 600;
+      color: var(--text-0);
+      letter-spacing: 0.02em;
     }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    button:not(:disabled):hover { background: #3fcdbc; }
-    .filter-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-    .filter-list label { flex-direction: row; align-items: center; gap: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-transform: none; letter-spacing: 0; }
-    .filter-list input[type=checkbox] { width: auto; }
-    .hint { color: #6b7280; font-size: 0.8rem; }
-    .err { color: #e47373; background: rgba(228, 115, 115, 0.1); padding: 0.75rem; border-radius: 4px; font-size: 0.85rem; }
-    .gallery-item { border: 1px solid #2a3038; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: #1c2028; }
-    .gallery-item img { max-width: 100%; border-radius: 4px; display: block; }
-    .gallery-item .meta { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #6b7280; }
-    .gallery-item .meta strong { color: #c4ced8; font-weight: 500; }
-    .gallery-item .status { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.7rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
-    .status.generated { background: #2a3038; color: #a0aab4; }
-    .status.approved { background: #1e3a32; color: #5fd1a3; }
-    .status.rejected { background: #3a1e1e; color: #e47373; }
-    .row-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
-    .row-actions button { padding: 0.4rem 0.75rem; font-size: 0.75rem; }
-    .row-actions button.secondary { background: #2a3038; color: #c4ced8; }
-    .row-actions button.secondary:hover { background: #3a4048; }
-    .notes { width: 100%; margin-top: 0.5rem; }
-    .gallery-item .variants { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
-    .gallery-item .variants figure { margin: 0; }
-    .gallery-item .variants figcaption { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; }
-    #status { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; min-height: 1.5em; color: #a0aab4; }
-    #status.working { color: #2fb8a8; }
-    #status.error { color: #e47373; }
-    .workflow-panel { background: #1c2028; border: 1px solid #2a3038; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
-    .workflow-panel h3 { margin: 0 0 0.75rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #2fb8a8; }
-    .workflow-panel.empty h3 { color: #6b7280; }
-    .workflow-item { border-left: 3px solid #2a3038; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; background: #141820; border-radius: 0 4px 4px 0; cursor: pointer; transition: border-color 0.15s; }
-    .workflow-item:hover { border-left-color: #2fb8a8; }
-    .workflow-item.active { border-left-color: #2fb8a8; background: rgba(47, 184, 168, 0.08); }
-    .workflow-item .wf-title { font-weight: 600; font-size: 0.9rem; }
-    .workflow-item .wf-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
-    .workflow-item .wf-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-    .workflow-item .wf-actions button { padding: 0.3rem 0.6rem; font-size: 0.7rem; }
-    .workflow-item.decided { border-left-color: #5fd1a3; }
-    .workflow-item.applied { border-left-color: #6b7280; opacity: 0.6; }
-    .active-wf-banner { background: rgba(47, 184, 168, 0.1); border: 1px solid #2fb8a8; border-radius: 4px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
-    .active-wf-banner button { background: transparent; color: #a0aab4; border: 1px solid #2a3038; padding: 0.3rem 0.6rem; font-size: 0.75rem; }
-    .active-wf-banner button:hover { color: #c4ced8; }
-    .submit-decision { background: #5fd1a3 !important; color: #0a0c10 !important; }
-    .submit-decision:hover { background: #7adcb4 !important; }
+    .drawer .drawer-sub {
+      margin: 0 0 1rem 0;
+      font-size: 0.75rem;
+      color: var(--text-3);
+      line-height: 1.45;
+    }
+    .section-rule {
+      margin: 1.25rem 0 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--edge);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-3);
+    }
+
+    /* ── Forms ─────────────────────────────────────────────────────────────── */
+    form { display: flex; flex-direction: column; gap: 0.75rem; }
+    label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.8rem; color: var(--text-2); }
+    label > span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-3);
+    }
+    input[type="text"], select, textarea {
+      background: var(--bg-2);
+      color: var(--text-0);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.7rem;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    textarea { min-height: 6rem; resize: vertical; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.5; }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg-1);
+    }
+
+    .filter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
+    .filter-grid label {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--text-1);
+      padding: 0.3rem 0.5rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+    .filter-grid label:hover { border-color: var(--edge-hi); }
+    .filter-grid input[type="checkbox"] { width: auto; margin: 0; accent-color: var(--accent); }
+
+    /* ── Buttons ───────────────────────────────────────────────────────────── */
+    button {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 0.55rem 0.9rem;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: var(--bg-0); }
+    .btn-primary:not(:disabled):hover { background: var(--accent-hi); }
+    .btn-ghost { background: transparent; color: var(--text-2); border-color: var(--edge); }
+    .btn-ghost:hover { background: var(--bg-2); color: var(--text-0); }
+    .btn-danger-ghost { background: transparent; color: var(--danger); border-color: var(--edge); }
+    .btn-danger-ghost:hover { background: rgba(228, 115, 115, 0.08); }
+    .btn-success-ghost { background: transparent; color: var(--success); border-color: var(--edge); }
+    .btn-success-ghost:hover { background: rgba(95, 209, 163, 0.08); }
+    .btn-focus {
+      background: var(--bg-3);
+      color: var(--text-0);
+      border-color: var(--edge-hi);
+    }
+    .btn-focus:hover { background: var(--accent); color: var(--bg-0); border-color: var(--accent); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+    /* ── Template picker ───────────────────────────────────────────────────── */
+    /* Site picker (two-option radio group) */
+    .site-picker-section { display: flex; flex-direction: column; gap: 0.4rem; }
+    .site-picker-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-3);
+    }
+    .site-picker {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+    }
+    .site-option {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.15rem;
+      padding: 0.55rem 0.7rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      color: var(--text-1);
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s;
+      min-width: 0;
+    }
+    .site-option:hover { background: var(--bg-3); border-color: var(--edge-hi); }
+    .site-option.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+      background: rgba(47, 184, 168, 0.06);
+    }
+    .site-option .site-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-0);
+    }
+    .site-option.selected .site-name { color: var(--accent); }
+    .site-option .site-tagline {
+      font-size: 0.65rem;
+      color: var(--text-3);
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    /* Template picker grid (replaces the old dropdown) */
+    .tpl-picker-section { display: flex; flex-direction: column; gap: 0.4rem; }
+    .tpl-picker-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .tpl-picker-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-3);
+    }
+    .tpl-picker-actions { display: flex; gap: 0.3rem; }
+    .tpl-picker-actions button { padding: 0.3rem 0.55rem; font-size: 0.65rem; }
+
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
+      max-height: 420px;
+      overflow-y: auto;
+      padding: 0.1rem;
+    }
+    .tpl-empty {
+      grid-column: 1 / -1;
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-3);
+      line-height: 1.45;
+    }
+
+    .tpl-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 0;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      color: var(--text-1);
+      text-align: left;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.15s, background 0.15s, transform 0.06s;
+      min-width: 0;
+    }
+    .tpl-card:hover { border-color: var(--edge-hi); background: var(--bg-3); }
+    .tpl-card:active { transform: translateY(1px); }
+    .tpl-card.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .tpl-card.suggested { border-color: rgba(245, 197, 66, 0.5); }
+    .tpl-card.suggested.selected { border-color: var(--accent); }
+
+    .tpl-card-thumb {
+      width: 100%;
+      aspect-ratio: 1200 / 630;
+      background: var(--bg-0);
+      overflow: hidden;
+      position: relative;
+    }
+    .tpl-card-thumb .og-preview,
+    .tpl-card-thumb img { width: 100%; height: 100%; display: block; }
+    .tpl-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a3040 0%, #0d1a26 100%);
+    }
+    .tpl-placeholder[data-preset="retro-crt"] { background: linear-gradient(135deg, #1e2d38 0%, #2a3b4a 50%, #1a2430 100%); }
+    .tpl-placeholder[data-preset="teal-amber"] { background: linear-gradient(135deg, #1a3040 0%, #3a2d1a 100%); }
+    .tpl-placeholder[data-preset="heavy-crt"] { background: linear-gradient(135deg, #0a1015 0%, #2d1f38 100%); }
+    .tpl-placeholder[data-preset="subtle"] { background: linear-gradient(135deg, #1a2028 0%, #252d36 100%); }
+
+    .tpl-card-body {
+      padding: 0.5rem 0.6rem 0.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      min-width: 0;
+    }
+    .tpl-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.4rem;
+      min-width: 0;
+    }
+    .tpl-card-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-0);
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+      flex: 1;
+    }
+    .tpl-suggested-dot { color: var(--rating); margin-right: 0.2rem; }
+    .tpl-card-fit {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-3);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .tpl-card.selected .tpl-card-fit { color: var(--accent); }
+    .tpl-card-desc {
+      font-size: 0.7rem;
+      color: var(--text-2);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .tpl-card-tags { display: flex; flex-wrap: wrap; gap: 0.2rem; }
+    .tpl-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.55rem;
+      padding: 0.08rem 0.35rem;
+      background: var(--bg-3);
+      color: var(--text-3);
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+    }
+    .template-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      margin-top: 0.3rem;
+      line-height: 1.5;
+    }
+    .template-meta strong { color: var(--text-1); }
+    .candidate-pills { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.4rem; }
+    .candidate-pill {
+      padding: 0.15rem 0.45rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      color: var(--text-2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .candidate-pill:hover { border-color: var(--edge-hi); color: var(--text-0); }
+    .candidate-pill.suggested { background: rgba(47, 184, 168, 0.12); border-color: var(--accent); color: var(--accent); }
+
+    /* ── Status line ───────────────────────────────────────────────────────── */
+    #gen-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-2);
+      min-height: 1.3em;
+      margin-top: 0.25rem;
+    }
+    #gen-status.working { color: var(--accent); }
+    #gen-status.error { color: var(--danger); }
+
+    /* ── Workflow panel (right drawer) ─────────────────────────────────────── */
+    .wf-group-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-3);
+      margin: 0.5rem 0 0.4rem;
+    }
+    .wf-group-label.decided { color: var(--success); }
+    .wf-group-label.iterate { color: var(--warning); }
+    .wf-title-iterate { font-size: 0.82rem; font-style: italic; color: var(--text-1); font-weight: 400; }
+    .wf-item {
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.5rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-left: 2px solid var(--edge-hi);
+      border-radius: var(--radius);
+      transition: border-color 0.15s;
+    }
+    .wf-item.active { border-left-color: var(--accent); background: rgba(47, 184, 168, 0.06); }
+    .wf-item.decided { border-left-color: var(--success); }
+    .wf-item.applied { border-left-color: var(--text-3); opacity: 0.55; }
+    .wf-item .wf-title { font-size: 0.85rem; font-weight: 500; color: var(--text-0); line-height: 1.3; }
+    .wf-item .wf-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-3); margin-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .wf-item .wf-meta strong { color: var(--text-2); font-weight: 500; }
+    .wf-item .wf-actions { display: flex; gap: 0.35rem; margin-top: 0.5rem; }
+    .wf-item .wf-actions button { padding: 0.3rem 0.55rem; font-size: 0.65rem; }
+    .wf-note { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--success); }
+    .wf-note.muted { color: var(--text-3); }
+
+    .active-wf-banner {
+      background: rgba(47, 184, 168, 0.08);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.85rem;
+      font-size: 0.8rem;
+      color: var(--text-1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .active-wf-banner strong { color: var(--accent); font-weight: 600; }
+    .active-wf-banner button { padding: 0.25rem 0.5rem; font-size: 0.65rem; }
+
+    /* ── Gallery cards (compact) ───────────────────────────────────────────── */
+    .gallery { display: flex; flex-direction: column; gap: 0.85rem; }
+    .gallery .empty-hint {
+      padding: 3rem 1rem;
+      text-align: center;
+      color: var(--text-3);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .card {
+      background: var(--bg-1);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .card:hover { border-color: var(--edge-hi); }
+
+    .card-compact {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 1rem;
+      padding: 0.85rem;
+      align-items: center;
+    }
+    .card-compact .card-thumb {
+      width: 240px;
+      aspect-ratio: 1200 / 630;
+      background: var(--bg-0);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: outline 0.15s ease;
+      outline: 1px solid transparent;
+    }
+    .card-compact .card-thumb:hover { outline-color: var(--accent); }
+    .card-compact .card-thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .card-compact .card-thumb:has(.og-preview-thumb) {
+      outline: 1px dashed var(--accent);
+      outline-offset: -1px;
+    }
+    .card-compact .card-thumb img,
+    .card-compact .card-thumb .og-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .card-compact .card-body { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+    .card-compact .card-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-0);
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-compact .card-title em { color: var(--text-3); font-style: italic; font-weight: 400; }
+    .card-compact .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-3);
+      align-items: center;
+    }
+    .card-compact .card-meta strong { color: var(--text-2); font-weight: 500; }
+    .card-compact .card-actions {
+      display: flex;
+      gap: 0.3rem;
+      margin-top: 0.2rem;
+      flex-wrap: wrap;
+    }
+    .card-compact .card-actions button { padding: 0.35rem 0.65rem; font-size: 0.7rem; }
+
+    .status-pill {
+      display: inline-block;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .status-pill.generated { background: var(--bg-3); color: var(--text-2); }
+    .status-pill.approved  { background: rgba(95, 209, 163, 0.15); color: var(--success); }
+    .status-pill.rejected  { background: rgba(228, 115, 115, 0.15); color: var(--danger); }
+
+    .stars { display: inline-flex; gap: 0; user-select: none; }
+    .stars button {
+      background: transparent;
+      color: var(--edge-hi);
+      padding: 0 1px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: none;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .stars button.on { color: var(--rating); }
+    .stars button:hover, .stars button:hover ~ button { color: var(--edge-hi); }
+    .stars:hover button { color: var(--rating); }
+    .stars button:hover ~ button { color: var(--edge-hi); }
+
+    .card-compact .dropdown { position: relative; }
+    .card-compact .dropdown-toggle {
+      background: transparent;
+      color: var(--text-2);
+      border: 1px solid var(--edge);
+      padding: 0.35rem 0.55rem;
+    }
+    .card-compact .dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 4px);
+      min-width: 180px;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 0.25rem;
+      display: none;
+      z-index: 4;
+    }
+    .card-compact .dropdown.open .dropdown-menu { display: block; }
+    .card-compact .dropdown-menu button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      color: var(--text-1);
+      padding: 0.4rem 0.6rem;
+      border: none;
+      font-size: 0.7rem;
+    }
+    .card-compact .dropdown-menu button:hover { background: var(--bg-3); color: var(--text-0); }
+
+    /* ── Card — focused mode ───────────────────────────────────────────────── */
+    .gallery.has-focus { display: block; }
+    .gallery.has-focus .card:not(.focused) { display: none; }
+    .card.focused {
+      border-color: var(--accent);
+      padding: 0;
+    }
+    .card.focused .card-compact { display: none; }
+    .card-focused {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      padding: 1.25rem;
+      gap: 0.85rem;
+    }
+    .card-focused .focus-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .card-focused .focus-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .card-focused .focus-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+    }
+    .card-focused .focus-close {
+      background: var(--bg-2);
+      color: var(--text-2);
+      border: 1px solid var(--edge);
+      padding: 0.3rem 0.55rem;
+      font-size: 0.7rem;
+    }
+    .card-focused .focus-close:hover { background: var(--bg-3); color: var(--text-0); }
+    .card-focused .focus-preview { width: 100%; }
+    .card-focused .og-preview { width: 100%; border-radius: var(--radius); }
+    .card-focused .prompt-line {
+      font-size: 0.78rem;
+      color: var(--text-2);
+      font-style: italic;
+      line-height: 1.4;
+    }
+    .card-focused .full-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      padding: 0.4rem 0;
+      border-top: 1px solid var(--edge);
+      border-bottom: 1px solid var(--edge);
+    }
+    .card-focused .full-meta strong { color: var(--text-1); font-weight: 500; }
+    .card-focused .note-edit {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .card-focused .note-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-3);
+    }
+    .card-focused .note-textarea {
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: 1px solid var(--edge);
+      color: var(--text-1);
+      font-size: 0.85rem;
+      font-style: italic;
+      font-family: 'Inter', sans-serif;
+      padding: 0.4rem 0.1rem;
+      min-height: 0;
+      field-sizing: content;
+      resize: none;
+      width: 100%;
+      line-height: 1.5;
+      transition: border-color 0.15s, background 0.15s, padding 0.15s, border-radius 0.15s;
+      cursor: text;
+    }
+    .card-focused .note-textarea::placeholder { color: var(--text-3); font-style: italic; }
+    .card-focused .note-textarea:hover { border-bottom-color: var(--edge-hi); background: rgba(255,255,255,0.02); }
+    .card-focused .note-textarea:focus {
+      font-style: normal;
+      outline: none;
+      border: 1px solid var(--accent);
+      background: var(--bg-2);
+      border-radius: var(--radius);
+      padding: 0.55rem 0.7rem;
+    }
+    .card-focused .note-saved {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-3);
+      min-height: 1em;
+    }
+    .card-focused .note-saved.working { color: var(--accent); }
+    .card-focused .note-saved.ok { color: var(--success); }
+    .card-focused .note-saved.error { color: var(--danger); }
+
+    /* Thread section (Phase 13) */
+    .thread-section {
+      margin-top: 0.5rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--edge);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .thread-header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .thread-section .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+    }
+    .thread-hint { font-size: 0.75rem; color: var(--text-3); }
+    .thread-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      max-height: 320px;
+      overflow-y: auto;
+      padding: 0.25rem 0;
+    }
+    .thread-empty {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      padding: 0.5rem 0;
+      text-align: center;
+    }
+    .thread-msg {
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      padding: 0.55rem 0.7rem;
+      max-width: 88%;
+    }
+    .thread-msg-user { align-self: flex-end; border-color: rgba(47, 184, 168, 0.3); background: rgba(47, 184, 168, 0.06); }
+    .thread-msg-assistant { align-self: flex-start; }
+    .thread-msg-head { display: flex; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.2rem; }
+    .thread-byline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-3);
+    }
+    .thread-msg-user .thread-byline { color: var(--accent); }
+    .thread-when { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-3); }
+    .thread-body { font-size: 0.85rem; color: var(--text-1); line-height: 1.45; white-space: pre-wrap; }
+    .thread-entry-ref {
+      margin-top: 0.4rem;
+      padding: 0.25rem 0.55rem;
+      font-size: 0.65rem;
+      background: transparent;
+      border: 1px solid var(--edge);
+      color: var(--text-2);
+    }
+    .thread-entry-ref:hover { background: var(--bg-3); color: var(--text-0); }
+    .thread-composer { display: flex; gap: 0.5rem; align-items: flex-start; }
+    .thread-input {
+      flex: 1;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      background: var(--bg-2);
+      color: var(--text-0);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.7rem;
+      resize: none;
+      min-height: 0;
+      field-sizing: content;
+    }
+    .thread-input:focus { outline: none; border-color: var(--accent); background: var(--bg-1); }
+    .thread-send { padding: 0.5rem 0.9rem; }
+
+    /* Save as Template inline panel */
+    .save-template-panel {
+      margin: 0.85rem 0;
+      padding: 0;
+      background: var(--bg-1);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 20px rgba(47, 184, 168, 0.08);
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.22s ease, opacity 0.18s ease, padding 0.22s ease;
+    }
+    .save-template-panel.stp-open {
+      max-height: 1200px;
+      opacity: 1;
+      padding: 1.1rem 1.2rem 0.95rem;
+    }
+
+    /* Head: title + close on row 1, sub on row 2 */
+    .save-template-panel .stp-head { margin-bottom: 1rem; }
+    .save-template-panel .stp-head-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .save-template-panel .stp-head .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+    }
+    .save-template-panel .stp-sub {
+      margin: 0.35rem 0 0;
+      font-size: 0.78rem;
+      color: var(--text-3);
+      line-height: 1.5;
+    }
+    .save-template-panel .stp-close {
+      background: transparent;
+      border: none;
+      color: var(--text-3);
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 0 0.4rem;
+      cursor: pointer;
+      border-radius: var(--radius);
+    }
+    .save-template-panel .stp-close:hover { background: var(--bg-3); color: var(--text-0); }
+
+    /* Body: each field is a vertical stack (label → input → hint) */
+    .save-template-panel .stp-body { display: flex; flex-direction: column; gap: 0.9rem; }
+    .save-template-panel .stp-row-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.9rem;
+    }
+    .save-template-panel .stp-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+    .save-template-panel .stp-label {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-3);
+      margin: 0;
+    }
+    .save-template-panel .stp-field input[type="text"],
+    .save-template-panel .stp-field textarea {
+      display: block;
+      width: 100%;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      background: var(--bg-2);
+      color: var(--text-0);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.65rem;
+      min-height: 0;
+      box-sizing: border-box;
+    }
+    .save-template-panel .stp-field textarea {
+      font-family: 'Inter', sans-serif;
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 3rem;
+    }
+    .save-template-panel .stp-field input[type="text"]:focus,
+    .save-template-panel .stp-field textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg-1);
+    }
+    .save-template-panel .stp-hint {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      color: var(--text-3);
+      line-height: 1.4;
+    }
+
+    /* Tag input */
+    .save-template-panel .stp-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      padding: 0.4rem 0.5rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      min-height: 2.3rem;
+      align-items: center;
+    }
+    .save-template-panel .stp-tags:focus-within { border-color: var(--accent); background: var(--bg-1); }
+    .save-template-panel .stp-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.15rem 0.35rem 0.15rem 0.55rem;
+      background: rgba(47, 184, 168, 0.12);
+      border: 1px solid rgba(47, 184, 168, 0.35);
+      color: var(--accent);
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+    }
+    .save-template-panel .stp-tag button {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      font-size: 0.85rem;
+      line-height: 1;
+      padding: 0 0.2rem;
+      cursor: pointer;
+      border-radius: 999px;
+    }
+    .save-template-panel .stp-tag button:hover { background: rgba(47, 184, 168, 0.18); }
+    .save-template-panel .stp-tag-input {
+      flex: 1;
+      min-width: 10ch;
+      background: transparent;
+      border: none;
+      padding: 0.15rem 0.1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-0);
+    }
+    .save-template-panel .stp-tag-input:focus { outline: none; }
+
+    /* Captured — simple definition list, no nested card */
+    .save-template-panel .stp-captured {
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--edge);
+    }
+    .save-template-panel .stp-captured-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-3);
+      margin-bottom: 0.5rem;
+    }
+    .save-template-panel .stp-captured-list {
+      margin: 0;
+      display: grid;
+      grid-template-columns: 5rem 1fr;
+      column-gap: 0.75rem;
+      row-gap: 0.4rem;
+      font-size: 0.82rem;
+    }
+    .save-template-panel .stp-captured-list dt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      align-self: start;
+    }
+    .save-template-panel .stp-captured-list dd {
+      margin: 0;
+      color: var(--text-1);
+      line-height: 1.5;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .save-template-panel .stp-msg {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      margin: 0.85rem 0 0;
+      min-height: 1em;
+      color: var(--text-3);
+    }
+    .save-template-panel .stp-msg.working { color: var(--accent); }
+    .save-template-panel .stp-msg.ok { color: var(--success); }
+    .save-template-panel .stp-msg.error { color: var(--danger); }
+
+    .save-template-panel .stp-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 0.9rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--edge);
+    }
+
+    @media (max-width: 640px) {
+      .save-template-panel .stp-row-2 { grid-template-columns: 1fr; }
+    }
+
+    /* Conflict resolution (inside panel when slug collides) */
+    .stp-conflict {
+      margin-top: 0.25rem;
+      padding-top: 0.9rem;
+      border-top: 1px solid var(--edge);
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .stp-conflict-head {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.6rem 0.85rem;
+      align-items: start;
+    }
+    .stp-conflict-icon {
+      font-size: 1rem;
+      color: var(--warning);
+      padding-top: 0.1rem;
+    }
+    .stp-conflict-title {
+      font-size: 0.85rem;
+      color: var(--text-1);
+      line-height: 1.45;
+    }
+    .stp-conflict-title code {
+      background: var(--bg-2);
+      color: var(--accent);
+      padding: 0 0.3rem;
+      border-radius: 3px;
+    }
+    .stp-conflict-existing {
+      margin-top: 0.5rem;
+      padding: 0.55rem 0.75rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      font-size: 0.78rem;
+    }
+    .stp-conflict-existing strong { color: var(--text-0); margin-right: 0.5rem; }
+    .stp-conflict-fit {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+    }
+    .stp-conflict-desc {
+      margin-top: 0.3rem;
+      color: var(--text-2);
+      line-height: 1.45;
+      font-style: italic;
+    }
+    .stp-conflict-choice-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-3);
+    }
+    .stp-conflict-choices {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .stp-choice {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+      padding: 0.7rem 0.9rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      color: var(--text-1);
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.05s;
+    }
+    .stp-choice:hover:not(:disabled) {
+      background: var(--bg-3);
+      border-color: var(--accent);
+    }
+    .stp-choice:active:not(:disabled) { transform: translateY(1px); }
+    .stp-choice:disabled { opacity: 0.5; cursor: progress; }
+    .stp-choice-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-0);
+      letter-spacing: 0.02em;
+    }
+    .stp-choice-title code {
+      font-size: 0.78rem;
+      color: var(--accent);
+      background: rgba(47, 184, 168, 0.1);
+      padding: 0 0.3rem;
+      border-radius: 3px;
+    }
+    .stp-choice-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      color: var(--text-2);
+      line-height: 1.5;
+      font-weight: 400;
+    }
+    .stp-choice-danger { border-color: rgba(228, 115, 115, 0.35); }
+    .stp-choice-danger .stp-choice-title { color: var(--danger); }
+    .stp-choice-danger:hover:not(:disabled) {
+      background: rgba(228, 115, 115, 0.08);
+      border-color: var(--danger);
+    }
+    .card-focused .err-line {
+      color: var(--danger);
+      background: rgba(228, 115, 115, 0.08);
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    /* Preview controls (focus mode) */
+    .preview-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+    }
+    .preview-controls .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.85rem;
+      align-items: center;
+    }
+    .preview-controls label {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--text-2);
+    }
+    .preview-controls label.cb { gap: 0.35rem; }
+    .preview-controls label.cb input { width: auto; accent-color: var(--accent); margin: 0; }
+    .preview-controls label > span {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-3);
+    }
+    .preview-controls select {
+      padding: 0.3rem 0.45rem;
+      font-size: 0.7rem;
+      background: var(--bg-1);
+    }
+    .commit-row {
+      margin-top: 0.25rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--edge);
+      justify-content: space-between;
+    }
+    .commit-btn { background: var(--success); color: var(--bg-0); border: none; }
+    .commit-btn:not(:disabled):hover { background: #7adcb4; }
+    .commit-status { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-3); }
+    .commit-status.working { color: var(--accent); }
+    .commit-status.error { color: var(--danger); }
+
+    /* Live-preview static thumbnail (no controls) */
+    .card-thumb .og-preview {
+      pointer-events: none;
+      /* compact thumbnails don't respond to clicks */
+    }
+    .card-thumb .og-preview .og-title,
+    .card-thumb .og-preview .og-subtitle,
+    .card-thumb .og-preview .og-brand-row { pointer-events: none; }
+
+    /* ── Help widget ─────────────────────────────────────────────────────── */
+    .help-toggle {
+      background: var(--bg-2);
+      color: var(--text-2);
+      border: 1px solid var(--edge);
+      border-radius: 999px;
+      width: 1.5rem;
+      height: 1.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .help-toggle:hover { background: var(--bg-3); color: var(--text-0); border-color: var(--edge-hi); }
+    .help-toggle[aria-expanded="true"] { background: var(--accent); color: var(--bg-0); border-color: var(--accent); }
+    .help-toggle-sm {
+      width: 1.1rem;
+      height: 1.1rem;
+      font-size: 0.6rem;
+      vertical-align: middle;
+    }
+    .stage-head-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    /* Lightweight help card under the History heading (smaller than the
+     * page-level one; lives inside the stage, pushes the gallery down). */
+    .history-help {
+      margin: -0.4rem 0 1rem;
+      padding: 0.85rem 1rem;
+      background: var(--bg-1);
+      border: 1px solid var(--edge);
+      border-left: 2px solid var(--accent);
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: var(--text-1);
+    }
+    .history-help p { margin: 0 0 0.6rem; }
+    .history-help strong { color: var(--text-0); }
+    .history-help em { color: var(--accent); font-style: normal; }
+    .history-help code { color: var(--accent); background: var(--bg-2); padding: 0 0.25rem; border-radius: 3px; }
+    .history-help-list {
+      margin: 0;
+      padding-left: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .help-card {
+      margin: 0 0 1.25rem;
+      padding: 1.1rem 1.25rem 1.25rem;
+      background: var(--bg-1);
+      border: 1px solid var(--edge);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+    }
+    .help-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.6rem;
+    }
+    .help-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+    }
+    .help-close {
+      background: transparent;
+      border: none;
+      color: var(--text-3);
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 0 0.35rem;
+      cursor: pointer;
+      border-radius: var(--radius);
+    }
+    .help-close:hover { background: var(--bg-3); color: var(--text-0); }
+    .help-lede {
+      margin: 0 0 1rem;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--text-1);
+      max-width: 58rem;
+    }
+
+    .help-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem 1.5rem;
+    }
+    @media (min-width: 1200px) {
+      .help-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    .help-col { min-width: 0; }
+    .help-subhead {
+      margin: 0 0 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-3);
+    }
+
+    .help-steps {
+      margin: 0;
+      padding-left: 1.1rem;
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: var(--text-1);
+    }
+    .help-steps li { margin-bottom: 0.55rem; }
+    .help-steps li:last-child { margin-bottom: 0; }
+    .help-steps strong { color: var(--text-0); font-weight: 600; }
+    .help-steps em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+    .help-dl { margin: 0; font-size: 0.78rem; line-height: 1.5; }
+    .help-dl dt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text-0);
+      margin-top: 0.5rem;
+    }
+    .help-dl dt:first-child { margin-top: 0; }
+    .help-dl dt code { color: var(--accent); background: var(--bg-2); padding: 0 0.3rem; border-radius: 3px; }
+    .help-dl dd {
+      margin: 0.15rem 0 0;
+      color: var(--text-2);
+    }
+
+    /* ── Misc ──────────────────────────────────────────────────────────────── */
+    .hint { color: var(--text-3); font-size: 0.75rem; }
+    .err {
+      color: var(--danger);
+      background: rgba(228, 115, 115, 0.1);
+      padding: 0.6rem 0.75rem;
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+    }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.9em; color: var(--text-2); }
+
+    @media (max-width: 640px) {
+      .card-compact { grid-template-columns: 1fr; }
+      .card-compact .card-thumb { width: 100%; }
+      :root { --drawer-w: 300px; }
+    }
   </style>
 </head>
 <body>
-  <h1>feature-image preview</h1>
-  <p class="hint">Dev-only gallery for iterating on prompts and filters. Generation log: <code>.feature-image-history.jsonl</code>. Workflow pipeline: <code>.feature-image-pipeline.jsonl</code>.</p>
+  <header class="app-header">
+    <div class="app-title"><strong>FI</strong> · feature image studio</div>
+    <div class="app-meta">
+      <span>log <code>.feature-image-history.jsonl</code></span>
+      <span>wf <code>.feature-image-pipeline.jsonl</code></span>
+      <button type="button" class="help-toggle" id="help-toggle" title="What is this? How does the workflow work?" aria-label="Help" aria-expanded="false">?</button>
+    </div>
+  </header>
 
-  <section class="workflow-panel" id="workflow-panel">
-    <h3>Pending workflows</h3>
-    <div id="workflow-list">Loading…</div>
-  </section>
-
-  <div class="layout">
-    <section>
+  <!-- Left drawer: Generate -->
+  <aside class="drawer drawer-left" id="drawer-generate">
+    <div class="drawer-content">
       <h2>Generate</h2>
+      <p class="drawer-sub">New generation from prompt or template. Output lands in History.</p>
+
       <div id="active-wf-banner" style="display: none;"></div>
+
       <form id="gen-form">
+        <div class="site-picker-section">
+          <span class="site-picker-label">Site</span>
+          <div class="site-picker" role="radiogroup" aria-label="Target site">
+            <button type="button" class="site-option" data-site="audiocontrol" role="radio" aria-checked="true" title="audiocontrol.org — Departure Mono / phosphor amber / Roland-blue accent">
+              <span class="site-name">audiocontrol</span>
+              <span class="site-tagline">service-manual / flight-instrumentation</span>
+            </button>
+            <button type="button" class="site-option" data-site="editorialcontrol" role="radio" aria-checked="false" title="editorialcontrol.org — Fraunces serif / chartreuse / parchment cream">
+              <span class="site-name">editorialcontrol</span>
+              <span class="site-tagline">publication-dark / editorial</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="tpl-picker-section">
+          <div class="tpl-picker-head">
+            <span class="tpl-picker-label">Template</span>
+            <div class="tpl-picker-actions">
+              <button type="button" class="btn-ghost" id="template-fork" title="Clone the selected template with a new slug — sets parent reference for lineage tracking">Fork</button>
+              <button type="button" class="btn-ghost" id="template-clear" title="Clear the template selection">None</button>
+            </div>
+          </div>
+          <div id="template-grid" class="template-grid" role="radiogroup" aria-label="Prompt template"></div>
+          <div id="template-meta" class="template-meta"></div>
+          <div id="candidate-pills" class="candidate-pills"></div>
+        </div>
+
         <label>
           <span>Prompt</span>
           <textarea id="prompt" name="prompt" placeholder="Abstract geometric structure, teal and amber, dark moody background, no text, no words, no letters, no typography"></textarea>
@@ -136,12 +1718,12 @@ const filterNames = Object.keys(FILTER_REGISTRY);
             <option value="">(none)</option>
             {presets.map(name => <option value={name}>{name}</option>)}
           </select>
-          <span class="hint">Overrides the filter checkboxes below when set.</span>
+          <span class="hint" style="text-transform: none; letter-spacing: 0; font-family: 'Inter', sans-serif; font-weight: 400;">Overrides filters below when set.</span>
         </label>
 
         <label>
-          <span>Filters (used if Preset is blank)</span>
-          <div class="filter-list">
+          <span>Filters</span>
+          <div class="filter-grid">
             {filterNames.map(name => (
               <label><input type="checkbox" name="filters" value={name} />{name}</label>
             ))}
@@ -149,74 +1731,1009 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         </label>
 
         <label>
-          <span>Title (optional)</span>
-          <input type="text" id="title" name="title" />
+          <span>Title</span>
+          <input type="text" id="title" name="title" placeholder="optional" />
         </label>
 
         <label>
-          <span>Subtitle (optional)</span>
-          <input type="text" id="subtitle" name="subtitle" />
+          <span>Subtitle</span>
+          <input type="text" id="subtitle" name="subtitle" placeholder="optional" />
         </label>
 
         <label>
-          <span>Formats (when title is set)</span>
+          <span>Formats</span>
           <input type="text" id="formats" name="formats" value="og" placeholder="og,youtube,instagram" />
         </label>
 
-        <button type="submit" id="gen-btn">Generate</button>
-        <div id="status"></div>
+        <button type="submit" id="gen-btn" class="btn-primary" title="Call DALL-E 3 or FLUX to produce a raw AI image, then apply filters and text overlay">Generate</button>
+        <div id="gen-status"></div>
       </form>
-    </section>
+    </div>
+    <button class="drawer-handle" id="handle-generate" aria-label="Toggle Generate drawer">
+      <span class="handle-chevron" aria-hidden="true">›</span>
+      <span class="handle-label">Generate</span>
+    </button>
+  </aside>
 
-    <section>
-      <h2>History</h2>
-      <div id="gallery">Loading…</div>
-    </section>
-  </div>
+  <!-- Right drawer: Workflows -->
+  <aside class="drawer drawer-right" id="drawer-workflow">
+    <button class="drawer-handle" id="handle-workflow" aria-label="Toggle Workflows drawer">
+      <span class="handle-chevron" aria-hidden="true">‹</span>
+      <span class="handle-label">Workflows</span>
+      <span class="handle-badge" id="handle-workflow-badge">0</span>
+    </button>
+    <div class="drawer-content">
+      <h2>Workflows</h2>
+      <p class="drawer-sub">Async handoffs from Claude via <code>/feature-image-blog</code>. Activate one, iterate in the gallery, then submit a decision.</p>
+      <div id="workflow-list"></div>
+    </div>
+  </aside>
+
+  <div class="scrim" id="scrim"></div>
+
+  <!-- Stepped progress drawer (Approve flow). Hidden by default. -->
+  <aside class="step-drawer" id="step-drawer" hidden aria-hidden="true">
+    <header class="step-head">
+      <div class="step-head-titles">
+        <div class="step-title" id="step-title">Approve and bake</div>
+        <div class="step-timers">
+          <span class="step-elapsed" id="step-elapsed">elapsed 0:00</span>
+          <span class="step-eta" id="step-eta"></span>
+        </div>
+      </div>
+      <button type="button" class="step-close" id="step-close" aria-label="Close" hidden>×</button>
+    </header>
+    <div class="step-list" id="step-list" aria-live="polite"></div>
+    <div class="step-summary" id="step-summary" hidden></div>
+    <footer class="step-foot">
+      <button type="button" class="btn-ghost step-cancel" id="step-cancel">Cancel</button>
+      <button type="button" class="btn-primary step-done" id="step-done" hidden>Done</button>
+    </footer>
+  </aside>
+
+  <!-- Main stage -->
+  <main class="stage">
+    <div class="stage-inner">
+      <section class="help-card" id="help-card" hidden aria-hidden="true">
+        <div class="help-head">
+          <span class="help-title">Feature Image Studio</span>
+          <button type="button" class="help-close" id="help-close" aria-label="Close help">×</button>
+        </div>
+        <p class="help-lede">Generate, iterate on, and approve AI-generated feature images for blog posts on either site (audiocontrol or editorialcontrol). The gallery lives under audiocontrol's dev server but targets either site — brand palette, typography, and logo switch per-site.</p>
+
+        <div class="help-grid">
+          <div class="help-col">
+            <h4 class="help-subhead">Workflow</h4>
+            <ol class="help-steps">
+              <li><strong>Start</strong> — Open the <em>Generate</em> drawer (left) to generate freely, or invoke <code>/feature-image-blog &lt;post-path&gt;</code> in Claude Code to enqueue a workflow targeting a specific post.</li>
+              <li><strong>Activate (if using a workflow)</strong> — Open the <em>Workflows</em> drawer (right) and click <em>Activate</em> on the pending item. That binds the gallery to that workflow — Generate pre-fills with the workflow's prompt/preset/title, Site switches to the target site, and <em>Approve</em> decides the workflow instead of creating a freestanding approved entry.</li>
+              <li><strong>Iterate</strong> — Click a thumbnail to focus an entry. Edit title / subtitle / filters / site live. Send a message in the thread composer to have Claude propose variants.</li>
+              <li><strong>Approve</strong> — Click <em>Approve</em> (in focus mode) to bake all three social variants (og / youtube / instagram), mark the entry approved, and decide any active workflow.</li>
+              <li><strong>Apply</strong> — Run <code>/feature-image-apply</code> in Claude Code. Approved entries get copied into the target post's public dir + wired into frontmatter.</li>
+            </ol>
+          </div>
+
+          <div class="help-col">
+            <h4 class="help-subhead">Skills</h4>
+            <dl class="help-dl">
+              <dt><code>/feature-image-blog &lt;post&gt;</code></dt>
+              <dd>Start a workflow for a blog post. Infers site from the path or URL host.</dd>
+              <dt><code>/feature-image-iterate</code></dt>
+              <dd>Drain pending thread messages. Run after sending feedback in the gallery.</dd>
+              <dt><code>/feature-image-apply</code></dt>
+              <dd>Route approved entries + decided workflows into their target posts.</dd>
+              <dt><code>/feature-image-prompts</code></dt>
+              <dd>Browse the prompt-template library (ranked by fitness).</dd>
+              <dt><code>/feature-image-help</code></dt>
+              <dd>Report current pipeline state (workflow items, recent history).</dd>
+            </dl>
+          </div>
+
+          <div class="help-col">
+            <h4 class="help-subhead">Gallery actions</h4>
+            <dl class="help-dl">
+              <dt>Activate / Deactivate (Workflows drawer)</dt>
+              <dd>Selects which pending workflow is "the one I'm working on." Pre-fills Generate, switches Site, scopes Approve's decision. Deactivate to work freestanding.</dd>
+              <dt>Cancel (Workflows drawer)</dt>
+              <dd>Drops a pending workflow without a decision. No files touched.</dd>
+              <dt>Focus</dt>
+              <dd>Click the thumbnail or button to open an entry with live preview + controls.</dd>
+              <dt>Approve</dt>
+              <dd>Bakes 3 social formats + marks approved. Canonical gesture.</dd>
+              <dt>Reject</dt>
+              <dd>Marks rejected; no bake.</dd>
+              <dt>★ Rate</dt>
+              <dd>1–5. Feeds the prompt-library fitness ranker.</dd>
+              <dt>Commit (focus)</dt>
+              <dd>Bakes current edits without approving. Good for iterating on a specific variant.</dd>
+              <dt>Send (thread)</dt>
+              <dd>Asks Claude to iterate. Snapshots your current preview state.</dd>
+              <dt>Copy as input</dt>
+              <dd>Loads this entry's params into the Generate form.</dd>
+              <dt>Save as template</dt>
+              <dd>Adds this entry's prompt to the library for reuse.</dd>
+            </dl>
+          </div>
+
+          <div class="help-col">
+            <h4 class="help-subhead">Keyboard</h4>
+            <dl class="help-dl">
+              <dt>ESC</dt><dd>Close focus mode / close drawers.</dd>
+              <dt>Cmd/Ctrl + Enter</dt><dd>Send thread message.</dd>
+              <dt>Enter / Space</dt><dd>When a thumbnail is focused, open focus mode.</dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <div class="stage-head">
+        <span class="stage-head-left">
+          <span class="stage-label" id="stage-label">History</span>
+          <button type="button" class="help-toggle help-toggle-sm" id="history-help-toggle" title="What is the history? How do I use it?" aria-label="History help" aria-expanded="false">?</button>
+        </span>
+        <span class="stage-count" id="stage-count"></span>
+      </div>
+      <section class="history-help" id="history-help" hidden aria-hidden="true">
+        <p>
+          <strong>History</strong> is the append-only log of every generation, recomposite, and approval — newest first. Each card is a snapshot of what was baked: the prompt, preset, filters, title/subtitle, site, and the PNG files on disk. Nothing gets mutated; iterations create new entries.
+        </p>
+        <ul class="history-help-list">
+          <li><strong>Click a thumbnail</strong> (or the <em>Focus ⟶</em> button) to open an entry. Focus mode gives you the live preview, filter controls, thread composer, and the Approve / Reject / Commit actions.</li>
+          <li><strong>The status pill</strong> (generated · approved · rejected) tracks where each entry stands. <em>Approved</em> is what <code>/feature-image-apply</code> picks up and routes to its target post.</li>
+          <li><strong>★ Ratings</strong> feed the prompt-library fitness ranker — templates used by high-rated generations rise in the picker; low-rated ones fade.</li>
+          <li><strong>Dashed teal outline on a thumbnail</strong> means the entry has unsaved preview edits (title/subtitle/filter/site changes). Commit or Approve in focus to bake them; otherwise they survive refreshes as a draft.</li>
+          <li><strong>Iterations form a tree</strong> via each entry's <code>parentEntryId</code> — recomposites and Claude's iterate responses link back to the source, so a focus thread travels with the lineage.</li>
+        </ul>
+      </section>
+      <div class="gallery" id="gallery">
+        <div class="empty-hint">Loading…</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Expose per-site brand tokens to the client JS so live DOM previews
+       can emit the same --og-* custom properties the bake route sees. -->
+  <script id="site-brands" type="application/json" set:html={JSON.stringify(siteBrands)}></script>
 
   <script>
+    // ── State ──────────────────────────────────────────────────────────────
+    const SITE_BRANDS = (() => {
+      const el = document.getElementById('site-brands');
+      try { return JSON.parse(el?.textContent || '{}'); } catch { return {}; }
+    })();
+
+    function brandStyle(site) {
+      const b = SITE_BRANDS[site];
+      if (!b) return '';
+      return [
+        `--og-primary: hsl(${b.colors.primary})`,
+        `--og-accent: hsl(${b.colors.accent})`,
+        `--og-foreground: hsl(${b.colors.foreground})`,
+        `--og-muted-foreground: hsl(${b.colors.mutedForeground})`,
+        `--og-background: hsl(${b.colors.background})`,
+        `--og-card: hsl(${b.colors.card})`,
+        `--og-border: hsl(${b.colors.border})`,
+        `--og-font-display: ${b.typography.display}`,
+        `--og-font-body: ${b.typography.body}`,
+        `--og-font-mono: ${b.typography.mono}`,
+      ].join('; ');
+    }
+
+    function brandName(site) {
+      return SITE_BRANDS[site]?.name ?? site;
+    }
+
     const form = document.getElementById('gen-form');
     const genBtn = document.getElementById('gen-btn');
-    const statusEl = document.getElementById('status');
+    const genStatusEl = document.getElementById('gen-status');
     const galleryEl = document.getElementById('gallery');
+    const stageLabelEl = document.getElementById('stage-label');
+    const stageCountEl = document.getElementById('stage-count');
     const workflowListEl = document.getElementById('workflow-list');
-    const workflowPanelEl = document.getElementById('workflow-panel');
     const activeBannerEl = document.getElementById('active-wf-banner');
+    const scrimEl = document.getElementById('scrim');
 
-    let activeWorkflow = null;  // the currently-selected workflow item
-    let allWorkflows = [];      // cached list
+    const drawerGenerate = document.getElementById('drawer-generate');
+    const drawerWorkflow = document.getElementById('drawer-workflow');
+    const handleGenerate = document.getElementById('handle-generate');
+    const handleWorkflow = document.getElementById('handle-workflow');
+    const wfBadge = document.getElementById('handle-workflow-badge');
 
+    let activeWorkflow = null;
+    let allWorkflows = [];
+    let allTemplates = [];
+    let activeTemplate = null;
+    let focusedEntryId = null;
+    let cachedEntries = [];
+
+    const templateGrid = document.getElementById('template-grid');
+    const templateMeta = document.getElementById('template-meta');
+    const candidatePills = document.getElementById('candidate-pills');
+
+    // ── Site picker (Phase 14) ─────────────────────────────────────────────
+    // One of 'audiocontrol' | 'editorialcontrol'. Persisted to localStorage
+    // so the last-used site sticks across reloads.
+    let activeSite = localStorage.getItem('fi-active-site') === 'editorialcontrol'
+      ? 'editorialcontrol'
+      : 'audiocontrol';
+
+    function renderSitePicker() {
+      document.querySelectorAll('.site-option').forEach(btn => {
+        const s = btn.dataset.site;
+        const selected = s === activeSite;
+        btn.classList.toggle('selected', selected);
+        btn.setAttribute('aria-checked', selected ? 'true' : 'false');
+      });
+    }
+
+    function setActiveSite(site) {
+      activeSite = site === 'editorialcontrol' ? 'editorialcontrol' : 'audiocontrol';
+      localStorage.setItem('fi-active-site', activeSite);
+      renderSitePicker();
+      // Template picker filters by site — re-render if templates are loaded.
+      if (allTemplates.length > 0) renderTemplateGrid();
+    }
+
+    document.querySelectorAll('.site-option').forEach(btn => {
+      btn.addEventListener('click', () => setActiveSite(btn.dataset.site));
+    });
+    renderSitePicker();
+
+    // ── Drawers ────────────────────────────────────────────────────────────
+    function openDrawer(drawer, other) {
+      drawer.classList.add('open');
+      if (other) other.classList.remove('open');
+      updateScrim();
+    }
+    function closeDrawer(drawer) {
+      drawer.classList.remove('open');
+      updateScrim();
+    }
+    function toggleDrawer(drawer, other) {
+      if (drawer.classList.contains('open')) closeDrawer(drawer);
+      else openDrawer(drawer, other);
+    }
+    function updateScrim() {
+      const anyOpen = drawerGenerate.classList.contains('open') || drawerWorkflow.classList.contains('open');
+      scrimEl.classList.toggle('visible', anyOpen);
+    }
+
+    handleGenerate.addEventListener('click', () => toggleDrawer(drawerGenerate, drawerWorkflow));
+    handleWorkflow.addEventListener('click', () => toggleDrawer(drawerWorkflow, drawerGenerate));
+    scrimEl.addEventListener('click', () => {
+      closeDrawer(drawerGenerate);
+      closeDrawer(drawerWorkflow);
+    });
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Escape') return;
+      if (focusedEntryId) {
+        unfocusEntry();
+      } else if (drawerGenerate.classList.contains('open')) {
+        closeDrawer(drawerGenerate);
+      } else if (drawerWorkflow.classList.contains('open')) {
+        closeDrawer(drawerWorkflow);
+      }
+    });
+
+    // Restore drawer states
+    if (localStorage.getItem('fi-drawer-generate') === 'open') openDrawer(drawerGenerate);
+    if (localStorage.getItem('fi-drawer-workflow') === 'open') openDrawer(drawerWorkflow);
+    drawerGenerate.addEventListener('transitionend', () => {
+      localStorage.setItem('fi-drawer-generate', drawerGenerate.classList.contains('open') ? 'open' : 'closed');
+    });
+    drawerWorkflow.addEventListener('transitionend', () => {
+      localStorage.setItem('fi-drawer-workflow', drawerWorkflow.classList.contains('open') ? 'open' : 'closed');
+    });
+
+    // ── Utils ──────────────────────────────────────────────────────────────
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function escapeAttr(s) { return escapeHtml(s); }
+    function fmtDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+
+    // ── Filter presets (mirrored from og-preview.css / OGPreview) ──────────
+    const PRESET_FILTERS = {
+      none:         { grade: 'none',        phosphor: 'off',   vignette: 'off',    scanlines: 'off',   grain: 'off' },
+      subtle:       { grade: 'none',        phosphor: 'off',   vignette: 'subtle', scanlines: 'off',   grain: 'light' },
+      'retro-crt':  { grade: 'crt',         phosphor: 'on',    vignette: 'on',     scanlines: 'on',    grain: 'on' },
+      'teal-amber': { grade: 'teal-amber',  phosphor: 'off',   vignette: 'subtle', scanlines: 'off',   grain: 'light' },
+      'heavy-crt':  { grade: 'heavy',       phosphor: 'heavy', vignette: 'heavy',  scanlines: 'heavy', grain: 'heavy' },
+    };
+
+    // ── Fetchers ───────────────────────────────────────────────────────────
     async function fetchWorkflows() {
       const res = await fetch('/api/dev/feature-image/workflow');
       if (!res.ok) throw new Error(`workflow fetch failed: ${res.status}`);
       return (await res.json()).items;
     }
+    async function fetchTemplates() {
+      const res = await fetch('/api/dev/feature-image/templates');
+      if (!res.ok) throw new Error(`templates fetch failed: ${res.status}`);
+      return (await res.json()).templates;
+    }
+    async function fetchLog() {
+      const res = await fetch('/api/dev/feature-image/log');
+      if (!res.ok) throw new Error(`log fetch failed: ${res.status}`);
+      return (await res.json()).entries;
+    }
 
+    // ── Templates ──────────────────────────────────────────────────────────
+    async function refreshTemplates() {
+      try {
+        allTemplates = await fetchTemplates();
+        // We need log entries to render template thumbnails (each thumb comes
+        // from the first example's raw image). Fetch the log if we don't
+        // already have a cache.
+        if (cachedEntries.length === 0) {
+          try { cachedEntries = await fetchLog(); } catch { /* non-fatal */ }
+        }
+        renderTemplateGrid();
+      } catch (err) {
+        console.error('Could not load templates:', err);
+      }
+    }
+
+    function findTemplatePreview(template) {
+      // Find the first example log entry with a raw image so we can render a
+      // live-preview thumbnail matching the template's preset/filters.
+      const ids = template.examples ?? [];
+      for (const id of ids) {
+        const entry = cachedEntries.find(e => e.id === id);
+        const raw = entry?.outputs?.raw?.[0];
+        if (raw) return { entry, raw };
+      }
+      return null;
+    }
+
+    function renderTemplateGrid() {
+      const candidateSlugs = new Set(activeWorkflow?.context?.candidateTemplates || []);
+      const suggestedSlug = activeWorkflow?.context?.suggestedTemplateSlug;
+
+      // If the active workflow suggests a template and the user hasn't chosen
+      // one yet, pre-select it.
+      if (!activeTemplate && suggestedSlug) {
+        const suggested = allTemplates.find(t => t.slug === suggestedSlug);
+        if (suggested) applyTemplate(suggested, { skipRender: true });
+      }
+
+      templateGrid.innerHTML = '';
+      if (allTemplates.length === 0) {
+        templateGrid.innerHTML = '<div class="tpl-empty">No templates yet. Save an approved entry as a template to seed the library.</div>';
+        renderTemplateMeta();
+        renderCandidatePills();
+        return;
+      }
+
+      // Filter: show templates whose site matches the active site, plus
+      // templates with no site (work anywhere). Archived templates hidden.
+      const visibleTemplates = allTemplates.filter(t => {
+        if (t.archived) return false;
+        if (!t.site) return true;
+        return t.site === activeSite;
+      });
+
+      if (visibleTemplates.length === 0) {
+        templateGrid.innerHTML = `<div class="tpl-empty">No templates for site <strong>${escapeHtml(activeSite)}</strong> yet. Save an approved entry as a template to seed the library.</div>`;
+        renderTemplateMeta();
+        renderCandidatePills();
+        return;
+      }
+
+      for (const t of visibleTemplates) {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'tpl-card';
+        card.setAttribute('role', 'radio');
+        card.setAttribute('aria-checked', activeTemplate?.slug === t.slug ? 'true' : 'false');
+        if (activeTemplate?.slug === t.slug) card.classList.add('selected');
+        if (candidateSlugs.has(t.slug)) card.classList.add('suggested');
+        card.title = t.description || '';
+
+        const preview = findTemplatePreview(t);
+        const thumbHtml = preview
+          ? buildLiveThumbHtml(preview.entry, preview.raw, {
+              preset: t.preset,
+              title: '',
+              subtitle: '',
+              overlay: 'off',
+              format: 'og',
+            })
+          : `<div class="tpl-placeholder" data-preset="${escapeAttr(t.preset || 'none')}"></div>`;
+
+        const fit = t.fitness;
+        const fitLine = fit && fit.usageCount > 0
+          ? `★ ${fit.averageRating.toFixed(1)} · n=${fit.usageCount}`
+          : 'new';
+        const starMarker = candidateSlugs.has(t.slug) ? '<span class="tpl-suggested-dot" title="Suggested for this workflow">★</span>' : '';
+        const tagChips = (t.tags ?? []).slice(0, 3).map(tag => `<span class="tpl-tag">${escapeHtml(tag)}</span>`).join('');
+
+        card.innerHTML = `
+          <div class="tpl-card-thumb">${thumbHtml}</div>
+          <div class="tpl-card-body">
+            <div class="tpl-card-head">
+              <span class="tpl-card-name">${starMarker}${escapeHtml(t.name)}</span>
+              <span class="tpl-card-fit">${escapeHtml(fitLine)}</span>
+            </div>
+            ${t.description ? `<div class="tpl-card-desc">${escapeHtml(t.description)}</div>` : ''}
+            ${tagChips ? `<div class="tpl-card-tags">${tagChips}</div>` : ''}
+          </div>
+        `;
+        card.addEventListener('click', () => applyTemplate(t));
+        card.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); applyTemplate(t); }
+        });
+        templateGrid.appendChild(card);
+      }
+
+      renderTemplateMeta();
+      renderCandidatePills();
+    }
+
+    function renderTemplateMeta() {
+      if (!activeTemplate) { templateMeta.textContent = ''; return; }
+      const fit = activeTemplate.fitness;
+      const lineage = activeTemplate.parent ? ` · forked from <code>${escapeHtml(activeTemplate.parent)}</code>` : '';
+      const fitText = fit && fit.usageCount > 0
+        ? `fitness ${fit.fitness.toFixed(2)} · ${fit.usageCount} uses · avg ★ ${fit.averageRating.toFixed(1)}`
+        : 'new — no ratings yet';
+      templateMeta.innerHTML = `${fitText}${lineage}`;
+    }
+
+    function renderCandidatePills() {
+      candidatePills.innerHTML = '';
+      const candidates = activeWorkflow?.context?.candidateTemplates;
+      if (!candidates || candidates.length === 0) return;
+      const suggested = activeWorkflow.context.suggestedTemplateSlug;
+      for (const slug of candidates) {
+        const t = allTemplates.find(x => x.slug === slug);
+        if (!t) continue;
+        const pill = document.createElement('span');
+        pill.className = 'candidate-pill' + (slug === suggested ? ' suggested' : '');
+        pill.textContent = t.name;
+        pill.title = t.description || '';
+        pill.addEventListener('click', () => applyTemplate(t));
+        candidatePills.appendChild(pill);
+      }
+    }
+
+    function applyTemplate(template, { skipRender = false } = {}) {
+      activeTemplate = template ?? null;
+      if (template) {
+        document.getElementById('prompt').value = template.prompt;
+        if (template.preset) {
+          const presetSel = document.getElementById('preset');
+          if ([...presetSel.options].some(o => o.value === template.preset)) presetSel.value = template.preset;
+        }
+        if (template.provider) {
+          const providerSel = document.getElementById('provider');
+          if ([...providerSel.options].some(o => o.value === template.provider)) providerSel.value = template.provider;
+        }
+      }
+      if (!skipRender) renderTemplateGrid();
+    }
+
+    document.getElementById('template-clear').addEventListener('click', () => {
+      activeTemplate = null;
+      renderTemplateGrid();
+    });
+    document.getElementById('template-fork').addEventListener('click', forkActiveTemplate);
+
+    async function forkActiveTemplate() {
+      if (!activeTemplate) { alert('Select a template to fork first.'); return; }
+      const newSlug = prompt(`New slug for fork of "${activeTemplate.slug}":`, `${activeTemplate.slug}-v2`);
+      if (!newSlug || !newSlug.trim()) return;
+      const newName = prompt('Name for the forked template:', `${activeTemplate.name} (variant)`);
+      if (newName === null) return;
+      const promptText = prompt('Prompt body (edit as desired):', activeTemplate.prompt);
+      if (promptText === null) return;
+      try {
+        const res = await fetch('/api/dev/feature-image/templates', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            action: 'fork',
+            sourceSlug: activeTemplate.slug,
+            newSlug: newSlug.trim(),
+            overrides: { name: newName, prompt: promptText },
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || `status ${res.status}`);
+        await refreshTemplates();
+        const forked = allTemplates.find(t => t.slug === newSlug.trim());
+        if (forked) applyTemplate(forked);
+      } catch (err) {
+        alert(`Failed to fork: ${err.message}`);
+      }
+    }
+
+    function slugifyForTemplate(s) {
+      return String(s || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 60);
+    }
+
+    function saveTemplateDraftKey(entryId) { return `fi-save-template-draft-${entryId}`; }
+
+    async function openSaveTemplatePanel(entry) {
+      // Ensure we're in focus mode — the panel only lives there.
+      if (focusedEntryId !== entry.id) {
+        focusEntry(entry.id);
+        // Give refreshGallery a tick to render, then try again.
+        setTimeout(() => openSaveTemplatePanel(entry), 60);
+        return;
+      }
+      const card = galleryEl.querySelector(`.card.focused[data-id="${entry.id}"]`);
+      if (!card) return;
+      let panel = card.querySelector('.save-template-panel');
+      if (panel) {
+        panel.querySelector('.stp-input-name')?.focus();
+        return;
+      }
+      panel = buildSaveTemplatePanel(entry);
+      const anchor = card.querySelector('.btn-row');
+      (anchor ?? card.querySelector('.card-focused')).insertAdjacentElement('afterend', panel);
+      requestAnimationFrame(() => {
+        panel.classList.add('stp-open');
+        panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        panel.querySelector('.stp-input-name')?.focus();
+      });
+    }
+
+    function buildSaveTemplatePanel(entry) {
+      const defaults = (() => {
+        try {
+          const raw = localStorage.getItem(saveTemplateDraftKey(entry.id));
+          return raw ? JSON.parse(raw) : null;
+        } catch { return null; }
+      })();
+
+      const fallbackName = entry.title?.trim() || 'Untitled template';
+      const name = defaults?.name ?? fallbackName;
+      const slug = defaults?.slug ?? (slugifyForTemplate(fallbackName) || 'untitled');
+      const description = defaults?.description ?? '';
+      const tags = Array.isArray(defaults?.tags) ? defaults.tags : [];
+
+      const hasPrompt = !!entry.prompt;
+      const promptSnippet = entry.prompt ? escapeHtml(entry.prompt.slice(0, 160)) + (entry.prompt.length > 160 ? '…' : '') : '<em>—</em>';
+
+      const uid = 'stp-' + Math.random().toString(36).slice(2, 8);
+      const panel = document.createElement('section');
+      panel.className = 'save-template-panel';
+      panel.innerHTML = `
+        <header class="stp-head">
+          <div class="stp-head-top">
+            <span class="section-label">Save as Template</span>
+            <button type="button" class="stp-close" title="Close without saving" aria-label="Close">×</button>
+          </div>
+          <p class="stp-sub">Captures this entry's prompt, preset, and provider as a reusable library record.</p>
+        </header>
+
+        <div class="stp-body">
+          <div class="stp-row-2">
+            <div class="stp-field">
+              <label class="stp-label" for="${uid}-name">Name</label>
+              <input class="stp-input-name" id="${uid}-name" type="text" value="${escapeAttr(name)}" />
+              <p class="stp-hint">Shown in the template dropdown.</p>
+            </div>
+            <div class="stp-field">
+              <label class="stp-label" for="${uid}-slug">Slug</label>
+              <input class="stp-input-slug" id="${uid}-slug" type="text" value="${escapeAttr(slug)}" />
+              <p class="stp-hint">Lowercase letters, digits, hyphens.</p>
+            </div>
+          </div>
+
+          <div class="stp-field">
+            <label class="stp-label" for="${uid}-desc">Description</label>
+            <textarea class="stp-input-desc" id="${uid}-desc" rows="2" placeholder="When to use this template…">${escapeHtml(description)}</textarea>
+            <p class="stp-hint">A one-liner that helps future-you pick this template when it applies.</p>
+          </div>
+
+          <div class="stp-field">
+            <span class="stp-label">Tags</span>
+            <div class="stp-tags" role="list"></div>
+            <p class="stp-hint">Tags match templates to blog posts via the workflow. Enter or comma to add.</p>
+          </div>
+
+          <div class="stp-captured">
+            <div class="stp-captured-label">Captured from this entry</div>
+            <dl class="stp-captured-list">
+              <dt>Prompt</dt><dd>${promptSnippet}</dd>
+              <dt>Preset</dt><dd>${escapeHtml(entry.preset || '—')}</dd>
+              <dt>Provider</dt><dd>${escapeHtml(entry.provider || '—')}</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="stp-msg" aria-live="polite"></div>
+
+        <footer class="stp-actions">
+          <button type="button" class="btn-ghost stp-cancel">Cancel</button>
+          <button type="button" class="btn-primary stp-submit"${hasPrompt ? '' : ' disabled title="This entry has no prompt to save"'}>Save template</button>
+        </footer>
+      `;
+      wireSaveTemplatePanel(panel, entry, tags);
+      return panel;
+    }
+
+    function wireSaveTemplatePanel(panel, entry, initialTags) {
+      const nameEl = panel.querySelector('.stp-input-name');
+      const slugEl = panel.querySelector('.stp-input-slug');
+      const descEl = panel.querySelector('.stp-input-desc');
+      const tagsEl = panel.querySelector('.stp-tags');
+      const msgEl = panel.querySelector('.stp-msg');
+      const submitBtn = panel.querySelector('.stp-submit');
+      const cancelBtn = panel.querySelector('.stp-cancel');
+      const closeBtn = panel.querySelector('.stp-close');
+      let tags = [...initialTags];
+      let userEditedSlug = false;
+
+      const renderTags = () => {
+        const input = tagsEl.querySelector('.stp-tag-input');
+        tagsEl.querySelectorAll('.stp-tag').forEach(el => el.remove());
+        for (const tag of tags) {
+          const chip = document.createElement('span');
+          chip.className = 'stp-tag';
+          chip.setAttribute('role', 'listitem');
+          chip.innerHTML = `<span class="stp-tag-text">${escapeHtml(tag)}</span><button type="button" aria-label="Remove ${escapeAttr(tag)}" title="Remove">×</button>`;
+          chip.querySelector('button').addEventListener('click', () => {
+            tags = tags.filter(t => t !== tag);
+            renderTags();
+            persistDraft();
+          });
+          if (input) tagsEl.insertBefore(chip, input);
+          else tagsEl.appendChild(chip);
+        }
+        if (!input) {
+          const ti = document.createElement('input');
+          ti.className = 'stp-tag-input';
+          ti.type = 'text';
+          ti.placeholder = tags.length === 0 ? 'Type a tag and press Enter' : 'Add tag…';
+          ti.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter' || ev.key === ',') {
+              ev.preventDefault();
+              commitTag(ti);
+            } else if (ev.key === 'Backspace' && ti.value === '' && tags.length > 0) {
+              tags.pop();
+              renderTags();
+              persistDraft();
+            }
+          });
+          ti.addEventListener('blur', () => commitTag(ti));
+          tagsEl.appendChild(ti);
+        }
+      };
+
+      const commitTag = (input) => {
+        const val = input.value.trim().replace(/,+$/, '');
+        if (!val) return;
+        if (!tags.includes(val)) tags.push(val);
+        input.value = '';
+        renderTags();
+        persistDraft();
+        input.focus();
+      };
+
+      const persistDraft = () => {
+        localStorage.setItem(saveTemplateDraftKey(entry.id), JSON.stringify({
+          name: nameEl.value,
+          slug: slugEl.value,
+          description: descEl.value,
+          tags,
+        }));
+      };
+
+      nameEl.addEventListener('input', () => {
+        if (!userEditedSlug) slugEl.value = slugifyForTemplate(nameEl.value) || 'untitled';
+        persistDraft();
+      });
+      slugEl.addEventListener('input', () => {
+        userEditedSlug = true;
+        // Light sanitization — don't fight the user, just trim spaces.
+        slugEl.value = slugEl.value.toLowerCase().replace(/\s+/g, '-');
+        persistDraft();
+      });
+      descEl.addEventListener('input', persistDraft);
+
+      renderTags();
+
+      const close = () => {
+        panel.classList.remove('stp-open');
+        setTimeout(() => panel.remove(), 180);
+      };
+      cancelBtn.addEventListener('click', close);
+      closeBtn.addEventListener('click', close);
+      panel.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape') { ev.preventDefault(); close(); }
+      });
+
+      const collectPayload = () => ({
+        slug: slugEl.value.trim(),
+        name: nameEl.value.trim(),
+        description: descEl.value.trim(),
+        tags,
+        prompt: entry.prompt,
+        preset: entry.preset,
+        provider: entry.provider,
+        examples: [entry.id],
+      });
+
+      const validate = (payload) => {
+        if (!payload.slug) { msgEl.textContent = 'Slug is required.'; msgEl.className = 'stp-msg error'; slugEl.focus(); return false; }
+        if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(payload.slug)) {
+          msgEl.textContent = 'Slug must be lowercase letters/digits separated by single hyphens.';
+          msgEl.className = 'stp-msg error';
+          slugEl.focus();
+          return false;
+        }
+        if (!payload.name) { msgEl.textContent = 'Name is required.'; msgEl.className = 'stp-msg error'; nameEl.focus(); return false; }
+        return true;
+      };
+
+      const finish = async (finalSlug, successText) => {
+        await fetch('/api/dev/feature-image/log', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: entry.id, templateSlug: finalSlug }),
+        });
+        localStorage.removeItem(saveTemplateDraftKey(entry.id));
+        msgEl.textContent = successText;
+        msgEl.className = 'stp-msg ok';
+        await refreshTemplates();
+        setTimeout(() => { close(); refreshGallery(); }, 900);
+      };
+
+      submitBtn.addEventListener('click', async () => {
+        if (!entry.prompt) return;
+        const payload = collectPayload();
+        if (!validate(payload)) return;
+
+        submitBtn.disabled = true;
+        msgEl.textContent = 'Saving…';
+        msgEl.className = 'stp-msg working';
+        try {
+          const res = await fetch('/api/dev/feature-image/templates', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ action: 'create', template: payload }),
+          });
+          const json = await res.json();
+          if (!res.ok) {
+            if (/already exists/i.test(String(json.error))) {
+              await enterConflictMode(panel, entry, payload, { tags, finish });
+              return;
+            }
+            throw new Error(json.error || `status ${res.status}`);
+          }
+          await finish(payload.slug, `Saved as ${payload.slug}. Available in the template dropdown now.`);
+        } catch (err) {
+          msgEl.textContent = `Save failed: ${err.message}`;
+          msgEl.className = 'stp-msg error';
+          submitBtn.disabled = false;
+        }
+      });
+    }
+
+    async function enterConflictMode(panel, entry, payload, { tags, finish }) {
+      // Fetch the existing template so the user can see what they'd be colliding with.
+      let existing = null;
+      try {
+        const res = await fetch('/api/dev/feature-image/templates?includeArchived=true');
+        const json = await res.json();
+        existing = (json.templates ?? []).find(t => t.slug === payload.slug) ?? null;
+      } catch {
+        // soldier on — existing metadata is useful but not required
+      }
+
+      const existingName = existing?.name ? escapeHtml(existing.name) : escapeHtml(payload.slug);
+      const existingDesc = existing?.description ? escapeHtml(existing.description) : '<em>(no description)</em>';
+      const fit = existing?.fitness;
+      const fitLine = fit && fit.usageCount > 0
+        ? `fitness ${fit.fitness.toFixed(2)} · ${fit.usageCount} use${fit.usageCount === 1 ? '' : 's'} · avg ★ ${fit.averageRating.toFixed(1)}`
+        : 'new — no ratings yet';
+      const suggestedForkSlug = deriveUniqueForkSlug(payload.slug, existing);
+
+      const body = panel.querySelector('.stp-body');
+      const actions = panel.querySelector('.stp-actions');
+      const msgEl = panel.querySelector('.stp-msg');
+
+      body.insertAdjacentHTML('beforeend', `
+        <div class="stp-conflict">
+          <div class="stp-conflict-head">
+            <span class="stp-conflict-icon" aria-hidden="true">⦿</span>
+            <div>
+              <div class="stp-conflict-title">A template with slug <code>${escapeHtml(payload.slug)}</code> already exists.</div>
+              <div class="stp-conflict-existing">
+                <strong>${existingName}</strong>
+                <span class="stp-conflict-fit">${escapeHtml(fitLine)}</span>
+                <div class="stp-conflict-desc">${existingDesc}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stp-conflict-choice-label">Choose how to reconcile:</div>
+          <div class="stp-conflict-choices">
+            <button type="button" class="stp-choice" data-choice="example">
+              <span class="stp-choice-title">Add as example</span>
+              <span class="stp-choice-desc">Keep the existing template. Append this entry to its examples so your rating counts toward its fitness.</span>
+            </button>
+            <button type="button" class="stp-choice" data-choice="fork">
+              <span class="stp-choice-title">Fork as <code>${escapeHtml(suggestedForkSlug)}</code></span>
+              <span class="stp-choice-desc">Create a new template with <code>parent: ${escapeHtml(payload.slug)}</code> so lineage is preserved.</span>
+            </button>
+            <button type="button" class="stp-choice stp-choice-danger" data-choice="overwrite">
+              <span class="stp-choice-title">Update existing</span>
+              <span class="stp-choice-desc">Replace the existing template's name, description, tags, and prompt with your values. Existing examples and fitness history are preserved.</span>
+            </button>
+          </div>
+        </div>
+      `);
+      // Hide the default Save button; Cancel stays.
+      const submitBtn = actions.querySelector('.stp-submit');
+      if (submitBtn) submitBtn.style.display = 'none';
+
+      panel.querySelectorAll('.stp-choice').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const choice = btn.dataset.choice;
+          handleConflictChoice(choice, panel, entry, payload, { existing, suggestedForkSlug, finish });
+        });
+      });
+
+      msgEl.textContent = '';
+      msgEl.className = 'stp-msg';
+    }
+
+    function deriveUniqueForkSlug(base, existing) {
+      // If the existing slug already ends with -vN, increment.
+      const m = base.match(/^(.*?)-v(\d+)$/);
+      if (m) return `${m[1]}-v${parseInt(m[2], 10) + 1}`;
+      return `${base}-v2`;
+    }
+
+    async function handleConflictChoice(choice, panel, entry, payload, { existing, suggestedForkSlug, finish }) {
+      const msgEl = panel.querySelector('.stp-msg');
+      panel.querySelectorAll('.stp-choice').forEach(b => (b.disabled = true));
+      msgEl.textContent = 'Applying…';
+      msgEl.className = 'stp-msg working';
+
+      try {
+        if (choice === 'example') {
+          // Append entry.id to existing.examples, avoiding duplicates.
+          const existingExamples = existing?.examples ?? [];
+          if (!existingExamples.includes(entry.id)) existingExamples.push(entry.id);
+          const res = await fetch('/api/dev/feature-image/templates', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ action: 'update', slug: payload.slug, patch: { examples: existingExamples } }),
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || `status ${res.status}`);
+          await finish(payload.slug, `Added this entry as an example of "${payload.slug}".`);
+        } else if (choice === 'fork') {
+          const res = await fetch('/api/dev/feature-image/templates', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              action: 'fork',
+              sourceSlug: payload.slug,
+              newSlug: suggestedForkSlug,
+              overrides: {
+                name: payload.name,
+                description: payload.description,
+                tags: payload.tags,
+                prompt: payload.prompt,
+                preset: payload.preset,
+                provider: payload.provider,
+              },
+            }),
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || `status ${res.status}`);
+          // Tag the entry with the NEW fork slug, then also seed it as an example of the fork.
+          await fetch('/api/dev/feature-image/templates', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ action: 'update', slug: suggestedForkSlug, patch: { examples: [entry.id] } }),
+          });
+          await finish(suggestedForkSlug, `Forked as "${suggestedForkSlug}" with parent "${payload.slug}".`);
+        } else if (choice === 'overwrite') {
+          const patch = {
+            name: payload.name,
+            description: payload.description,
+            tags: payload.tags,
+            prompt: payload.prompt,
+            preset: payload.preset,
+            provider: payload.provider,
+            examples: [...(existing?.examples ?? []), ...(existing?.examples?.includes(entry.id) ? [] : [entry.id])],
+          };
+          const res = await fetch('/api/dev/feature-image/templates', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ action: 'update', slug: payload.slug, patch }),
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || `status ${res.status}`);
+          await finish(payload.slug, `Updated "${payload.slug}" with your values. Existing examples preserved.`);
+        }
+      } catch (err) {
+        msgEl.textContent = `Failed: ${err.message}`;
+        msgEl.className = 'stp-msg error';
+        panel.querySelectorAll('.stp-choice').forEach(b => (b.disabled = false));
+      }
+    }
+
+    async function rateEntry(entry, rating) {
+      try {
+        const res = await fetch('/api/dev/feature-image/log', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: entry.id, rating }),
+        });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        await refreshTemplates();
+        await refreshGallery();
+      } catch (err) {
+        alert(`Failed to rate: ${err.message}`);
+      }
+    }
+
+    // ── Workflow panel ─────────────────────────────────────────────────────
     function renderWorkflowItem(item) {
       const div = document.createElement('div');
-      div.className = 'workflow-item ' + item.state;
+      div.className = 'wf-item ' + item.state;
       if (activeWorkflow && activeWorkflow.id === item.id) div.classList.add('active');
+      const isIterate = item.type === 'feature-image-iterate';
+
       const postLine = item.context.postPath
-        ? `<span><strong>post:</strong> ${escapeHtml(item.context.postPath)}</span>`
+        ? `<span><strong>post</strong> ${escapeHtml(item.context.postPath)}</span>`
         : '';
-      const titleLine = item.context.title ? `<div class="wf-title">${escapeHtml(item.context.title)}</div>` : '<div class="wf-title"><em>untitled workflow</em></div>';
+      const sourceLine = item.context.sourceEntryId
+        ? `<span><strong>src</strong> ${escapeHtml(item.context.sourceEntryId.slice(0, 8))}</span>`
+        : '';
+
+      let titleLine;
+      if (isIterate) {
+        const feedback = item.context.userFeedback || '(no feedback)';
+        titleLine = `<div class="wf-title wf-title-iterate">↺ ${escapeHtml(feedback)}</div>`;
+      } else {
+        titleLine = item.context.title
+          ? `<div class="wf-title">${escapeHtml(item.context.title)}</div>`
+          : '<div class="wf-title"><em>untitled workflow</em></div>';
+      }
+
       let actions = '';
       if (item.state === 'open') {
-        actions = `
-          <button type="button" data-act="activate">${activeWorkflow && activeWorkflow.id === item.id ? 'Deactivate' : 'Activate'}</button>
-          <button type="button" class="secondary" data-act="cancel">Cancel</button>
-        `;
+        if (isIterate) {
+          // Iterate items don't need user activation — they're pulled by the
+          // agent via /feature-image-iterate. Only show Cancel.
+          actions = `
+            <span class="wf-note">run /feature-image-iterate</span>
+            <button type="button" class="btn-ghost" data-act="cancel" title="Cancel this iteration request">Cancel</button>
+          `;
+        } else {
+          actions = `
+            <button type="button" class="btn-primary" data-act="activate" title="${activeWorkflow && activeWorkflow.id === item.id ? 'Stop working on this workflow' : 'Start working on this workflow — pre-fills the Generate form and shows Submit button on matching entries'}">${activeWorkflow && activeWorkflow.id === item.id ? 'Deactivate' : 'Activate'}</button>
+            <button type="button" class="btn-ghost" data-act="cancel" title="Cancel this workflow without a decision">Cancel</button>
+          `;
+        }
       } else if (item.state === 'decided') {
-        actions = `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #5fd1a3;">awaiting /feature-image-apply</span>`;
+        actions = `<span class="wf-note">awaiting /feature-image-apply</span>`;
       } else if (item.state === 'applied') {
-        actions = `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #6b7280;">applied</span>`;
+        actions = `<span class="wf-note muted">applied</span>`;
       }
       div.innerHTML = `
         ${titleLine}
         <div class="wf-meta">
-          <span>${escapeHtml(item.state)}</span>
+          <span>${escapeHtml(isIterate ? 'iterate' : (item.type || 'blog'))}</span>
           <span>${escapeHtml(item.id.slice(0, 8))}</span>
           ${postLine}
+          ${sourceLine}
         </div>
         <div class="wf-actions">${actions}</div>
       `;
@@ -232,15 +2749,11 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     }
 
     function toggleActivate(item) {
-      if (activeWorkflow && activeWorkflow.id === item.id) {
-        activeWorkflow = null;
-      } else {
-        activeWorkflow = item;
-        prefillFromWorkflow(item);
-      }
+      if (activeWorkflow && activeWorkflow.id === item.id) activeWorkflow = null;
+      else { activeWorkflow = item; prefillFromWorkflow(item); }
       renderWorkflowPanel();
       renderActiveBanner();
-      refreshGallery();  // re-render to show/hide per-entry decision buttons
+      refreshGallery();
     }
 
     function prefillFromWorkflow(item) {
@@ -250,10 +2763,10 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       if (ctx.description) document.getElementById('subtitle').value = ctx.description;
       if (ctx.suggestedPreset) {
         const presetSel = document.getElementById('preset');
-        if ([...presetSel.options].some(o => o.value === ctx.suggestedPreset)) {
-          presetSel.value = ctx.suggestedPreset;
-        }
+        if ([...presetSel.options].some(o => o.value === ctx.suggestedPreset)) presetSel.value = ctx.suggestedPreset;
       }
+      // Pop the Generate drawer so user sees the prefilled form
+      openDrawer(drawerGenerate, drawerWorkflow);
     }
 
     async function cancelWorkflow(item) {
@@ -275,40 +2788,49 @@ const filterNames = Object.keys(FILTER_REGISTRY);
     function renderWorkflowPanel() {
       const open = allWorkflows.filter(w => w.state === 'open');
       const decided = allWorkflows.filter(w => w.state === 'decided');
+      const pendingCount = open.length + decided.length;
+      wfBadge.textContent = String(pendingCount);
+      wfBadge.classList.toggle('visible', pendingCount > 0);
+
       workflowListEl.innerHTML = '';
       if (open.length === 0 && decided.length === 0) {
-        workflowPanelEl.classList.add('empty');
-        workflowListEl.innerHTML = '<p class="hint" style="margin: 0;">No pending workflows. Invoke <code>/feature-image-blog &lt;post-path&gt;</code> in Claude Code to start one.</p>';
+        workflowListEl.innerHTML = '<p class="hint">No pending workflows. Invoke <code>/feature-image-blog &lt;post-path&gt;</code> in Claude Code to start one, or send an Iterate message in focus mode.</p>';
         return;
       }
-      workflowPanelEl.classList.remove('empty');
-      if (open.length > 0) {
+
+      const openBlog = open.filter(w => w.type !== 'feature-image-iterate');
+      const openIterate = open.filter(w => w.type === 'feature-image-iterate');
+
+      if (openBlog.length > 0) {
         const h = document.createElement('div');
-        h.style.cssText = 'font-family: "JetBrains Mono", monospace; font-size: 0.7rem; color: #a0aab4; margin-bottom: 0.4rem;';
-        h.textContent = 'OPEN — click Activate to start working on one';
+        h.className = 'wf-group-label';
+        h.textContent = `Open · blog workflows · ${openBlog.length}`;
         workflowListEl.appendChild(h);
-        for (const item of open) workflowListEl.appendChild(renderWorkflowItem(item));
+        for (const item of openBlog) workflowListEl.appendChild(renderWorkflowItem(item));
+      }
+      if (openIterate.length > 0) {
+        const h = document.createElement('div');
+        h.className = 'wf-group-label iterate';
+        h.textContent = `Open · iterate requests · ${openIterate.length} — run /feature-image-iterate`;
+        workflowListEl.appendChild(h);
+        for (const item of openIterate) workflowListEl.appendChild(renderWorkflowItem(item));
       }
       if (decided.length > 0) {
         const h = document.createElement('div');
-        h.style.cssText = 'font-family: "JetBrains Mono", monospace; font-size: 0.7rem; color: #5fd1a3; margin: 0.75rem 0 0.4rem;';
-        h.textContent = 'DECIDED — waiting for agent to apply';
+        h.className = 'wf-group-label decided';
+        h.textContent = `Decided · ${decided.length} — awaiting /feature-image-apply`;
         workflowListEl.appendChild(h);
         for (const item of decided) workflowListEl.appendChild(renderWorkflowItem(item));
       }
     }
 
     function renderActiveBanner() {
-      if (!activeWorkflow) {
-        activeBannerEl.style.display = 'none';
-        return;
-      }
+      if (!activeWorkflow) { activeBannerEl.style.display = 'none'; return; }
       activeBannerEl.style.display = 'flex';
-      activeBannerEl.className = 'active-wf-banner';
       const title = activeWorkflow.context.title || activeWorkflow.context.postPath || activeWorkflow.id.slice(0, 8);
       activeBannerEl.innerHTML = `
-        <span><strong>Active workflow:</strong> ${escapeHtml(title)} <span style="color:#6b7280">(${activeWorkflow.id.slice(0,8)})</span></span>
-        <button type="button" id="deactivate-btn">Deactivate</button>
+        <span><strong>Active:</strong> ${escapeHtml(title)}</span>
+        <button type="button" class="btn-ghost" id="deactivate-btn" title="Stop working on the active workflow">Deactivate</button>
       `;
       document.getElementById('deactivate-btn').addEventListener('click', () => {
         activeWorkflow = null;
@@ -346,11 +2868,9 @@ const filterNames = Object.keys(FILTER_REGISTRY);
             userNotes: notes,
           }),
         });
-        if (!res.ok) {
-          const j = await res.json().catch(() => ({}));
-          throw new Error(j.error || `status ${res.status}`);
-        }
+        if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error || `status ${res.status}`); }
         activeWorkflow = null;
+        unfocusEntry();
         await refreshWorkflows();
         await refreshGallery();
         alert('Decision submitted. Run /feature-image-apply in Claude Code to apply it.');
@@ -359,105 +2879,691 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       }
     }
 
-    async function fetchLog() {
-      const res = await fetch('/api/dev/feature-image/log');
-      if (!res.ok) throw new Error(`log fetch failed: ${res.status}`);
-      return (await res.json()).entries;
+    // ── Gallery rendering ──────────────────────────────────────────────────
+    function focusEntry(id) {
+      focusedEntryId = id;
+      closeDrawer(drawerGenerate);
+      closeDrawer(drawerWorkflow);
+      refreshGallery();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function unfocusEntry() {
+      if (!focusedEntryId) return;
+      focusedEntryId = null;
+      stopThreadPolling();
+      refreshGallery();
     }
 
-    function fmtDate(iso) {
-      const d = new Date(iso);
-      return d.toLocaleString();
+    function buildThumbPreview(entry) {
+      // If there's an in-progress draft, mirror the focus preview so the
+      // thumbnail reflects what the user is actually editing. Otherwise fall
+      // back to the baked composited PNG (what's actually on disk).
+      const draft = readPreviewDraft(entry.id);
+      const raw = entry.outputs?.raw?.[0];
+      if (draft && raw) {
+        return buildLiveThumbHtml(entry, raw, draft);
+      }
+      const composited = entry.outputs?.composited?.[0];
+      const filtered = entry.outputs?.filtered?.[0];
+      if (composited) return `<img src="${escapeAttr(composited.path)}?t=${Date.now()}" alt="" loading="lazy" />`;
+      if (filtered)  return `<img src="${escapeAttr(filtered)}?t=${Date.now()}" alt="" loading="lazy" />`;
+      if (raw)       return `<img src="${escapeAttr(raw)}?t=${Date.now()}" alt="" loading="lazy" />`;
+      return '<div style="padding: 2rem; text-align: center; color: var(--text-3); font-family: \'JetBrains Mono\', monospace; font-size: 0.7rem;">no output</div>';
     }
 
-    function renderEntry(entry) {
+    function buildLiveThumbHtml(entry, rawPath, draft) {
+      // Derive filter state: draft overrides → fall back to entry.preset defaults.
+      const preset = draft.preset || (entry.preset && PRESET_FILTERS[entry.preset] ? entry.preset : 'retro-crt');
+      const defaults = PRESET_FILTERS[preset] ?? PRESET_FILTERS['retro-crt'];
+      const grade = draft.grade ?? defaults.grade;
+      const phosphor = draft.phosphor ?? defaults.phosphor;
+      const vignette = draft.vignette ?? defaults.vignette;
+      const scanlines = draft.scanlines ?? defaults.scanlines;
+      const grain = draft.grain ?? defaults.grain;
+      const overlay = draft.overlay ?? 'on';
+      const format = draft.format ?? 'og';
+      const site = (draft.site === 'editorialcontrol' || entry.site === 'editorialcontrol')
+        ? 'editorialcontrol'
+        : 'audiocontrol';
+
+      const title = (typeof draft.title === 'string' ? draft.title : (entry.title ?? ''));
+      const subtitle = (typeof draft.subtitle === 'string' ? draft.subtitle : (entry.subtitle ?? ''));
+      const overlayHtml = (overlay === 'on' || overlay === true)
+        ? `<div class="og-text-panel">
+            <div class="og-title">${escapeHtml(title)}</div>
+            ${subtitle ? `<div class="og-subtitle">${escapeHtml(subtitle)}</div>` : ''}
+            <div class="og-brand-row">
+              <img class="og-logo" src="/favicon.svg" alt="" />
+              <div class="og-brand-text">${escapeHtml(brandName(site))}</div>
+            </div>
+          </div>`
+        : '';
+      return `
+        <div class="og-preview og-preview-thumb"
+             data-format="${escapeAttr(format)}"
+             data-grade="${escapeAttr(grade)}"
+             data-phosphor="${escapeAttr(phosphor)}"
+             data-vignette="${escapeAttr(vignette)}"
+             data-scanlines="${escapeAttr(scanlines)}"
+             data-grain="${escapeAttr(grain)}"
+             data-overlay="${escapeAttr(overlay === true ? 'on' : overlay)}"
+             data-preset="${escapeAttr(preset)}"
+             data-site="${site}"
+             style="${escapeAttr(brandStyle(site))}">
+          <img class="og-bg" src="${escapeAttr(rawPath)}?t=${Date.now()}" alt="" loading="lazy" />
+          <div class="og-layer og-vignette"></div>
+          <div class="og-layer og-scanlines"></div>
+          <div class="og-layer og-grain"></div>
+          ${overlayHtml}
+        </div>
+      `;
+    }
+
+    function renderCompactCard(entry) {
       const div = document.createElement('div');
-      div.className = 'gallery-item';
+      div.className = 'card';
       div.dataset.id = entry.id;
 
-      const title = entry.title ? `<strong>${escapeHtml(entry.title)}</strong>` : '<em>(no title)</em>';
-      const promptLine = entry.prompt ? `<div style="font-size: 0.85rem; margin: 0.5rem 0; color: #a0aab4;">${escapeHtml(entry.prompt)}</div>` : '';
-      const chain = entry.preset ? `preset: ${entry.preset}` : (entry.filters || '(no filters)');
-      const error = entry.error ? `<div class="err">${escapeHtml(entry.error)}</div>` : '';
-
-      let variantsHtml = '';
-      if (entry.outputs) {
-        const imgs = [];
-        for (const c of (entry.outputs.composited || [])) {
-          imgs.push({ src: c.path, caption: `${c.format}${c.provider ? ` · ${c.provider}` : ''}` });
-        }
-        if (imgs.length === 0) {
-          for (const p of (entry.outputs.filtered || [])) imgs.push({ src: p, caption: 'filtered' });
-        }
-        if (imgs.length === 0) {
-          for (const p of (entry.outputs.raw || [])) imgs.push({ src: p, caption: 'raw' });
-        }
-        if (imgs.length > 0) {
-          variantsHtml = '<div class="variants">' + imgs.map(i =>
-            `<figure><img src="${escapeAttr(i.src)}?t=${Date.now()}" alt="" loading="lazy"><figcaption>${escapeHtml(i.caption)}</figcaption></figure>`
-          ).join('') + '</div>';
-        }
-      }
-
-      const notes = entry.notes ? `<div style="font-size: 0.85rem; margin-top: 0.5rem; color: #a0aab4; font-style: italic;">${escapeHtml(entry.notes)}</div>` : '';
-
-      const decisionBtn = activeWorkflow && entry.status !== 'rejected' && (entry.outputs.composited.length > 0 || entry.outputs.filtered.length > 0)
-        ? `<button type="button" class="submit-decision" data-action="decide">Submit for workflow ${activeWorkflow.id.slice(0,8)}</button>`
-        : '';
+      const titleHtml = entry.title ? escapeHtml(entry.title) : '<em>(no title)</em>';
+      const chain = entry.preset ? `preset ${entry.preset}` : (entry.filters || 'no filters');
+      const starsHtml = '<span class="stars">' + [1,2,3,4,5].map(n =>
+        `<button type="button" class="${entry.rating && entry.rating >= n ? 'on' : ''}" data-action="rate" data-rate="${n}" title="Rate ${n} of 5 — feeds template fitness scoring">★</button>`
+      ).join('') + '</span>';
+      const isApproved = entry.status === 'approved';
+      const isRejected = entry.status === 'rejected';
+      const approveBtn = isApproved
+        ? `<button type="button" class="btn-success-ghost" disabled title="Already approved. Focus the entry and use Commit to re-bake with fresh edits; a fresh generated entry can then be approved.">Approved ✓</button>`
+        : `<button type="button" class="btn-success-ghost" data-action="approve" title="Bake all three PNG variants (og, youtube, instagram) with your current edits, mark as approved, and enshrine for Claude to apply.">Approve</button>`;
+      const rejectBtn = isRejected
+        ? `<button type="button" class="btn-danger-ghost" disabled title="Already rejected.">Rejected ✗</button>`
+        : `<button type="button" class="btn-danger-ghost" data-status="rejected" title="Mark this generation as rejected">Reject</button>`;
 
       div.innerHTML = `
-        ${error}
-        ${title}
-        ${promptLine}
-        ${variantsHtml}
-        <div class="meta">
-          <span>${fmtDate(entry.timestamp)}</span>
-          <span><strong>provider:</strong> ${escapeHtml(entry.provider || '-')}</span>
-          <span><strong>${escapeHtml(chain)}</strong></span>
-          <span><strong>duration:</strong> ${entry.durationMs}ms</span>
-          <span class="status ${entry.status}">${entry.status}</span>
-        </div>
-        ${notes}
-        <div class="row-actions">
-          ${decisionBtn}
-          <button type="button" data-status="approved" class="secondary">Approve</button>
-          <button type="button" data-status="rejected" class="secondary">Reject</button>
-          <button type="button" data-action="note" class="secondary">Edit note</button>
-          <button type="button" data-action="copy" class="secondary">Copy as input</button>
+        <div class="card-compact">
+          <div class="card-thumb" data-action="focus" role="button" tabindex="0" title="Click to focus">${buildThumbPreview(entry)}</div>
+          <div class="card-body">
+            <div class="card-title">${titleHtml}</div>
+            <div class="card-meta">
+              <span>${fmtDate(entry.timestamp)}</span>
+              <span><strong>${escapeHtml(entry.provider || '-')}</strong></span>
+              <span>${escapeHtml(chain)}</span>
+              <span class="status-pill ${entry.status}">${entry.status}</span>
+              ${starsHtml}
+            </div>
+            <div class="card-actions">
+              <button type="button" class="btn-focus" data-action="focus" title="Open in focus mode — edit text, filters, and bake PNGs">Focus ⟶</button>
+              ${approveBtn}
+              ${rejectBtn}
+              <div class="dropdown">
+                <button type="button" class="dropdown-toggle" data-action="toggle-menu" aria-label="More" title="More actions">⋯</button>
+                <div class="dropdown-menu">
+                  <button type="button" data-action="copy" title="Copy this entry's prompt, provider, preset and filters into the Generate form">Copy as input</button>
+                  <button type="button" data-action="save-template" title="Save this prompt as a reusable template in the library">Save as template</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       `;
 
-      div.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const action = btn.dataset.action;
-          const newStatus = btn.dataset.status;
-          if (newStatus) return updateStatus(entry.id, newStatus);
-          if (action === 'note') return editNote(entry);
-          if (action === 'copy') return copyAsInput(entry);
-          if (action === 'decide') return submitDecision(entry.id);
-        });
-      });
-
+      wireCardActions(div, entry);
       return div;
     }
 
-    function escapeHtml(s) {
-      return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    }
-    function escapeAttr(s) { return escapeHtml(s); }
+    function renderFocusedCard(entry) {
+      const div = document.createElement('div');
+      div.className = 'card focused';
+      div.dataset.id = entry.id;
 
-    async function refreshGallery() {
-      try {
-        const entries = await fetchLog();
-        galleryEl.innerHTML = '';
-        if (entries.length === 0) {
-          galleryEl.innerHTML = '<p class="hint">No generations yet.</p>';
+      const rawPath = entry.outputs?.raw?.[0] ?? null;
+      const titleHtml = entry.title ? escapeHtml(entry.title) : '<em>(no title)</em>';
+      const chain = entry.preset ? `preset ${entry.preset}` : (entry.filters || 'no filters');
+      const tplLabel = entry.templateSlug ? `<span><strong>tpl</strong> ${escapeHtml(entry.templateSlug)}</span>` : '';
+      const starsHtml = '<span class="stars">' + [1,2,3,4,5].map(n =>
+        `<button type="button" class="${entry.rating && entry.rating >= n ? 'on' : ''}" data-action="rate" data-rate="${n}" title="Rate ${n} of 5 — feeds template fitness scoring">★</button>`
+      ).join('') + '</span>';
+      const err = entry.error ? `<div class="err-line">${escapeHtml(entry.error)}</div>` : '';
+      const prompt = entry.prompt ? `<div class="prompt-line">${escapeHtml(entry.prompt)}</div>` : '';
+      const isApproved = entry.status === 'approved';
+      const isRejected = entry.status === 'rejected';
+      const approveBtn = isApproved
+        ? `<button type="button" class="btn-success-ghost" disabled title="Already approved. Commit any fresh edits to produce a new generated entry, then approve that one.">Approved ✓</button>`
+        : `<button type="button" class="btn-success-ghost" data-action="approve" title="Bake all three PNG variants (og, youtube, instagram) with your current edits, mark as approved, and enshrine for Claude to apply.">Approve</button>`;
+      const rejectBtn = isRejected
+        ? `<button type="button" class="btn-danger-ghost" disabled title="Already rejected.">Rejected ✗</button>`
+        : `<button type="button" class="btn-danger-ghost" data-status="rejected" title="Mark this generation as rejected">Reject</button>`;
+      const notesInput = `
+        <div class="note-edit">
+          <label class="note-label">Note</label>
+          <textarea class="note-textarea" rows="1" placeholder="+ add a note">${escapeHtml(entry.notes ?? '')}</textarea>
+          <span class="note-saved" aria-live="polite"></span>
+        </div>
+      `;
+
+      const preview = rawPath ? buildLivePreviewHtml(entry, rawPath) : buildThumbPreview(entry);
+
+      div.innerHTML = `
+        <div class="card-focused">
+          <div class="focus-head">
+            <div>
+              <div class="focus-title">${titleHtml}</div>
+              <div class="focus-meta">${fmtDate(entry.timestamp)} · ${escapeHtml(entry.provider || '-')}</div>
+            </div>
+            <button type="button" class="focus-close" data-action="unfocus" title="Close focus mode and return to history (ESC)">ESC · Close</button>
+          </div>
+          ${err}
+          ${prompt}
+          <div class="focus-preview">${preview}</div>
+          <div class="full-meta">
+            <span>${escapeHtml(chain)}</span>
+            ${tplLabel}
+            <span><strong>duration</strong> ${entry.durationMs}ms</span>
+            <span class="status-pill ${entry.status}">${entry.status}</span>
+            ${starsHtml}
+          </div>
+          ${notesInput}
+          <div class="btn-row">
+            ${approveBtn}
+            ${rejectBtn}
+            <button type="button" class="btn-ghost" data-action="copy" title="Copy this entry's prompt, provider, preset and filters into the Generate form">Copy as input</button>
+            <button type="button" class="btn-ghost" data-action="save-template" title="Save this prompt as a reusable template in the library">Save as template</button>
+          </div>
+          <div class="thread-section">
+            <div class="thread-header">
+              <span class="section-label">Thread with Claude</span>
+              <span class="thread-hint">Type what to change or improve; Claude picks it up via <code>/feature-image-iterate</code>.</span>
+            </div>
+            <div class="thread-messages" aria-live="polite"></div>
+            <div class="thread-composer">
+              <textarea class="thread-input" rows="1" placeholder="Ask Claude to iterate… (Cmd/Ctrl+Enter to send)"></textarea>
+              <button type="button" class="btn-primary thread-send" title="Send this feedback to Claude — also snapshots current title/subtitle/preset/filters">Send ↺</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      wireCardActions(div, entry);
+      wireInlineNote(div, entry);
+      wireThread(div, entry);
+      if (rawPath) wireLivePreview(div, entry);
+      return div;
+    }
+
+    // ── Thread (Phase 13) ──────────────────────────────────────────────────
+    let threadPollHandle = null;
+    function stopThreadPolling() { if (threadPollHandle) { clearInterval(threadPollHandle); threadPollHandle = null; } }
+
+    function threadDraftKey(entryId) { return `fi-thread-draft-${entryId}`; }
+
+    function wireThread(root, entry) {
+      stopThreadPolling();
+      const messagesEl = root.querySelector('.thread-messages');
+      const inputEl = root.querySelector('.thread-input');
+      const sendBtn = root.querySelector('.thread-send');
+      if (!messagesEl || !inputEl || !sendBtn) return;
+
+      // Restore draft if any — survives gallery refreshes (ratings, status
+      // changes, commits) and page reloads.
+      const savedDraft = localStorage.getItem(threadDraftKey(entry.id));
+      if (savedDraft) {
+        inputEl.value = savedDraft;
+        requestAnimationFrame(() => autosizeTextarea(inputEl));
+      }
+
+      let lastMessageStamp = null;
+      let threadIdCached = null;
+
+      async function refreshThread() {
+        try {
+          const res = await fetch(`/api/dev/feature-image/threads?entryId=${encodeURIComponent(entry.id)}`);
+          if (!res.ok) return;
+          const { threadId, messages } = await res.json();
+          threadIdCached = threadId;
+          renderMessages(messages);
+          const newest = messages.length ? messages[messages.length - 1].timestamp : null;
+          if (newest !== lastMessageStamp) {
+            lastMessageStamp = newest;
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+          }
+        } catch {
+          // swallow — polling should not spam alerts
+        }
+      }
+
+      function renderMessages(messages) {
+        if (messages.length === 0) {
+          messagesEl.innerHTML = '<div class="thread-empty">No messages yet. Send one to start iterating.</div>';
           return;
         }
-        for (const entry of entries) galleryEl.appendChild(renderEntry(entry));
+        const html = messages.map(m => {
+          const byline = m.role === 'user' ? 'You' : 'Claude';
+          const when = new Date(m.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+          const logRef = m.logEntryId
+            ? `<button type="button" class="thread-entry-ref" data-entry-id="${escapeAttr(m.logEntryId)}" title="Jump to this generation in focus mode">view generation →</button>`
+            : '';
+          return `
+            <div class="thread-msg thread-msg-${m.role}">
+              <div class="thread-msg-head">
+                <span class="thread-byline">${byline}</span>
+                <span class="thread-when">${when}</span>
+              </div>
+              <div class="thread-body">${escapeHtml(m.text).replace(/\n/g, '<br/>')}</div>
+              ${logRef}
+            </div>
+          `;
+        }).join('');
+        messagesEl.innerHTML = html;
+        messagesEl.querySelectorAll('.thread-entry-ref').forEach(btn => {
+          btn.addEventListener('click', () => focusEntry(btn.dataset.entryId));
+        });
+      }
+
+      async function sendMessage() {
+        const text = inputEl.value.trim();
+        if (!text) return;
+        sendBtn.disabled = true;
+        const snapshot = captureSnapshot(root, entry);
+        try {
+          const res = await fetch('/api/dev/feature-image/threads', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ action: 'append-message', entryId: entry.id, text, snapshot }),
+          });
+          if (!res.ok) {
+            const j = await res.json().catch(() => ({}));
+            throw new Error(j.error || `status ${res.status}`);
+          }
+          inputEl.value = '';
+          localStorage.removeItem(threadDraftKey(entry.id));
+          autosizeTextarea(inputEl);
+          await refreshThread();
+          await refreshWorkflows();
+        } catch (err) {
+          alert(`Failed to send: ${err.message}`);
+        } finally {
+          sendBtn.disabled = false;
+        }
+      }
+
+      inputEl.addEventListener('input', () => {
+        autosizeTextarea(inputEl);
+        // Persist draft on every keystroke so focus-refresh cycles don't lose work.
+        const value = inputEl.value;
+        if (value) localStorage.setItem(threadDraftKey(entry.id), value);
+        else localStorage.removeItem(threadDraftKey(entry.id));
+      });
+      inputEl.addEventListener('keydown', (ev) => {
+        if ((ev.metaKey || ev.ctrlKey) && ev.key === 'Enter') { ev.preventDefault(); sendMessage(); }
+      });
+      sendBtn.addEventListener('click', sendMessage);
+
+      refreshThread();
+      threadPollHandle = setInterval(refreshThread, 6000);
+    }
+
+    function captureSnapshot(cardRoot, entry) {
+      const previewEl = cardRoot.querySelector('.og-preview');
+      if (!previewEl) {
+        return {
+          title: entry.title,
+          subtitle: entry.subtitle,
+          prompt: entry.prompt,
+          preset: entry.preset,
+          overlay: true,
+        };
+      }
+      const titleEl = previewEl.querySelector('.og-title-input');
+      const subtitleEl = previewEl.querySelector('.og-subtitle-input');
+      return {
+        title: titleEl ? titleEl.value : entry.title,
+        subtitle: subtitleEl ? subtitleEl.value : entry.subtitle,
+        prompt: entry.prompt,
+        preset: previewEl.dataset.preset || entry.preset,
+        filters: {
+          grade: previewEl.dataset.grade,
+          phosphor: previewEl.dataset.phosphor,
+          vignette: previewEl.dataset.vignette,
+          scanlines: previewEl.dataset.scanlines,
+          grain: previewEl.dataset.grain,
+        },
+        overlay: previewEl.dataset.overlay === 'on',
+      };
+    }
+
+    function wireInlineNote(root, entry) {
+      const ta = root.querySelector('.note-textarea');
+      const savedEl = root.querySelector('.note-saved');
+      if (!ta) return;
+      const original = entry.notes ?? '';
+      const setSaved = (msg, cls = '') => { savedEl.textContent = msg; savedEl.className = 'note-saved ' + cls; };
+      let lastSaved = original;
+      let pending = null;
+      const commit = async () => {
+        const value = ta.value;
+        if (value === lastSaved) return;
+        if (pending) clearTimeout(pending);
+        pending = null;
+        setSaved('saving…', 'working');
+        try {
+          const res = await fetch('/api/dev/feature-image/log', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ id: entry.id, notes: value }),
+          });
+          if (!res.ok) throw new Error(`status ${res.status}`);
+          lastSaved = value;
+          entry.notes = value;
+          setSaved('saved', 'ok');
+          // Fade the "saved" indicator after a beat.
+          setTimeout(() => { if (savedEl.textContent === 'saved') setSaved(''); }, 1500);
+        } catch (err) {
+          setSaved(`error: ${err.message}`, 'error');
+        }
+      };
+      ta.addEventListener('input', () => {
+        if (pending) clearTimeout(pending);
+        pending = setTimeout(commit, 800);
+        setSaved('');
+      });
+      ta.addEventListener('blur', commit);
+      ta.addEventListener('keydown', (ev) => {
+        if ((ev.metaKey || ev.ctrlKey) && ev.key === 'Enter') { ev.preventDefault(); ta.blur(); }
+        if (ev.key === 'Escape') { ev.preventDefault(); ta.value = lastSaved; ta.blur(); }
+      });
+    }
+
+    function wireCardActions(root, entry) {
+      root.querySelectorAll('[data-action], [data-status]').forEach(btn => {
+        // Skip controls inside the live preview (they're wired separately).
+        if (btn.closest('.preview-controls')) return;
+        if (btn.closest('.og-text-panel')) return;
+        btn.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const action = btn.dataset.action;
+          const newStatus = btn.dataset.status;
+          if (newStatus) return updateStatus(entry.id, newStatus);
+          if (action === 'focus') return focusEntry(entry.id);
+          if (action === 'unfocus') return unfocusEntry();
+          if (action === 'approve') return startApproveFlow(entry);
+          if (action === 'note') return editNote(entry);
+          if (action === 'copy') return copyAsInput(entry);
+          if (action === 'rate') return rateEntry(entry, parseInt(btn.dataset.rate, 10));
+          if (action === 'save-template') return openSaveTemplatePanel(entry);
+          if (action === 'toggle-menu') {
+            const dd = btn.closest('.dropdown');
+            dd.classList.toggle('open');
+            // close on next outside click
+            const outside = (e) => { if (!dd.contains(e.target)) { dd.classList.remove('open'); document.removeEventListener('click', outside); } };
+            setTimeout(() => document.addEventListener('click', outside), 0);
+          }
+        });
+        // Non-button focus triggers (e.g., thumbnail) need keyboard support.
+        if (btn.tagName !== 'BUTTON' && btn.dataset.action === 'focus') {
+          btn.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); focusEntry(entry.id); }
+          });
+        }
+      });
+    }
+
+    // ── Live preview (focus mode) ──────────────────────────────────────────
+    function buildLivePreviewHtml(entry, rawPath) {
+      const preset = entry.preset && PRESET_FILTERS[entry.preset] ? entry.preset : 'retro-crt';
+      const f = PRESET_FILTERS[preset];
+      const title = entry.title ?? '';
+      const subtitle = entry.subtitle ?? '';
+      const site = entry.site === 'editorialcontrol' ? 'editorialcontrol' : 'audiocontrol';
+      return `
+        <div class="live-preview">
+          <div class="og-preview editable"
+               data-format="og"
+               data-grade="${f.grade}"
+               data-phosphor="${f.phosphor}"
+               data-vignette="${f.vignette}"
+               data-scanlines="${f.scanlines}"
+               data-grain="${f.grain}"
+               data-overlay="on"
+               data-preset="${preset}"
+               data-site="${site}"
+               style="${escapeAttr(brandStyle(site))}">
+            <img class="og-bg" src="${escapeAttr(rawPath)}" alt="" />
+            <div class="og-layer og-vignette"></div>
+            <div class="og-layer og-scanlines"></div>
+            <div class="og-layer og-grain"></div>
+            <div class="og-text-panel">
+              <textarea class="og-title-input" rows="1" placeholder="Title">${escapeHtml(title)}</textarea>
+              <textarea class="og-subtitle-input" rows="1" placeholder="Subtitle">${escapeHtml(subtitle)}</textarea>
+              <div class="og-brand-row">
+                <img class="og-logo" src="/favicon.svg" alt="" />
+                <div class="og-brand-text">${escapeHtml(brandName(site))}</div>
+              </div>
+            </div>
+          </div>
+          <div class="preview-controls">
+            <div class="control-row">
+              <label title="Preview aspect ratio — OG 1200×630, YouTube 1280×720, Instagram 1080×1080"><span>Format</span><select data-ctl="format"><option value="og">og</option><option value="youtube">youtube</option><option value="instagram">instagram</option></select></label>
+              <label title="Preset sets all filter values at once; individual selectors below override"><span>Preset</span><select data-ctl="preset">${Object.keys(PRESET_FILTERS).map(n => `<option value="${n}"${n === preset ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+              <label title="Bake with this site's brand (fonts, palette, logo text). Switch to explore the same raw image under a different brand."><span>Site</span><select data-ctl="site">
+                <option value="audiocontrol"${site === 'audiocontrol' ? ' selected' : ''}>audiocontrol</option>
+                <option value="editorialcontrol"${site === 'editorialcontrol' ? ' selected' : ''}>editorialcontrol</option>
+              </select></label>
+              <label class="cb" title="Show or hide the title/subtitle/brand overlay panel"><input type="checkbox" data-ctl="overlay" checked /> Overlay</label>
+            </div>
+            <div class="control-row">
+              <label title="Color grade — saturation, hue shift, brightness"><span>Grade</span><select data-ctl="grade">${selectOptions(['none','crt','teal-amber','heavy'], f.grade)}</select></label>
+              <label title="CRT phosphor glow — soft blur simulating screen bloom"><span>Phosphor</span><select data-ctl="phosphor">${selectOptions(['off','on','heavy'], f.phosphor)}</select></label>
+              <label title="Radial edge darkening"><span>Vignette</span><select data-ctl="vignette">${selectOptions(['off','subtle','on','heavy'], f.vignette)}</select></label>
+              <label title="Horizontal CRT scanline overlay"><span>Scanlines</span><select data-ctl="scanlines">${selectOptions(['off','on','heavy'], f.scanlines)}</select></label>
+              <label title="Film grain noise texture"><span>Grain</span><select data-ctl="grain">${selectOptions(['off','light','on','heavy'], f.grain)}</select></label>
+            </div>
+            <div class="control-row commit-row">
+              <label class="cb" title="Bake all three social formats at once on commit"><input type="checkbox" data-ctl="all-formats" /> Bake og + youtube + instagram</label>
+              <div class="btn-row">
+                <span class="commit-status"></span>
+                <button type="button" class="commit-btn" title="Rasterize the preview DOM to PNG files via Playwright and append a new history entry">Commit → bake PNGs</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    function selectOptions(values, selected) {
+      return values.map(v => `<option value="${v}"${v === selected ? ' selected' : ''}>${v}</option>`).join('');
+    }
+    function autosizeTextarea(ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+
+    function previewDraftKey(entryId) { return `fi-preview-draft-${entryId}`; }
+
+    function readPreviewDraft(entryId) {
+      try {
+        const raw = localStorage.getItem(previewDraftKey(entryId));
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function capturePreviewState(previewEl, controls) {
+      const titleEl = previewEl.querySelector('.og-title-input');
+      const subtitleEl = previewEl.querySelector('.og-subtitle-input');
+      const allFormatsCb = controls?.querySelector('[data-ctl="all-formats"]');
+      return {
+        title: titleEl ? titleEl.value : '',
+        subtitle: subtitleEl ? subtitleEl.value : '',
+        format: previewEl.dataset.format,
+        preset: previewEl.dataset.preset,
+        grade: previewEl.dataset.grade,
+        phosphor: previewEl.dataset.phosphor,
+        vignette: previewEl.dataset.vignette,
+        scanlines: previewEl.dataset.scanlines,
+        grain: previewEl.dataset.grain,
+        overlay: previewEl.dataset.overlay,
+        site: previewEl.dataset.site,
+        allFormats: !!(allFormatsCb && allFormatsCb.checked),
+      };
+    }
+
+    function applyPreviewDraft(previewEl, controls, draft) {
+      if (!draft) return;
+      const titleEl = previewEl.querySelector('.og-title-input');
+      const subtitleEl = previewEl.querySelector('.og-subtitle-input');
+      if (titleEl && typeof draft.title === 'string') titleEl.value = draft.title;
+      if (subtitleEl && typeof draft.subtitle === 'string') subtitleEl.value = draft.subtitle;
+      const keys = ['format', 'preset', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay', 'site'];
+      for (const k of keys) {
+        if (draft[k] !== undefined) {
+          previewEl.dataset[k] = draft[k];
+          const sel = controls.querySelector(`[data-ctl="${k}"]`);
+          if (sel && sel.tagName === 'SELECT') sel.value = draft[k];
+          if (sel && sel.type === 'checkbox') sel.checked = draft[k] === 'on' || draft[k] === true;
+        }
+      }
+      // If draft restored a different site, re-emit brand tokens inline.
+      if (typeof draft.site === 'string') {
+        const site = draft.site === 'editorialcontrol' ? 'editorialcontrol' : 'audiocontrol';
+        const style = brandStyle(site);
+        const existing = previewEl.getAttribute('style') || '';
+        const withoutBrand = existing.split(';').filter(s => !s.trim().startsWith('--og-')).join(';').trim();
+        previewEl.setAttribute('style', withoutBrand + (withoutBrand ? '; ' : '') + style);
+        const nameEl = previewEl.querySelector('.og-brand-text');
+        if (nameEl) nameEl.textContent = brandName(site);
+      }
+      const allFormatsCb = controls.querySelector('[data-ctl="all-formats"]');
+      if (allFormatsCb && typeof draft.allFormats === 'boolean') allFormatsCb.checked = draft.allFormats;
+    }
+
+    function wireLivePreview(entryDiv, entry) {
+      const previewEl = entryDiv.querySelector('.og-preview');
+      const controls = entryDiv.querySelector('.preview-controls');
+      if (!previewEl || !controls) return;
+
+      // Restore in-progress preview edits so gallery re-renders don't clobber them.
+      applyPreviewDraft(previewEl, controls, readPreviewDraft(entry.id));
+
+      const persistDraft = () => {
+        const state = capturePreviewState(previewEl, controls);
+        localStorage.setItem(previewDraftKey(entry.id), JSON.stringify(state));
+      };
+
+      const subtitleTa = previewEl.querySelector('.og-subtitle-input');
+      const titleTa = previewEl.querySelector('.og-title-input');
+      for (const ta of [subtitleTa, titleTa]) {
+        if (!ta) continue;
+        requestAnimationFrame(() => autosizeTextarea(ta));
+        ta.addEventListener('input', () => { autosizeTextarea(ta); persistDraft(); });
+      }
+      if (subtitleTa && typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => autosizeTextarea(subtitleTa));
+        ro.observe(previewEl);
+      }
+
+      const filterCtls = ['grade', 'phosphor', 'vignette', 'scanlines', 'grain'];
+      controls.querySelectorAll('[data-ctl]').forEach(el => {
+        el.addEventListener('input', () => {
+          const ctl = el.dataset.ctl;
+          if (ctl === 'format') previewEl.dataset.format = el.value;
+          else if (ctl === 'preset') {
+            const preset = el.value;
+            const f = PRESET_FILTERS[preset];
+            if (!f) return;
+            previewEl.dataset.preset = preset;
+            for (const k of filterCtls) {
+              previewEl.dataset[k] = f[k];
+              const sel = controls.querySelector(`[data-ctl="${k}"]`);
+              if (sel) sel.value = f[k];
+            }
+          } else if (ctl === 'overlay') previewEl.dataset.overlay = el.checked ? 'on' : 'off';
+          else if (ctl === 'site') {
+            const site = el.value === 'editorialcontrol' ? 'editorialcontrol' : 'audiocontrol';
+            previewEl.dataset.site = site;
+            // Re-emit the inline brand custom properties so fonts/colors swap live.
+            const style = brandStyle(site);
+            // Preserve any non-brand inline styles (e.g. width/height).
+            const existing = previewEl.getAttribute('style') || '';
+            const withoutBrand = existing.split(';').filter(s => !s.trim().startsWith('--og-')).join(';').trim();
+            previewEl.setAttribute('style', withoutBrand + (withoutBrand ? '; ' : '') + style);
+            // Update the brand-text footer to the new site name.
+            const nameEl = previewEl.querySelector('.og-brand-text');
+            if (nameEl) nameEl.textContent = brandName(site);
+          }
+          else if (filterCtls.includes(ctl)) previewEl.dataset[ctl] = el.value;
+          persistDraft();
+        });
+      });
+
+      const commitBtn = controls.querySelector('.commit-btn');
+      const statusEl = controls.querySelector('.commit-status');
+      commitBtn.addEventListener('click', () => commitLivePreview(entry, previewEl, controls, commitBtn, statusEl));
+    }
+
+    async function commitLivePreview(entry, previewEl, controls, commitBtn, statusEl) {
+      const titleInput = previewEl.querySelector('.og-title-input');
+      const subtitleInput = previewEl.querySelector('.og-subtitle-input');
+      const title = titleInput ? titleInput.value : '';
+      const subtitle = subtitleInput ? subtitleInput.value : '';
+      const overlay = previewEl.dataset.overlay === 'on';
+      const preset = previewEl.dataset.preset || undefined;
+      const filters = {};
+      for (const k of ['grade', 'phosphor', 'vignette', 'scanlines', 'grain']) filters[k] = previewEl.dataset[k];
+      const allFormatsCb = controls.querySelector('[data-ctl="all-formats"]');
+      const formats = allFormatsCb && allFormatsCb.checked ? ['og', 'youtube', 'instagram'] : [previewEl.dataset.format || 'og'];
+      // Let the focused-mode site switcher on the preview override the
+      // entry's inherited site; fall back to entry.site or activeSite.
+      const site = previewEl.dataset.site || entry.site || activeSite;
+
+      commitBtn.disabled = true;
+      statusEl.textContent = 'Baking…';
+      statusEl.className = 'commit-status working';
+      try {
+        const res = await fetch('/api/dev/feature-image/recomposite', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ sourceEntryId: entry.id, title, subtitle, preset, filters, overlay, formats, site }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || `status ${res.status}`);
+        statusEl.textContent = `Baked ${formats.length} format${formats.length === 1 ? '' : 's'} in ${json.entry.durationMs}ms.`;
+        statusEl.className = 'commit-status';
+        // Commit produces a new entry with these values baked in — the draft on
+        // the source is no longer relevant.
+        localStorage.removeItem(previewDraftKey(entry.id));
+        await refreshGallery();
+      } catch (err) {
+        statusEl.textContent = `Error: ${err.message}`;
+        statusEl.className = 'commit-status error';
+      } finally {
+        commitBtn.disabled = false;
+      }
+    }
+
+    // ── Gallery refresh ────────────────────────────────────────────────────
+    async function refreshGallery() {
+      try {
+        cachedEntries = await fetchLog();
+        stageCountEl.textContent = `${cachedEntries.length} ${cachedEntries.length === 1 ? 'entry' : 'entries'}`;
+        galleryEl.innerHTML = '';
+        galleryEl.classList.toggle('has-focus', !!focusedEntryId);
+        if (cachedEntries.length === 0) {
+          stageLabelEl.textContent = 'History';
+          galleryEl.innerHTML = '<div class="empty-hint">No generations yet. Open the Generate drawer to create one.</div>';
+          return;
+        }
+        if (focusedEntryId) {
+          const entry = cachedEntries.find(e => e.id === focusedEntryId);
+          if (!entry) { focusedEntryId = null; galleryEl.classList.remove('has-focus'); }
+          else {
+            stageLabelEl.textContent = 'Focus';
+            galleryEl.appendChild(renderFocusedCard(entry));
+            return;
+          }
+        }
+        stageLabelEl.textContent = 'History';
+        for (const entry of cachedEntries) galleryEl.appendChild(renderCompactCard(entry));
       } catch (err) {
         galleryEl.innerHTML = `<div class="err">Could not load log: ${escapeHtml(err.message)}</div>`;
       }
+      // Sync history-help visibility with whether we're in history or focus.
+      applyHistoryHelpState(localStorage.getItem('fi-history-help-open') === 'open');
     }
 
     async function updateStatus(id, status) {
@@ -473,6 +3579,291 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         alert(`Failed to update status: ${err.message}`);
       }
     }
+
+    // ── Approve flow — stepped progress drawer ─────────────────────────────
+    // Bakes og/youtube/instagram in one recomposite call, marks the new
+    // canonical entry approved, and (if a workflow is active) submits it as
+    // the decision. Claude's future apply skill discovers approved entries
+    // and routes them to targets.
+    const STEP_ICON = { pending: '○', active: '●', complete: '✓', failed: '✗' };
+    const STEP_DURATION_KEY = 'fi-step-duration-ema';
+
+    function loadStepDurations() {
+      try { return JSON.parse(localStorage.getItem(STEP_DURATION_KEY) || '{}'); }
+      catch { return {}; }
+    }
+    function saveStepDuration(stepId, ms) {
+      const store = loadStepDurations();
+      // EMA with alpha 0.4 so recent runs weigh heavier without wild swings.
+      const prev = typeof store[stepId] === 'number' ? store[stepId] : ms;
+      store[stepId] = Math.round(prev * 0.6 + ms * 0.4);
+      localStorage.setItem(STEP_DURATION_KEY, JSON.stringify(store));
+    }
+
+    function fmtMMSS(ms) {
+      const s = Math.max(0, Math.round(ms / 1000));
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    function openStepDrawer(title, steps) {
+      const drawer = document.getElementById('step-drawer');
+      const titleEl = document.getElementById('step-title');
+      const list = document.getElementById('step-list');
+      const summaryEl = document.getElementById('step-summary');
+      const closeBtn = document.getElementById('step-close');
+      const cancelBtn = document.getElementById('step-cancel');
+      const doneBtn = document.getElementById('step-done');
+      const elapsedEl = document.getElementById('step-elapsed');
+      const etaEl = document.getElementById('step-eta');
+
+      titleEl.textContent = title;
+      summaryEl.hidden = true;
+      summaryEl.className = 'step-summary';
+      summaryEl.textContent = '';
+      closeBtn.hidden = true;
+      doneBtn.hidden = true;
+      cancelBtn.hidden = false;
+      list.innerHTML = '';
+
+      const store = loadStepDurations();
+      const estimates = steps.map(s => store[s.id] ?? s.estimateMs ?? 3000);
+      const totalEstimate = estimates.reduce((a, b) => a + b, 0);
+      let stepEls = [];
+      for (const step of steps) {
+        const row = document.createElement('div');
+        row.className = 'step-row pending';
+        row.innerHTML = `
+          <span class="step-icon">${STEP_ICON.pending}</span>
+          <div class="step-body">
+            <div class="step-label"></div>
+            <div class="step-detail" hidden></div>
+            <div class="step-progress" hidden><div class="step-progress-fill"></div></div>
+          </div>
+          <span class="step-elapsed-self" hidden></span>
+        `;
+        row.querySelector('.step-label').textContent = step.label;
+        list.appendChild(row);
+        stepEls.push(row);
+      }
+
+      drawer.hidden = false;
+      drawer.setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(() => drawer.classList.add('open'));
+
+      const started = Date.now();
+      let activeIdx = -1;
+      let activeStarted = 0;
+      let cancelled = false;
+      const durations = {};
+
+      const tick = setInterval(() => {
+        const elapsed = Date.now() - started;
+        elapsedEl.textContent = `elapsed ${fmtMMSS(elapsed)}`;
+        // ETA: sum of pending + active-remaining + not-yet-started steps
+        let remainingMs = 0;
+        for (let i = 0; i < steps.length; i++) {
+          const est = estimates[i];
+          if (i < activeIdx) continue; // done
+          if (i === activeIdx) {
+            remainingMs += Math.max(0, est - (Date.now() - activeStarted));
+          } else {
+            remainingMs += est;
+          }
+        }
+        etaEl.textContent = remainingMs > 0 ? `· ~${fmtMMSS(remainingMs)} left` : '';
+        etaEl.classList.toggle('tight', remainingMs > 0 && remainingMs < 2000);
+        // Active step progress bar
+        if (activeIdx >= 0 && activeIdx < stepEls.length) {
+          const fill = stepEls[activeIdx].querySelector('.step-progress-fill');
+          if (fill) {
+            const pct = Math.min(99, ((Date.now() - activeStarted) / estimates[activeIdx]) * 100);
+            fill.style.width = pct + '%';
+          }
+        }
+      }, 250);
+
+      const transitionTo = (idx, status, detail) => {
+        if (idx < 0 || idx >= stepEls.length) return;
+        const row = stepEls[idx];
+        row.classList.remove('pending', 'active', 'complete', 'failed');
+        row.classList.add(status);
+        const iconEl = row.querySelector('.step-icon');
+        iconEl.textContent = STEP_ICON[status];
+        const detailEl = row.querySelector('.step-detail');
+        if (detail) { detailEl.textContent = detail; detailEl.hidden = false; }
+        const progressEl = row.querySelector('.step-progress');
+        if (status === 'active') {
+          progressEl.hidden = false;
+        } else {
+          progressEl.hidden = true;
+        }
+        const elapsedSelfEl = row.querySelector('.step-elapsed-self');
+        if (status === 'complete' && durations[steps[idx].id] !== undefined) {
+          elapsedSelfEl.textContent = fmtMMSS(durations[steps[idx].id]);
+          elapsedSelfEl.hidden = false;
+        }
+      };
+
+      const api = {
+        start(idx) {
+          if (activeIdx >= 0) transitionTo(activeIdx, 'complete');
+          activeIdx = idx;
+          activeStarted = Date.now();
+          transitionTo(idx, 'active');
+        },
+        detail(idx, text) {
+          const detailEl = stepEls[idx]?.querySelector('.step-detail');
+          if (detailEl) { detailEl.textContent = text; detailEl.hidden = false; }
+        },
+        complete(idx, detail) {
+          const d = Date.now() - activeStarted;
+          durations[steps[idx].id] = d;
+          saveStepDuration(steps[idx].id, d);
+          transitionTo(idx, 'complete', detail);
+        },
+        fail(idx, errorText) {
+          transitionTo(idx, 'failed', errorText);
+          finish(false, errorText);
+        },
+        finish(ok, summary) {
+          clearInterval(tick);
+          summaryEl.textContent = summary || '';
+          summaryEl.hidden = !summary;
+          summaryEl.classList.add(ok ? 'ok' : 'error');
+          cancelBtn.hidden = true;
+          doneBtn.hidden = false;
+          closeBtn.hidden = false;
+          etaEl.textContent = '';
+          const total = Date.now() - started;
+          elapsedEl.textContent = `elapsed ${fmtMMSS(total)}${ok ? '' : ' · failed'}`;
+        },
+        cancelled: () => cancelled,
+      };
+
+      const close = () => {
+        drawer.classList.remove('open');
+        setTimeout(() => { drawer.hidden = true; drawer.setAttribute('aria-hidden', 'true'); }, 250);
+      };
+      doneBtn.onclick = close;
+      closeBtn.onclick = close;
+      cancelBtn.onclick = () => {
+        cancelled = true;
+        cancelBtn.disabled = true;
+        cancelBtn.textContent = 'Cancelling…';
+      };
+
+      function finish(ok, summary) { api.finish(ok, summary); }
+      return api;
+    }
+
+    async function startApproveFlow(entry) {
+      // Derive current preview state. Prefer the live preview's in-DOM state
+      // (user may have unsaved edits); fall back to the entry's stored state.
+      const card = galleryEl.querySelector(`.card.focused[data-id="${entry.id}"]`);
+      const previewEl = card?.querySelector('.og-preview');
+      let title = entry.title || '';
+      let subtitle = entry.subtitle || '';
+      let preset = entry.preset || undefined;
+      let filters = {};
+      let overlay = true;
+      let site = entry.site || activeSite;
+      if (previewEl) {
+        const titleEl = previewEl.querySelector('.og-title-input');
+        const subEl = previewEl.querySelector('.og-subtitle-input');
+        if (titleEl) title = titleEl.value;
+        if (subEl) subtitle = subEl.value;
+        preset = previewEl.dataset.preset || preset;
+        for (const k of ['grade', 'phosphor', 'vignette', 'scanlines', 'grain']) {
+          filters[k] = previewEl.dataset[k];
+        }
+        overlay = previewEl.dataset.overlay !== 'off';
+        site = previewEl.dataset.site || site;
+      }
+
+      const workflow = (activeWorkflow && activeWorkflow.state === 'open') ? activeWorkflow : null;
+
+      const steps = [
+        { id: 'bake', label: 'Bake 3 PNG variants (og, youtube, instagram)', estimateMs: 9000 },
+        { id: 'approve', label: 'Mark as approved', estimateMs: 400 },
+      ];
+      if (workflow) steps.push({ id: 'decide', label: `Submit decision for workflow ${workflow.id.slice(0, 8)}`, estimateMs: 400 });
+
+      const drawer = openStepDrawer('Approve and bake', steps);
+      let canonicalEntryId = null;
+
+      try {
+        // ── Step 1: Bake three formats in a single recomposite call ──
+        drawer.start(0);
+        const bakeRes = await fetch('/api/dev/feature-image/recomposite', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            sourceEntryId: entry.id,
+            title, subtitle, preset, filters, overlay, site,
+            formats: ['og', 'youtube', 'instagram'],
+            includeFilteredVariant: true,
+          }),
+        });
+        const bakeJson = await bakeRes.json();
+        if (!bakeRes.ok) throw new Error(bakeJson.error || `recomposite status ${bakeRes.status}`);
+        canonicalEntryId = bakeJson.entry.id;
+        const variantCount = bakeJson.entry?.outputs?.composited?.length || 3;
+        drawer.complete(0, `${variantCount} composited variants + 1 filtered`);
+        if (drawer.cancelled()) { drawer.finish(false, 'Cancelled before approve.'); return; }
+
+        // ── Step 2: Mark approved ──
+        drawer.start(1);
+        const aprRes = await fetch('/api/dev/feature-image/log', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: canonicalEntryId, status: 'approved' }),
+        });
+        if (!aprRes.ok) throw new Error(`approve status ${aprRes.status}`);
+        drawer.complete(1, `entry ${canonicalEntryId.slice(0, 8)} enshrined`);
+        if (drawer.cancelled()) { drawer.finish(false, 'Cancelled before decide.'); await refreshGallery(); return; }
+
+        // ── Step 3 (conditional): Submit decision ──
+        if (workflow) {
+          drawer.start(2);
+          const decRes = await fetch('/api/dev/feature-image/workflow', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              action: 'decide',
+              id: workflow.id,
+              logEntryId: canonicalEntryId,
+              userNotes: 'approved from gallery with all 3 social formats baked',
+            }),
+          });
+          const decJson = await decRes.json().catch(() => ({}));
+          if (!decRes.ok) throw new Error(decJson.error || `decide status ${decRes.status}`);
+          drawer.complete(2, `decision submitted — run /feature-image-apply to wire into the post`);
+        }
+
+        drawer.finish(true, workflow
+          ? `Approved + all variants baked. Run /feature-image-apply in Claude Code to route the files into the post.`
+          : `Approved + all variants baked. Ready for Claude Code to apply.`);
+
+        // Clear the preview draft since the bake captured the committed state.
+        localStorage.removeItem(`fi-preview-draft-${entry.id}`);
+        // Pop focus to the new canonical entry if the user is focused here.
+        if (focusedEntryId === entry.id && canonicalEntryId) focusEntry(canonicalEntryId);
+        await refreshTemplates();
+        await refreshWorkflows();
+        await refreshGallery();
+      } catch (err) {
+        const lastActive = steps.findIndex((_, i) => {
+          const row = document.querySelectorAll('#step-list .step-row')[i];
+          return row && row.classList.contains('active');
+        });
+        if (lastActive >= 0) {
+          drawer.fail(lastActive, err.message || String(err));
+        } else {
+          drawer.finish(false, `Error: ${err.message || err}`);
+        }
+      }
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     async function editNote(entry) {
       const next = prompt('Note:', entry.notes || '');
@@ -497,6 +3888,7 @@ const filterNames = Object.keys(FILTER_REGISTRY);
       if (entry.title) document.getElementById('title').value = entry.title;
       if (entry.subtitle) document.getElementById('subtitle').value = entry.subtitle;
       if (entry.formats) document.getElementById('formats').value = entry.formats;
+      if (entry.site) setActiveSite(entry.site);
       document.querySelectorAll('input[name=filters]').forEach(cb => { cb.checked = false; });
       if (entry.filters && !entry.preset) {
         const picks = entry.filters.split(',').map(s => s.trim());
@@ -504,9 +3896,10 @@ const filterNames = Object.keys(FILTER_REGISTRY);
           if (picks.includes(cb.value)) cb.checked = true;
         });
       }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      openDrawer(drawerGenerate, drawerWorkflow);
     }
 
+    // ── Generate form ──────────────────────────────────────────────────────
     form.addEventListener('submit', async (ev) => {
       ev.preventDefault();
       const formData = new FormData(form);
@@ -519,15 +3912,17 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         title: (formData.get('title') || '').toString().trim() || undefined,
         subtitle: (formData.get('subtitle') || '').toString().trim() || undefined,
         formats: (formData.get('formats') || 'og').toString(),
+        templateSlug: activeTemplate?.slug,
+        site: activeSite,
       };
       if (!body.prompt) {
-        statusEl.textContent = 'Prompt is required.';
-        statusEl.className = 'error';
+        genStatusEl.textContent = 'Prompt is required.';
+        genStatusEl.className = 'error';
         return;
       }
       genBtn.disabled = true;
-      statusEl.textContent = 'Generating… (can take 30-60s for AI providers)';
-      statusEl.className = 'working';
+      genStatusEl.textContent = 'Generating… (can take 30-60s for AI providers)';
+      genStatusEl.className = 'working';
       try {
         const res = await fetch('/api/dev/feature-image/generate', {
           method: 'POST',
@@ -536,21 +3931,69 @@ const filterNames = Object.keys(FILTER_REGISTRY);
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || `status ${res.status}`);
-        statusEl.textContent = `Done in ${json.entry.durationMs}ms.`;
-        statusEl.className = '';
+        genStatusEl.textContent = `Generated in ${json.entry.durationMs}ms. Opening for review…`;
+        genStatusEl.className = '';
+        // Close the Generate drawer and focus the new entry so the user lands
+        // on the thing they just made, with all the review actions visible
+        // (rate, iterate, approve, submit for workflow, commit).
+        closeDrawer(drawerGenerate);
         await refreshGallery();
+        if (json.entry?.id) focusEntry(json.entry.id);
       } catch (err) {
-        statusEl.textContent = `Error: ${err.message}`;
-        statusEl.className = 'error';
+        genStatusEl.textContent = `Error: ${err.message}`;
+        genStatusEl.className = 'error';
       } finally {
         genBtn.disabled = false;
       }
     });
 
+    // ── Help widgets ───────────────────────────────────────────────────────
+    // Two collapsible help panels:
+    //   1. Page-level overview card (top of stage) — toggled by ? in header
+    //   2. History help (under the History heading) — toggled by ? in heading
+    //      Hidden when focused on a single entry (only applies to history view).
+    // Each persists its open/closed state in localStorage.
+    const helpToggle = document.getElementById('help-toggle');
+    const helpCard = document.getElementById('help-card');
+    const helpClose = document.getElementById('help-close');
+    function applyHelpState(open) {
+      helpCard.hidden = !open;
+      helpCard.setAttribute('aria-hidden', open ? 'false' : 'true');
+      helpToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      localStorage.setItem('fi-help-open', open ? 'open' : 'closed');
+    }
+    const savedHelp = localStorage.getItem('fi-help-open');
+    applyHelpState(savedHelp === null ? true : savedHelp === 'open');
+    helpToggle.addEventListener('click', () => applyHelpState(helpCard.hidden));
+    helpClose.addEventListener('click', () => applyHelpState(false));
+
+    const historyHelpToggle = document.getElementById('history-help-toggle');
+    const historyHelp = document.getElementById('history-help');
+    function applyHistoryHelpState(open) {
+      // If focused on a single entry, the section heading reads 'Focus' not
+      // 'History' — hide the help card and toggle regardless of state.
+      const viewingHistory = !focusedEntryId;
+      historyHelpToggle.hidden = !viewingHistory;
+      if (!viewingHistory) {
+        historyHelp.hidden = true;
+        historyHelp.setAttribute('aria-hidden', 'true');
+        return;
+      }
+      historyHelp.hidden = !open;
+      historyHelp.setAttribute('aria-hidden', open ? 'false' : 'true');
+      historyHelpToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      localStorage.setItem('fi-history-help-open', open ? 'open' : 'closed');
+    }
+    const savedHistoryHelp = localStorage.getItem('fi-history-help-open');
+    // Default closed — the page-level help is open on first visit; this one
+    // is supplementary, shouldn't pile onto the first-run experience.
+    applyHistoryHelpState(savedHistoryHelp === 'open');
+    historyHelpToggle.addEventListener('click', () => applyHistoryHelpState(historyHelp.hidden));
+
+    // ── Boot ───────────────────────────────────────────────────────────────
+    refreshTemplates();
     refreshWorkflows();
     refreshGallery();
-
-    // Auto-refresh workflows every 5 seconds so new items enqueued by the agent appear
     setInterval(refreshWorkflows, 5000);
   </script>
 </body>

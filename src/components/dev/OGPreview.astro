@@ -1,0 +1,154 @@
+---
+/*
+ * OGPreview — a live DOM rendering of a feature image. Used both in the
+ * gallery (editable) and in the bake route (rasterized by Playwright).
+ * Filter state is driven by data-* attributes on the root element so
+ * controls can flip them at runtime without re-rendering.
+ *
+ * Brand tokens are emitted as inline CSS custom properties so the stylesheet
+ * consumes --og-primary / --og-foreground / --og-font-display / etc.
+ * instead of literal colors. Pass site="audiocontrol" or "editorialcontrol"
+ * (default audiocontrol) to switch brand.
+ */
+
+import { brand as audiocontrolBrand } from '../../sites/audiocontrol/brand.js';
+import { brand as editorialcontrolBrand } from '../../sites/editorialcontrol/brand.js';
+import type { Brand } from '../../shared/brand.js';
+
+export interface FilterState {
+  grade?: 'none' | 'crt' | 'heavy' | 'teal-amber';
+  phosphor?: 'off' | 'on' | 'heavy';
+  vignette?: 'off' | 'subtle' | 'on' | 'heavy';
+  scanlines?: 'off' | 'on' | 'heavy';
+  grain?: 'off' | 'light' | 'on' | 'heavy';
+}
+
+export type PresetName = 'none' | 'subtle' | 'retro-crt' | 'teal-amber' | 'heavy-crt';
+export type Site = 'audiocontrol' | 'editorialcontrol';
+
+export function presetToFilters(preset: PresetName): FilterState {
+  switch (preset) {
+    case 'none':
+      return { grade: 'none', phosphor: 'off', vignette: 'off', scanlines: 'off', grain: 'off' };
+    case 'subtle':
+      return { grade: 'none', phosphor: 'off', vignette: 'subtle', scanlines: 'off', grain: 'light' };
+    case 'retro-crt':
+      return { grade: 'crt', phosphor: 'on', vignette: 'on', scanlines: 'on', grain: 'on' };
+    case 'teal-amber':
+      return { grade: 'teal-amber', phosphor: 'off', vignette: 'subtle', scanlines: 'off', grain: 'light' };
+    case 'heavy-crt':
+      return { grade: 'heavy', phosphor: 'heavy', vignette: 'heavy', scanlines: 'heavy', grain: 'heavy' };
+  }
+}
+
+const BRANDS: Record<Site, Brand> = {
+  audiocontrol: audiocontrolBrand,
+  editorialcontrol: editorialcontrolBrand,
+};
+
+function brandStyle(brand: Brand): string {
+  // Emit one custom property per token the overlay stylesheet reads.
+  // Colors ship as HSL triplets (e.g. "30 12% 7%") so we wrap in hsl() here.
+  return [
+    `--og-primary: hsl(${brand.colors.primary})`,
+    `--og-accent: hsl(${brand.colors.accent})`,
+    `--og-foreground: hsl(${brand.colors.foreground})`,
+    `--og-muted-foreground: hsl(${brand.colors.mutedForeground})`,
+    `--og-background: hsl(${brand.colors.background})`,
+    `--og-card: hsl(${brand.colors.card})`,
+    `--og-border: hsl(${brand.colors.border})`,
+    `--og-font-display: ${brand.typography.display}`,
+    `--og-font-body: ${brand.typography.body}`,
+    `--og-font-mono: ${brand.typography.mono}`,
+    `--og-brand-name: '${brand.name.replace(/'/g, "\\'")}'`,
+  ].join('; ');
+}
+
+interface Props {
+  bgSrc: string;
+  title?: string;
+  subtitle?: string;
+  format?: 'og' | 'youtube' | 'instagram';
+  filters?: FilterState;
+  preset?: PresetName;
+  overlay?: boolean;
+  editable?: boolean;
+  id?: string;
+  site?: Site;
+  logoSrc?: string;
+  width?: number;
+  height?: number;
+}
+
+const {
+  bgSrc,
+  title = '',
+  subtitle = '',
+  format = 'og',
+  filters,
+  preset,
+  overlay = true,
+  editable = false,
+  id,
+  site = 'audiocontrol',
+  logoSrc,
+  width,
+  height,
+} = Astro.props;
+
+const brand = BRANDS[site];
+const effectiveLogoSrc = logoSrc ?? '/favicon.svg';
+
+const effective: Required<FilterState> = {
+  grade: 'none',
+  phosphor: 'off',
+  vignette: 'off',
+  scanlines: 'off',
+  grain: 'off',
+  ...(preset ? presetToFilters(preset) : {}),
+  ...(filters ?? {}),
+};
+
+const dimStyle = width && height
+  ? `width: ${width}px; height: ${height}px; aspect-ratio: ${width} / ${height}; `
+  : '';
+const inlineStyle = dimStyle + brandStyle(brand);
+---
+
+<div
+  class:list={['og-preview', editable && 'editable']}
+  data-format={format}
+  data-grade={effective.grade}
+  data-phosphor={effective.phosphor}
+  data-vignette={effective.vignette}
+  data-scanlines={effective.scanlines}
+  data-grain={effective.grain}
+  data-overlay={overlay ? 'on' : 'off'}
+  data-preset={preset ?? ''}
+  data-site={site}
+  id={id}
+  style={inlineStyle}
+>
+  <img class="og-bg" src={bgSrc} alt="" />
+  <div class="og-layer og-vignette"></div>
+  <div class="og-layer og-scanlines"></div>
+  <div class="og-layer og-grain"></div>
+
+  <div class="og-text-panel">
+    {editable ? (
+      <Fragment>
+        <textarea class="og-title-input" rows="1" placeholder="Title">{title}</textarea>
+        <textarea class="og-subtitle-input" rows="1" placeholder="Subtitle">{subtitle}</textarea>
+      </Fragment>
+    ) : (
+      <Fragment>
+        <div class="og-title">{title}</div>
+        {subtitle && <div class="og-subtitle">{subtitle}</div>}
+      </Fragment>
+    )}
+    <div class="og-brand-row">
+      <img class="og-logo" src={effectiveLogoSrc} alt="" />
+      <div class="og-brand-text">{brand.name}</div>
+    </div>
+  </div>
+</div>

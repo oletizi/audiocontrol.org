@@ -28,15 +28,23 @@ test-results/
 # Playwright MCP scratch output (screenshots, snapshots, console logs)
 .playwright-mcp/
 
-# scratch output from feature-image CLI iterations (path follows publicDir split)
+# scratch output from feature-image CLI iterations (per-site publicDir)
 src/sites/audiocontrol/public/images/generated/
-# legacy path for the same scratch output (some CLI invocations write here)
+src/sites/editorialcontrol/public/images/generated/
+
+# orphaned pre-split top-level public/ (from before the per-site publicDir
+# fix landed). Safe to delete; gitignored so nothing re-tracks them.
 public/images/generated/
 
-# (note: .feature-image-history.jsonl and .feature-image-pipeline.jsonl
-# are intentionally NOT gitignored — they hold the generation history
-# and workflow-decision audit trail that the Phase 11 prompt library
-# will compute fitness scores from. Lose them = lose the design-system
+# playwright MCP / dev screenshots
+.playwright-mcp/
+redesign-*.png
+
+# (note: .feature-image-history.jsonl, .feature-image-pipeline.jsonl,
+# and .feature-image-threads.jsonl are intentionally NOT gitignored —
+# they hold the generation history, workflow-decision audit trail, and
+# Phase 13 iteration conversation that Phase 11 fitness scoring and
+# future analysis will compute from. Lose them = lose the design-system
 # evolution.)
 #
 # Same for .editorial-draft-history.jsonl and .editorial-draft-pipeline.jsonl —

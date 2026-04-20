@@ -29,6 +29,25 @@ export interface LogEntry {
   status: LogStatus;
   notes?: string;
   error?: string;
+  /** 1-5 user rating; absence means unrated. */
+  rating?: number;
+  /** Slug of the prompt template used to seed this generation (if any). */
+  templateSlug?: string;
+  /** ID of the entry this was iterated from — anchors lineage for threads. */
+  parentEntryId?: string;
+  /**
+   * Site this image was generated for. Drives brand tokens at bake time
+   * and routing at apply time. Pre-Phase-14 entries lack this field;
+   * consumers should treat absence as DEFAULT_SITE (`audiocontrol`).
+   */
+  site?: 'audiocontrol' | 'editorialcontrol';
+  /**
+   * Target post this approved entry was applied to (source path like
+   * `src/sites/<site>/pages/blog/<slug>/index.md`). Set by
+   * `/feature-image-apply` when the files are copied into the post.
+   * Absence means the entry hasn't been applied yet (even if status=approved).
+   */
+  appliedTo?: string;
 }
 
 /** Read all log entries, oldest first. Empty array if the file doesn't exist. */
@@ -53,7 +72,10 @@ export function appendLog(entry: LogEntry): void {
 }
 
 /** Update an existing entry by id (rewrites the whole file). */
-export function updateLog(id: string, patch: Partial<Pick<LogEntry, 'status' | 'notes'>>): LogEntry | null {
+export function updateLog(
+  id: string,
+  patch: Partial<Pick<LogEntry, 'status' | 'notes' | 'rating' | 'templateSlug' | 'appliedTo'>>,
+): LogEntry | null {
   const entries = readLog();
   const idx = entries.findIndex(e => e.id === id);
   if (idx === -1) return null;

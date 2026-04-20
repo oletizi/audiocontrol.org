@@ -17,6 +17,8 @@ export interface GenerateRequest {
   prompt?: string;
   /** Path to an existing background image (absolute). Skips AI generation. */
   backgroundPath?: string;
+  /** Slug of the prompt template used to seed this request (recorded in the log, not used for generation). */
+  templateSlug?: string;
   /** Provider selection when generating from `prompt`. Default: 'dalle'. */
   provider?: ProviderSelection;
   /** Requested generation width (provider may clamp). Default: 1792. */
