@@ -27,11 +27,31 @@ This feature adds AI-generated backgrounds (via DALL-E 3 and FLUX) and wraps the
 - Claude Code `/feature-image` skill that reads page frontmatter and drives the pipeline
 - Provider comparison workflow (generate from both, pick the best)
 
-### In Scope (Extended — Phases 6-10)
+### In Scope (Extended — Phases 6-11)
 
 - Astro dev-only preview gallery for interactive prompt + filter iteration, with persistent log of attempts
+- Two-way async workflow pipeline between Claude Code skills and the gallery (agent enqueues → user iterates → user decides → agent applies)
 - Expanded filter library: analog-display (chromatic aberration, bloom, lens distortion), 8-bit (dither, posterize, gradient-map), cinematic (letterbox, light-leak, halftone), and utility (sharpen, contrast, threshold, invert, duotone) primitives
 - New presets combining the new primitives (e.g., `vhs`, `8-bit`, `cinematic`, `monitor`)
+- Prompt template library with fitness-ranked selection, lineage tracking, and "save as template" / fork mechanics — cultivates a shared visual identity by artificial selection over time
+
+### In Scope (Extended — Phase 12)
+
+- Live DOM-based preview in the gallery: title, subtitle, filter chain, and overlay visibility edited inline with zero backend round-trip
+- DOM-to-PNG bake on commit via Playwright screenshot of the exact preview element, eliminating the satori/sharp dual-source-of-truth for gallery-driven bakes
+
+### In Scope (Extended — Phase 13)
+
+- Conversation thread pinned to each focused gallery entry: user types natural-language feedback, Claude responds asynchronously with new generations and commentary
+- Lineage tracking on log entries (parent → child) so iterations form a tree and a thread is visible on any entry in the chain
+- New `/feature-image-iterate` skill (or extension to `/feature-image-help`) that picks up pending thread messages, reads the snapshot + feedback, and invokes the generation pipeline
+
+### In Scope (Extended — Phase 14)
+
+- Multi-site feature image generation. The repo now hosts two sites under `src/sites/<site>/` (audiocontrol and editorialcontrol); each has its own `brand.ts` with distinct palette, typography, and name/tagline.
+- `OGPreview` component and the bake pipeline read site brand data so the overlay uses the correct fonts, colors, logo, and brand text per site.
+- Gallery surfaces site selection: generation form captures which site an image is for; focused entry allows switching sites for exploratory recomposition; applying a workflow routes output into the correct site's public directory.
+- Templates gain optional `site` affinity so the library picker can filter by site and fitness is tracked per-site.
 
 ### Out of Scope
 

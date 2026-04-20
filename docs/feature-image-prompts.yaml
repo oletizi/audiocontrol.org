@@ -1,0 +1,347 @@
+version: 1
+templates:
+  # ══════════════════════════════════════════════════════════════════════
+  # audiocontrol.org — service-manual / flight-instrumentation
+  # Warm-ink + phosphor-amber + Roland-blue. The schematic of the machine.
+  # ══════════════════════════════════════════════════════════════════════
+
+  - slug: phosphor-waveform
+    name: Phosphor Waveform
+    description: Single VFD-style oscillating waveform across a warm-ink field. For posts about audio signals, DSP, protocol timing, or anything where a single trace carries the whole meaning.
+    site: audiocontrol
+    tags:
+      - audio-signal
+      - dsp
+      - protocol
+      - waveform
+      - minimal
+    prompt: |
+      Abstract oscilloscope waveform, single horizontal glowing trace
+      crossing a deep warm-ink background, phosphor amber line with
+      soft bloom halo around the brightest crests, subtle harmonic
+      undulation, VFD-display aesthetic, the curve concentrated in
+      the upper half with calm near-empty space below, faint Roland-
+      blue accent on one secondary trace, dark warm near-black
+      background with amber cast, vintage instrument glow, editorial
+      technical illustration style, no text no words no letters no
+      typography no labels no machinery no hardware no people no
+      objects
+    preset: retro-crt
+    provider: flux
+    examples: []
+
+  - slug: schematic-fragment
+    name: Schematic Fragment
+    description: Blueprint-style line-art schematic on warm-ink paper. For reverse-engineering deep-dives, protocol archaeology, or posts that want to read like a torn page from a service manual.
+    site: audiocontrol
+    tags:
+      - reverse-engineering
+      - protocol
+      - schematic
+      - documentation
+      - annotated
+    prompt: |
+      Abstract service-manual schematic fragment, thin hand-drawn
+      lines in pale cream on deep warm-ink paper texture, abstract
+      signal-flow nodes connected by geometric traces with small
+      faint amber phosphor points at each junction, dimensional-
+      drawing lineage, ruled grid faintly visible underneath,
+      composition weighted to upper two-thirds with quiet wash below,
+      one small Roland-blue highlighted annotation in the upper
+      right, dark warm near-black background with amber cast,
+      restrained technical illustration, no text no words no letters
+      no typography no labels no machinery no hardware no people no
+      objects
+    preset: subtle
+    provider: flux
+    examples: []
+
+  - slug: punch-tape
+    name: Punch Tape
+    description: Vertical stripe field suggesting perforated data tape. For posts about process, workflow, stepwise analysis, or accumulation — things you read one frame at a time.
+    site: audiocontrol
+    tags:
+      - process
+      - workflow
+      - data
+      - systems
+      - rhythmic
+    prompt: |
+      Abstract vertical stripes of varying widths in warm phosphor
+      amber tones against a deep warm-ink background, suggesting
+      perforated punch tape or edge-of-film sprocket holes, clean
+      geometric regularity with subtle variations in opacity and
+      width, gentle phosphor bloom on the brightest stripes, top-
+      heavy composition with near-empty negative space across the
+      bottom third, dark warm near-black background with amber cast,
+      vintage-computing aesthetic, no text no words no letters no
+      typography no labels no hardware no people no objects
+    preset: retro-crt
+    provider: flux
+    examples: []
+
+  - slug: lissajous-trace
+    name: Lissajous Trace
+    description: Overlapping oscilloscope phase-figures in phosphor amber. For posts about AI agents, coupled systems, multi-pass analysis, or anything where two signals become one.
+    site: audiocontrol
+    tags:
+      - ai-agents
+      - systems
+      - coupling
+      - analysis
+      - kinetic
+    prompt: |
+      Abstract overlapping Lissajous curves and phase-circle figures
+      drawn as thin glowing phosphor amber lines on a deep warm-ink
+      background, orbital patterns tracing coupled oscillations,
+      controlled asymmetry with two or three interlocking loops, a
+      single Roland-blue accent on one inner loop, concentrated in
+      the upper two-thirds with quiet wash below, faint scanline
+      texture, dark warm near-black background with amber cast,
+      vintage oscilloscope aesthetic, no text no words no letters
+      no typography no labels no machinery no hardware no people no
+      objects
+    preset: retro-crt
+    provider: flux
+    examples: []
+
+  - slug: spool-motion
+    name: Spool Motion
+    description: Concentric rings with radial motion in amber. For retrospectives, session journals, vintage-gear posts, or anything about return and rotation.
+    site: audiocontrol
+    tags:
+      - retrospective
+      - archive
+      - vintage
+      - journal
+      - rotational
+    prompt: |
+      Abstract concentric rings with subtle radial motion blur in
+      warm phosphor amber tones, suggesting a rotating tape reel or
+      a spinning platter seen through a service-viewport slit,
+      centered composition with generous negative space, slight
+      chromatic bloom at the ring edges, dark warm near-black
+      background with faint amber cast, vintage instrument-panel
+      atmosphere, minimal and meditative, no text no words no
+      letters no typography no labels no hardware no people no
+      objects
+    preset: retro-crt
+    provider: flux
+    examples: []
+
+  # Retained: proven template with a shipped example (reverse-engineering
+  # post). Slightly cooler palette than the new audiocontrol set — fills the
+  # "network-flow" mood that the five new templates don't cover directly.
+  - slug: data-packet-network
+    name: Data Packet Network
+    description: Layered translucent data packets flowing through a wireframe node network. For debugging, reverse engineering, networking, and protocol deep-dive posts.
+    site: audiocontrol
+    tags:
+      - debugging
+      - reverse-engineering
+      - protocol
+      - networking
+      - scsi
+      - midi
+      - investigation
+    prompt: Abstract isometric illustration of layered translucent data packets flowing through a network of glowing wireframe nodes, cool teal cyan dominant with warm amber accent highlights on connection lines, deep shadow background suggesting intense focused analysis, thin glowing trace lines weaving between the nodes, minimalist editorial style, dark moody atmosphere, no objects no people no text no words no letters no typography no labels
+    preset: retro-crt
+    provider: flux
+    examples:
+      - ed8b6e7f-582c-4d0e-8759-8c947802176c
+
+  # ══════════════════════════════════════════════════════════════════════
+  # editorialcontrol.org — publication-dark / editorial
+  # Ink-near-black + chartreuse + parchment. The galley proof.
+  # ══════════════════════════════════════════════════════════════════════
+
+  - slug: galley-columns
+    name: Galley Columns
+    description: Stacked horizontal bars suggesting typographic columns. For posts about writing, content ops, publication structure, or anything that wants to read like a page of considered prose.
+    site: editorialcontrol
+    tags:
+      - publication
+      - writing
+      - content-ops
+      - structure
+      - quiet
+    prompt: |
+      Abstract typographic column field, vertical columns of stacked
+      horizontal bars of varying length suggesting blocks of set
+      text without being readable, parchment-cream and muted
+      chartreuse tones on a deep cool ink-near-black background,
+      generous vertical rhythm, carefully-tuned column gutters, hand-
+      ruled quality to the block edges, composition weighted to the
+      upper two-thirds with quiet open measure below, faint grid
+      ruling, editorial publication page abstraction, no text no
+      words no letters no typography no labels no people no objects
+    preset: subtle
+    provider: flux
+    examples: []
+
+  - slug: tracked-changes
+    name: Tracked Changes
+    description: Flowing chartreuse underline-marks across cream on ink. For posts about AI revision, editorial feedback, iteration, or the back-and-forth of working with an agent.
+    site: editorialcontrol
+    tags:
+      - revision
+      - feedback
+      - iteration
+      - ai-agents
+      - editorial
+    prompt: |
+      Abstract tracked-changes revision marks, flowing horizontal
+      signal-green chartreuse strokes underlining and striking
+      through invisible text, scattered warm parchment-cream caret
+      marks and small annotations drifting in the margins, ink-bleed
+      softness at each stroke edge, cool ink-near-black background,
+      editorial revision-pass atmosphere, sparse and intentional
+      placement, compositional weight in the upper half with quiet
+      measure below, no text no words no letters no typography no
+      labels no people no objects
+    preset: subtle
+    provider: flux
+    examples: []
+
+  - slug: proof-constellation
+    name: Proof Constellation
+    description: Scattered editorial proof-mark glyphs across the upper field. For posts about review workflow, multi-stage editing, or the craft of finding what's wrong before it ships.
+    site: editorialcontrol
+    tags:
+      - review
+      - workflow
+      - editing
+      - craft
+      - constellation
+    prompt: |
+      Abstract editorial proof-mark constellation, scattered
+      minimalist line-drawing glyphs that read as copy-editor
+      symbols without being literal, rendered in parchment-cream
+      with occasional signal-green chartreuse highlights on a deep
+      cool ink-near-black background, dry-ink quality to the line
+      work, faint underlying grid ruling that softens toward the
+      edges, arrangement clustered in the upper two-thirds with
+      generous negative space below, publication-dark atmosphere,
+      no text no words no letters no typography no labels no people
+      no objects
+    preset: subtle
+    provider: flux
+    examples: []
+
+  - slug: margin-rules
+    name: Margin Rules
+    description: Thin vertical rules suggesting page-margin structure. For posts about process, publication pacing, editorial infrastructure, or anything about the geometry of the page.
+    site: editorialcontrol
+    tags:
+      - publication
+      - process
+      - infrastructure
+      - pacing
+      - geometric
+    prompt: |
+      Abstract page-margin composition, a series of thin parallel
+      vertical rules in varying weights and lengths suggesting the
+      gutter and margin structure of a printed publication page,
+      parchment-cream lines on deep cool ink-near-black background,
+      a single signal-green chartreuse highlight line offset from
+      the rest, controlled asymmetric balance, compositional weight
+      in the upper half, faint horizontal baseline grid softening
+      toward the lower third, editorial publication abstraction, no
+      text no words no letters no typography no labels no people
+      no objects
+    preset: subtle
+    provider: flux
+    examples: []
+
+  - slug: ink-bleed-marginalia
+    name: Ink-Bleed Marginalia
+    description: Organic ink shapes bleeding into cream from the edges. For essays, reflective posts, posts about process fragility, or anything that wants the hand of the editor visible.
+    site: editorialcontrol
+    tags:
+      - essay
+      - reflection
+      - craft
+      - hand-annotated
+      - organic
+    prompt: |
+      Abstract marginalia field, organic ink-bleed shapes intruding
+      from the edges of a warm parchment-cream central measure onto
+      a deep cool ink-near-black surround, scattered signal-green
+      chartreuse hand-annotation marks drifting along the right
+      margin, painterly edges with soft feathering, weighted toward
+      the upper two-thirds with a quiet open lower third, editorial
+      manuscript aesthetic, publication-dark atmosphere, no text no
+      words no letters no typography no labels no people no objects
+    preset: subtle
+    provider: flux
+    examples: []
+
+  # ══════════════════════════════════════════════════════════════════════
+  # Archived — pre-redesign templates. Kept for lineage and to preserve
+  # the fork-history. They won't appear in the default picker but can be
+  # un-archived if a post needs that specific aesthetic.
+  # ══════════════════════════════════════════════════════════════════════
+
+  - slug: crystal-teal
+    name: Isometric Crystal (teal)
+    description: Translucent isometric crystal structure of stacked layered panels, teal-dominant. Pre-redesign template.
+    site: audiocontrol
+    archived: true
+    tags:
+      - ai
+      - process
+      - systems
+      - architecture
+      - workflow
+      - geometric
+    prompt: Abstract geometric data visualization, single translucent isometric crystal structure of stacked layered panels, dominantly cool teal cyan tones with subtle amber accent edges, fading into deep shadow background, thin glowing wireframe lines tracing through the structure, minimalist editorial illustration style, dark moody atmosphere, no objects no people no text no words no letters no typography no labels
+    preset: retro-crt
+    provider: flux
+    examples: []
+
+  - slug: crystal-amber
+    name: Isometric Crystal (amber)
+    description: Warm-toned twin of crystal-teal. Pre-redesign template.
+    site: audiocontrol
+    archived: true
+    tags:
+      - ai
+      - process
+      - systems
+      - architecture
+      - workflow
+      - geometric
+      - warm
+    prompt: Abstract geometric data visualization, single translucent isometric crystal structure of stacked layered panels, dominantly warm amber orange tones with subtle teal accent edges, fading into deep shadow background, thin glowing wireframe lines tracing through the structure, minimalist editorial illustration style, dark moody atmosphere, no objects no people no text no words no letters no typography no labels
+    preset: retro-crt
+    provider: flux
+    parent: crystal-teal
+    examples: []
+
+  - slug: stacked-panels-receding
+    name: Stacked Panels Receding
+    description: Isometric grid of translucent panels receding into deep teal shadow. Pre-redesign template.
+    site: audiocontrol
+    archived: true
+    tags:
+      - retrospective
+      - analysis
+      - process
+      - narrative
+      - geometric
+    prompt: Abstract geometric data visualization, isometric grid of stacked translucent panels receding into deep teal shadow, thin amber accent lines tracing a path through the panels, minimalist editorial illustration style, dark moody background, subtle depth, no objects no people no text no words no letters no typography no labels
+    preset: retro-crt
+    provider: flux
+    examples: []
+
+  - slug: cubiste-nouveau
+    name: cubiste-nouveau
+    description: Abstract irregular panel cluster — cubist meets art nouveau. Pre-redesign, user-authored fork.
+    site: audiocontrol
+    archived: true
+    tags: []
+    prompt: Irregular cluster of geometric panels at varied scales and orientations — a loose population of candidates under selection pressure, not arranged on a grid. Flat vector style with subtle gradients. Muted palette of deep indigo, teal, and warm off-white. Organic spacing, overlapping shapes at slight angles, some panels fading at their edges. Minimal lines, no text, no literal machinery or AI imagery. Slight grain texture. Evokes iteration, refinement, and organic variation without being on-the-nose.
+    preset: retro-crt
+    provider: dom-bake
+    examples:
+      - 9e1b865a-1e2a-49e0-b45b-8b9e0007e445

@@ -21,10 +21,14 @@ Automates the creation of feature images for blog posts, pages, and social media
 | 1. Infrastructure & Provider Interface | #32 | Complete |
 | 2. Text Overlay & Compositing | #33 | Complete |
 | 3. Claude Code Skill | #34 | Complete |
-| 4. Bake-off & Polish | #35 | Mostly Complete (.env.example pending) |
+| 4. Bake-off & Polish | #35 | Complete |
 | 5. Post-Processing Filter Pipeline | #47 | Complete |
-| 6. Preview Gallery & Iteration Workflow | #48 | Not Started |
+| 6. Preview Gallery & Iteration Workflow | #48 | Complete |
 | 7. Analog Display Filter Primitives | #49 | Not Started |
 | 8. 8-bit / Pixel Filter Primitives | #50 | Not Started |
 | 9. Cinematic / Editorial Filter Primitives | #51 | Not Started |
 | 10. Utility Filter Primitives | #52 | Not Started |
+| 11. Prompt Library & Fitness-Ranked Selection | #63 | Complete |
+| 12. DOM Preview & Commit-to-PNG | #67 | In Progress |
+| 13. Conversation Thread with Claude | #76 | In Progress |
+| 14. Multi-Site Feature Images | #85 | Not Started |

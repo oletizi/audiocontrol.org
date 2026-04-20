@@ -46,6 +46,7 @@ Two JSONL files back this pipeline (both gitignored):
 | `/feature-image-blog <post-path-or-url>` | Enqueue a workflow item for a blog post; hand off to the gallery |
 | `/feature-image-apply` | Process all `decided` workflow items; copy files, wire frontmatter, update blog index |
 | `/feature-image-help` | Show pipeline state: open workflows, recent generations, quick-start hints |
+| `/feature-image-prompts` | Browse the prompt template library by tag, fitness, or lineage |
 | `/feature-image <page-path>` | Older inline generation for non-blog pages (not part of the async pipeline) |
 
 `/feature-image-blog` is the primary entry point for blog posts. It accepts either a path (`src/pages/blog/my-post/index.md`) or a URL (`https://audiocontrol.org/blog/my-post/` — the slug is extracted automatically).
@@ -61,6 +62,21 @@ Features:
 - **History** — every generation with raw/filtered/composited variants, approve/reject, notes, "Copy as input" to re-seed the form
 - **Submit for workflow** — per-entry button (only visible when a workflow is active) that links the approved generation to the workflow
 
+## Prompt Template Library (Phase 11)
+
+A curated, evolving library of reusable prompt templates lives at `docs/feature-image-prompts.yaml`. Templates carry default preset/provider, tags for matching against blog posts, and a `parent` field for tracking lineage when you fork.
+
+**Fitness** — every generation can be rated 1-5 (star widget in the gallery). When a generation has a `templateSlug`, its rating contributes to that template's fitness score (recent average × usage-confidence). The gallery's template picker and `/feature-image-blog` suggestions weight by fitness, so good prompts surface, weak prompts fade. New templates float to the top until they have ≥1 rating so they accumulate signal.
+
+**Workflow:**
+1. Generate something you like in the gallery
+2. Click ★★★★★ to rate it
+3. Click "Save as template" to promote the prompt into the library (and back-link the entry as an example)
+4. Future workflows whose post tags overlap will auto-suggest this template
+5. To iterate, **Fork** an existing template, tweak the prompt, and let the fork accumulate its own fitness — Darwinian selection over time
+
+The library is **checked into git**; the history (`.feature-image-history.jsonl`) and pipeline (`.feature-image-pipeline.jsonl`) JSONL files are not.
+
 ## API Endpoints (Dev-Only)
 
 All under `/api/dev/feature-image/`. All return 404 in production.
@@ -69,9 +85,11 @@ All under `/api/dev/feature-image/`. All return 404 in production.
 |----------|---------|
 | `POST /generate` | Run the pipeline; append to history log; return the new log entry |
 | `GET /log` | Return the history log (most recent first) |
-| `POST /log` | Update an existing history entry (status / notes) |
+| `POST /log` | Update an existing history entry (status / notes / rating / templateSlug) |
 | `GET /workflow[?state=X]` | List workflow items, optionally filtered by state |
 | `POST /workflow` | Create / decide / cancel / apply-result on a workflow item |
+| `GET /templates[?tag=X][&includeArchived=true]` | List templates with computed fitness, ranked |
+| `POST /templates` | Create / update / fork / archive templates |
 
 ## CLI
 

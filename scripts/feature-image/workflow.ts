@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, '..', '..');
 const PIPELINE_PATH = join(rootDir, '.feature-image-pipeline.jsonl');
 
-export type WorkflowType = 'feature-image-blog';
+export type WorkflowType = 'feature-image-blog' | 'feature-image-iterate';
 export type WorkflowState = 'open' | 'decided' | 'applied' | 'cancelled';
 
 export interface WorkflowContext {
@@ -25,6 +25,22 @@ export interface WorkflowContext {
   suggestedPreset?: string;
   /** Any additional agent notes for the user */
   notes?: string;
+  // ── feature-image-iterate fields ────────────────────────────────────────
+  /** Root entry id of the thread (= lineage root) */
+  threadId?: string;
+  /** Source entry the user was viewing when they sent the iterate message */
+  sourceEntryId?: string;
+  /** The user's feedback text (also appended to the thread as a message) */
+  userFeedback?: string;
+  /** Snapshot of current preview state at send time */
+  snapshot?: {
+    title?: string;
+    subtitle?: string;
+    prompt?: string;
+    preset?: string;
+    filters?: Record<string, string>;
+    overlay?: boolean;
+  };
 }
 
 export interface WorkflowDecision {

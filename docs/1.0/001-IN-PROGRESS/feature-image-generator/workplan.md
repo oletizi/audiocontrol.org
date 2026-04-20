@@ -226,6 +226,217 @@ Filter and prompt iteration is currently CLI-driven and one-shot. A web UI with 
 - [ ] All filters from Phases 7-10 appear in the gallery filter selector
 - [ ] Documentation lists every filter with parameters and a short example
 
+## Phase 11: Prompt Library & Fitness-Ranked Selection (#63)
+
+**Deliverable:** A curated library of prompt templates with fitness scores, lineage, and selection mechanisms that let a shared visual identity evolve over time instead of being reinvented per post.
+
+### Motivation
+
+Every generation right now starts from either a hand-typed prompt or one the agent proposes from scratch. Reusable, on-brand prompts decay as session memory fades. This phase establishes a persistent, ranked library of templates that seeds every new workflow and lets good prompts be cultivated by artificial selection: rate generations, fitness rolls up to templates, forking creates variants, low-fitness templates get deprioritized.
+
+### Concepts
+
+- **Template** — a named prompt with metadata (description, tags, default preset/provider, link to parent template, back-references to successful generations)
+- **Fitness** — rolling aggregate of 1-5 user scores on generations that used the template (with a usage-count minimum to discount tiny-sample winners)
+- **Lineage** — `parent` field on each template; supports a visible tree view of how the library evolved
+- **Selection pressure** — gallery and `/feature-image-blog` weight suggestions by fitness × recency; low-fitness templates archive but stay forkable
+
+### Tasks
+
+- [x] Define template schema (`scripts/feature-image/templates.ts`): `{ slug, name, description, tags, prompt, preset?, provider?, parent?, archived?, examples: logEntryId[] }`
+- [x] Store library at `docs/feature-image-prompts.yaml` (hand-editable, checked in)
+- [x] Add `rating` field (1-5) to `LogEntry` schema; extend `POST /api/dev/feature-image/log` to accept rating updates
+- [x] Compute template fitness: `avg(ratings of generations that used this template, weighted by recency)` with a minimum usage count before a template can appear in the default picker
+- [x] API endpoints: `GET /api/dev/feature-image/templates`, `POST /api/dev/feature-image/templates` (create/update/fork/archive)
+- [x] Gallery UI:
+  - Template picker dropdown on the generate form (pre-fills prompt + preset + provider)
+  - Star-rating widget on each history entry (1-5)
+  - "Save as template" action on an approved entry (creates a new library entry; user names it)
+  - "Fork this template" action on a template (clones with parent reference; opens for edit)
+- [ ] Template list view with fitness scores and lineage indicators (deferred — `/feature-image-prompts` skill provides this for now; richer in-gallery UI later)
+- [x] Skill `/feature-image-prompts` — list templates by tag / fitness / lineage
+- [x] Update `/feature-image-blog` to auto-suggest top-N templates matching the post's tags (auto-tag derived from blog index `tags: []`, user can override)
+- [x] Seed library with templates extracted from the four applied generations on main (data-packet-network referencing the real log entry; crystal-teal/-amber and stacked-panels-receding as starting points awaiting first ratings)
+
+### Acceptance Criteria
+
+- [x] `docs/feature-image-prompts.yaml` exists with 4 seed templates (one with a real example reference)
+- [x] Gallery template picker pre-fills the form; submitting the form records which template was used so its fitness can update
+- [x] Rating a generation updates the corresponding template's fitness
+- [x] Forking a template creates a new one with `parent` set; parent chain is visible in the template list
+- [x] `/feature-image-blog` suggests matching templates from the library when tags overlap
+- [x] Archiving a template hides it from default suggestions but it stays forkable
+
+### Deferred to Future Phases
+
+- AI-assisted crossover (Claude combines two templates into a new one)
+- Pairwise tournament UI (user picks between two generations; ELO-style rating)
+- Auto-archival when fitness drops below threshold for N consecutive generations
+- Per-site-section template sets (e.g., different libraries for blog vs. device pages)
+
+## Phase 12: DOM Preview & Commit-to-PNG (#67)
+
+**Deliverable:** Interactive gallery preview where title/subtitle, filter chain, and overlay visibility are live-editable in HTML/CSS. Committing rasterizes the exact DOM via Playwright, making preview == bake and eliminating the satori/sharp dual-source-of-truth.
+
+### Motivation
+
+Today a gallery user can't tweak title/subtitle or toggle the overlay without regenerating. The CSS preview and the baked PNG are also produced by two different code paths (DOM vs. satori+sharp), so they can diverge visually. Moving the preview into live DOM and rasterizing that same DOM on commit solves both problems at once.
+
+### Tasks
+
+- [ ] Build interactive preview component in the gallery
+  - [ ] Replace static composited `<img>` with a `<div class="og-preview">` layering the raw AI image + CSS filter overlays + positioned title/subtitle block
+  - [ ] Text overlay: editable `<input>` (title) and `<textarea>` (subtitle) positioned inside the preview
+  - [ ] Toggle: overlay on/off checkbox (hides the text block without destroying content)
+  - [ ] Per-filter toggles (scanlines, grain, vignette, grade, phosphor) + preset quick-select
+  - [ ] All controls drive CSS variables on the preview element; no backend calls during iteration
+- [ ] Add CSS implementations of each filter primitive matching existing sharp filters directionally:
+  - [ ] scanlines (repeating-linear-gradient overlay)
+  - [ ] vignette (radial-gradient overlay)
+  - [ ] grain (tiled noise PNG overlay)
+  - [ ] grade (`filter: brightness contrast saturate hue-rotate`)
+  - [ ] phosphor (`filter: blur`)
+- [ ] Build bake route `/dev/feature-image-bake`
+  - [ ] Accepts query params: `entry`, `format` (og|youtube|instagram), `title`, `subtitle`, `preset`, filter chain, `overlay` bool
+  - [ ] Server-renders a single variant at exact pixel dims using the shared preview stylesheet
+  - [ ] 404 in production (`import.meta.env.PROD`)
+- [ ] Build commit endpoint `POST /api/dev/feature-image/recomposite`
+  - [ ] Request: `{ entryId, title, subtitle, preset, filters, overlay, formats[] }`
+  - [ ] Launches Playwright headless (already in devDeps), navigates to bake route per format, screenshots at viewport size, writes `public/images/generated/<id>-<format>.png`
+  - [ ] Appends a new log entry with references to the rebaked outputs (preserves history of iterations)
+- [ ] Wire "Commit" button on each gallery item to call the recomposite endpoint
+  - [ ] Show in-flight state + success/error
+  - [ ] Refresh gallery on success so new bake shows as latest log entry
+- [ ] Manual verification
+  - [ ] Editing title/subtitle updates preview with zero network traffic
+  - [ ] Toggling filters updates preview immediately
+  - [ ] Commit produces PNGs that match what the preview showed
+  - [ ] All three formats (og, youtube, instagram) render correctly
+
+### Acceptance Criteria
+
+- [ ] Gallery preview reflects title/subtitle/filter edits in real time with no backend round-trip
+- [ ] Overlay toggle hides/shows text without affecting the background
+- [ ] Each filter primitive is independently toggleable in the preview and matches its sharp counterpart directionally
+- [ ] Commit button produces PNG files on disk via Playwright DOM screenshot
+- [ ] All three formats (1200×630, 1280×720, 1080×1080) bake correctly
+- [ ] Preview and bake use the same stylesheet — no visual divergence
+- [ ] Production build does not expose the bake route or the recomposite endpoint
+
+### Deferred
+
+- Retiring satori/sharp overlay path from the initial-generation pipeline (first-time generation still uses the existing bake; only gallery-driven recomposition uses DOM rasterization in this phase)
+- Shareable preview permalinks (a URL that replays a specific preview state)
+
+## Phase 13: Conversation Thread with Claude (#76)
+
+**Deliverable:** The gallery becomes a conversation surface. Each focused entry has a thread where the user types natural-language feedback ("too literal", "try amber instead") and Claude responds asynchronously with new generations plus commentary. Iterations form a tree via parent/child lineage, so the thread persists across the chain.
+
+### Motivation
+
+Today's iteration loop is one-way: the user adjusts prompt/preset/filters and re-generates, and a single history log captures the outcomes. There's no record of *why* an iteration was requested, and no way to ask Claude for help when the feedback isn't directly actionable by tweaking selectors ("this doesn't feel like it matches the post's tone — can you try something different?"). Phase 13 makes the tool what the user actually wants it to be: a dialogue with Claude about getting to the right answer.
+
+### Concepts
+
+- **Thread** — a sequence of messages anchored to a root log entry. Any entry in the parent-child lineage rooted at that entry sees the same thread.
+- **Message** — `{ role: 'user' | 'assistant', timestamp, text, logEntryId?, snapshot? }`. User messages carry a snapshot of the current edits (title, subtitle, prompt, preset, filters, overlay). Assistant messages may reference a newly-generated log entry.
+- **Lineage** — each `LogEntry` gets an optional `parentEntryId` field; iterations set this to the entry they were generated from. The thread follows the root of the lineage.
+- **Pending iteration** — a workflow item of type `feature-image-iterate` that points at a thread + the last user message. Claude picks it up via a skill and responds.
+
+### Tasks
+
+- [ ] Add `parentEntryId?: string` to `LogEntry` schema; persist it in the recomposite endpoint and any new iterate endpoint
+- [ ] Define `Message` and thread persistence (`scripts/feature-image/threads.ts`): JSONL at `.feature-image-threads.jsonl`, append-only messages keyed by `threadId` (= root entry id of the lineage)
+- [ ] API endpoints:
+  - [ ] `GET /api/dev/feature-image/threads?entryId=<id>` — returns the thread for the lineage containing that entry (resolves root via parent chain), oldest-message-first
+  - [ ] `POST /api/dev/feature-image/threads` with `action: 'append-message'` — appends a user message and enqueues a `feature-image-iterate` workflow item
+- [ ] Gallery thread panel (focus mode only):
+  - [ ] Message list rendered in order with role styling
+  - [ ] Composer textarea + Send button
+  - [ ] Inline thumbnail for any assistant message referencing a log entry (click → focus that entry)
+  - [ ] Polling every 5-10s while focus mode is active to pull new assistant messages
+  - [ ] "Waiting for Claude…" indicator on the user's pending last message
+- [ ] New skill `.claude/skills/feature-image-iterate/` — invoked by the agent to drain pending `feature-image-iterate` workflow items:
+  - [ ] Reads the thread, the snapshot on the latest user message, and the source log entry
+  - [ ] Proposes a prompt adjustment (or a preset/filter change) based on the feedback
+  - [ ] Invokes the generation pipeline; the new log entry gets `parentEntryId` set to the source entry
+  - [ ] Appends an `assistant` message to the thread referencing the new entry + a short explanation of what changed
+  - [ ] Marks the workflow item applied
+- [ ] Update the right-drawer workflow panel to show iterate items distinctly from `feature-image-blog` items (different group label)
+- [ ] Extend `/feature-image-help` to report pending iterate workflow count alongside blog workflow count
+
+### Acceptance Criteria
+
+- [ ] User can open focus mode on any entry and see a thread (empty string if no messages yet)
+- [ ] Sending a message appends to the thread immediately and enqueues a pending iterate workflow item
+- [ ] Running the iterate skill in Claude Code generates a new entry with `parentEntryId` set to the source, appends an assistant message to the thread, and the workflow moves to applied
+- [ ] The gallery polls and renders the assistant response without a manual reload
+- [ ] Opening any entry in a lineage (root or child) shows the same thread
+- [ ] Workflow panel distinguishes iterate items from feature-image-blog items
+
+### Deferred to Future Phases
+
+- Server-sent-events for instant assistant-message delivery (polling is fine for v1)
+- Branching threads (user forks a conversation at a specific message)
+- Assistant text-only messages (Claude asks a clarifying question without generating)
+- Thread search across history
+- Per-message ratings (thumbs up/down on a Claude response)
+
+## Phase 14: Multi-Site Feature Images (#85)
+
+**Deliverable:** The feature-image generator works for both sites in the repo (audiocontrol and editorialcontrol) with each site's native brand — correct fonts, palette, logo, and brand text — instead of hard-coded audiocontrol styling. Gallery lets the user choose a target site per generation and per focused entry; applying a workflow routes images into the correct site's public directory and wires the correct frontmatter.
+
+### Motivation
+
+Main merged a major architectural split: the repo now hosts `src/sites/audiocontrol/` and `src/sites/editorialcontrol/` as sibling sites, each with its own `brand.ts`, typography, palette, layouts, and `public/`. The feature-image generator predates the split and hard-codes audiocontrol's brand (JB Mono, teal `#2fb8a8`, `/favicon.svg`, "audiocontrol.org"). Without this phase, editorialcontrol blog posts can't use the gallery — they'd come out looking like audiocontrol posts.
+
+### Concepts
+
+- **Site-aware bake** — the `OGPreview` component and bake route read site brand tokens from `src/sites/<site>/brand.ts` (via the shared `Brand` interface in `src/shared/brand.ts`) and set CSS custom properties that drive the overlay's fonts and colors.
+- **Site-aware routing** — the gallery's Generate form and the per-entry focus panel carry a `site` value that flows through `/api/dev/feature-image/generate` and `/recomposite`. `/feature-image-blog` infers the site from the target post's path (`src/sites/<site>/pages/blog/<slug>/index.md`). `/feature-image-apply` copies approved images into `src/sites/<site>/public/images/blog/<slug>/`.
+- **Shared dev tooling** — the dev-only gallery, API endpoints, and scripts stay outside site subtrees (at repo root or under `src/shared/dev/`) so both sites use the same workbench.
+- **Per-site templates (optional)** — `PromptTemplate` gains an optional `site: 'audiocontrol' | 'editorialcontrol' | null` field. `null` means "works for any site". The picker filters by current-site + null. Fitness is scoped per-site so cross-site ratings don't pollute each other.
+
+### Tasks
+
+- [ ] **Audit placement after the main merge.** Determine whether the gallery, API endpoints, OGPreview component, bake route, and og-preview.css should:
+  - live at the repo root (shared) under a new `src/shared/dev/` tree, or
+  - live under one site's subtree (audiocontrol, since it's the workbench) and serve both
+  - whichever Astro's multi-site config supports with least friction
+- [ ] **Add `site` parameter to the pipeline:**
+  - `OGPreview.astro` accepts `site: 'audiocontrol' | 'editorialcontrol'` prop (default `audiocontrol` for backwards compat)
+  - Component reads `src/sites/<site>/brand.ts` at render time and emits CSS custom properties (`--og-primary`, `--og-foreground`, `--og-panel-bg`, `--og-font-display`, `--og-font-body`) the stylesheet consumes
+  - Bake route `/dev/feature-image-bake` accepts `?site=<slug>` query param
+  - `/api/dev/feature-image/generate` and `/recomposite` accept `site` in the body and persist it on the log entry
+- [ ] **Rewrite `og-preview.css`** to use brand custom properties instead of literal colors/fonts. Typography: `font-family: var(--og-font-display)` for title, `var(--og-font-body)` for subtitle. Panel/accent colors come from the same vars. Behavior stays directionally identical when site=audiocontrol.
+- [ ] **Extend `LogEntry` schema** with optional `site: 'audiocontrol' | 'editorialcontrol'`. Default to `audiocontrol` if absent (pre-Phase-14 entries).
+- [ ] **Gallery UI site selector:**
+  - Generate drawer gets a Site field (radio or segmented control) above the Prompt. Defaults to `audiocontrol`; remembered via localStorage.
+  - Focused entry shows which site it's for; focus-mode preview controls include a small Site switcher so the user can re-bake the same raw image under a different site's brand.
+  - Template grid filters by current site + null-site templates.
+- [ ] **Extend `/feature-image-blog` skill:** infer `site` from the post path (first path segment after `src/sites/`). Pass into the workflow context.
+- [ ] **Extend `/feature-image-apply` skill:** use `site` from the workflow context or the approved log entry to route output into `src/sites/<site>/public/images/blog/<slug>/` and update the correct site's blog index + post frontmatter.
+- [ ] **Extend `PromptTemplate` schema** with optional `site` field; update the YAML seeds + templates endpoint + gallery picker filter.
+- [ ] **Seed editorialcontrol templates** — hand-author 2-3 starter templates that reflect editorialcontrol's brand (serif display, editorial feel) so the picker has something sensible on day one.
+- [ ] **Dogfood on one editorialcontrol post** — generate, iterate, approve, apply. Verify the baked PNG uses Fraunces display + chartreuse accent + editorialcontrol branding and lands in the correct directory.
+
+### Acceptance Criteria
+
+- [ ] `OGPreview` and the bake route produce visibly different images for `site=audiocontrol` vs `site=editorialcontrol` from the same raw background
+- [ ] Generated images for audiocontrol are visually unchanged from pre-Phase-14 behavior
+- [ ] Gallery's Generate form has a Site selector; selection persists between sessions
+- [ ] Focused entry displays its site and lets the user switch sites for recomposition
+- [ ] `/feature-image-blog` correctly infers the site from the post path
+- [ ] `/feature-image-apply` writes to the correct `src/sites/<site>/public/images/blog/<slug>/` directory
+- [ ] Template picker filters templates by the currently-selected site
+- [ ] Log entries persist `site` alongside prompt/preset/filters
+
+### Deferred
+
+- Automatic palette inference for the overlay panel from the site's brand (e.g. panel-bg derived from `--card` token) — start with hand-tuned per-site overrides
+- Visual cross-site A/B comparison in the gallery (show the same raw image baked under both sites side by side)
+- Per-site commit hook that regenerates all open workflows when brand tokens change
+
 ## File Structure
 
 ```

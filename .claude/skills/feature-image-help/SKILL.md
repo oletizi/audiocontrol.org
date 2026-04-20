@@ -37,8 +37,9 @@ No arguments.
      - `GET http://localhost:4321/api/dev/feature-image/workflow` (or whatever port `npm run dev` reported)
    - If the server isn't running, fall back to reading `.feature-image-pipeline.jsonl` directly
 
-3. **Report workflow items, grouped by state:**
-   - **Open** (awaiting user in gallery) — show slug, workflow id (first 8), suggested prompt snippet
+3. **Report workflow items, grouped by state AND type:**
+   - **Open · blog** (awaiting user in gallery) — show slug, workflow id (first 8), suggested prompt snippet
+   - **Open · iterate** (awaiting `/feature-image-iterate`) — show source entry id (first 8), user feedback snippet
    - **Decided** (awaiting apply) — show slug, workflow id, approved log entry id
    - **Applied** (recent, last 5) — show slug, files changed
    - **Cancelled** (recent, last 5) — show slug, why if annotated
@@ -53,6 +54,8 @@ No arguments.
    |-------|---------|
    | `/feature-image-blog <post-path-or-url>` | Enqueue a workflow item for a blog post |
    | `/feature-image-apply` | Process decided workflows — copy images, update frontmatter + index |
+   | `/feature-image-iterate` | Drain iterate requests from the gallery thread; respond with new generations + commentary |
+   | `/feature-image-prompts` | Browse the prompt library by tag / fitness / lineage |
    | `/feature-image-help` | This skill |
    | `/feature-image <page-path>` | Older inline generation for non-blog pages |
 
