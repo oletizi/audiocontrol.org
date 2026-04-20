@@ -461,13 +461,13 @@ No new user-invocable skill. `/editorial-cross-link-review` is extended: when it
 #### Implementation
 
 - [x] Rename `/editorial-review` skill to `/editorial-status` (update `.claude/skills/editorial-review/` → `.claude/skills/editorial-status/`, update skill frontmatter, update `/editorial-help` to list the new name)
-- [ ] Create `scripts/lib/editorial-review/types.ts` with the union and interfaces above
-- [ ] Create `scripts/lib/editorial-review/pipeline.ts` with `appendHistory()`, `upsertWorkflow()`, `readWorkflow()`, `listOpen()`, `readVersions()` — all JSONL, append-only, mirrors `scripts/lib/feature-image/pipeline.ts`
-- [ ] Create `scripts/lib/editorial-review/index.ts` barrel export
-- [ ] Add `.editorial-draft-history.jsonl` and `.editorial-draft-pipeline.jsonl` as tracked files (empty, not gitignored)
-- [ ] Create `src/sites/<site>/pages/dev/editorial-review/[slug].astro` route stubs (both sites) — 404s in prod via the existing dev-guard pattern used by feature-image-preview
-- [ ] Create server endpoints under `src/sites/<site>/pages/dev/api/editorial-review/`: `annotate.ts`, `annotations.ts`, `decision.ts` — all 404 in prod
-- [ ] Unit tests: state-machine transitions (valid + invalid), history append/read round-trip, workflow upsert idempotence
+- [x] Create `scripts/lib/editorial-review/types.ts` with the union and interfaces above
+- [x] Create `scripts/lib/editorial-review/pipeline.ts` with create/transition/append-version/append-annotation/read* — JSONL, first-arg rootDir for testability (mirrors the `scripts/lib/editorial/calendar.ts` convention)
+- [x] Create `scripts/lib/editorial-review/index.ts` barrel export (re-exports types, pipeline, handlers)
+- [x] Add `.editorial-draft-history.jsonl` and `.editorial-draft-pipeline.jsonl` as tracked files (empty, not gitignored; gitignore block updated to note the intentional non-ignore)
+- [x] Create `src/sites/<site>/pages/dev/editorial-review/[slug].astro` route stubs (both sites) — 404 in prod via `import.meta.env.PROD` guard (matches `feature-image-preview.astro` pattern)
+- [x] Create server endpoints under `src/sites/<site>/pages/api/dev/editorial-review/`: `annotate.ts`, `annotations.ts`, `decision.ts` — all 404 in prod. Shared handler logic in `scripts/lib/editorial-review/handlers.ts`
+- [x] Unit tests: state-machine transitions (valid + invalid), history append/read round-trip, workflow create idempotence, annotation round-trip with version filtering, handler validation + success + 404/409 paths (36 tests total)
 
 **Acceptance Criteria**
 
