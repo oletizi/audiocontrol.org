@@ -1,6 +1,6 @@
 # Editorial Calendar
 
-**Status:** All Phases Complete (ready for `/feature-complete`)
+**Status:** Phases 1-7 Complete; Phases 8-12 In Progress (editorial-review extension)
 **Feature Branch:** `feature/editorial-calendar`
 **GitHub Issue:** oletizi/audiocontrol.org#29 (parent)
 **Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7)
@@ -8,6 +8,8 @@
 ## Overview
 
 Structured editorial calendar that tracks content through its lifecycle (idea through publication), automates post scaffolding, and wires into the automated-analytics feature to create a virtuous content improvement cycle.
+
+Phases 8-12 extend the feature with `editorial-review` — an analog of the feature-image-generator pipeline for prose. Dev-only review surface, annotate-and-iterate loop driven by Claude Code + the voice skills, short-form social post drafting, and a feedback signal that identifies which voice-skill principles produce the most drift.
 
 ## Phase Status
 
@@ -20,11 +22,17 @@ Structured editorial calendar that tracks content through its lifecycle (idea th
 | 5 | Subreddit Tracking & Cross-posting Opportunities | Complete |
 | 6 | YouTube as First-Class Content + Cross-link Audit | Complete |
 | 7 | Tool Cross-link Audit | Complete |
+| 8 | Draft Review Pipeline + Surface Scaffolding | Planned |
+| 9 | Longform Annotation UI | Planned |
+| 10 | Orchestration Skills for the Review Loop | Planned |
+| 11 | Short-form Review (Social Posts) | Planned |
+| 12 | Voice-Library Feedback Signal | Planned |
 
 ## Dependencies
 
 - `automated-analytics` (oletizi/audiocontrol.org#30) — required for Phase 3
 - `feature-image-generator` (oletizi/audiocontrol.org#31) — optional integration
+- Voice skills (`audiocontrol-voice`, `editorialcontrol-voice`, installed in `.claude/skills/`) — required for Phases 10-11
 
 ## Documentation
 
