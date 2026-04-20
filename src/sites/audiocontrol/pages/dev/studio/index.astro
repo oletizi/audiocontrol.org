@@ -1,0 +1,338 @@
+---
+/*
+ * /dev/studio — placeholder landing for Phase 16 Commit 1.
+ *
+ * Purpose: verify the StudioLayout chrome + studio-tokens.css primitives
+ * render as intended. Real gallery UI lands in Commit 3. Until then this
+ * page doubles as a visual spec sheet showing every primitive in use.
+ *
+ * Dev-only — returns 404 in production builds.
+ */
+
+export const prerender = false;
+
+import StudioLayout from '../../../layouts/StudioLayout.astro';
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+---
+
+<StudioLayout title="FI · Studio · Foundation placeholder">
+  <section class="studio-landing">
+    <div class="studio-landing__masthead">
+      <span class="studio-kicker">Foundation · Commit 1 of 6</span>
+      <h1 class="studio-landing__title">
+        Feature Image <span class="phosphor">Studio</span>
+      </h1>
+      <p class="studio-landing__lede">
+        The workbench is being rebuilt. The chrome you see above is the
+        new aesthetic foundation: warm-ink bezels, numbered part-number
+        tabs, and a target readout pulsing in the live accent colour.
+        Routes below come online over the next five commits.
+      </p>
+    </div>
+
+    <hr class="rule-ticked" />
+
+    <div class="studio-landing__grid">
+      <article class="studio-landing__panel studio-regmark">
+        <header class="studio-landing__panel-head">
+          <span class="studio-kicker studio-kicker--muted">Sheet 01</span>
+          <h2 class="studio-landing__panel-title">Status stamps</h2>
+        </header>
+        <div class="studio-landing__stamp-row">
+          <span class="studio-stamp studio-stamp--approved">
+            <span class="studio-stamp__led" aria-hidden="true"></span>
+            <span>Approved</span>
+          </span>
+          <span class="studio-stamp studio-stamp--generated">
+            <span>Generated</span>
+          </span>
+          <span class="studio-stamp studio-stamp--rejected">
+            <span>Rejected</span>
+          </span>
+          <span class="studio-stamp studio-stamp--target">
+            <span class="studio-stamp__led" aria-hidden="true"></span>
+            <span>Target</span>
+          </span>
+        </div>
+      </article>
+
+      <article class="studio-landing__panel studio-regmark">
+        <header class="studio-landing__panel-head">
+          <span class="studio-kicker studio-kicker--muted">Sheet 02</span>
+          <h2 class="studio-landing__panel-title">DIP-switch rows</h2>
+        </header>
+        <ul class="studio-spec">
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Format</span>
+            <span class="studio-spec__value studio-spec__value--phosphor">og · 1200×630</span>
+            <span class="studio-spec__unit">px</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Preset</span>
+            <span class="studio-spec__value">retro-crt</span>
+            <span class="studio-spec__unit">bank 3</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Position</span>
+            <span class="studio-spec__value">left-two-thirds</span>
+            <span class="studio-spec__unit">anchor</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Duration</span>
+            <span class="studio-spec__value">4 846</span>
+            <span class="studio-spec__unit">ms</span>
+          </li>
+        </ul>
+      </article>
+
+      <article class="studio-landing__panel studio-regmark">
+        <header class="studio-landing__panel-head">
+          <span class="studio-kicker studio-kicker--muted">Sheet 03</span>
+          <h2 class="studio-landing__panel-title">Numbered sequence</h2>
+        </header>
+        <ol class="studio-seq">
+          <li>Foundation — tokens + layout chrome.</li>
+          <li>Progress tape primitive.</li>
+          <li>Gallery route with stamped status chips.</li>
+          <li>Focus canvas with DIP-switch panel.</li>
+          <li>Generate / templates / help.</li>
+          <li>Cutover — redirect old route, delete the 4000-line file.</li>
+        </ol>
+      </article>
+
+      <article class="studio-landing__panel studio-regmark">
+        <header class="studio-landing__panel-head">
+          <span class="studio-kicker studio-kicker--muted">Sheet 04</span>
+          <h2 class="studio-landing__panel-title">Readouts</h2>
+        </header>
+        <div class="studio-landing__readout-row">
+          <div class="studio-readout">
+            <span class="studio-readout__kicker">Elapsed</span>
+            <span class="studio-readout__value studio-readout__value--phosphor">0:04</span>
+          </div>
+          <div class="studio-readout">
+            <span class="studio-readout__kicker">ETA</span>
+            <span class="studio-readout__value">~0:06</span>
+          </div>
+          <div class="studio-readout">
+            <span class="studio-readout__kicker">Stage</span>
+            <span class="studio-readout__value">02/03</span>
+          </div>
+          <div class="studio-readout studio-readout--inline">
+            <span class="studio-readout__kicker">Journal</span>
+            <span class="studio-readout__value">journal/history/ · 12 entries</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="studio-landing__panel studio-landing__panel--framed studio-framed">
+        <header class="studio-landing__panel-head">
+          <span class="studio-kicker studio-kicker--muted">Sheet 05</span>
+          <h2 class="studio-landing__panel-title">Corner-bracketed frame</h2>
+        </header>
+        <p class="studio-landing__placeholder">
+          Image hero will live in this kind of frame in Commit 4.
+          Amber corner brackets read as lab-bench equipment; registration
+          marks on the other panels read as printed proof-sheets.
+        </p>
+      </article>
+
+      <article class="studio-landing__panel">
+        <header class="studio-landing__panel-head">
+          <span class="studio-kicker studio-kicker--muted">Sheet 06</span>
+          <h2 class="studio-landing__panel-title">Paper-ruled backdrop</h2>
+        </header>
+        <div class="studio-paper studio-landing__paper">
+          <p>This is the register for the thread composer. Operator
+          comments sit on the ruled lines like margin notes in a
+          service manual.</p>
+          <p>Horizontal rules run at 1.5 rem — rhythm matches the
+          body font's baseline.</p>
+        </div>
+      </article>
+
+      <article class="studio-landing__panel studio-regmark">
+        <header class="studio-landing__panel-head">
+          <span class="studio-kicker studio-kicker--muted">Sheet 07</span>
+          <h2 class="studio-landing__panel-title">Buttons + inputs</h2>
+        </header>
+        <div class="studio-landing__form">
+          <label class="studio-label" for="demo-input">Prompt</label>
+          <textarea
+            id="demo-input"
+            class="studio-textarea"
+            rows="3"
+            placeholder="Abstract oscilloscope waveform, phosphor amber on warm-ink background, no text, no words, no letters, no typography"
+          ></textarea>
+          <div class="studio-landing__btn-row">
+            <button type="button" class="studio-btn studio-btn--primary">Generate</button>
+            <button type="button" class="studio-btn">Recomposite</button>
+            <button type="button" class="studio-btn studio-btn--danger">Reject</button>
+            <button type="button" class="studio-btn" disabled>Disabled</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="studio-landing__panel studio-landing__panel--note">
+        <header class="studio-landing__panel-head">
+          <span class="studio-kicker">Next up</span>
+          <h2 class="studio-landing__panel-title">Progress tape</h2>
+        </header>
+        <p class="studio-landing__placeholder">
+          Commit 2 installs the bottom reel-to-reel progress tape. Every
+          long-running operation — generate, recomposite, approve,
+          apply — will route through it. Until then the bottom rule you
+          see is the idle mount point.
+        </p>
+      </article>
+    </div>
+
+    <footer class="studio-landing__footer">
+      <span class="studio-readout studio-readout--inline">
+        <span class="studio-readout__kicker">Part</span>
+        <span class="studio-readout__value">FI-STUDIO/REV-16.0/COMMIT-01</span>
+      </span>
+      <span class="studio-readout studio-readout--inline">
+        <span class="studio-readout__kicker">Status</span>
+        <span class="studio-readout__value studio-readout__value--phosphor">Foundation online</span>
+      </span>
+    </footer>
+  </section>
+</StudioLayout>
+
+<style is:global>
+  .studio-landing {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 3rem;
+  }
+
+  .studio-landing__masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem 0;
+  }
+
+  .studio-landing__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 3.75rem);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .studio-landing__lede {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+    max-width: 42rem;
+    margin: 0;
+  }
+
+  .studio-landing__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .studio-landing__panel {
+    padding: 1.25rem 1.25rem 1.5rem;
+    background: hsl(var(--studio-surface-1));
+    border: 1px solid hsl(var(--border));
+    border-radius: 1px;
+  }
+
+  .studio-landing__panel--framed {
+    background: hsl(var(--studio-surface-pressed));
+    min-height: 8rem;
+  }
+
+  .studio-landing__panel--note {
+    background:
+      linear-gradient(180deg, hsl(var(--primary) / 0.04) 0%, hsl(var(--studio-surface-1)) 100%);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+
+  .studio-landing__panel-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .studio-landing__panel-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground));
+    margin: 0;
+  }
+
+  .studio-landing__stamp-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .studio-landing__readout-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .studio-landing__placeholder {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .studio-landing__paper {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    color: hsl(var(--foreground));
+    min-height: 5rem;
+  }
+
+  .studio-landing__paper p {
+    margin: 0 0 0.5rem;
+    line-height: 1.5rem;
+  }
+
+  .studio-landing__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .studio-landing__btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .studio-landing__footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .studio-landing__footer .studio-readout {
+    flex: 1 1 auto;
+  }
+</style>
