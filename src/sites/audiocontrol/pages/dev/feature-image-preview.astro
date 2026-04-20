@@ -2969,6 +2969,14 @@ const siteBrands = {
       const starsHtml = '<span class="stars">' + [1,2,3,4,5].map(n =>
         `<button type="button" class="${entry.rating && entry.rating >= n ? 'on' : ''}" data-action="rate" data-rate="${n}" title="Rate ${n} of 5 — feeds template fitness scoring">★</button>`
       ).join('') + '</span>';
+      const isApproved = entry.status === 'approved';
+      const isRejected = entry.status === 'rejected';
+      const approveBtn = isApproved
+        ? `<button type="button" class="btn-success-ghost" disabled title="Already approved. Focus the entry and use Commit to re-bake with fresh edits; a fresh generated entry can then be approved.">Approved ✓</button>`
+        : `<button type="button" class="btn-success-ghost" data-action="approve" title="Bake all three PNG variants (og, youtube, instagram) with your current edits, mark as approved, and enshrine for Claude to apply.">Approve</button>`;
+      const rejectBtn = isRejected
+        ? `<button type="button" class="btn-danger-ghost" disabled title="Already rejected.">Rejected ✗</button>`
+        : `<button type="button" class="btn-danger-ghost" data-status="rejected" title="Mark this generation as rejected">Reject</button>`;
 
       div.innerHTML = `
         <div class="card-compact">
@@ -2984,8 +2992,8 @@ const siteBrands = {
             </div>
             <div class="card-actions">
               <button type="button" class="btn-focus" data-action="focus" title="Open in focus mode — edit text, filters, and bake PNGs">Focus ⟶</button>
-              <button type="button" class="btn-success-ghost" data-action="approve" title="Bake all three PNG variants (og, youtube, instagram) with your current edits, mark as approved, and enshrine for Claude to apply.">Approve</button>
-              <button type="button" class="btn-danger-ghost" data-status="rejected" title="Mark this generation as rejected">Reject</button>
+              ${approveBtn}
+              ${rejectBtn}
               <div class="dropdown">
                 <button type="button" class="dropdown-toggle" data-action="toggle-menu" aria-label="More" title="More actions">⋯</button>
                 <div class="dropdown-menu">
@@ -3016,6 +3024,14 @@ const siteBrands = {
       ).join('') + '</span>';
       const err = entry.error ? `<div class="err-line">${escapeHtml(entry.error)}</div>` : '';
       const prompt = entry.prompt ? `<div class="prompt-line">${escapeHtml(entry.prompt)}</div>` : '';
+      const isApproved = entry.status === 'approved';
+      const isRejected = entry.status === 'rejected';
+      const approveBtn = isApproved
+        ? `<button type="button" class="btn-success-ghost" disabled title="Already approved. Commit any fresh edits to produce a new generated entry, then approve that one.">Approved ✓</button>`
+        : `<button type="button" class="btn-success-ghost" data-action="approve" title="Bake all three PNG variants (og, youtube, instagram) with your current edits, mark as approved, and enshrine for Claude to apply.">Approve</button>`;
+      const rejectBtn = isRejected
+        ? `<button type="button" class="btn-danger-ghost" disabled title="Already rejected.">Rejected ✗</button>`
+        : `<button type="button" class="btn-danger-ghost" data-status="rejected" title="Mark this generation as rejected">Reject</button>`;
       const notesInput = `
         <div class="note-edit">
           <label class="note-label">Note</label>
@@ -3047,8 +3063,8 @@ const siteBrands = {
           </div>
           ${notesInput}
           <div class="btn-row">
-            <button type="button" class="btn-success-ghost" data-action="approve" title="Bake all three PNG variants (og, youtube, instagram) with your current edits, mark as approved, and enshrine for Claude to apply.">Approve</button>
-            <button type="button" class="btn-danger-ghost" data-status="rejected" title="Mark this generation as rejected">Reject</button>
+            ${approveBtn}
+            ${rejectBtn}
             <button type="button" class="btn-ghost" data-action="copy" title="Copy this entry's prompt, provider, preset and filters into the Generate form">Copy as input</button>
             <button type="button" class="btn-ghost" data-action="save-template" title="Save this prompt as a reusable template in the library">Save as template</button>
           </div>
