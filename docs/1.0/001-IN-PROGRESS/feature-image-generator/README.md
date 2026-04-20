@@ -29,6 +29,6 @@ Automates the creation of feature images for blog posts, pages, and social media
 | 9. Cinematic / Editorial Filter Primitives | #51 | Not Started |
 | 10. Utility Filter Primitives | #52 | Not Started |
 | 11. Prompt Library & Fitness-Ranked Selection | #63 | Complete |
-| 12. DOM Preview & Commit-to-PNG | #67 | In Progress |
-| 13. Conversation Thread with Claude | #76 | In Progress |
-| 14. Multi-Site Feature Images | #85 | Not Started |
+| 12. DOM Preview & Commit-to-PNG | #67 | Complete |
+| 13. Conversation Thread with Claude | #76 | Complete |
+| 14. Multi-Site Feature Images | #85 | Complete |
