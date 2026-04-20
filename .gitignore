@@ -40,9 +40,9 @@ public/images/generated/
 .playwright-mcp/
 redesign-*.png
 
-# (note: .feature-image-history.jsonl, .feature-image-pipeline.jsonl,
-# and .feature-image-threads.jsonl are intentionally NOT gitignored —
-# they hold the generation history, workflow-decision audit trail, and
-# Phase 13 iteration conversation that Phase 11 fitness scoring and
-# future analysis will compute from. Lose them = lose the design-system
-# evolution.)
+# (Phase 15 migration note: the generation history, workflow pipeline,
+# and thread messages used to live in .feature-image-history.jsonl,
+# .feature-image-pipeline.jsonl, and .feature-image-threads.jsonl at
+# the repo root. They now live as per-entry JSON files under journal/.
+# The journal/ tree is intentionally NOT gitignored — Phase 11 fitness
+# scoring and the lineage graph depend on it.)
