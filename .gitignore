@@ -38,3 +38,8 @@ public/images/generated/
 # and workflow-decision audit trail that the Phase 11 prompt library
 # will compute fitness scores from. Lose them = lose the design-system
 # evolution.)
+#
+# Same for .editorial-draft-history.jsonl and .editorial-draft-pipeline.jsonl —
+# intentionally tracked. They hold the review workflow's state machine,
+# version history, and annotation log. The editorial-review Phase 12
+# feedback signal (voice-drift aggregation) is computed from them.
