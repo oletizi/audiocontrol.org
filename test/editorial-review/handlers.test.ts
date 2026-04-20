@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mkdtempSync, rmSync } from 'fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { createWorkflow } from '../../scripts/lib/editorial-review/pipeline.js';
@@ -10,6 +10,7 @@ import {
   handleDecision,
   handleGetWorkflow,
   handleListAnnotations,
+  handleStartLongform,
   lineDiff,
 } from '../../scripts/lib/editorial-review/handlers.js';
 
@@ -282,5 +283,67 @@ describe('handleDecision', () => {
   it('returns 400 for missing fields', () => {
     expect(handleDecision(root, { workflowId }).status).toBe(400);
     expect(handleDecision(root, { to: 'in-review' }).status).toBe(400);
+  });
+});
+
+describe('handleStartLongform', () => {
+  function seedBlogFile(site: string, slug: string, content: string): string {
+    const dir = join(root, 'src', 'sites', site, 'pages', 'blog', slug);
+    mkdirSync(dir, { recursive: true });
+    const path = join(dir, 'index.md');
+    writeFileSync(path, content, 'utf-8');
+    return path;
+  }
+
+  it('reads the blog file and creates a longform workflow', () => {
+    seedBlogFile('editorialcontrol', 'new-draft', '# A draft\n\nBody.');
+    const result = handleStartLongform(root, {
+      site: 'editorialcontrol',
+      slug: 'new-draft',
+    });
+    expect(result.status).toBe(200);
+    const body = result.body as {
+      workflow: { slug: string; contentKind: string };
+      existing: boolean;
+    };
+    expect(body.workflow.slug).toBe('new-draft');
+    expect(body.workflow.contentKind).toBe('longform');
+    expect(body.existing).toBe(false);
+  });
+
+  it('is idempotent — second call returns existing: true', () => {
+    seedBlogFile('audiocontrol', 'repeat-draft', '# x');
+    const first = handleStartLongform(root, {
+      site: 'audiocontrol',
+      slug: 'repeat-draft',
+    });
+    const second = handleStartLongform(root, {
+      site: 'audiocontrol',
+      slug: 'repeat-draft',
+    });
+    const b1 = first.body as { workflow: { id: string }; existing: boolean };
+    const b2 = second.body as { workflow: { id: string }; existing: boolean };
+    expect(b2.workflow.id).toBe(b1.workflow.id);
+    expect(b1.existing).toBe(false);
+    expect(b2.existing).toBe(true);
+  });
+
+  it('returns 404 when the blog file does not exist', () => {
+    const result = handleStartLongform(root, {
+      site: 'editorialcontrol',
+      slug: 'does-not-exist',
+    });
+    expect(result.status).toBe(404);
+  });
+
+  it('returns 400 for missing site or slug', () => {
+    expect(handleStartLongform(root, { slug: 'x' }).status).toBe(400);
+    expect(handleStartLongform(root, { site: 'editorialcontrol' }).status).toBe(400);
+    expect(handleStartLongform(root, {}).status).toBe(400);
+  });
+
+  it('returns 400 for unknown site', () => {
+    const result = handleStartLongform(root, { site: 'nope', slug: 'x' });
+    expect(result.status).toBe(400);
   });
 });

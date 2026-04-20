@@ -60,6 +60,21 @@ Analog of the feature-image-generator pipeline for prose: a dev-only web surface
 - **Skill rename to free the namespace**: existing `/editorial-review` (status display) renames to `/editorial-status`. Frees `editorial-review` for the feature and arguably a cleaner name for the display skill.
 - **Both sites**: routes and skills work for audiocontrol.org and editorialcontrol.org. Site-aware like the rest of the editorial calendar.
 
+## In Scope (Phase 13 addition: editorial-studio)
+
+Unified dev-only dashboard analogous to `/dev/feature-image-preview`, so the operator has one URL that shows the whole review pipeline at a glance rather than two specialized routes (per-slug longform, shortform list).
+
+- **Unified dashboard at `/dev/editorial-studio`** (both sites) — single dev-only SSR page, 404 in prod via the existing guard pattern.
+- **Pending panel** — all non-terminal workflows (open / in-review / iterating / approved) across longform and shortform, grouped by state, sorted by `updatedAt` descending. Each row is a link to the per-slug route (longform) or the shortform list (shortform).
+- **Approved-pending-apply panel** — approved workflows awaiting `/editorial-approve`, with the exact command to run.
+- **Start-new longform form** — dropdown of Published calendar entries that don't yet have an active longform workflow → submit enqueues via a new `handleStartLongform` handler (reads the blog file, calls `createWorkflow`). For shortform, the dashboard shows command hints — agent-driven drafting stays on `/editorial-shortform-draft`.
+- **Voice-drift mini-panel** — top-2 categories from `buildReport()` for this site, shown only when the sample size is meaningful (≥5 terminal workflows).
+- **Recent terminal panel** — last ~10 `applied` / `cancelled` workflows, so the operator sees recent history without scrolling a separate report.
+
+One new POST endpoint: `/api/dev/editorial-review/start-longform` — takes `{ site, slug }`, reads the draft file, calls `createWorkflow`, returns the created workflow. Thin wrapper around a shared handler so both sites' endpoint files stay boilerplate.
+
+**Out of scope for Phase 13:** polling for live updates, shortform drafting from the dashboard form (agent-driven, stays on `/editorial-shortform-draft`), filters/search across the pending list. These can extend the studio later if the UX gets cramped.
+
 ## Deferred Scope
 
 - **Reddit auto-posting (Tier 3)**: programmatically submitting link posts to subreddits. Documented in detail in the [workplan](./workplan.md#deferred-tier-3--auto-posting-to-reddit). Deferred indefinitely — operational risk (bot bans, spam filters), per-subreddit rule complexity, and limited value-add over manual posting outweigh the automation benefit. A clipboard-helper alternative is proposed there if partial automation becomes interesting later.

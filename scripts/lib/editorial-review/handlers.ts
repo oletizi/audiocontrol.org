@@ -1,8 +1,11 @@
+import { existsSync, readFileSync } from 'fs';
+import { join } from 'path';
 import type { DraftAnnotation, DraftWorkflowState } from './types.js';
-import type { Site } from '../editorial/types.js';
+import { SITES, type Site } from '../editorial/types.js';
 import {
   appendAnnotation,
   appendVersion,
+  createWorkflow,
   mintAnnotation,
   readAnnotations,
   readVersions,
@@ -205,6 +208,50 @@ export function handleCreateVersion(rootDir: string, body: unknown): HandlerResu
   });
   appendAnnotation(rootDir, annotation);
   return ok({ version, annotation });
+}
+
+interface StartLongformBody {
+  site: Site;
+  slug: string;
+}
+
+/**
+ * Enqueue a longform draft review directly from the editorial-studio
+ * dashboard. Reads the blog post markdown from disk and calls
+ * createWorkflow. Idempotent on (site, slug, 'longform') — returning the
+ * existing workflow with `existing: true` when one is already in flight.
+ */
+export function handleStartLongform(rootDir: string, body: unknown): HandlerResult {
+  if (!body || typeof body !== 'object') return err(400, 'expected JSON object body');
+  const b = body as Partial<StartLongformBody>;
+  if (!b.site) return err(400, 'site is required');
+  if (!SITES.includes(b.site as Site)) {
+    return err(400, `unknown site: ${b.site}. Must be one of ${SITES.join(', ')}`);
+  }
+  if (!b.slug || typeof b.slug !== 'string') return err(400, 'slug is required');
+
+  const path = join(rootDir, 'src', 'sites', b.site, 'pages', 'blog', b.slug, 'index.md');
+  if (!existsSync(path)) {
+    return err(404, `blog draft not found at ${path}`);
+  }
+
+  const markdown = readFileSync(path, 'utf-8');
+  const before = readWorkflows(rootDir).find(
+    w =>
+      w.site === b.site &&
+      w.slug === b.slug &&
+      w.contentKind === 'longform' &&
+      w.state !== 'applied' &&
+      w.state !== 'cancelled',
+  );
+  const workflow = createWorkflow(rootDir, {
+    site: b.site as Site,
+    slug: b.slug,
+    contentKind: 'longform',
+    initialMarkdown: markdown,
+    initialOriginatedBy: 'agent',
+  });
+  return ok({ workflow, existing: !!before && before.id === workflow.id });
 }
 
 /**

@@ -8,6 +8,8 @@ user_invocable: true
 
 Dashboard skill. Reads the review pipeline and prints one row per active workflow with the next action the operator should take.
 
+**For a visual dashboard**, open `http://localhost:4321/dev/editorial-studio` in a dev server — it shows the same information plus a start-new-review form, voice-drift signal, and recent terminal history.
+
 ## Site
 
 Accepts `--site <slug>` (default: show both sites). Also accepts `--all` to include terminal (`applied` / `cancelled`) workflows in the report.

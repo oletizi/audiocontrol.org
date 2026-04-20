@@ -22,6 +22,7 @@
 | Phase 10: Orchestration Skills for the Review Loop | oletizi/audiocontrol.org#92 |
 | Phase 11: Short-form Review (Social Posts) | oletizi/audiocontrol.org#93 |
 | Phase 12: Voice-Library Feedback Signal | oletizi/audiocontrol.org#94 |
+| Phase 13: Editorial Studio (unified dashboard) | oletizi/audiocontrol.org#96 |
 
 ## Files Affected
 
@@ -702,3 +703,61 @@ Then the UI:
 - [ ] `/editorial-approve` does not perform any git operations (Phase 10)
 - [ ] Short-form drafts round-trip through `DistributionRecord.shortform` (Phase 11)
 - [ ] `/editorial-review-report` produces a usable summary from ≥5 cycled drafts (Phase 12)
+- [ ] `/dev/editorial-studio` unified dashboard returns 200 in dev, 404 in prod (Phase 13)
+
+### Phase 13: Editorial Studio (unified dashboard)
+
+**Deliverable:** A single dev-only URL — `/dev/editorial-studio` — shows the whole editorial-review pipeline at a glance, replaces the need to remember two URLs, and gives the operator a dashboard-level starting point analogous to `/dev/feature-image-preview`.
+
+**Motivation:** Phases 9 and 11 shipped two specialized routes — per-slug longform (`/dev/editorial-review/<slug>`) and shortform list (`/dev/editorial-review-shortform`). Operators asked for one unified surface. A unified studio also lets future extensions (filters, bulk actions, polling) have a natural home.
+
+#### Skill design
+
+No new user-invocable skills in this phase. `/editorial-review-help` and `/editorial-help` are updated to link the studio URL at the top.
+
+#### Files affected
+
+- `scripts/lib/editorial-review/handlers.ts` — new `handleStartLongform` handler
+- `src/sites/<site>/pages/api/dev/editorial-review/start-longform.ts` — thin POST endpoint (both sites)
+- `src/sites/<site>/pages/dev/editorial-studio.astro` — the unified dashboard (both sites)
+- `.claude/skills/editorial-review-help/SKILL.md` — add studio URL pointer
+- `.claude/skills/editorial-help/SKILL.md` — link studio under the review-skills block
+- `test/editorial-review/handlers.test.ts` — extend for handleStartLongform
+
+#### Implementation
+
+- [x] Add `handleStartLongform(rootDir, { site, slug })`:
+  - [x] Validates `site` against the `SITES` list
+  - [x] Reads `src/sites/<site>/pages/blog/<slug>/index.md` (400 on missing slug/site, 404 on missing file)
+  - [x] Calls `createWorkflow` with `contentKind: 'longform'` and the file's markdown — idempotent on natural key
+  - [x] Returns `{ workflow, existing: boolean }` so the UI can distinguish "created" vs "already existed"
+- [x] Add `POST /api/dev/editorial-review/start-longform` endpoint (both sites) — thin wrapper around handleStartLongform
+- [x] Create the studio route at `src/sites/<site>/pages/dev/editorial-studio.astro` (both sites; identical except `SITE` constant). Sections:
+  - Masthead: "Editorial Studio · <site> · dev"
+  - Pending panel: non-terminal workflows (open/in-review/iterating) grouped by state, sorted by `updatedAt` descending, link per-row to slug route (longform) or shortform list (shortform). Iterating rows show the exact `/editorial-iterate` command.
+  - Approved panel: highlighted separately with the exact `/editorial-approve` command per row (with `--platform` / `--channel` for shortform)
+  - Start-new longform form: dropdown of Published calendar entries that don't have an active longform workflow; submit POSTs to the new endpoint; on success redirects to the per-slug route
+  - Shortform hint: the `/editorial-shortform-draft` command + link to `/dev/editorial-review-shortform`
+  - Voice-drift mini-panel: top-2 categories from `buildReport()` when ≥5 terminal workflows; placeholder otherwise
+  - Recent terminal panel: last 10 applied/cancelled workflows
+- [x] Update `.claude/skills/editorial-review-help/SKILL.md` — link studio URL at the top
+- [x] Update `.claude/skills/editorial-help/SKILL.md` — link studio URL and list all review-extension skills (Phases 10–13)
+- [x] Unit test `handleStartLongform` — 5 tests covering happy path, idempotence, missing args, missing file, unknown site
+
+#### Tests
+
+- [x] `handleStartLongform` happy path — returns a new workflow with `existing: false`
+- [x] Second call returns the same workflow with `existing: true`
+- [x] 400 on missing slug or site argument
+- [x] 400 on unknown site
+- [x] 404 when blog file doesn't exist on disk
+
+**Acceptance Criteria**
+
+- `/dev/editorial-studio` renders in dev for both sites with non-empty content
+- Pending panel shows all non-terminal workflows across longform + shortform
+- Approved panel shows the exact `/editorial-approve` command per row
+- Start-new longform form lists only Published entries without an active longform workflow; submitting enqueues and redirects
+- Voice-drift panel respects the ≥5 sample threshold
+- Route 404s in prod
+- No regressions to Phase 8–12 behavior

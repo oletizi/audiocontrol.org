@@ -1,6 +1,6 @@
 # Editorial Calendar
 
-**Status:** Phases 1-7 Complete; Phases 8-12 In Progress (editorial-review extension)
+**Status:** All Phases Complete (ready for `/feature-complete`)
 **Feature Branch:** `feature/editorial-calendar`
 **GitHub Issue:** oletizi/audiocontrol.org#29 (parent)
 **Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7)
@@ -25,8 +25,9 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 8 | Draft Review Pipeline + Surface Scaffolding | Complete |
 | 9 | Longform Annotation UI | Complete |
 | 10 | Orchestration Skills for the Review Loop | Complete |
-| 11 | Short-form Review (Social Posts) | Planned |
-| 12 | Voice-Library Feedback Signal | Planned |
+| 11 | Short-form Review (Social Posts) | Complete |
+| 12 | Voice-Library Feedback Signal | Complete |
+| 13 | Editorial Studio (unified dashboard) | Complete |
 
 ## Dependencies
 

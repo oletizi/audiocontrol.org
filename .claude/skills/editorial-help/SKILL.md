@@ -44,12 +44,16 @@ Accepts `--site <slug>` (default: all known sites). Valid sites: `audiocontrol`,
 
 YouTube videos and tools/apps on the target site are first-class calendar entries — use `/editorial-add` with content type `youtube` or `tool`. They go through the same five stages as blog posts, but `/editorial-draft` creates only a GitHub issue (no directory) and `/editorial-publish` requires a `contentUrl` (the YouTube URL or canonical page URL).
 
-**Draft review skills (editorial-review extension, Phase 10):**
+**Draft review skills (editorial-review extension, Phases 10-13):**
 - `/editorial-draft-review <slug>` — Enqueue an existing blog draft for annotation; prints the dev URL
 - `/editorial-iterate <slug>` — Agent-side revision using the site's voice skill; appends a new DraftVersion and transitions `iterating` → `in-review`
-- `/editorial-approve <slug>` — Write the approved version to the real blog post file; transitions `approved` → `applied`. **Does NOT run git operations** — operator commits manually
+- `/editorial-approve <slug>` — Write the approved version to the real blog post file (or `DistributionRecord.shortform` for shortform); transitions `approved` → `applied`. **Does NOT run git operations** — operator commits manually
+- `/editorial-shortform-draft <slug> <platform> [channel]` — Agent-draft social copy; enqueues a shortform workflow keyed to (slug, platform, channel)
 - `/editorial-review-cancel <slug>` — Cancel an active workflow; source file untouched
 - `/editorial-review-help` — Pipeline state across all active workflows with next-action per row
+- `/editorial-review-report` — Aggregate comment categories across completed workflows (voice-drift signal)
+
+**Unified dashboard** at `http://localhost:4321/dev/editorial-studio` (on each site's dev server) — one URL that shows the whole pipeline plus a start-new-review form. Use this instead of memorizing the per-slug (`/dev/editorial-review/<slug>`) and shortform (`/dev/editorial-review-shortform`) routes.
 
 The review pipeline is independent of the calendar stages. A draft can be reviewed multiple times — re-running `/editorial-draft-review` after a prior workflow reached a terminal state mints a fresh workflow.
 
