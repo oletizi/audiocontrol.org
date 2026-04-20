@@ -153,15 +153,27 @@ const orderedPlatforms = [
         return r.ok;
       }
 
-      // Focus the card referenced by ?focus= if any.
+      // Focus the card referenced by ?focus= if any. Strip the param +
+      // remove .focused after the animation so reloads don't re-trigger
+      // and the card doesn't stay highlighted forever.
       const focusId = new URLSearchParams(location.search).get('focus');
       if (focusId) {
         const el = document.getElementById('workflow-' + focusId);
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           el.classList.add('focused');
+          setTimeout(() => el.classList.remove('focused'), 3000);
+          const url = new URL(location.href);
+          url.searchParams.delete('focus');
+          url.hash = '';
+          history.replaceState(null, '', url.toString());
         }
       }
+
+      // Capture pristine textarea values so the polling dirty-check can
+      // compare against the real initial content (textarea.defaultValue
+      // suffers from Astro whitespace-normalization false positives).
+      const pristineText = new WeakMap();
 
       document.querySelectorAll('.er-galley').forEach((card) => {
         const workflowId = card.dataset.workflowId;
@@ -170,9 +182,7 @@ const orderedPlatforms = [
         const textarea = card.querySelector('[data-text]');
         const hint = card.querySelector('[data-hint]');
         const originalText = textarea.value;
-
-        let lastTextInteraction = 0;
-        textarea.addEventListener('input', () => { lastTextInteraction = Date.now(); });
+        pristineText.set(textarea, originalText);
 
         card.querySelector('[data-action="save"]').addEventListener('click', async () => {
           if (textarea.value === originalText) {
@@ -236,11 +246,11 @@ const orderedPlatforms = [
       });
       setInterval(() => {
         if (Date.now() - lastInteraction < 6000) return;
-        // Also skip if any textarea has unsaved content
+        // Also skip if any textarea has unsaved content — compared against
+        // the captured pristine value to dodge defaultValue whitespace drift.
         for (const t of document.querySelectorAll('textarea[data-text]')) {
-          const card = t.closest('.er-galley');
-          const before = card ? card.dataset.beforeVersion : null;
-          if (t.value !== t.defaultValue) return;
+          const pristine = pristineText.get(t);
+          if (pristine !== undefined && t.value !== pristine) return;
         }
         const ind = document.querySelector('[data-poll]');
         if (ind) ind.classList.add('polling');

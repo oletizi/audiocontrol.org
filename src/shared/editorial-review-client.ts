@@ -457,12 +457,19 @@ export function initEditorialReview(): void {
 
   document.addEventListener('keydown', (ev) => {
     // Don't hijack keys while typing
-    const target = ev.target as HTMLElement;
-    if (target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        target instanceof HTMLSelectElement ||
-        target.isContentEditable) {
-      if (ev.key === 'Escape') (target as HTMLElement).blur();
+    const target = ev.target instanceof HTMLElement ? ev.target : null;
+    const typing = target !== null && (
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement ||
+      target.isContentEditable
+    );
+    if (typing) {
+      if (ev.key === 'Escape') {
+        target.blur();
+        // If the operator was typing inside the comment modal, also close it.
+        if (!modal.hidden) closeModal();
+      }
       return;
     }
     // Don't hijack with modifiers
@@ -520,10 +527,15 @@ export function initEditorialReview(): void {
     }
   }
 
-  setInterval(() => {
+  async function tick(): Promise<void> {
     if (pollIndicator) pollIndicator.classList.add('polling');
-    poll();
-  }, POLL_MS);
+    try {
+      await poll();
+    } finally {
+      if (pollIndicator) pollIndicator.classList.remove('polling');
+    }
+  }
+  setInterval(tick, POLL_MS);
 
   // ---- Boot ----
 
