@@ -22,6 +22,7 @@ interface UpdateBody {
   notes?: string;
   rating?: number;
   templateSlug?: string;
+  appliedTo?: string;
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -51,6 +52,7 @@ export const POST: APIRoute = async ({ request }) => {
     notes: body.notes,
     rating: body.rating,
     templateSlug: body.templateSlug,
+    appliedTo: body.appliedTo,
   });
   if (!updated) {
     return new Response(
