@@ -1770,6 +1770,7 @@ const siteBrands = {
             <h4 class="help-subhead">Workflow</h4>
             <ol class="help-steps">
               <li><strong>Start</strong> — Open the <em>Generate</em> drawer (left) to generate freely, or invoke <code>/feature-image-blog &lt;post-path&gt;</code> in Claude Code to enqueue a workflow targeting a specific post.</li>
+              <li><strong>Activate (if using a workflow)</strong> — Open the <em>Workflows</em> drawer (right) and click <em>Activate</em> on the pending item. That binds the gallery to that workflow — Generate pre-fills with the workflow's prompt/preset/title, Site switches to the target site, and <em>Approve</em> decides the workflow instead of creating a freestanding approved entry.</li>
               <li><strong>Iterate</strong> — Click a thumbnail to focus an entry. Edit title / subtitle / filters / site live. Send a message in the thread composer to have Claude propose variants.</li>
               <li><strong>Approve</strong> — Click <em>Approve</em> (in focus mode) to bake all three social variants (og / youtube / instagram), mark the entry approved, and decide any active workflow.</li>
               <li><strong>Apply</strong> — Run <code>/feature-image-apply</code> in Claude Code. Approved entries get copied into the target post's public dir + wired into frontmatter.</li>
@@ -1795,6 +1796,10 @@ const siteBrands = {
           <div class="help-col">
             <h4 class="help-subhead">Gallery actions</h4>
             <dl class="help-dl">
+              <dt>Activate / Deactivate (Workflows drawer)</dt>
+              <dd>Selects which pending workflow is "the one I'm working on." Pre-fills Generate, switches Site, scopes Approve's decision. Deactivate to work freestanding.</dd>
+              <dt>Cancel (Workflows drawer)</dt>
+              <dd>Drops a pending workflow without a decision. No files touched.</dd>
               <dt>Focus</dt>
               <dd>Click the thumbnail or button to open an entry with live preview + controls.</dd>
               <dt>Approve</dt>
