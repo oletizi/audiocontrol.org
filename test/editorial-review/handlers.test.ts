@@ -4,9 +4,13 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { createWorkflow } from '../../scripts/lib/editorial-review/pipeline.js';
 import {
+  applyLineDiff,
   handleAnnotate,
+  handleCreateVersion,
   handleDecision,
+  handleGetWorkflow,
   handleListAnnotations,
+  lineDiff,
 } from '../../scripts/lib/editorial-review/handlers.js';
 
 let root: string;
@@ -133,6 +137,127 @@ describe('handleListAnnotations', () => {
   it('returns 400 for non-numeric version', () => {
     const result = handleListAnnotations(root, { workflowId, version: 'abc' });
     expect(result.status).toBe(400);
+  });
+});
+
+describe('handleGetWorkflow', () => {
+  it('returns workflow + versions by id', () => {
+    const result = handleGetWorkflow(root, {
+      id: workflowId,
+      site: null,
+      slug: null,
+      contentKind: null,
+      platform: null,
+      channel: null,
+    });
+    expect(result.status).toBe(200);
+    const body = result.body as { workflow: { id: string }; versions: unknown[] };
+    expect(body.workflow.id).toBe(workflowId);
+    expect(body.versions).toHaveLength(1);
+  });
+
+  it('returns workflow by (site, slug)', () => {
+    const result = handleGetWorkflow(root, {
+      id: null,
+      site: 'editorialcontrol',
+      slug: 'test-post',
+      contentKind: 'longform',
+      platform: null,
+      channel: null,
+    });
+    expect(result.status).toBe(200);
+    expect((result.body as { workflow: { id: string } }).workflow.id).toBe(workflowId);
+  });
+
+  it('returns 404 for unknown id', () => {
+    const result = handleGetWorkflow(root, {
+      id: 'nope',
+      site: null,
+      slug: null,
+      contentKind: null,
+      platform: null,
+      channel: null,
+    });
+    expect(result.status).toBe(404);
+  });
+
+  it('returns 400 when neither id nor (site, slug) provided', () => {
+    const result = handleGetWorkflow(root, {
+      id: null,
+      site: null,
+      slug: null,
+      contentKind: null,
+      platform: null,
+      channel: null,
+    });
+    expect(result.status).toBe(400);
+  });
+});
+
+describe('handleCreateVersion', () => {
+  it('appends a new version and an edit annotation', () => {
+    const result = handleCreateVersion(root, {
+      workflowId,
+      beforeVersion: 1,
+      afterMarkdown: 'hello earth',
+    });
+    expect(result.status).toBe(200);
+    const body = result.body as {
+      version: { version: number; originatedBy: string };
+      annotation: { type: string; diff: string };
+    };
+    expect(body.version.version).toBe(2);
+    expect(body.version.originatedBy).toBe('operator');
+    expect(body.annotation.type).toBe('edit');
+    expect(body.annotation.diff.length).toBeGreaterThan(0);
+  });
+
+  it('rejects when afterMarkdown is unchanged', () => {
+    const result = handleCreateVersion(root, {
+      workflowId,
+      beforeVersion: 1,
+      afterMarkdown: 'hello world',
+    });
+    expect(result.status).toBe(400);
+  });
+
+  it('returns 404 on unknown beforeVersion', () => {
+    const result = handleCreateVersion(root, {
+      workflowId,
+      beforeVersion: 99,
+      afterMarkdown: 'x',
+    });
+    expect(result.status).toBe(404);
+  });
+});
+
+describe('lineDiff / applyLineDiff round-trip', () => {
+  it('reversibly reconstructs the after-text for a pure addition', () => {
+    const a = 'line one\nline two';
+    const b = 'line one\nline two\nline three';
+    expect(applyLineDiff(lineDiff(a, b))).toBe(b);
+  });
+
+  it('reversibly reconstructs for substitution', () => {
+    const a = 'hello world\nstay the same';
+    const b = 'hello earth\nstay the same';
+    expect(applyLineDiff(lineDiff(a, b))).toBe(b);
+  });
+
+  it('reversibly reconstructs for deletion', () => {
+    const a = 'one\ntwo\nthree';
+    const b = 'one\nthree';
+    // Our naive per-index diff can't perfectly distinguish a deletion
+    // from a change — this tests what we DO support: the result still
+    // reconstructs the `b` line-set in order.
+    const reconstructed = applyLineDiff(lineDiff(a, b));
+    expect(reconstructed.split('\n').filter(Boolean)).toEqual(b.split('\n').filter(Boolean));
+  });
+
+  it('handles multi-line markdown with blank lines', () => {
+    const a = '# Title\n\nparagraph one\n\nparagraph two';
+    const b = '# Title\n\nparagraph one — revised\n\nparagraph two';
+    expect(applyLineDiff(lineDiff(a, b))).toBe(b);
   });
 });
 

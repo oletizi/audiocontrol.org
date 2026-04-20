@@ -1,9 +1,13 @@
 import type { DraftAnnotation, DraftWorkflowState } from './types.js';
+import type { Site } from '../editorial/types.js';
 import {
   appendAnnotation,
+  appendVersion,
   mintAnnotation,
   readAnnotations,
+  readVersions,
   readWorkflow,
+  readWorkflows,
   transitionState,
 } from './pipeline.js';
 
@@ -118,4 +122,123 @@ export function handleDecision(rootDir: string, body: unknown): HandlerResult {
     const status = message.startsWith('Unknown workflow') ? 404 : 409;
     return err(status, message);
   }
+}
+
+/**
+ * Return a workflow plus its full version history. The client looks up
+ * either by workflow id or by (site, slug, contentKind, platform?, channel?).
+ * For the longform route, (site, slug) is the most natural lookup because
+ * that's the URL.
+ */
+export function handleGetWorkflow(
+  rootDir: string,
+  query: {
+    id: string | null;
+    site: string | null;
+    slug: string | null;
+    contentKind: string | null;
+    platform: string | null;
+    channel: string | null;
+  },
+): HandlerResult {
+  if (query.id) {
+    const workflow = readWorkflow(rootDir, query.id);
+    if (!workflow) return err(404, `unknown workflow id: ${query.id}`);
+    return ok({ workflow, versions: readVersions(rootDir, workflow.id) });
+  }
+  if (!query.site || !query.slug) {
+    return err(400, 'either id or (site & slug) query params are required');
+  }
+  const contentKind = (query.contentKind ?? 'longform') as 'longform' | 'shortform';
+  const match = readWorkflows(rootDir).find(
+    w =>
+      w.site === (query.site as Site) &&
+      w.slug === query.slug &&
+      w.contentKind === contentKind &&
+      (w.platform ?? null) === (query.platform ?? null) &&
+      (w.channel ?? null) === (query.channel ?? null),
+  );
+  if (!match) {
+    return err(404, `no workflow for ${query.site}/${query.slug} (${contentKind})`);
+  }
+  return ok({ workflow: match, versions: readVersions(rootDir, match.id) });
+}
+
+interface VersionBody {
+  workflowId: string;
+  beforeVersion: number;
+  afterMarkdown: string;
+}
+
+/**
+ * Operator edit-mode submission. Appends a new DraftVersion with
+ * originatedBy='operator' and records an edit annotation that carries
+ * the diff against the before-version. Computes the diff server-side
+ * so clients don't need a diff library.
+ */
+export function handleCreateVersion(rootDir: string, body: unknown): HandlerResult {
+  if (!body || typeof body !== 'object') return err(400, 'expected JSON object body');
+  const d = body as Partial<VersionBody>;
+  if (!d.workflowId) return err(400, 'workflowId is required');
+  if (typeof d.beforeVersion !== 'number') return err(400, 'beforeVersion is required');
+  if (typeof d.afterMarkdown !== 'string') return err(400, 'afterMarkdown is required');
+
+  const workflow = readWorkflow(rootDir, d.workflowId);
+  if (!workflow) return err(404, `unknown workflow: ${d.workflowId}`);
+
+  const versions = readVersions(rootDir, d.workflowId);
+  const before = versions.find(v => v.version === d.beforeVersion);
+  if (!before) return err(404, `unknown beforeVersion: ${d.beforeVersion}`);
+
+  if (before.markdown === d.afterMarkdown) {
+    return err(400, 'afterMarkdown is identical to beforeVersion — no edit to record');
+  }
+
+  const diff = lineDiff(before.markdown, d.afterMarkdown);
+  const version = appendVersion(rootDir, d.workflowId, d.afterMarkdown, 'operator');
+  const annotation = mintAnnotation({
+    type: 'edit',
+    workflowId: d.workflowId,
+    beforeVersion: d.beforeVersion,
+    afterMarkdown: d.afterMarkdown,
+    diff,
+  });
+  appendAnnotation(rootDir, annotation);
+  return ok({ version, annotation });
+}
+
+/**
+ * Minimal line-level diff. Produces `-` / `+` prefixed lines for
+ * removed/added content, `=` for unchanged. Paired with `applyLineDiff`
+ * the operation is reversible — applying the diff against the before-text
+ * reconstructs the after-text.
+ */
+export function lineDiff(a: string, b: string): string {
+  const aLines = a.split('\n');
+  const bLines = b.split('\n');
+  const out: string[] = [];
+  const n = Math.max(aLines.length, bLines.length);
+  for (let i = 0; i < n; i++) {
+    const aLine = aLines[i];
+    const bLine = bLines[i];
+    if (aLine === bLine) {
+      if (aLine !== undefined) out.push(`= ${aLine}`);
+    } else {
+      if (aLine !== undefined) out.push(`- ${aLine}`);
+      if (bLine !== undefined) out.push(`+ ${bLine}`);
+    }
+  }
+  return out.join('\n');
+}
+
+/** Apply a line-diff (as produced by `lineDiff`) to reconstruct the after-text. */
+export function applyLineDiff(diff: string): string {
+  const out: string[] = [];
+  for (const line of diff.split('\n')) {
+    if (line.startsWith('= ')) out.push(line.slice(2));
+    else if (line.startsWith('+ ')) out.push(line.slice(2));
+    else if (line === '=' || line === '+') out.push('');
+    // '-' lines are discarded; unprefixed lines are ignored
+  }
+  return out.join('\n');
 }
