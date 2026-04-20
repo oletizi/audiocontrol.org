@@ -48,6 +48,12 @@ export interface LogEntry {
    * Absence means the entry hasn't been applied yet (even if status=approved).
    */
   appliedTo?: string;
+  /**
+   * Soft-delete flag. Archived entries stay in the log (so lineage, thread
+   * references, template examples, and fitness data are preserved) but are
+   * hidden from the default gallery view. Toggleable from the gallery.
+   */
+  archived?: boolean;
 }
 
 /** Read all log entries, oldest first. Empty array if the file doesn't exist. */
@@ -74,7 +80,7 @@ export function appendLog(entry: LogEntry): void {
 /** Update an existing entry by id (rewrites the whole file). */
 export function updateLog(
   id: string,
-  patch: Partial<Pick<LogEntry, 'status' | 'notes' | 'rating' | 'templateSlug' | 'appliedTo'>>,
+  patch: Partial<Pick<LogEntry, 'status' | 'notes' | 'rating' | 'templateSlug' | 'appliedTo' | 'archived'>>,
 ): LogEntry | null {
   const entries = readLog();
   const idx = entries.findIndex(e => e.id === id);

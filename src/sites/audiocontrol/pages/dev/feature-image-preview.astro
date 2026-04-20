@@ -135,6 +135,32 @@ const siteBrands = {
       font-size: 0.7rem;
       color: var(--text-3);
     }
+    .archived-toggle {
+      background: transparent;
+      border: none;
+      color: var(--text-2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0 0.15rem;
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-color: var(--edge-hi);
+      text-underline-offset: 3px;
+    }
+    .archived-toggle:hover { color: var(--text-0); text-decoration-color: var(--accent); }
+
+    /* Archived entries render dimmed with a dashed edge so they're visually
+     * distinct from live entries when the user has show-archived on. */
+    .card.archived {
+      opacity: 0.55;
+      border-style: dashed;
+    }
+    .card.archived:hover { opacity: 0.85; }
+    .card.archived .card-thumb { filter: grayscale(0.35); }
+
+    /* Destructive menu item in the ⋯ dropdown */
+    .card-compact .dropdown-menu button.danger { color: var(--danger); }
+    .card-compact .dropdown-menu button.danger:hover { background: rgba(228, 115, 115, 0.08); color: var(--danger); }
 
     /* ── Drawers ───────────────────────────────────────────────────────────── */
     .drawer {
@@ -1945,6 +1971,8 @@ const siteBrands = {
     let activeTemplate = null;
     let focusedEntryId = null;
     let cachedEntries = [];
+    // Show or hide soft-deleted entries in the history grid. Persisted.
+    let showArchived = localStorage.getItem('fi-show-archived') === 'true';
 
     const templateGrid = document.getElementById('template-grid');
     const templateMeta = document.getElementById('template-meta');
@@ -2961,7 +2989,7 @@ const siteBrands = {
 
     function renderCompactCard(entry) {
       const div = document.createElement('div');
-      div.className = 'card';
+      div.className = entry.archived ? 'card archived' : 'card';
       div.dataset.id = entry.id;
 
       const titleHtml = entry.title ? escapeHtml(entry.title) : '<em>(no title)</em>';
@@ -2999,6 +3027,10 @@ const siteBrands = {
                 <div class="dropdown-menu">
                   <button type="button" data-action="copy" title="Copy this entry's prompt, provider, preset and filters into the Generate form">Copy as input</button>
                   <button type="button" data-action="save-template" title="Save this prompt as a reusable template in the library">Save as template</button>
+                  ${entry.archived
+                    ? `<button type="button" data-action="unarchive" title="Restore this entry to the main history view">Un-delete</button>`
+                    : `<button type="button" data-action="archive" class="danger" title="Hide this entry from the history view. Files stay on disk; lineage, thread references, and template examples are preserved. Un-delete from the archived view.">Delete</button>`
+                  }
                 </div>
               </div>
             </div>
@@ -3067,6 +3099,10 @@ const siteBrands = {
             ${rejectBtn}
             <button type="button" class="btn-ghost" data-action="copy" title="Copy this entry's prompt, provider, preset and filters into the Generate form">Copy as input</button>
             <button type="button" class="btn-ghost" data-action="save-template" title="Save this prompt as a reusable template in the library">Save as template</button>
+            ${entry.archived
+              ? `<button type="button" class="btn-ghost" data-action="unarchive" title="Restore this entry to the main history view">Un-delete</button>`
+              : `<button type="button" class="btn-ghost btn-danger-ghost" data-action="archive" title="Hide this entry from the history view. Files stay on disk; lineage, thread references, and template examples are preserved.">Delete</button>`
+            }
           </div>
           <div class="thread-section">
             <div class="thread-header">
@@ -3289,6 +3325,8 @@ const siteBrands = {
           if (action === 'copy') return copyAsInput(entry);
           if (action === 'rate') return rateEntry(entry, parseInt(btn.dataset.rate, 10));
           if (action === 'save-template') return openSaveTemplatePanel(entry);
+          if (action === 'archive') return setArchived(entry, true);
+          if (action === 'unarchive') return setArchived(entry, false);
           if (action === 'toggle-menu') {
             const dd = btn.closest('.dropdown');
             dd.classList.toggle('open');
@@ -3540,7 +3578,9 @@ const siteBrands = {
     async function refreshGallery() {
       try {
         cachedEntries = await fetchLog();
-        stageCountEl.textContent = `${cachedEntries.length} ${cachedEntries.length === 1 ? 'entry' : 'entries'}`;
+        const archivedCount = cachedEntries.filter(e => e.archived).length;
+        const visible = showArchived ? cachedEntries : cachedEntries.filter(e => !e.archived);
+        renderStageCount(visible.length, archivedCount);
         galleryEl.innerHTML = '';
         galleryEl.classList.toggle('has-focus', !!focusedEntryId);
         if (cachedEntries.length === 0) {
@@ -3557,13 +3597,31 @@ const siteBrands = {
             return;
           }
         }
-        stageLabelEl.textContent = 'History';
-        for (const entry of cachedEntries) galleryEl.appendChild(renderCompactCard(entry));
+        stageLabelEl.textContent = showArchived ? 'History (incl. archived)' : 'History';
+        if (visible.length === 0) {
+          galleryEl.innerHTML = `<div class="empty-hint">No ${showArchived ? '' : 'visible '}entries.${archivedCount > 0 && !showArchived ? ` ${archivedCount} archived — click "show archived" above.` : ''}</div>`;
+          return;
+        }
+        for (const entry of visible) galleryEl.appendChild(renderCompactCard(entry));
       } catch (err) {
         galleryEl.innerHTML = `<div class="err">Could not load log: ${escapeHtml(err.message)}</div>`;
       }
       // Sync history-help visibility with whether we're in history or focus.
       applyHistoryHelpState(localStorage.getItem('fi-history-help-open') === 'open');
+    }
+
+    function renderStageCount(visibleCount, archivedCount) {
+      const label = `${visibleCount} ${visibleCount === 1 ? 'entry' : 'entries'}`;
+      if (archivedCount === 0) {
+        stageCountEl.textContent = label;
+        return;
+      }
+      stageCountEl.innerHTML = `${label} · <button type="button" class="archived-toggle" data-action="toggle-archived">${showArchived ? 'hide' : 'show'} ${archivedCount} archived</button>`;
+      stageCountEl.querySelector('.archived-toggle').addEventListener('click', () => {
+        showArchived = !showArchived;
+        localStorage.setItem('fi-show-archived', String(showArchived));
+        refreshGallery();
+      });
     }
 
     async function updateStatus(id, status) {
@@ -3577,6 +3635,23 @@ const siteBrands = {
         await refreshGallery();
       } catch (err) {
         alert(`Failed to update status: ${err.message}`);
+      }
+    }
+
+    async function setArchived(entry, archived) {
+      try {
+        const res = await fetch('/api/dev/feature-image/log', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: entry.id, archived }),
+        });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        // If the user just archived the currently-focused entry, pop focus —
+        // they don't want to stare at what they just hid.
+        if (archived && focusedEntryId === entry.id) unfocusEntry();
+        else await refreshGallery();
+      } catch (err) {
+        alert(`Failed to ${archived ? 'delete' : 'un-delete'}: ${err.message}`);
       }
     }
 
