@@ -127,11 +127,6 @@ export function appendJournal<T>(
   writeFileSync(target, JSON.stringify(record, null, 2) + '\n', 'utf-8');
 }
 
-export interface UpdateJournalOptions {
-  /** Field that holds the unique id on each record. Defaults to `id`. */
-  idField?: string;
-}
-
 /**
  * Merge `patch` into the record identified by `id`. Returns the updated
  * record, or `null` if no record matches. Unlike the old JSONL pattern,
@@ -141,7 +136,6 @@ export function updateJournal<T>(
   dir: string,
   id: string,
   patch: Partial<T>,
-  options: UpdateJournalOptions = {},
 ): T | null {
   const path = findFileById(dir, id);
   if (!path) return null;
@@ -150,24 +144,12 @@ export function updateJournal<T>(
   const merged = { ...current, ...patch } as T;
   writeFileSync(path, JSON.stringify(merged, null, 2) + '\n', 'utf-8');
   return merged;
-  // idField is carried for symmetry with the other helpers; findFileById
-  // already matches by the suffix-of-filename convention so the field
-  // name doesn't factor into lookup. Keeping it in the options type
-  // avoids surprising a caller that wants to pass it explicitly.
-  void options;
 }
 
-/**
- * Remove the file for a given id. Returns `true` if a file was deleted.
- */
-export function deleteJournal(
-  dir: string,
-  id: string,
-  options: UpdateJournalOptions = {},
-): boolean {
+/** Remove the file for a given id. Returns `true` if a file was deleted. */
+export function deleteJournal(dir: string, id: string): boolean {
   const path = findFileById(dir, id);
   if (!path) return false;
   unlinkSync(path);
-  void options;
   return true;
 }

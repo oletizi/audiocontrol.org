@@ -46,7 +46,7 @@ export interface WorkflowContext {
 export interface WorkflowDecision {
   /** When the user submitted the decision */
   decidedAt: string;
-  /** The log entry (from .feature-image-history.jsonl) the user approved */
+  /** The log entry (from journal/history/) the user approved */
   logEntryId: string;
   /** Optional user notes captured at decision time */
   userNotes?: string;

@@ -56,11 +56,10 @@ const stores: StoreConfig[] = [
     targetDir: join(rootDir, 'journal', 'threads'),
     idField: 'messageId',
     timestampField: 'timestamp',
+    // Thread messages had no id in the JSONL era. Generate a uuid when
+    // one's missing; subsequent migration runs preserve it via
+    // overwrite-in-place (see appendJournal → findFileById).
     synthesizeId: (record) => {
-      // Stable id = sha-like of (threadId + timestamp + role). Use random
-      // uuid instead — thread messages aren't re-written, so collision
-      // across runs is avoided by appendJournal's overwrite-in-place (the
-      // suffix lookup finds the existing file for the same id).
       const existing = record.messageId;
       if (typeof existing === 'string' && existing) return existing;
       return randomUUID();
