@@ -1510,6 +1510,42 @@ const siteBrands = {
     }
     .help-toggle:hover { background: var(--bg-3); color: var(--text-0); border-color: var(--edge-hi); }
     .help-toggle[aria-expanded="true"] { background: var(--accent); color: var(--bg-0); border-color: var(--accent); }
+    .help-toggle-sm {
+      width: 1.1rem;
+      height: 1.1rem;
+      font-size: 0.6rem;
+      vertical-align: middle;
+    }
+    .stage-head-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    /* Lightweight help card under the History heading (smaller than the
+     * page-level one; lives inside the stage, pushes the gallery down). */
+    .history-help {
+      margin: -0.4rem 0 1rem;
+      padding: 0.85rem 1rem;
+      background: var(--bg-1);
+      border: 1px solid var(--edge);
+      border-left: 2px solid var(--accent);
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: var(--text-1);
+    }
+    .history-help p { margin: 0 0 0.6rem; }
+    .history-help strong { color: var(--text-0); }
+    .history-help em { color: var(--accent); font-style: normal; }
+    .history-help code { color: var(--accent); background: var(--bg-2); padding: 0 0.25rem; border-radius: 3px; }
+    .history-help-list {
+      margin: 0;
+      padding-left: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
 
     .help-card {
       margin: 0 0 1.25rem;
@@ -1831,9 +1867,24 @@ const siteBrands = {
       </section>
 
       <div class="stage-head">
-        <span class="stage-label" id="stage-label">History</span>
+        <span class="stage-head-left">
+          <span class="stage-label" id="stage-label">History</span>
+          <button type="button" class="help-toggle help-toggle-sm" id="history-help-toggle" title="What is the history? How do I use it?" aria-label="History help" aria-expanded="false">?</button>
+        </span>
         <span class="stage-count" id="stage-count"></span>
       </div>
+      <section class="history-help" id="history-help" hidden aria-hidden="true">
+        <p>
+          <strong>History</strong> is the append-only log of every generation, recomposite, and approval — newest first. Each card is a snapshot of what was baked: the prompt, preset, filters, title/subtitle, site, and the PNG files on disk. Nothing gets mutated; iterations create new entries.
+        </p>
+        <ul class="history-help-list">
+          <li><strong>Click a thumbnail</strong> (or the <em>Focus ⟶</em> button) to open an entry. Focus mode gives you the live preview, filter controls, thread composer, and the Approve / Reject / Commit actions.</li>
+          <li><strong>The status pill</strong> (generated · approved · rejected) tracks where each entry stands. <em>Approved</em> is what <code>/feature-image-apply</code> picks up and routes to its target post.</li>
+          <li><strong>★ Ratings</strong> feed the prompt-library fitness ranker — templates used by high-rated generations rise in the picker; low-rated ones fade.</li>
+          <li><strong>Dashed teal outline on a thumbnail</strong> means the entry has unsaved preview edits (title/subtitle/filter/site changes). Commit or Approve in focus to bake them; otherwise they survive refreshes as a draft.</li>
+          <li><strong>Iterations form a tree</strong> via each entry's <code>parentEntryId</code> — recomposites and Claude's iterate responses link back to the source, so a focus thread travels with the lineage.</li>
+        </ul>
+      </section>
       <div class="gallery" id="gallery">
         <div class="empty-hint">Loading…</div>
       </div>
@@ -3495,6 +3546,8 @@ const siteBrands = {
       } catch (err) {
         galleryEl.innerHTML = `<div class="err">Could not load log: ${escapeHtml(err.message)}</div>`;
       }
+      // Sync history-help visibility with whether we're in history or focus.
+      applyHistoryHelpState(localStorage.getItem('fi-history-help-open') === 'open');
     }
 
     async function updateStatus(id, status) {
@@ -3878,9 +3931,12 @@ const siteBrands = {
       }
     });
 
-    // ── Help widget ────────────────────────────────────────────────────────
-    // Collapsible overview card at the top of the stage. Default open on
-    // first visit; state persisted in localStorage so it doesn't nag.
+    // ── Help widgets ───────────────────────────────────────────────────────
+    // Two collapsible help panels:
+    //   1. Page-level overview card (top of stage) — toggled by ? in header
+    //   2. History help (under the History heading) — toggled by ? in heading
+    //      Hidden when focused on a single entry (only applies to history view).
+    // Each persists its open/closed state in localStorage.
     const helpToggle = document.getElementById('help-toggle');
     const helpCard = document.getElementById('help-card');
     const helpClose = document.getElementById('help-close');
@@ -3894,6 +3950,29 @@ const siteBrands = {
     applyHelpState(savedHelp === null ? true : savedHelp === 'open');
     helpToggle.addEventListener('click', () => applyHelpState(helpCard.hidden));
     helpClose.addEventListener('click', () => applyHelpState(false));
+
+    const historyHelpToggle = document.getElementById('history-help-toggle');
+    const historyHelp = document.getElementById('history-help');
+    function applyHistoryHelpState(open) {
+      // If focused on a single entry, the section heading reads 'Focus' not
+      // 'History' — hide the help card and toggle regardless of state.
+      const viewingHistory = !focusedEntryId;
+      historyHelpToggle.hidden = !viewingHistory;
+      if (!viewingHistory) {
+        historyHelp.hidden = true;
+        historyHelp.setAttribute('aria-hidden', 'true');
+        return;
+      }
+      historyHelp.hidden = !open;
+      historyHelp.setAttribute('aria-hidden', open ? 'false' : 'true');
+      historyHelpToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      localStorage.setItem('fi-history-help-open', open ? 'open' : 'closed');
+    }
+    const savedHistoryHelp = localStorage.getItem('fi-history-help-open');
+    // Default closed — the page-level help is open on first visit; this one
+    // is supplementary, shouldn't pile onto the first-run experience.
+    applyHistoryHelpState(savedHistoryHelp === 'open');
+    historyHelpToggle.addEventListener('click', () => applyHistoryHelpState(historyHelp.hidden));
 
     // ── Boot ───────────────────────────────────────────────────────────────
     refreshTemplates();
