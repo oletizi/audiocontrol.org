@@ -1,0 +1,41 @@
+---
+export const prerender = false;
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+
+const { slug } = Astro.params;
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Editorial Review — dev</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: #141820;
+      color: #c4ced8;
+      font-family: 'Inter', system-ui, sans-serif;
+      line-height: 1.5;
+    }
+    h1 { color: #2fb8a8; margin-top: 0; }
+    code { background: #1f2530; padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <h1>Editorial Review — editorialcontrol</h1>
+  <p>Slug: <code>{slug}</code></p>
+  <p>Phase 8 scaffold. The annotation UI lands in Phase 9.</p>
+  <p>Available endpoints:</p>
+  <ul>
+    <li><code>POST /api/dev/editorial-review/annotate</code></li>
+    <li><code>GET /api/dev/editorial-review/annotations?workflowId=…&amp;version=…</code></li>
+    <li><code>POST /api/dev/editorial-review/decision</code></li>
+  </ul>
+</body>
+</html>
