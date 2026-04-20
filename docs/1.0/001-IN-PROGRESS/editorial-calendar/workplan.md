@@ -551,16 +551,16 @@ Then the UI:
 
 #### Implementation
 
-- [ ] `/editorial-draft-review` — resolves draft file path from slug + site, reads its current content as v1, writes workflow + first `DraftVersion`, returns dev URL
-- [ ] `/editorial-iterate` — key logic:
-  - [ ] Read all annotations attached to the current version that haven't yet been consumed
-  - [ ] Load the matching voice skill (`audiocontrol-voice` for audiocontrol site, `editorialcontrol-voice` for editorialcontrol site)
-  - [ ] Compose a prompt structure: current draft + annotation list + voice skill instructions
-  - [ ] Run revision in the current Claude Code session (the skill is a Markdown file that drives the conversation; the actual revision happens in the dialog between operator and agent, not in a background process)
-  - [ ] On completion, append new `DraftVersion` with `originatedBy: 'agent'`, update workflow state to `in-review`
-- [ ] `/editorial-approve` — writes the approved version's markdown to `src/sites/<site>/pages/blog/<slug>/index.md` (or the appropriate path for shortform in Phase 11), transitions state, prints: "git status to see the diff; commit when ready"
-- [ ] `/editorial-review-cancel` — sets state to `cancelled`, appends an annotation record with reason if provided
-- [ ] `/editorial-review-help` — reads pipeline JSONL, groups by state, prints table
+- [x] `/editorial-draft-review` — resolves draft file path from slug + site, reads its current content as v1, calls `createWorkflow` (idempotent on natural key), returns dev URL
+- [x] `/editorial-iterate` — key logic:
+  - [x] Fetches workflow + versions via `handleGetWorkflow`; validates state is `iterating`
+  - [x] Reads open comment annotations for the current version via `readAnnotations`
+  - [x] Loads the matching voice skill (`audiocontrol-voice` for audiocontrol site, `editorialcontrol-voice` for editorialcontrol site) + relevant reference files
+  - [x] Runs revision in the current Claude Code session; produces full-file markdown that addresses each annotation while holding to voice principles
+  - [x] On completion, appends new `DraftVersion` with `originatedBy: 'agent'` and transitions `iterating` → `in-review`
+- [x] `/editorial-approve` — finds approved version via the latest `approve` annotation, writes its markdown to `src/sites/<site>/pages/blog/<slug>/index.md`, transitions `approved` → `applied`, prints git next-steps. **No git operations.**
+- [x] `/editorial-review-cancel` — validates non-terminal state, transitions to `cancelled`, leaves source file untouched, annotations remain in history
+- [x] `/editorial-review-help` — reads pipeline, filters by state (and optional `--site`), renders a next-action table per workflow, with `--all` to include terminal states
 
 **Important behavior**
 

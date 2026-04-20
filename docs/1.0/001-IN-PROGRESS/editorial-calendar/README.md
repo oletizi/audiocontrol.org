@@ -24,7 +24,7 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 7 | Tool Cross-link Audit | Complete |
 | 8 | Draft Review Pipeline + Surface Scaffolding | Complete |
 | 9 | Longform Annotation UI | Complete |
-| 10 | Orchestration Skills for the Review Loop | Planned |
+| 10 | Orchestration Skills for the Review Loop | Complete |
 | 11 | Short-form Review (Social Posts) | Planned |
 | 12 | Voice-Library Feedback Signal | Planned |
 
