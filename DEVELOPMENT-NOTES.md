@@ -4,6 +4,46 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-20: Feature Image Generator — Overlay Position & Align + Blog-Skill Helpers + Phase 15 Scoping
+### Feature: feature-image-generator
+### Worktree: audiocontrol.org-feature-image-generator
+
+**Goal:** Land `/feature-image-blog` skill helpers (stop the `curl | python3` pattern), add configurable overlay position + alignment so the text panel isn't locked to bottom, then scope the follow-on storage refactor that the merge-conflict pain this session kept surfacing.
+
+**Accomplished:**
+- **`/feature-image-blog` helpers** — added `scan.ts` (resolves post path or bare slug across both sites, parses frontmatter, queries template API, ranks candidates, prints JSON recommendation bundle) and `enqueue.ts` (re-reads post for authoritative title/description, POSTs the workflow, supports `--prompt-file=<path>` so multi-line prompts don't need shell-escaping). SKILL.md rewritten to document the `scan → jq → prompt-file → enqueue` chain.
+- **Overlay position control (10 variants)** — `bottom/middle/top` horizontal strips, `left/right` 50% columns, `left-two-thirds/right-two-thirds/left-one-third/right-one-third` asymmetric splits (narrow columns scale type down via `--og-text-scale`), `full` full-bleed panel with no accent rule. Plumbed through OGPreview prop + `data-overlay-position` → `og-preview.css` variants → `bake-dom.ts` `BakeParams` → feature-image-bake query param → `recomposite/generate` API bodies → `LogEntry.overlayPosition` → gallery focus-view Position dropdown. Editorialcontrol swaps the accent to parchment-cream on every edge.
+- **Overlay vertical-alignment control** — `overlayAlign = auto | top | center | bottom`. `auto` follows the position's natural anchor (bottom-strip anchors bottom, top-strip anchors top, middle/full anchor center, left/right columns anchor bottom). Explicit values override via CSS file-order specificity parity. Same plumbing as position.
+- **PR #97** opened + squash-merged (`365f8c5`). Three commits of feature work, one merge commit to resolve conflicts against the main-side squash of PR #95. Both Netlify deploy previews passed.
+- **Phase 15 scoped via `/feature-extend`** — appended to PRD + workplan, created issue #99. Motivation: two live merge conflicts this session on the three JSONL logs. Design: one file per entry under `journal/history|pipeline|threads/`, shared `journal.ts` helper, idempotent migration script, public APIs (`readLog/appendLog/updateLog`) unchanged.
+- **Closed issues #67 (Phase 12) and #76 (Phase 13)** now that PRs #95 + #97 delivered the DOM-preview + conversation-thread + approve-canonicalizes behavior.
+- **Used the new blog-skill helpers end-to-end** to enqueue workflow `a510cc6a` for `src/sites/editorialcontrol/pages/blog/building-the-editorial-calendar-feature/` — `scan.ts` recommended `tracked-changes` (matched `ai-agents` + `editorial` tags), `enqueue.ts` created the workflow with that template baseline + `proof-constellation` as fallback candidate.
+
+**Didn't Work:**
+- Initial union-type `export type OverlayPosition = | 'bottom' | ...` with each case on its own line triggered esbuild's "Unexpected '|'" in the Astro frontmatter. Collapsed to a single-line union; cleared immediately.
+- Playwright screenshot test against `http://localhost:4321/dev/feature-image-bake` hit 404 because the sibling `audiocontrol.org-editorial-calendar` worktree was holding port 4321; the new dev server fell through to 4322. Verified the fix there instead.
+- Running `PROMPT="$(cat ...)" tsx enqueue.ts --prompt="$PROMPT"` failed because the prompt var is scoped only to the prefixed command, but `$PROMPT` is expanded by the outer shell before the command runs. Fixed the invocation with inline `--prompt="$(cat /tmp/...)"`, then added `--prompt-file=<path>` to `enqueue.ts` as the safe default.
+
+**Course Corrections:**
+- [PROCESS] Kept reaching for `curl | python3 -c "..."` one-liners against the template API. User: "why are you using one-off one-liners instead of scripts?" Correct pattern: bundle the reads as a named script in the skill's directory, per the existing `feature-image-apply/scan.ts` + `feature-image-iterate/drain.ts` convention. Permission prompts only fire once per stable command pattern. This directly motivated the `/feature-image-blog` helpers addition.
+- [COMPLEXITY][PROCESS] When the feature branch had 17 commits since divergence from main (13 already squash-merged via PR #95, 4 new), I reactively created a fresh branch off main and stashed the working tree to "sanitize" the history before opening the PR. User: "why did you switch branches?" Wrong instinct — the right first move is `gh pr create` from the existing branch and look at the diff GitHub computes. GitHub/git uses the merge base, so only the net-new work shows up. If the diff does accidentally include merged content, rebase handles it (git drops duplicate patches via patch-id). Saved as memory.
+- [PROCESS] Opened the PR from a branch with two uncommitted runtime files (`.feature-image-history.jsonl`, `docs/feature-image-prompts.yaml`). User: "you're going to commit everything, right?" Should have staged + committed before `gh pr create`, not after.
+
+**Quantitative:**
+- Messages: ~30
+- Commits this session: 8 (`d92669a`, `fffb1f9`, `d5a657e`, `6364b26`, `bde3b7b`, `3e14167` merge, `82407c7`, `6997ed1`)
+- PRs merged: 1 (#97)
+- Issues closed: 2 (#67, #76); issues created: 1 (#99)
+- Corrections: 3
+
+**Insights:**
+- JSONL merge pain is real and it's a storage-design problem, not a workflow-discipline problem. When `.feature-image-*.jsonl` conflicted during `git merge origin/main`, the fix was purely mechanical (take ours, content is identical) — exactly the signal that the on-disk shape is wrong. Phase 15 addresses it instead of papering over with merge-driver tricks.
+- For any helper script that accepts a multi-line text argument, default the CLI to `--arg-file=<path>` and keep `--arg=<string>` as the short-inline fallback. Inline shell expansion of a multi-line var through quoting is a footgun you'll hit exactly when it matters.
+- GitHub's squash-merge creates a clean main but leaves a residue on every feature branch that shared the pre-squash commits: those originals stay reachable from the branch tip with different hashes than the squash commit on main. The remedy is routine — `git merge origin/main` into the feature branch to absorb the squash, resolve the identical-content conflicts, and move on.
+- The `--og-text-scale` CSS custom property elegantly solves the "narrow column text overflow" problem without introducing a nested container-query layer. Multiplying `4.3cqw` by a per-position scalar stays within the existing sizing model.
+
+---
+
 ## 2026-04-17: Feature Image Generator — Workflow Pipeline (Phase 6 ship) + Prompt Library (Phase 11)
 ### Feature: feature-image-generator
 ### Worktree: audiocontrol.org-feature-image-generator
