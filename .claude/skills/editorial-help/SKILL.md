@@ -45,7 +45,7 @@ Accepts `--site <slug>` (default: all known sites). Valid sites: `audiocontrol`,
 YouTube videos and tools/apps on the target site are first-class calendar entries — use `/editorial-add` with content type `youtube` or `tool`. They go through the same five stages as blog posts, but `/editorial-draft` creates only a GitHub issue (no directory) and `/editorial-publish` requires a `contentUrl` (the YouTube URL or canonical page URL).
 
 **Status skills:**
-- `/editorial-review` — Show calendar status across all stages for one site
+- `/editorial-status` — Show calendar status across all stages for one site
 - `/editorial-help` — This workflow overview (covers all sites unless `--site` is passed)
 
 **Multi-site convention:** every `/editorial-*` skill takes `--site <slug>` and defaults to `audiocontrol` when omitted. Unknown values error with the list of valid sites. Data files are per-site: `docs/editorial-calendar-<site>.md` and `docs/editorial-channels-<site>.json`.

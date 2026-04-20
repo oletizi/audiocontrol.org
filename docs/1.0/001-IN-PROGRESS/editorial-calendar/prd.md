@@ -83,7 +83,6 @@ Each editorial action is a separate Claude Code skill, composed like UNIX tools.
 | `/editorial-help` | 1 | Show the editorial workflow and calendar status |
 | `/editorial-add` | 1 | Add an entry to the Ideas stage |
 | `/editorial-plan` | 1 | Move an entry to Planned, set target keywords |
-| `/editorial-review` | 1 | Show calendar status across all stages |
 | `/editorial-draft` | 2 | Scaffold blog post directory and move to Drafting |
 | `/editorial-publish` | 2 | Mark entry as Published with date, close GitHub issue |
 | `/editorial-suggest` | 3 | Pull analytics, identify content opportunities |

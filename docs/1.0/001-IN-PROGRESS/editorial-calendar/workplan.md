@@ -34,7 +34,7 @@
 - `.claude/skills/editorial-help/SKILL.md` — workflow overview and calendar status
 - `.claude/skills/editorial-add/SKILL.md` — add entry to Ideas
 - `.claude/skills/editorial-plan/SKILL.md` — move entry to Planned
-- `.claude/skills/editorial-review/SKILL.md` — show calendar status
+- `.claude/skills/editorial-status/SKILL.md` — show calendar status (renamed from `editorial-review` in Phase 8)
 - `.claude/skills/editorial-draft/SKILL.md` — scaffold blog post
 - `.claude/skills/editorial-publish/SKILL.md` — mark entry as Published
 - `.claude/skills/editorial-suggest/SKILL.md` — analytics-driven topic suggestions
@@ -460,7 +460,7 @@ No new user-invocable skill. `/editorial-cross-link-review` is extended: when it
 
 #### Implementation
 
-- [ ] Rename `/editorial-review` skill to `/editorial-status` (update `.claude/skills/editorial-review/` → `.claude/skills/editorial-status/`, update skill frontmatter, update `/editorial-help` to list the new name)
+- [x] Rename `/editorial-review` skill to `/editorial-status` (update `.claude/skills/editorial-review/` → `.claude/skills/editorial-status/`, update skill frontmatter, update `/editorial-help` to list the new name)
 - [ ] Create `scripts/lib/editorial-review/types.ts` with the union and interfaces above
 - [ ] Create `scripts/lib/editorial-review/pipeline.ts` with `appendHistory()`, `upsertWorkflow()`, `readWorkflow()`, `listOpen()`, `readVersions()` — all JSONL, append-only, mirrors `scripts/lib/feature-image/pipeline.ts`
 - [ ] Create `scripts/lib/editorial-review/index.ts` barrel export
