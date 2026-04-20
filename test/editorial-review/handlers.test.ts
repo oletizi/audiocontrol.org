@@ -346,4 +346,29 @@ describe('handleStartLongform', () => {
     const result = handleStartLongform(root, { site: 'nope', slug: 'x' });
     expect(result.status).toBe(400);
   });
+
+  it('rejects path-traversal slugs with 400 (not 404)', () => {
+    // Seed a neighbor file so the traversal target would actually exist
+    // if validation were missing — proves the slug check, not missing-file check.
+    const dir = join(root, 'src', 'sites', 'audiocontrol', 'pages');
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, 'secret.md'), 'should not be readable', 'utf-8');
+
+    for (const bad of ['../secret', '../../etc/passwd', 'foo/bar', 'with spaces', 'Upper', '-leading-dash', '']) {
+      const result = handleStartLongform(root, {
+        site: 'audiocontrol',
+        slug: bad,
+      });
+      expect(result.status).toBe(400);
+    }
+  });
+
+  it('accepts valid kebab-case slugs', () => {
+    seedBlogFile('audiocontrol', 'ok-slug-123', '# ok');
+    const result = handleStartLongform(root, {
+      site: 'audiocontrol',
+      slug: 'ok-slug-123',
+    });
+    expect(result.status).toBe(200);
+  });
 });

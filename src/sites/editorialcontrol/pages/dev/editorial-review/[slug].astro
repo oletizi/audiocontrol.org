@@ -176,7 +176,11 @@ const activeState = workflow?.state === 'open' || workflow?.state === 'in-review
     <div class="toast" data-toast hidden></div>
 
     {draftState && (
-      <script type="application/json" id="draft-state" set:html={JSON.stringify(draftState)} />
+      <script
+        type="application/json"
+        id="draft-state"
+        set:html={JSON.stringify(draftState).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')}
+      />
     )}
     <script>
       import '../../../../../shared/editorial-review-client.ts';

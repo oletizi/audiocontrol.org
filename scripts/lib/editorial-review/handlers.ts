@@ -216,6 +216,15 @@ interface StartLongformBody {
 }
 
 /**
+ * Blog-post slugs are restricted to the URL-safe kebab-case shape
+ * also used by `/editorial-add` / `/editorial-plan`. This rejects
+ * path-traversal attempts (`../foo`, `foo/bar`) and other characters
+ * that would escape the expected `src/sites/<site>/pages/blog/<slug>/`
+ * scope.
+ */
+const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
+
+/**
  * Enqueue a longform draft review directly from the editorial-studio
  * dashboard. Reads the blog post markdown from disk and calls
  * createWorkflow. Idempotent on (site, slug, 'longform') — returning the
@@ -229,6 +238,9 @@ export function handleStartLongform(rootDir: string, body: unknown): HandlerResu
     return err(400, `unknown site: ${b.site}. Must be one of ${SITES.join(', ')}`);
   }
   if (!b.slug || typeof b.slug !== 'string') return err(400, 'slug is required');
+  if (!SLUG_RE.test(b.slug)) {
+    return err(400, `invalid slug: ${b.slug}. Must match ${SLUG_RE}`);
+  }
 
   const path = join(rootDir, 'src', 'sites', b.site, 'pages', 'blog', b.slug, 'index.md');
   if (!existsSync(path)) {
