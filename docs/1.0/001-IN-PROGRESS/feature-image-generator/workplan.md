@@ -437,6 +437,52 @@ Main merged a major architectural split: the repo now hosts `src/sites/audiocont
 - Visual cross-site A/B comparison in the gallery (show the same raw image baked under both sites side by side)
 - Per-site commit hook that regenerates all open workflows when brand tokens change
 
+## Phase 15: Journal Records (One File Per Entry) (#99)
+
+**Deliverable:** Replace the three monolithic append-only JSONL files with per-entry JSON files under `journal/`. Cross-branch merge conflicts on these stores go to zero; individual entries become greppable, editable, and cherry-pickable in isolation.
+
+### Motivation
+
+Two live merge conflicts hit this session on `.feature-image-history.jsonl` and `.feature-image-pipeline.jsonl` during rebase/merge of the feature branch. The root cause is monolithic append logs — any two branches writing at the same tail collide. With a directory-per-type (`journal/history/<ts>-<id>.json`), each entry is its own file, so writes never conflict by construction. The pattern also cleans up runtime drift (archived flags, examples-arrays, template fitness updates) that currently re-writes the whole file and inflates diffs.
+
+### Concepts
+
+- **One file per entry.** `journal/history/<ISO-ts>-<id>.json`, `journal/pipeline/<ISO-ts>-<id>.json`, `journal/threads/<ISO-ts>-<thread-id>-<msg-id>.json`. Filename sort order ≡ chronological order.
+- **Plain JSON, pretty-printed.** Human-greppable; each entry fits on a screen; diffs tell a story.
+- **Directory-as-log.** `readLog()` globs the directory, parses each file, sorts by `timestamp` field. Cost at ~500 entries is negligible.
+- **Update-in-place.** `updateLog(id, patch)` writes the single file that owns that id instead of rewriting the whole log. `.archived`, `.rating`, `.notes` patches become single-file diffs.
+- **Migration is one-shot + idempotent.** A script reads the old JSONL and fans out one file per entry; running it twice is safe (skip if target exists).
+
+### Tasks
+
+- [ ] **Write `scripts/feature-image/journal.ts`** — shared helper for directory-backed record stores. Exports `readJournal(dir)`, `appendJournal(dir, record, idField, timestampField)`, `updateJournal(dir, id, patch, idField)`, `deleteJournal(dir, id, idField)`. Filename convention: `<timestamp>-<id>.json`.
+- [ ] **Migration script** `scripts/feature-image/migrate-journal.ts` that reads each `.feature-image-*.jsonl` and fans out per-entry files into `journal/history/`, `journal/pipeline/`, `journal/threads/`. Idempotent (skip if file exists). Produces a `journal/MIGRATED.txt` receipt with counts.
+- [ ] **Rewrite `scripts/feature-image/log.ts`** — `readLog/appendLog/updateLog` use `journal.ts` against `journal/history/`. Public signatures unchanged. Drop the `LOG_PATH` constant.
+- [ ] **Rewrite `scripts/feature-image/workflow.ts`** — same pattern against `journal/pipeline/`.
+- [ ] **Rewrite `scripts/feature-image/threads.ts`** — same pattern against `journal/threads/`. Message filenames use `<ts>-<thread-id>-<msg-id>.json` so one `ls journal/threads/ | grep <thread-id>` returns a thread's messages in order.
+- [ ] **Verify consumers** — `recomposite.ts`, `generate.ts`, API log endpoint, templates fitness calculation, gallery refresh, and the `feature-image-iterate/drain.ts` / `feature-image-apply/scan.ts` helpers all keep working through the same public APIs. Smoke-test each path.
+- [ ] **Gallery refresh strategy** — if the gallery currently watches a single JSONL file via polling or mtime, switch to directory-mtime or debounced-directory-scan. Verify focus-mode live-update still works when a new history entry lands from a background generation.
+- [ ] **Gitignore sweep** — remove `.feature-image-*.jsonl` from `.gitignore` (if listed), add `journal/` there if we DON'T want entries tracked, or leave tracked if we DO want branch-portable history. Decide explicitly per store type (history probably tracked; pipeline + threads probably tracked; raw PNG outputs remain gitignored).
+- [ ] **Remove old JSONL files** in the same commit as the last reader/writer switch so there's no ambiguous window where both sources exist.
+- [ ] **Add a README note** in `docs/1.0/001-IN-PROGRESS/feature-image-generator/` describing the on-disk journal layout so future contributors don't re-invent the storage.
+
+### Acceptance Criteria
+
+- [ ] `journal/history/` contains one JSON file per historical entry; `.feature-image-history.jsonl` is gone
+- [ ] `journal/pipeline/` contains one JSON file per workflow item; `.feature-image-pipeline.jsonl` is gone
+- [ ] `journal/threads/` contains one JSON file per thread message; `.feature-image-threads.jsonl` is gone
+- [ ] `readLog()` returns all entries sorted oldest-first; `appendLog(entry)` writes exactly one new file; `updateLog(id, patch)` modifies exactly one file
+- [ ] Gallery refresh picks up new entries within a reasonable beat (current behavior or better)
+- [ ] Rebase or merge of a branch that added N history entries, against a main that added M, never conflicts on journal files
+- [ ] All five feature-image skills (`feature-image-blog`, `feature-image-apply`, `feature-image-iterate`, `feature-image-help`, `feature-image-prompts`) work end-to-end on the new storage
+- [ ] `npm run build` green for both sites
+
+### Deferred
+
+- Compaction/archival tooling (glob older-than-N-days, tar-ball, drop) — not needed at current scale
+- Indexing files (e.g. `journal/history/INDEX.json`) to speed up reads — only if directory scan shows measurable cost
+- Cross-tool format-sharing (e.g. reusing the same journal for the editorial calendar) — out of scope
+
 ## File Structure
 
 ```

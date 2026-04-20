@@ -53,6 +53,12 @@ This feature adds AI-generated backgrounds (via DALL-E 3 and FLUX) and wraps the
 - Gallery surfaces site selection: generation form captures which site an image is for; focused entry allows switching sites for exploratory recomposition; applying a workflow routes output into the correct site's public directory.
 - Templates gain optional `site` affinity so the library picker can filter by site and fitness is tracked per-site.
 
+### In Scope (Extended — Phase 15)
+
+- Replace the three monolithic JSONL logs (`.feature-image-history.jsonl`, `.feature-image-pipeline.jsonl`, `.feature-image-threads.jsonl`) with per-entry JSON files under a `journal/` directory, so cross-branch merges never collide on these stores.
+- Shared `journal.ts` helper for directory-backed append/read/update against `journal/history/`, `journal/pipeline/`, `journal/threads/`. Public APIs of `log.ts`, `workflow.ts`, and `threads.ts` stay stable so every consumer keeps working.
+- One-shot, idempotent migration script that fans out existing JSONL entries into per-file records, with a receipt noting counts.
+
 ### Out of Scope
 
 - Changes to the existing `generate-og-images.ts` build-time script
