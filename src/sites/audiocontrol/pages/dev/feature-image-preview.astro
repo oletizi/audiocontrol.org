@@ -2951,6 +2951,7 @@ const siteBrands = {
       const grain = draft.grain ?? defaults.grain;
       const overlay = draft.overlay ?? 'on';
       const overlayPosition = draft.overlayPosition ?? entry.overlayPosition ?? 'bottom';
+      const overlayAlign = draft.overlayAlign ?? entry.overlayAlign ?? 'auto';
       const format = draft.format ?? 'og';
       const site = (draft.site === 'editorialcontrol' || entry.site === 'editorialcontrol')
         ? 'editorialcontrol'
@@ -2978,6 +2979,7 @@ const siteBrands = {
              data-grain="${escapeAttr(grain)}"
              data-overlay="${escapeAttr(overlay === true ? 'on' : overlay)}"
              data-overlay-position="${escapeAttr(overlayPosition)}"
+             data-overlay-align="${escapeAttr(overlayAlign)}"
              data-preset="${escapeAttr(preset)}"
              data-site="${site}"
              style="${escapeAttr(brandStyle(site))}">
@@ -3267,6 +3269,7 @@ const siteBrands = {
         },
         overlay: previewEl.dataset.overlay === 'on',
         overlayPosition: previewEl.dataset.overlayPosition || entry.overlayPosition || 'bottom',
+        overlayAlign: previewEl.dataset.overlayAlign || entry.overlayAlign || 'auto',
       };
     }
 
@@ -3366,6 +3369,7 @@ const siteBrands = {
                data-grain="${f.grain}"
                data-overlay="on"
                data-overlay-position="${escapeAttr(entry.overlayPosition || 'bottom')}"
+               data-overlay-align="${escapeAttr(entry.overlayAlign || 'auto')}"
                data-preset="${preset}"
                data-site="${site}"
                style="${escapeAttr(brandStyle(site))}">
@@ -3392,6 +3396,7 @@ const siteBrands = {
               </select></label>
               <label class="cb" title="Show or hide the title/subtitle/brand overlay panel"><input type="checkbox" data-ctl="overlay" checked /> Overlay</label>
               <label title="Where the text panel sits on the image. 'full' drops the accent rule and covers the whole image."><span>Position</span><select data-ctl="overlayPosition">${selectOptions(['bottom','middle','top','left','left-two-thirds','left-one-third','right','right-two-thirds','right-one-third','full'], entry.overlayPosition || 'bottom')}</select></label>
+              <label title="Vertical anchor of the text stack inside the panel. 'auto' follows the position default (bottom for bottom/left/right columns, center for middle/full, top for top)."><span>Align</span><select data-ctl="overlayAlign">${selectOptions(['auto','top','center','bottom'], entry.overlayAlign || 'auto')}</select></label>
             </div>
             <div class="control-row">
               <label title="Color grade — saturation, hue shift, brightness"><span>Grade</span><select data-ctl="grade">${selectOptions(['none','crt','teal-amber','heavy'], f.grade)}</select></label>
@@ -3443,6 +3448,7 @@ const siteBrands = {
         grain: previewEl.dataset.grain,
         overlay: previewEl.dataset.overlay,
         overlayPosition: previewEl.dataset.overlayPosition,
+        overlayAlign: previewEl.dataset.overlayAlign,
         site: previewEl.dataset.site,
         allFormats: !!(allFormatsCb && allFormatsCb.checked),
       };
@@ -3454,7 +3460,7 @@ const siteBrands = {
       const subtitleEl = previewEl.querySelector('.og-subtitle-input');
       if (titleEl && typeof draft.title === 'string') titleEl.value = draft.title;
       if (subtitleEl && typeof draft.subtitle === 'string') subtitleEl.value = draft.subtitle;
-      const keys = ['format', 'preset', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay', 'overlayPosition', 'site'];
+      const keys = ['format', 'preset', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay', 'overlayPosition', 'overlayAlign', 'site'];
       for (const k of keys) {
         if (draft[k] !== undefined) {
           previewEl.dataset[k] = draft[k];
@@ -3519,6 +3525,7 @@ const siteBrands = {
             }
           } else if (ctl === 'overlay') previewEl.dataset.overlay = el.checked ? 'on' : 'off';
           else if (ctl === 'overlayPosition') previewEl.dataset.overlayPosition = el.value;
+          else if (ctl === 'overlayAlign') previewEl.dataset.overlayAlign = el.value;
           else if (ctl === 'site') {
             const site = el.value === 'editorialcontrol' ? 'editorialcontrol' : 'audiocontrol';
             previewEl.dataset.site = site;
@@ -3549,6 +3556,7 @@ const siteBrands = {
       const subtitle = subtitleInput ? subtitleInput.value : '';
       const overlay = previewEl.dataset.overlay === 'on';
       const overlayPosition = previewEl.dataset.overlayPosition || 'bottom';
+      const overlayAlign = previewEl.dataset.overlayAlign || 'auto';
       const preset = previewEl.dataset.preset || undefined;
       const filters = {};
       for (const k of ['grade', 'phosphor', 'vignette', 'scanlines', 'grain']) filters[k] = previewEl.dataset[k];
@@ -3565,7 +3573,7 @@ const siteBrands = {
         const res = await fetch('/api/dev/feature-image/recomposite', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ sourceEntryId: entry.id, title, subtitle, preset, filters, overlay, overlayPosition, formats, site }),
+          body: JSON.stringify({ sourceEntryId: entry.id, title, subtitle, preset, filters, overlay, overlayPosition, overlayAlign, formats, site }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || `status ${res.status}`);
@@ -3851,6 +3859,7 @@ const siteBrands = {
       let filters = {};
       let overlay = true;
       let overlayPosition = entry.overlayPosition || 'bottom';
+      let overlayAlign = entry.overlayAlign || 'auto';
       let site = entry.site || activeSite;
       if (previewEl) {
         const titleEl = previewEl.querySelector('.og-title-input');
@@ -3863,6 +3872,7 @@ const siteBrands = {
         }
         overlay = previewEl.dataset.overlay !== 'off';
         overlayPosition = previewEl.dataset.overlayPosition || overlayPosition;
+        overlayAlign = previewEl.dataset.overlayAlign || overlayAlign;
         site = previewEl.dataset.site || site;
       }
 
@@ -3885,7 +3895,7 @@ const siteBrands = {
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
             sourceEntryId: entry.id,
-            title, subtitle, preset, filters, overlay, overlayPosition, site,
+            title, subtitle, preset, filters, overlay, overlayPosition, overlayAlign, site,
             formats: ['og', 'youtube', 'instagram'],
             includeFilteredVariant: true,
           }),

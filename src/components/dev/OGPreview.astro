@@ -34,6 +34,19 @@ export function isOverlayPosition(v: unknown): v is OverlayPosition {
   return typeof v === 'string' && (OVERLAY_POSITIONS as readonly string[]).includes(v);
 }
 
+/**
+ * How the text stack anchors within the panel. `auto` follows the
+ * position's natural default (bottom/left/right anchor bottom, top
+ * anchors top, middle/full anchor center). Explicit values override.
+ */
+export type OverlayAlign = 'auto' | 'top' | 'center' | 'bottom';
+
+export const OVERLAY_ALIGNS: readonly OverlayAlign[] = ['auto', 'top', 'center', 'bottom'] as const;
+
+export function isOverlayAlign(v: unknown): v is OverlayAlign {
+  return typeof v === 'string' && (OVERLAY_ALIGNS as readonly string[]).includes(v);
+}
+
 export function presetToFilters(preset: PresetName): FilterState {
   switch (preset) {
     case 'none':
@@ -88,6 +101,8 @@ interface Props {
    * narrow side scales text down via --og-text-scale.
    */
   overlayPosition?: OverlayPosition;
+  /** Vertical anchor for the text stack inside the panel. */
+  overlayAlign?: OverlayAlign;
   editable?: boolean;
   id?: string;
   site?: Site;
@@ -105,6 +120,7 @@ const {
   preset,
   overlay = true,
   overlayPosition = 'bottom',
+  overlayAlign = 'auto',
   editable = false,
   id,
   site = 'audiocontrol',
@@ -142,6 +158,7 @@ const inlineStyle = dimStyle + brandStyle(brand);
   data-grain={effective.grain}
   data-overlay={overlay ? 'on' : 'off'}
   data-overlay-position={overlayPosition}
+  data-overlay-align={overlayAlign}
   data-preset={preset ?? ''}
   data-site={site}
   id={id}

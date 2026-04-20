@@ -72,6 +72,11 @@ export interface LogEntry {
     | 'right-one-third'
     | 'right-two-thirds'
     | 'full';
+  /**
+   * Vertical alignment of the text stack inside the overlay panel.
+   * 'auto' (or absence) defers to the position's natural anchor.
+   */
+  overlayAlign?: 'auto' | 'top' | 'center' | 'bottom';
 }
 
 /** Read all log entries, oldest first. Empty array if the file doesn't exist. */

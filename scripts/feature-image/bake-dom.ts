@@ -14,6 +14,8 @@ export type OverlayPosition =
   | 'right-two-thirds'
   | 'full';
 
+export type OverlayAlign = 'auto' | 'top' | 'center' | 'bottom';
+
 export interface BakeVariant {
   format: 'og' | 'youtube' | 'instagram';
   width: number;
@@ -34,6 +36,8 @@ export interface BakeParams {
   site?: string;
   /** Where the text panel sits. Defaults to 'bottom' on the bake page. */
   overlayPosition?: OverlayPosition;
+  /** Vertical anchor inside the panel. 'auto' follows the position default. */
+  overlayAlign?: OverlayAlign;
   variants: BakeVariant[];
 }
 
@@ -60,6 +64,7 @@ function buildBakeUrl(baseUrl: string, variant: BakeVariant, params: BakeParams)
   if (params.site) url.searchParams.set('site', params.site);
   url.searchParams.set('overlay', variant.overlay ? 'on' : 'off');
   if (params.overlayPosition) url.searchParams.set('overlayPosition', params.overlayPosition);
+  if (params.overlayAlign) url.searchParams.set('overlayAlign', params.overlayAlign);
   for (const [k, v] of Object.entries(params.filters ?? {})) {
     if (v) url.searchParams.set(k, v);
   }
