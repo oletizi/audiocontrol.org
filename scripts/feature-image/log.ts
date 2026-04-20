@@ -41,6 +41,13 @@ export interface LogEntry {
    * consumers should treat absence as DEFAULT_SITE (`audiocontrol`).
    */
   site?: 'audiocontrol' | 'editorialcontrol';
+  /**
+   * Target post this approved entry was applied to (source path like
+   * `src/sites/<site>/pages/blog/<slug>/index.md`). Set by
+   * `/feature-image-apply` when the files are copied into the post.
+   * Absence means the entry hasn't been applied yet (even if status=approved).
+   */
+  appliedTo?: string;
 }
 
 /** Read all log entries, oldest first. Empty array if the file doesn't exist. */
@@ -67,7 +74,7 @@ export function appendLog(entry: LogEntry): void {
 /** Update an existing entry by id (rewrites the whole file). */
 export function updateLog(
   id: string,
-  patch: Partial<Pick<LogEntry, 'status' | 'notes' | 'rating' | 'templateSlug'>>,
+  patch: Partial<Pick<LogEntry, 'status' | 'notes' | 'rating' | 'templateSlug' | 'appliedTo'>>,
 ): LogEntry | null {
   const entries = readLog();
   const idx = entries.findIndex(e => e.id === id);

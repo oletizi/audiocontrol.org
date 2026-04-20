@@ -1,12 +1,17 @@
 ---
 name: feature-image-apply
-description: "Process decided workflow items from the feature-image pipeline: copy approved images into the target post's image dir, update frontmatter and blog index card."
+description: "Drain pending feature-image decisions and approved entries: copy the baked images into the target post's public dir, wire frontmatter, mark the entry applied."
 user_invocable: true
 ---
 
-# Feature Image — Apply Decisions
+# Feature Image — Apply
 
-Second half of the async feature-image pipeline. Reads all `decided` workflow items, applies each decision to its target blog post on the correct site, and marks the items `applied`.
+Second half of the async pipeline. Two paths into "ready to apply":
+
+1. **Decided workflow** — user submitted a specific generation as a workflow decision in the gallery. The workflow context carries `postPath` / `slug` / `site`.
+2. **Approved entry without a workflow** — user clicked Approve in the focus view. The entry is baked in all three social formats and marked `status: 'approved'`, but no workflow is attached. Target post is inferred by matching the entry's `title` against posts under `src/sites/<site>/pages/blog/` for the entry's site.
+
+Both paths terminate the same way: copy the five files into the post's public dir (`feature-{og,youtube,instagram,filtered,raw}.png`), upsert `image` / `socialImage` / `dateModified` in the post frontmatter, and mark the log entry with `appliedTo=<postPath>`.
 
 ## Usage
 
@@ -14,95 +19,105 @@ Second half of the async feature-image pipeline. Reads all `decided` workflow it
 /feature-image-apply
 ```
 
-No arguments. Processes every pending decision.
+No arguments. Processes every pending decision + every unapplied approved entry.
 
-## Multi-site routing
+Dev server (default `http://localhost:4321`) must be running for the HTTP API.
 
-Each workflow item's `context.site` (set by `/feature-image-blog`) tells this skill which site's tree to write into:
+## Helper scripts
 
-| site | post source dir | image dir template | blog index |
-|------|-----------------|--------------------|-----------|
-| `audiocontrol` | `src/sites/audiocontrol/pages/blog/<slug>/` | `src/sites/audiocontrol/public/images/blog/<slug>/` | `src/sites/audiocontrol/pages/blog/index.astro` |
-| `editorialcontrol` | `src/sites/editorialcontrol/pages/blog/<slug>/` | `src/sites/editorialcontrol/public/images/blog/<slug>/` | `src/sites/editorialcontrol/pages/blog/index.astro` |
+- `scan.ts` — lists everything pending: decided workflows + approved-unapplied entries with candidate targets (matched by title + site). Read-only.
+- `apply.ts --workflow=<id>` or `apply.ts --entry=<id> --to=<post-path>` — performs a single apply: file copies, frontmatter edits, `appliedTo` marker, and (for workflow mode) the `apply-result` transition.
 
-If `context.site` is absent on a legacy item (pre-Phase-14), fall back to the approved log entry's `site` field. If both are absent, default to `audiocontrol` and note the assumption in the output.
+Both helpers accept `--base=<url>` to override the default dev-server port. `apply.ts` also accepts `--dry-run` to preview without writing.
 
 ## Steps
 
-1. **List decided items:**
-   - `GET /api/dev/feature-image/workflow?state=decided`
-   - Report count to the user; if zero, stop
+### 1. Scan for pending work
 
-2. **Load the generation history:**
-   - Read `.feature-image-history.jsonl` to resolve `logEntryId` references
+```bash
+tsx .claude/skills/feature-image-apply/scan.ts
+```
 
-3. **For each decided item, in order:**
+Output shape:
+```json
+{
+  "decidedCount": 1,
+  "approvedUnappliedCount": 2,
+  "decided": [ { "workflowId": "...", "postPath": "...", "logEntryId": "...", ... } ],
+  "approvedUnapplied": [
+    {
+      "entryId": "...",
+      "site": "editorialcontrol",
+      "title": "...",
+      "candidateTargets": [ { "postPath": "...", "slug": "...", "site": "..." } ],
+      "targetDecision": "auto" | "ambiguous" | "none"
+    }
+  ]
+}
+```
 
-   a. **Look up the approved log entry** by `decision.logEntryId`
-      - If not found, record an `apply-result` with error, keep state `decided`, continue
+If both counts are zero, report "nothing pending" and stop.
 
-   b. **Resolve site:**
-      - `site = item.context.site ?? logEntry.site ?? 'audiocontrol'`
-      - Note it in the output
+### 2. Apply each decided workflow
 
-   c. **Resolve target paths:**
-      - Slug: `item.context.slug` or derived from `item.context.postPath`
-      - Target image dir: `src/sites/<site>/public/images/blog/<slug>/`
-      - Post source: `src/sites/<site>/pages/blog/<slug>/index.md`
-      - Blog index: `src/sites/<site>/pages/blog/index.astro`
-      - Create target image dir if missing
+For each entry in `decided`, call:
+```bash
+tsx .claude/skills/feature-image-apply/apply.ts --workflow=<workflowId>
+```
 
-   d. **Check for conflicts:**
-      - If the target dir already contains `feature-*.png` files, ask the user whether to overwrite
-      - If the post already has `image` or `socialImage` pointing to a different path, surface this
+`apply.ts` reads the workflow context, resolves the log entry, copies files, edits frontmatter, marks the log entry with `appliedTo`, and transitions the workflow to `applied`.
 
-   e. **Copy the approved images:**
-      - Copy the `-filtered.png` from the log entry's `outputs.filtered` → `<target-dir>/feature-filtered.png`
-      - Copy each `outputs.composited` entry → `<target-dir>/feature-<format>.png` (og, youtube, instagram)
-      - Copy the `-raw.png` (first one in `outputs.raw`) → `<target-dir>/feature-raw.png` (optional, useful for re-compositing later)
-      - Source paths in the log entry are already URL-style (`/images/generated/...`) relative to the correct site's publicDir; resolve them against `src/sites/<site>/public/` to find the filesystem path.
+### 3. Apply each approved-unapplied entry
 
-   f. **Update post frontmatter** (`src/sites/<site>/pages/blog/<slug>/index.md`):
-      - Set `image: "/images/blog/<slug>/feature-filtered.png"`
-      - Set `socialImage: "/images/blog/<slug>/feature-og.png"`
-      - Use the Edit tool; preserve other frontmatter fields and ordering
+For each entry in `approvedUnapplied`:
 
-   g. **Update blog index** (`src/sites/<site>/pages/blog/index.astro`):
-      - Find the entry whose `slug:` matches
-      - Set its `image:` field to `"/images/blog/<slug>/feature-filtered.png"`
-      - If no matching entry, report it but don't fail — the user maintains that list manually
+- **`targetDecision: auto`** (exactly one post title matches) — apply without prompting:
+  ```bash
+  tsx .claude/skills/feature-image-apply/apply.ts --entry=<entryId> --to=<candidateTargets[0].postPath>
+  ```
+- **`targetDecision: ambiguous`** (multiple matches) — surface the list to the user and ask which post to apply to, then run `apply.ts` with `--to=<chosen>`.
+- **`targetDecision: none`** (no title match found) — report the entry + site and ask the user for the target `post-path`. Possible reasons: the post's title doesn't exactly match the entry's title, or the post doesn't exist yet.
 
-   h. **Report the item as applied:**
-      - `POST /api/dev/feature-image/workflow` with `{ action: "apply-result", id, changedFiles: [...] }`
-      - On error, include the `error` field — state stays `decided` so the item can be retried
+### 4. Summary report
 
-4. **Summary report:**
-   - N items applied, M failed, K skipped
-   - Per item: target post (site + slug), files written, any errors
-   - Suggest running `npm run dev` to preview and `git add` / commit when satisfied
+After all items processed:
+- N applied, M skipped, K failed
+- Per item: `entryId[:8] → <site>:<slug>` (one line each)
+- Suggest `npm run dev:<site>` to preview, then `git add` + commit when satisfied
 
-5. **Do NOT commit** — user reviews and commits
+### 5. Do NOT commit
 
-## Conflict Handling
+The user reviews + commits.
 
-If the target post already has a feature image:
-- Report the existing path and the new path
-- Ask the user: overwrite, skip, or cancel this item
-- On skip: transition the item to `cancelled` via the workflow endpoint
-- On cancel: leave the item as `decided` (user can decide later)
+## Conflict handling
 
-## Cross-site gotchas
+If the target post already has `feature-*.png` files in its image dir:
+- Report the existing files before overwriting
+- Ask the user: overwrite / skip this item / cancel
 
-- Make sure you're writing into `src/sites/<site>/public/images/blog/<slug>/` — NOT the deprecated top-level `public/` tree (which is orphaned and gitignored).
-- Each site's blog index lives under its own `src/sites/<site>/pages/blog/index.astro`. Don't edit the other site's index by accident.
-- If a workflow item references a slug that doesn't exist in the target site's blog index, surface the mismatch rather than silently creating one.
+If the post already has an `image` / `socialImage` frontmatter pointing elsewhere:
+- Surface the existing value. The helper upserts over it; that's usually fine but worth naming so the user can intervene.
 
-## Error Recovery
+## Path conventions
 
-An item that fails to apply stays in `decided` state with an `application.error`. Re-running `/feature-image-apply` retries it after the underlying issue is fixed.
+| Kind | Path |
+|------|------|
+| Scratch output (gallery's host site) | `src/sites/audiocontrol/public/images/generated/<baseName>-<format>.png` |
+| Target image dir | `src/sites/<site>/public/images/blog/<slug>/` |
+| Target filenames | `feature-og.png`, `feature-youtube.png`, `feature-instagram.png`, `feature-filtered.png`, `feature-raw.png` |
+| Target post | `src/sites/<site>/pages/blog/<slug>/index.md` |
+| Target frontmatter | `image: "/images/blog/<slug>/feature-filtered.png"`, `socialImage: "/images/blog/<slug>/feature-og.png"` |
+| Applied marker | `LogEntry.appliedTo = "<postPath>"` |
 
-## Related Skills
+## Error recovery
 
-- `/feature-image-blog <post-path>` — creates the workflow item this skill consumes
-- `/feature-image-iterate` — handles gallery iterate requests
-- `/feature-image-help` — report pipeline state including pending workflows
+An item that fails stays in its current state (decided workflow stays `decided`; approved entry stays without `appliedTo`). Re-run the skill after fixing the underlying issue.
+
+If `apply.ts` reports a missing source file, the scratch output may have been cleared — the user should regenerate or reapprove to produce fresh files.
+
+## Related skills
+
+- `/feature-image-blog <post-path>` — start a blog-post workflow (produces `decided` items)
+- `/feature-image-iterate` — drain gallery iterate-thread messages
+- `/feature-image-help` — pipeline state
+- The gallery's **Approve** button — bakes all three social formats + marks entry approved (produces approved-unapplied items)

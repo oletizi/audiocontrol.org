@@ -228,6 +228,174 @@ const siteBrands = {
     }
     .scrim.visible { opacity: 1; pointer-events: auto; }
 
+    /* ── Stepped progress drawer ─────────────────────────────────────────── */
+    /* Slides in from the right with a higher z-index than other drawers, so
+     * an in-flight Approve flow overlays the workflow drawer. Stays open on
+     * completion showing the final state; user clicks Done to dismiss. */
+    .step-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(440px, 92vw);
+      background: var(--bg-1);
+      border-left: 1px solid var(--edge);
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-lg);
+      transform: translateX(100%);
+      transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .step-drawer[hidden] { display: flex; transform: translateX(100%); }
+    .step-drawer.open { transform: translateX(0); }
+
+    .step-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 1rem 1.1rem 0.85rem;
+      border-bottom: 1px solid var(--edge);
+    }
+    .step-head-titles { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+    .step-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+    }
+    .step-timers {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      display: flex;
+      gap: 0.35rem;
+    }
+    .step-eta.tight { color: var(--warning); }
+    .step-close {
+      background: transparent;
+      border: none;
+      color: var(--text-3);
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 0 0.4rem;
+      cursor: pointer;
+      border-radius: var(--radius);
+    }
+    .step-close:hover { background: var(--bg-3); color: var(--text-0); }
+
+    .step-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.85rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+    .step-row {
+      display: grid;
+      grid-template-columns: 1.4rem 1fr auto;
+      column-gap: 0.7rem;
+      align-items: start;
+      padding: 0.6rem 0.7rem;
+      background: var(--bg-2);
+      border: 1px solid var(--edge);
+      border-radius: var(--radius);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .step-row.active   { border-color: var(--accent); background: rgba(47, 184, 168, 0.06); }
+    .step-row.complete { border-color: rgba(95, 209, 163, 0.35); }
+    .step-row.failed   { border-color: var(--danger); background: rgba(228, 115, 115, 0.05); }
+    .step-row.pending .step-icon,
+    .step-row.pending .step-label { opacity: 0.55; }
+
+    .step-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      flex-shrink: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: var(--bg-3);
+      color: var(--text-3);
+      border: 1px solid var(--edge-hi);
+      line-height: 1;
+    }
+    .step-row.active   .step-icon { background: var(--accent); color: var(--bg-0); border-color: var(--accent); animation: step-pulse 1.2s ease-in-out infinite; }
+    .step-row.complete .step-icon { background: var(--success); color: var(--bg-0); border-color: var(--success); }
+    .step-row.failed   .step-icon { background: var(--danger); color: var(--bg-0); border-color: var(--danger); }
+
+    @keyframes step-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(47, 184, 168, 0.45); }
+      50%      { box-shadow: 0 0 0 5px rgba(47, 184, 168, 0); }
+    }
+
+    .step-body { min-width: 0; }
+    .step-label {
+      font-size: 0.85rem;
+      color: var(--text-0);
+      line-height: 1.3;
+      font-weight: 500;
+    }
+    .step-detail {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      margin-top: 0.25rem;
+      line-height: 1.4;
+    }
+    .step-row.active .step-detail { color: var(--text-2); }
+    .step-row.failed .step-detail { color: var(--danger); }
+
+    .step-progress {
+      margin-top: 0.4rem;
+      height: 3px;
+      background: var(--bg-3);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .step-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.25s linear;
+      width: 0;
+    }
+
+    .step-elapsed-self {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-3);
+      align-self: center;
+      min-width: 3ch;
+      text-align: right;
+    }
+    .step-row.complete .step-elapsed-self { color: var(--success); }
+
+    .step-summary {
+      padding: 0.75rem 1.1rem;
+      border-top: 1px solid var(--edge);
+      font-size: 0.8rem;
+      color: var(--text-1);
+      line-height: 1.5;
+    }
+    .step-summary.ok    { color: var(--success); }
+    .step-summary.error { color: var(--danger); }
+
+    .step-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      padding: 0.75rem 1.1rem;
+      border-top: 1px solid var(--edge);
+    }
+
     /* ── Drawer content typography ─────────────────────────────────────────── */
     .drawer h2 {
       margin: 0 0 0.25rem 0;
@@ -1322,6 +1490,150 @@ const siteBrands = {
     .card-thumb .og-preview .og-subtitle,
     .card-thumb .og-preview .og-brand-row { pointer-events: none; }
 
+    /* ── Help widget ─────────────────────────────────────────────────────── */
+    .help-toggle {
+      background: var(--bg-2);
+      color: var(--text-2);
+      border: 1px solid var(--edge);
+      border-radius: 999px;
+      width: 1.5rem;
+      height: 1.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .help-toggle:hover { background: var(--bg-3); color: var(--text-0); border-color: var(--edge-hi); }
+    .help-toggle[aria-expanded="true"] { background: var(--accent); color: var(--bg-0); border-color: var(--accent); }
+    .help-toggle-sm {
+      width: 1.1rem;
+      height: 1.1rem;
+      font-size: 0.6rem;
+      vertical-align: middle;
+    }
+    .stage-head-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    /* Lightweight help card under the History heading (smaller than the
+     * page-level one; lives inside the stage, pushes the gallery down). */
+    .history-help {
+      margin: -0.4rem 0 1rem;
+      padding: 0.85rem 1rem;
+      background: var(--bg-1);
+      border: 1px solid var(--edge);
+      border-left: 2px solid var(--accent);
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: var(--text-1);
+    }
+    .history-help p { margin: 0 0 0.6rem; }
+    .history-help strong { color: var(--text-0); }
+    .history-help em { color: var(--accent); font-style: normal; }
+    .history-help code { color: var(--accent); background: var(--bg-2); padding: 0 0.25rem; border-radius: 3px; }
+    .history-help-list {
+      margin: 0;
+      padding-left: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .help-card {
+      margin: 0 0 1.25rem;
+      padding: 1.1rem 1.25rem 1.25rem;
+      background: var(--bg-1);
+      border: 1px solid var(--edge);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+    }
+    .help-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.6rem;
+    }
+    .help-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+    }
+    .help-close {
+      background: transparent;
+      border: none;
+      color: var(--text-3);
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 0 0.35rem;
+      cursor: pointer;
+      border-radius: var(--radius);
+    }
+    .help-close:hover { background: var(--bg-3); color: var(--text-0); }
+    .help-lede {
+      margin: 0 0 1rem;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--text-1);
+      max-width: 58rem;
+    }
+
+    .help-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem 1.5rem;
+    }
+    @media (min-width: 1200px) {
+      .help-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    .help-col { min-width: 0; }
+    .help-subhead {
+      margin: 0 0 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-3);
+    }
+
+    .help-steps {
+      margin: 0;
+      padding-left: 1.1rem;
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: var(--text-1);
+    }
+    .help-steps li { margin-bottom: 0.55rem; }
+    .help-steps li:last-child { margin-bottom: 0; }
+    .help-steps strong { color: var(--text-0); font-weight: 600; }
+    .help-steps em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+    .help-dl { margin: 0; font-size: 0.78rem; line-height: 1.5; }
+    .help-dl dt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text-0);
+      margin-top: 0.5rem;
+    }
+    .help-dl dt:first-child { margin-top: 0; }
+    .help-dl dt code { color: var(--accent); background: var(--bg-2); padding: 0 0.3rem; border-radius: 3px; }
+    .help-dl dd {
+      margin: 0.15rem 0 0;
+      color: var(--text-2);
+    }
+
     /* ── Misc ──────────────────────────────────────────────────────────────── */
     .hint { color: var(--text-3); font-size: 0.75rem; }
     .err {
@@ -1346,6 +1658,7 @@ const siteBrands = {
     <div class="app-meta">
       <span>log <code>.feature-image-history.jsonl</code></span>
       <span>wf <code>.feature-image-pipeline.jsonl</code></span>
+      <button type="button" class="help-toggle" id="help-toggle" title="What is this? How does the workflow work?" aria-label="Help" aria-expanded="false">?</button>
     </div>
   </header>
 
@@ -1458,13 +1771,120 @@ const siteBrands = {
 
   <div class="scrim" id="scrim"></div>
 
+  <!-- Stepped progress drawer (Approve flow). Hidden by default. -->
+  <aside class="step-drawer" id="step-drawer" hidden aria-hidden="true">
+    <header class="step-head">
+      <div class="step-head-titles">
+        <div class="step-title" id="step-title">Approve and bake</div>
+        <div class="step-timers">
+          <span class="step-elapsed" id="step-elapsed">elapsed 0:00</span>
+          <span class="step-eta" id="step-eta"></span>
+        </div>
+      </div>
+      <button type="button" class="step-close" id="step-close" aria-label="Close" hidden>×</button>
+    </header>
+    <div class="step-list" id="step-list" aria-live="polite"></div>
+    <div class="step-summary" id="step-summary" hidden></div>
+    <footer class="step-foot">
+      <button type="button" class="btn-ghost step-cancel" id="step-cancel">Cancel</button>
+      <button type="button" class="btn-primary step-done" id="step-done" hidden>Done</button>
+    </footer>
+  </aside>
+
   <!-- Main stage -->
   <main class="stage">
     <div class="stage-inner">
+      <section class="help-card" id="help-card" hidden aria-hidden="true">
+        <div class="help-head">
+          <span class="help-title">Feature Image Studio</span>
+          <button type="button" class="help-close" id="help-close" aria-label="Close help">×</button>
+        </div>
+        <p class="help-lede">Generate, iterate on, and approve AI-generated feature images for blog posts on either site (audiocontrol or editorialcontrol). The gallery lives under audiocontrol's dev server but targets either site — brand palette, typography, and logo switch per-site.</p>
+
+        <div class="help-grid">
+          <div class="help-col">
+            <h4 class="help-subhead">Workflow</h4>
+            <ol class="help-steps">
+              <li><strong>Start</strong> — Open the <em>Generate</em> drawer (left) to generate freely, or invoke <code>/feature-image-blog &lt;post-path&gt;</code> in Claude Code to enqueue a workflow targeting a specific post.</li>
+              <li><strong>Activate (if using a workflow)</strong> — Open the <em>Workflows</em> drawer (right) and click <em>Activate</em> on the pending item. That binds the gallery to that workflow — Generate pre-fills with the workflow's prompt/preset/title, Site switches to the target site, and <em>Approve</em> decides the workflow instead of creating a freestanding approved entry.</li>
+              <li><strong>Iterate</strong> — Click a thumbnail to focus an entry. Edit title / subtitle / filters / site live. Send a message in the thread composer to have Claude propose variants.</li>
+              <li><strong>Approve</strong> — Click <em>Approve</em> (in focus mode) to bake all three social variants (og / youtube / instagram), mark the entry approved, and decide any active workflow.</li>
+              <li><strong>Apply</strong> — Run <code>/feature-image-apply</code> in Claude Code. Approved entries get copied into the target post's public dir + wired into frontmatter.</li>
+            </ol>
+          </div>
+
+          <div class="help-col">
+            <h4 class="help-subhead">Skills</h4>
+            <dl class="help-dl">
+              <dt><code>/feature-image-blog &lt;post&gt;</code></dt>
+              <dd>Start a workflow for a blog post. Infers site from the path or URL host.</dd>
+              <dt><code>/feature-image-iterate</code></dt>
+              <dd>Drain pending thread messages. Run after sending feedback in the gallery.</dd>
+              <dt><code>/feature-image-apply</code></dt>
+              <dd>Route approved entries + decided workflows into their target posts.</dd>
+              <dt><code>/feature-image-prompts</code></dt>
+              <dd>Browse the prompt-template library (ranked by fitness).</dd>
+              <dt><code>/feature-image-help</code></dt>
+              <dd>Report current pipeline state (workflow items, recent history).</dd>
+            </dl>
+          </div>
+
+          <div class="help-col">
+            <h4 class="help-subhead">Gallery actions</h4>
+            <dl class="help-dl">
+              <dt>Activate / Deactivate (Workflows drawer)</dt>
+              <dd>Selects which pending workflow is "the one I'm working on." Pre-fills Generate, switches Site, scopes Approve's decision. Deactivate to work freestanding.</dd>
+              <dt>Cancel (Workflows drawer)</dt>
+              <dd>Drops a pending workflow without a decision. No files touched.</dd>
+              <dt>Focus</dt>
+              <dd>Click the thumbnail or button to open an entry with live preview + controls.</dd>
+              <dt>Approve</dt>
+              <dd>Bakes 3 social formats + marks approved. Canonical gesture.</dd>
+              <dt>Reject</dt>
+              <dd>Marks rejected; no bake.</dd>
+              <dt>★ Rate</dt>
+              <dd>1–5. Feeds the prompt-library fitness ranker.</dd>
+              <dt>Commit (focus)</dt>
+              <dd>Bakes current edits without approving. Good for iterating on a specific variant.</dd>
+              <dt>Send (thread)</dt>
+              <dd>Asks Claude to iterate. Snapshots your current preview state.</dd>
+              <dt>Copy as input</dt>
+              <dd>Loads this entry's params into the Generate form.</dd>
+              <dt>Save as template</dt>
+              <dd>Adds this entry's prompt to the library for reuse.</dd>
+            </dl>
+          </div>
+
+          <div class="help-col">
+            <h4 class="help-subhead">Keyboard</h4>
+            <dl class="help-dl">
+              <dt>ESC</dt><dd>Close focus mode / close drawers.</dd>
+              <dt>Cmd/Ctrl + Enter</dt><dd>Send thread message.</dd>
+              <dt>Enter / Space</dt><dd>When a thumbnail is focused, open focus mode.</dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+
       <div class="stage-head">
-        <span class="stage-label" id="stage-label">History</span>
+        <span class="stage-head-left">
+          <span class="stage-label" id="stage-label">History</span>
+          <button type="button" class="help-toggle help-toggle-sm" id="history-help-toggle" title="What is the history? How do I use it?" aria-label="History help" aria-expanded="false">?</button>
+        </span>
         <span class="stage-count" id="stage-count"></span>
       </div>
+      <section class="history-help" id="history-help" hidden aria-hidden="true">
+        <p>
+          <strong>History</strong> is the append-only log of every generation, recomposite, and approval — newest first. Each card is a snapshot of what was baked: the prompt, preset, filters, title/subtitle, site, and the PNG files on disk. Nothing gets mutated; iterations create new entries.
+        </p>
+        <ul class="history-help-list">
+          <li><strong>Click a thumbnail</strong> (or the <em>Focus ⟶</em> button) to open an entry. Focus mode gives you the live preview, filter controls, thread composer, and the Approve / Reject / Commit actions.</li>
+          <li><strong>The status pill</strong> (generated · approved · rejected) tracks where each entry stands. <em>Approved</em> is what <code>/feature-image-apply</code> picks up and routes to its target post.</li>
+          <li><strong>★ Ratings</strong> feed the prompt-library fitness ranker — templates used by high-rated generations rise in the picker; low-rated ones fade.</li>
+          <li><strong>Dashed teal outline on a thumbnail</strong> means the entry has unsaved preview edits (title/subtitle/filter/site changes). Commit or Approve in focus to bake them; otherwise they survive refreshes as a draft.</li>
+          <li><strong>Iterations form a tree</strong> via each entry's <code>parentEntryId</code> — recomposites and Claude's iterate responses link back to the source, so a focus thread travels with the lineage.</li>
+        </ul>
+      </section>
       <div class="gallery" id="gallery">
         <div class="empty-hint">Loading…</div>
       </div>
@@ -2549,6 +2969,14 @@ const siteBrands = {
       const starsHtml = '<span class="stars">' + [1,2,3,4,5].map(n =>
         `<button type="button" class="${entry.rating && entry.rating >= n ? 'on' : ''}" data-action="rate" data-rate="${n}" title="Rate ${n} of 5 — feeds template fitness scoring">★</button>`
       ).join('') + '</span>';
+      const isApproved = entry.status === 'approved';
+      const isRejected = entry.status === 'rejected';
+      const approveBtn = isApproved
+        ? `<button type="button" class="btn-success-ghost" disabled title="Already approved. Focus the entry and use Commit to re-bake with fresh edits; a fresh generated entry can then be approved.">Approved ✓</button>`
+        : `<button type="button" class="btn-success-ghost" data-action="approve" title="Bake all three PNG variants (og, youtube, instagram) with your current edits, mark as approved, and enshrine for Claude to apply.">Approve</button>`;
+      const rejectBtn = isRejected
+        ? `<button type="button" class="btn-danger-ghost" disabled title="Already rejected.">Rejected ✗</button>`
+        : `<button type="button" class="btn-danger-ghost" data-status="rejected" title="Mark this generation as rejected">Reject</button>`;
 
       div.innerHTML = `
         <div class="card-compact">
@@ -2564,8 +2992,8 @@ const siteBrands = {
             </div>
             <div class="card-actions">
               <button type="button" class="btn-focus" data-action="focus" title="Open in focus mode — edit text, filters, and bake PNGs">Focus ⟶</button>
-              <button type="button" class="btn-success-ghost" data-status="approved" title="Mark this generation as approved">Approve</button>
-              <button type="button" class="btn-danger-ghost" data-status="rejected" title="Mark this generation as rejected">Reject</button>
+              ${approveBtn}
+              ${rejectBtn}
               <div class="dropdown">
                 <button type="button" class="dropdown-toggle" data-action="toggle-menu" aria-label="More" title="More actions">⋯</button>
                 <div class="dropdown-menu">
@@ -2596,6 +3024,14 @@ const siteBrands = {
       ).join('') + '</span>';
       const err = entry.error ? `<div class="err-line">${escapeHtml(entry.error)}</div>` : '';
       const prompt = entry.prompt ? `<div class="prompt-line">${escapeHtml(entry.prompt)}</div>` : '';
+      const isApproved = entry.status === 'approved';
+      const isRejected = entry.status === 'rejected';
+      const approveBtn = isApproved
+        ? `<button type="button" class="btn-success-ghost" disabled title="Already approved. Commit any fresh edits to produce a new generated entry, then approve that one.">Approved ✓</button>`
+        : `<button type="button" class="btn-success-ghost" data-action="approve" title="Bake all three PNG variants (og, youtube, instagram) with your current edits, mark as approved, and enshrine for Claude to apply.">Approve</button>`;
+      const rejectBtn = isRejected
+        ? `<button type="button" class="btn-danger-ghost" disabled title="Already rejected.">Rejected ✗</button>`
+        : `<button type="button" class="btn-danger-ghost" data-status="rejected" title="Mark this generation as rejected">Reject</button>`;
       const notesInput = `
         <div class="note-edit">
           <label class="note-label">Note</label>
@@ -2603,10 +3039,6 @@ const siteBrands = {
           <span class="note-saved" aria-live="polite"></span>
         </div>
       `;
-
-      const decisionBtn = activeWorkflow && entry.status !== 'rejected' && ((entry.outputs?.composited?.length || 0) > 0 || (entry.outputs?.filtered?.length || 0) > 0)
-        ? `<button type="button" class="btn-primary" data-action="decide" title="Submit this generation as the decision for the active workflow, then run /feature-image-apply in Claude Code">Submit for workflow ${activeWorkflow.id.slice(0,8)}</button>`
-        : '';
 
       const preview = rawPath ? buildLivePreviewHtml(entry, rawPath) : buildThumbPreview(entry);
 
@@ -2631,9 +3063,8 @@ const siteBrands = {
           </div>
           ${notesInput}
           <div class="btn-row">
-            ${decisionBtn}
-            <button type="button" class="btn-success-ghost" data-status="approved" title="Mark this generation as approved">Approve</button>
-            <button type="button" class="btn-danger-ghost" data-status="rejected" title="Mark this generation as rejected">Reject</button>
+            ${approveBtn}
+            ${rejectBtn}
             <button type="button" class="btn-ghost" data-action="copy" title="Copy this entry's prompt, provider, preset and filters into the Generate form">Copy as input</button>
             <button type="button" class="btn-ghost" data-action="save-template" title="Save this prompt as a reusable template in the library">Save as template</button>
           </div>
@@ -2853,9 +3284,9 @@ const siteBrands = {
           if (newStatus) return updateStatus(entry.id, newStatus);
           if (action === 'focus') return focusEntry(entry.id);
           if (action === 'unfocus') return unfocusEntry();
+          if (action === 'approve') return startApproveFlow(entry);
           if (action === 'note') return editNote(entry);
           if (action === 'copy') return copyAsInput(entry);
-          if (action === 'decide') return submitDecision(entry.id);
           if (action === 'rate') return rateEntry(entry, parseInt(btn.dataset.rate, 10));
           if (action === 'save-template') return openSaveTemplatePanel(entry);
           if (action === 'toggle-menu') {
@@ -3131,6 +3562,8 @@ const siteBrands = {
       } catch (err) {
         galleryEl.innerHTML = `<div class="err">Could not load log: ${escapeHtml(err.message)}</div>`;
       }
+      // Sync history-help visibility with whether we're in history or focus.
+      applyHistoryHelpState(localStorage.getItem('fi-history-help-open') === 'open');
     }
 
     async function updateStatus(id, status) {
@@ -3146,6 +3579,291 @@ const siteBrands = {
         alert(`Failed to update status: ${err.message}`);
       }
     }
+
+    // ── Approve flow — stepped progress drawer ─────────────────────────────
+    // Bakes og/youtube/instagram in one recomposite call, marks the new
+    // canonical entry approved, and (if a workflow is active) submits it as
+    // the decision. Claude's future apply skill discovers approved entries
+    // and routes them to targets.
+    const STEP_ICON = { pending: '○', active: '●', complete: '✓', failed: '✗' };
+    const STEP_DURATION_KEY = 'fi-step-duration-ema';
+
+    function loadStepDurations() {
+      try { return JSON.parse(localStorage.getItem(STEP_DURATION_KEY) || '{}'); }
+      catch { return {}; }
+    }
+    function saveStepDuration(stepId, ms) {
+      const store = loadStepDurations();
+      // EMA with alpha 0.4 so recent runs weigh heavier without wild swings.
+      const prev = typeof store[stepId] === 'number' ? store[stepId] : ms;
+      store[stepId] = Math.round(prev * 0.6 + ms * 0.4);
+      localStorage.setItem(STEP_DURATION_KEY, JSON.stringify(store));
+    }
+
+    function fmtMMSS(ms) {
+      const s = Math.max(0, Math.round(ms / 1000));
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    function openStepDrawer(title, steps) {
+      const drawer = document.getElementById('step-drawer');
+      const titleEl = document.getElementById('step-title');
+      const list = document.getElementById('step-list');
+      const summaryEl = document.getElementById('step-summary');
+      const closeBtn = document.getElementById('step-close');
+      const cancelBtn = document.getElementById('step-cancel');
+      const doneBtn = document.getElementById('step-done');
+      const elapsedEl = document.getElementById('step-elapsed');
+      const etaEl = document.getElementById('step-eta');
+
+      titleEl.textContent = title;
+      summaryEl.hidden = true;
+      summaryEl.className = 'step-summary';
+      summaryEl.textContent = '';
+      closeBtn.hidden = true;
+      doneBtn.hidden = true;
+      cancelBtn.hidden = false;
+      list.innerHTML = '';
+
+      const store = loadStepDurations();
+      const estimates = steps.map(s => store[s.id] ?? s.estimateMs ?? 3000);
+      const totalEstimate = estimates.reduce((a, b) => a + b, 0);
+      let stepEls = [];
+      for (const step of steps) {
+        const row = document.createElement('div');
+        row.className = 'step-row pending';
+        row.innerHTML = `
+          <span class="step-icon">${STEP_ICON.pending}</span>
+          <div class="step-body">
+            <div class="step-label"></div>
+            <div class="step-detail" hidden></div>
+            <div class="step-progress" hidden><div class="step-progress-fill"></div></div>
+          </div>
+          <span class="step-elapsed-self" hidden></span>
+        `;
+        row.querySelector('.step-label').textContent = step.label;
+        list.appendChild(row);
+        stepEls.push(row);
+      }
+
+      drawer.hidden = false;
+      drawer.setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(() => drawer.classList.add('open'));
+
+      const started = Date.now();
+      let activeIdx = -1;
+      let activeStarted = 0;
+      let cancelled = false;
+      const durations = {};
+
+      const tick = setInterval(() => {
+        const elapsed = Date.now() - started;
+        elapsedEl.textContent = `elapsed ${fmtMMSS(elapsed)}`;
+        // ETA: sum of pending + active-remaining + not-yet-started steps
+        let remainingMs = 0;
+        for (let i = 0; i < steps.length; i++) {
+          const est = estimates[i];
+          if (i < activeIdx) continue; // done
+          if (i === activeIdx) {
+            remainingMs += Math.max(0, est - (Date.now() - activeStarted));
+          } else {
+            remainingMs += est;
+          }
+        }
+        etaEl.textContent = remainingMs > 0 ? `· ~${fmtMMSS(remainingMs)} left` : '';
+        etaEl.classList.toggle('tight', remainingMs > 0 && remainingMs < 2000);
+        // Active step progress bar
+        if (activeIdx >= 0 && activeIdx < stepEls.length) {
+          const fill = stepEls[activeIdx].querySelector('.step-progress-fill');
+          if (fill) {
+            const pct = Math.min(99, ((Date.now() - activeStarted) / estimates[activeIdx]) * 100);
+            fill.style.width = pct + '%';
+          }
+        }
+      }, 250);
+
+      const transitionTo = (idx, status, detail) => {
+        if (idx < 0 || idx >= stepEls.length) return;
+        const row = stepEls[idx];
+        row.classList.remove('pending', 'active', 'complete', 'failed');
+        row.classList.add(status);
+        const iconEl = row.querySelector('.step-icon');
+        iconEl.textContent = STEP_ICON[status];
+        const detailEl = row.querySelector('.step-detail');
+        if (detail) { detailEl.textContent = detail; detailEl.hidden = false; }
+        const progressEl = row.querySelector('.step-progress');
+        if (status === 'active') {
+          progressEl.hidden = false;
+        } else {
+          progressEl.hidden = true;
+        }
+        const elapsedSelfEl = row.querySelector('.step-elapsed-self');
+        if (status === 'complete' && durations[steps[idx].id] !== undefined) {
+          elapsedSelfEl.textContent = fmtMMSS(durations[steps[idx].id]);
+          elapsedSelfEl.hidden = false;
+        }
+      };
+
+      const api = {
+        start(idx) {
+          if (activeIdx >= 0) transitionTo(activeIdx, 'complete');
+          activeIdx = idx;
+          activeStarted = Date.now();
+          transitionTo(idx, 'active');
+        },
+        detail(idx, text) {
+          const detailEl = stepEls[idx]?.querySelector('.step-detail');
+          if (detailEl) { detailEl.textContent = text; detailEl.hidden = false; }
+        },
+        complete(idx, detail) {
+          const d = Date.now() - activeStarted;
+          durations[steps[idx].id] = d;
+          saveStepDuration(steps[idx].id, d);
+          transitionTo(idx, 'complete', detail);
+        },
+        fail(idx, errorText) {
+          transitionTo(idx, 'failed', errorText);
+          finish(false, errorText);
+        },
+        finish(ok, summary) {
+          clearInterval(tick);
+          summaryEl.textContent = summary || '';
+          summaryEl.hidden = !summary;
+          summaryEl.classList.add(ok ? 'ok' : 'error');
+          cancelBtn.hidden = true;
+          doneBtn.hidden = false;
+          closeBtn.hidden = false;
+          etaEl.textContent = '';
+          const total = Date.now() - started;
+          elapsedEl.textContent = `elapsed ${fmtMMSS(total)}${ok ? '' : ' · failed'}`;
+        },
+        cancelled: () => cancelled,
+      };
+
+      const close = () => {
+        drawer.classList.remove('open');
+        setTimeout(() => { drawer.hidden = true; drawer.setAttribute('aria-hidden', 'true'); }, 250);
+      };
+      doneBtn.onclick = close;
+      closeBtn.onclick = close;
+      cancelBtn.onclick = () => {
+        cancelled = true;
+        cancelBtn.disabled = true;
+        cancelBtn.textContent = 'Cancelling…';
+      };
+
+      function finish(ok, summary) { api.finish(ok, summary); }
+      return api;
+    }
+
+    async function startApproveFlow(entry) {
+      // Derive current preview state. Prefer the live preview's in-DOM state
+      // (user may have unsaved edits); fall back to the entry's stored state.
+      const card = galleryEl.querySelector(`.card.focused[data-id="${entry.id}"]`);
+      const previewEl = card?.querySelector('.og-preview');
+      let title = entry.title || '';
+      let subtitle = entry.subtitle || '';
+      let preset = entry.preset || undefined;
+      let filters = {};
+      let overlay = true;
+      let site = entry.site || activeSite;
+      if (previewEl) {
+        const titleEl = previewEl.querySelector('.og-title-input');
+        const subEl = previewEl.querySelector('.og-subtitle-input');
+        if (titleEl) title = titleEl.value;
+        if (subEl) subtitle = subEl.value;
+        preset = previewEl.dataset.preset || preset;
+        for (const k of ['grade', 'phosphor', 'vignette', 'scanlines', 'grain']) {
+          filters[k] = previewEl.dataset[k];
+        }
+        overlay = previewEl.dataset.overlay !== 'off';
+        site = previewEl.dataset.site || site;
+      }
+
+      const workflow = (activeWorkflow && activeWorkflow.state === 'open') ? activeWorkflow : null;
+
+      const steps = [
+        { id: 'bake', label: 'Bake 3 PNG variants (og, youtube, instagram)', estimateMs: 9000 },
+        { id: 'approve', label: 'Mark as approved', estimateMs: 400 },
+      ];
+      if (workflow) steps.push({ id: 'decide', label: `Submit decision for workflow ${workflow.id.slice(0, 8)}`, estimateMs: 400 });
+
+      const drawer = openStepDrawer('Approve and bake', steps);
+      let canonicalEntryId = null;
+
+      try {
+        // ── Step 1: Bake three formats in a single recomposite call ──
+        drawer.start(0);
+        const bakeRes = await fetch('/api/dev/feature-image/recomposite', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            sourceEntryId: entry.id,
+            title, subtitle, preset, filters, overlay, site,
+            formats: ['og', 'youtube', 'instagram'],
+            includeFilteredVariant: true,
+          }),
+        });
+        const bakeJson = await bakeRes.json();
+        if (!bakeRes.ok) throw new Error(bakeJson.error || `recomposite status ${bakeRes.status}`);
+        canonicalEntryId = bakeJson.entry.id;
+        const variantCount = bakeJson.entry?.outputs?.composited?.length || 3;
+        drawer.complete(0, `${variantCount} composited variants + 1 filtered`);
+        if (drawer.cancelled()) { drawer.finish(false, 'Cancelled before approve.'); return; }
+
+        // ── Step 2: Mark approved ──
+        drawer.start(1);
+        const aprRes = await fetch('/api/dev/feature-image/log', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: canonicalEntryId, status: 'approved' }),
+        });
+        if (!aprRes.ok) throw new Error(`approve status ${aprRes.status}`);
+        drawer.complete(1, `entry ${canonicalEntryId.slice(0, 8)} enshrined`);
+        if (drawer.cancelled()) { drawer.finish(false, 'Cancelled before decide.'); await refreshGallery(); return; }
+
+        // ── Step 3 (conditional): Submit decision ──
+        if (workflow) {
+          drawer.start(2);
+          const decRes = await fetch('/api/dev/feature-image/workflow', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              action: 'decide',
+              id: workflow.id,
+              logEntryId: canonicalEntryId,
+              userNotes: 'approved from gallery with all 3 social formats baked',
+            }),
+          });
+          const decJson = await decRes.json().catch(() => ({}));
+          if (!decRes.ok) throw new Error(decJson.error || `decide status ${decRes.status}`);
+          drawer.complete(2, `decision submitted — run /feature-image-apply to wire into the post`);
+        }
+
+        drawer.finish(true, workflow
+          ? `Approved + all variants baked. Run /feature-image-apply in Claude Code to route the files into the post.`
+          : `Approved + all variants baked. Ready for Claude Code to apply.`);
+
+        // Clear the preview draft since the bake captured the committed state.
+        localStorage.removeItem(`fi-preview-draft-${entry.id}`);
+        // Pop focus to the new canonical entry if the user is focused here.
+        if (focusedEntryId === entry.id && canonicalEntryId) focusEntry(canonicalEntryId);
+        await refreshTemplates();
+        await refreshWorkflows();
+        await refreshGallery();
+      } catch (err) {
+        const lastActive = steps.findIndex((_, i) => {
+          const row = document.querySelectorAll('#step-list .step-row')[i];
+          return row && row.classList.contains('active');
+        });
+        if (lastActive >= 0) {
+          drawer.fail(lastActive, err.message || String(err));
+        } else {
+          drawer.finish(false, `Error: ${err.message || err}`);
+        }
+      }
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     async function editNote(entry) {
       const next = prompt('Note:', entry.notes || '');
@@ -3228,6 +3946,49 @@ const siteBrands = {
         genBtn.disabled = false;
       }
     });
+
+    // ── Help widgets ───────────────────────────────────────────────────────
+    // Two collapsible help panels:
+    //   1. Page-level overview card (top of stage) — toggled by ? in header
+    //   2. History help (under the History heading) — toggled by ? in heading
+    //      Hidden when focused on a single entry (only applies to history view).
+    // Each persists its open/closed state in localStorage.
+    const helpToggle = document.getElementById('help-toggle');
+    const helpCard = document.getElementById('help-card');
+    const helpClose = document.getElementById('help-close');
+    function applyHelpState(open) {
+      helpCard.hidden = !open;
+      helpCard.setAttribute('aria-hidden', open ? 'false' : 'true');
+      helpToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      localStorage.setItem('fi-help-open', open ? 'open' : 'closed');
+    }
+    const savedHelp = localStorage.getItem('fi-help-open');
+    applyHelpState(savedHelp === null ? true : savedHelp === 'open');
+    helpToggle.addEventListener('click', () => applyHelpState(helpCard.hidden));
+    helpClose.addEventListener('click', () => applyHelpState(false));
+
+    const historyHelpToggle = document.getElementById('history-help-toggle');
+    const historyHelp = document.getElementById('history-help');
+    function applyHistoryHelpState(open) {
+      // If focused on a single entry, the section heading reads 'Focus' not
+      // 'History' — hide the help card and toggle regardless of state.
+      const viewingHistory = !focusedEntryId;
+      historyHelpToggle.hidden = !viewingHistory;
+      if (!viewingHistory) {
+        historyHelp.hidden = true;
+        historyHelp.setAttribute('aria-hidden', 'true');
+        return;
+      }
+      historyHelp.hidden = !open;
+      historyHelp.setAttribute('aria-hidden', open ? 'false' : 'true');
+      historyHelpToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      localStorage.setItem('fi-history-help-open', open ? 'open' : 'closed');
+    }
+    const savedHistoryHelp = localStorage.getItem('fi-history-help-open');
+    // Default closed — the page-level help is open on first visit; this one
+    // is supplementary, shouldn't pile onto the first-run experience.
+    applyHistoryHelpState(savedHistoryHelp === 'open');
+    historyHelpToggle.addEventListener('click', () => applyHistoryHelpState(historyHelp.hidden));
 
     // ── Boot ───────────────────────────────────────────────────────────────
     refreshTemplates();

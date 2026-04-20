@@ -22,6 +22,7 @@ interface UpdateBody {
   notes?: string;
   rating?: number;
   templateSlug?: string;
+  appliedTo?: string;
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -46,12 +47,16 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 
-  const updated = updateLog(body.id, {
-    status: body.status,
-    notes: body.notes,
-    rating: body.rating,
-    templateSlug: body.templateSlug,
-  });
+  // Build a patch containing ONLY the fields the client explicitly sent.
+  // Passing `undefined` through the spread in updateLog would overwrite
+  // existing values — e.g. a rate-only POST would wipe status + appliedTo.
+  const patch: Parameters<typeof updateLog>[1] = {};
+  if (body.status !== undefined) patch.status = body.status;
+  if (body.notes !== undefined) patch.notes = body.notes;
+  if (body.rating !== undefined) patch.rating = body.rating;
+  if (body.templateSlug !== undefined) patch.templateSlug = body.templateSlug;
+  if (body.appliedTo !== undefined) patch.appliedTo = body.appliedTo;
+  const updated = updateLog(body.id, patch);
   if (!updated) {
     return new Response(
       JSON.stringify({ error: `no log entry with id ${body.id}` }),
