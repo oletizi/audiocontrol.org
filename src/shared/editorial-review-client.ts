@@ -161,24 +161,34 @@ export function initEditorialReview(): void {
   function addSidebarItem(annotation: CommentAnnotation): void {
     sidebarEmpty.hidden = true;
     const li = document.createElement('li');
-    li.className = 'sidebar-item';
+    li.className = 'er-marginalia-item';
     li.dataset.annotationId = annotation.id;
     const cat = document.createElement('div');
-    cat.className = 'sidebar-item-cat';
+    cat.className = 'cat';
     cat.textContent = annotation.category || 'other';
     const quote = document.createElement('div');
-    quote.className = 'sidebar-item-quote';
+    quote.className = 'quote';
     quote.textContent = extractQuote(annotation.range);
     const text = document.createElement('p');
-    text.className = 'sidebar-item-text';
+    text.className = 'note';
     text.textContent = annotation.text;
     li.appendChild(cat);
     li.appendChild(quote);
     li.appendChild(text);
     li.addEventListener('mouseenter', () => setActiveHighlight(annotation.id, true));
     li.addEventListener('mouseleave', () => setActiveHighlight(annotation.id, false));
+    li.addEventListener('click', () => scrollToHighlight(annotation.id));
     sidebarList.appendChild(li);
     sidebarIndex.set(annotation.id, li);
+  }
+
+  function scrollToHighlight(annotationId: string): void {
+    const mark = draftBody.querySelector<HTMLElement>(
+      `mark[data-annotation-id="${annotationId}"]`,
+    );
+    if (mark) {
+      mark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 
   function setActiveHighlight(annotationId: string, active: boolean): void {
@@ -395,8 +405,10 @@ export function initEditorialReview(): void {
     if (!bridged) { iterateBtn.disabled = false; return; }
     const ok = await postDecision('iterating');
     if (ok) {
-      alert(`Run \`/editorial-iterate ${state.workflow.slug}\` in Claude Code to generate v${versionNum + 1}`);
-      window.location.reload();
+      showToast(
+        `Run /editorial-iterate ${state.workflow.slug} in Claude Code to draft v${versionNum + 1}`,
+      );
+      setTimeout(() => window.location.reload(), 1800);
     } else {
       iterateBtn.disabled = false;
     }
@@ -410,6 +422,108 @@ export function initEditorialReview(): void {
     if (ok) window.location.reload();
     else rejectBtn.disabled = false;
   });
+
+  // ---- Keyboard shortcuts ----
+
+  const shortcutsOverlay = qn<HTMLElement>('[data-shortcuts-overlay]');
+  const shortcutsBackdrop = qn<HTMLElement>('[data-shortcuts-backdrop]');
+  const shortcutsBtn = qn<HTMLButtonElement>('[data-action="shortcuts"]');
+
+  function showShortcuts(show: boolean): void {
+    if (!shortcutsOverlay) return;
+    shortcutsOverlay.hidden = !show;
+  }
+  shortcutsBtn?.addEventListener('click', () => showShortcuts(true));
+  shortcutsBackdrop?.addEventListener('click', () => showShortcuts(false));
+
+  let commentFocusIndex = -1;
+  function focusCommentByIndex(dir: 1 | -1): void {
+    const items = Array.from(sidebarList.children).filter(
+      (el): el is HTMLElement => el instanceof HTMLElement,
+    );
+    if (items.length === 0) return;
+    commentFocusIndex =
+      (commentFocusIndex + dir + items.length) % items.length;
+    const target = items[commentFocusIndex];
+    items.forEach(el => el.classList.remove('active'));
+    target.classList.add('active');
+    const id = target.dataset.annotationId;
+    if (id) {
+      scrollToHighlight(id);
+      setActiveHighlight(id, true);
+      setTimeout(() => setActiveHighlight(id, false), 1800);
+    }
+  }
+
+  document.addEventListener('keydown', (ev) => {
+    // Don't hijack keys while typing
+    const target = ev.target as HTMLElement;
+    if (target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        target.isContentEditable) {
+      if (ev.key === 'Escape') (target as HTMLElement).blur();
+      return;
+    }
+    // Don't hijack with modifiers
+    if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+
+    if (ev.key === '?' || (ev.key === '/' && ev.shiftKey)) {
+      ev.preventDefault();
+      showShortcuts(!shortcutsOverlay || shortcutsOverlay.hidden);
+      return;
+    }
+    if (ev.key === 'Escape') {
+      if (shortcutsOverlay && !shortcutsOverlay.hidden) { showShortcuts(false); return; }
+      if (!modal.hidden) { closeModal(); return; }
+    }
+    if (ev.key === 'e') { ev.preventDefault(); toggleBtn.click(); return; }
+    if (ev.key === 'a') { ev.preventDefault(); approveBtn?.click(); return; }
+    if (ev.key === 'i') { ev.preventDefault(); iterateBtn?.click(); return; }
+    if (ev.key === 'r') { ev.preventDefault(); rejectBtn?.click(); return; }
+    if (ev.key === 'j') { ev.preventDefault(); focusCommentByIndex(1); return; }
+    if (ev.key === 'k') { ev.preventDefault(); focusCommentByIndex(-1); return; }
+  });
+
+  // ---- Polling: check for new versions or state changes ----
+
+  const pollIndicator = qn<HTMLElement>('[data-poll]');
+  const POLL_MS = 8000;
+  let pollingBusy = false;
+
+  async function poll(): Promise<void> {
+    if (pollingBusy || editing) return;
+    pollingBusy = true;
+    try {
+      const res = await fetch(
+        `/api/dev/editorial-review/workflow?id=${encodeURIComponent(workflowId)}`,
+      );
+      if (!res.ok) return;
+      const body = await res.json();
+      const w = body.workflow as { currentVersion: number; state: string } | undefined;
+      if (!w) return;
+      const currentVersionChanged = w.currentVersion !== state.workflow.currentVersion;
+      const stateChanged = w.state !== state.workflow.state;
+      if (currentVersionChanged) {
+        showToast(`New version v${w.currentVersion} available — reloading…`);
+        setTimeout(() => {
+          window.location.href = `?v=${w.currentVersion}`;
+        }, 1200);
+      } else if (stateChanged) {
+        showToast(`State changed: ${state.workflow.state} → ${w.state}`);
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    } catch {
+      // network hiccup — ignore and try again next tick
+    } finally {
+      pollingBusy = false;
+    }
+  }
+
+  setInterval(() => {
+    if (pollIndicator) pollIndicator.classList.add('polling');
+    poll();
+  }, POLL_MS);
 
   // ---- Boot ----
 

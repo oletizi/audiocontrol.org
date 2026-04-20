@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 
+import '../../../../shared/editorial-review.css';
 import {
   buildReport,
   readWorkflows,
@@ -26,14 +27,6 @@ const terminal = workflows
 
 pending.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
-const pendingByState = new Map<string, DraftWorkflowItem[]>();
-for (const w of pending) {
-  const list = pendingByState.get(w.state) ?? [];
-  list.push(w);
-  pendingByState.set(w.state, list);
-}
-
-// Published calendar entries without an active longform workflow.
 let startableSlugs: Array<{ slug: string; title: string }> = [];
 try {
   const cal = readCalendar(process.cwd(), SITE);
@@ -51,8 +44,8 @@ try {
     .filter(e => e.stage === 'Published' && !activeLongformSlugs.has(e.slug))
     .map(e => ({ slug: e.slug, title: e.title ?? e.slug }))
     .sort((a, b) => a.slug.localeCompare(b.slug));
-} catch {
-  // Calendar missing or malformed — leave startableSlugs empty.
+} catch (e) {
+  console.error('[editorial-studio] failed to read calendar:', e);
 }
 
 const report = buildReport(process.cwd(), { site: SITE });
@@ -60,10 +53,18 @@ const totalTerminal = report.all.approvedCount + report.all.cancelledCount;
 const hasEnoughSignal = totalTerminal >= 5;
 const topTwo = report.topCategories.filter(c => c.count > 0).slice(0, 2);
 
+// Press-check volume/issue — simple rolling counter based on terminal count.
+const volume = '01';
+const issueNum = String(workflows.length).padStart(2, '0');
+
+// Dating in editorial style
+const now = new Date();
+const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const issueDate = `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+
 function fmtRelTime(iso: string): string {
   const t = new Date(iso).getTime();
-  const now = Date.now();
-  const s = Math.max(0, Math.floor((now - t) / 1000));
+  const s = Math.max(0, Math.floor((Date.now() - t) / 1000));
   if (s < 60) return `${s}s ago`;
   const m = Math.floor(s / 60);
   if (m < 60) return `${m}m ago`;
@@ -73,7 +74,9 @@ function fmtRelTime(iso: string): string {
 }
 
 function workflowLink(w: DraftWorkflowItem): string {
-  if (w.contentKind === 'shortform') return '/dev/editorial-review-shortform';
+  if (w.contentKind === 'shortform') {
+    return `/dev/editorial-review-shortform?focus=${w.id}#workflow-${w.id}`;
+  }
   return `/dev/editorial-review/${w.slug}`;
 }
 
@@ -87,212 +90,332 @@ function stateLabel(state: string): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Editorial Studio — dev</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: 2rem;
-      background: #141820;
-      color: #c4ced8;
-      font-family: 'Inter', system-ui, sans-serif;
-      line-height: 1.5;
-    }
-    h1, h2, h3 { font-family: 'JetBrains Mono', monospace; margin-top: 0; }
-    h1 { color: #2fb8a8; margin-bottom: 0.25rem; }
-    h2 { color: #c4ced8; margin-top: 2rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid #2a323e; padding-bottom: 0.25rem; }
-    h3 { font-size: 0.8rem; color: #a0aab4; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1.25rem; margin-bottom: 0.5rem; }
-    code { background: #1f2530; padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.9em; }
-    a { color: #2fb8a8; }
-    a:hover { text-decoration: underline; }
-    .sub { color: #a0aab4; font-size: 0.85rem; }
-    .wrap { max-width: 80rem; margin: 0 auto; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-    @media (max-width: 960px) { .grid-2 { grid-template-columns: 1fr; } }
-    .row { padding: 0.5rem 0.75rem; border: 1px solid #2a323e; border-radius: 3px; margin-bottom: 0.4rem; background: #1a1f29; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; }
-    .row .slug { color: #e8eef5; font-weight: 500; }
-    .row .kind { color: #a0aab4; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.05em; }
-    .row .channel { color: #c4ced8; }
-    .row .ts { margin-left: auto; color: #a0aab4; font-size: 0.75rem; }
-    .row .hint { color: #a0aab4; font-size: 0.75rem; width: 100%; margin-top: 0.25rem; font-family: monospace; }
-    .badge { padding: 0.1em 0.4em; border-radius: 3px; font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.04em; }
-    .badge-open { background: #2a323e; color: #c4ced8; }
-    .badge-in-review { background: #1f3a3a; color: #2fb8a8; }
-    .badge-iterating { background: #3a2e1f; color: #e2b88c; }
-    .badge-approved { background: #1f3a2a; color: #6fd89b; }
-    .badge-applied { background: #2a323e; color: #a0aab4; }
-    .badge-cancelled { background: #2a1f2a; color: #c49ac4; }
-    .empty { color: #a0aab4; font-style: italic; padding: 1rem 0.25rem; }
-    form { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-top: 0.5rem; }
-    select, button { background: #1f2630; color: #c4ced8; border: 1px solid #2a323e; padding: 0.35rem 0.7rem; border-radius: 3px; font: inherit; font-size: 0.85rem; }
-    button { cursor: pointer; }
-    button:hover:not(:disabled) { background: #2a323e; color: #e8eef5; }
-    button.primary { border-color: #2fb8a8; color: #2fb8a8; }
-    button.primary:hover:not(:disabled) { background: #2fb8a8; color: #141820; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .panel-note { color: #a0aab4; font-size: 0.85rem; margin-bottom: 0.75rem; }
-    .drift-bar { display: flex; gap: 1rem; flex-wrap: wrap; padding: 1rem; background: #1a1f29; border: 1px solid #2a323e; border-radius: 3px; }
-    .drift-cat { font-family: monospace; font-size: 0.85rem; }
-    .drift-cat strong { color: #2fb8a8; }
-  </style>
+  <title>Editorial Studio — {SITE} — dev</title>
 </head>
-<body>
-  <div class="wrap">
-    <h1>Editorial Studio</h1>
-    <div class="sub">{SITE} · dev — unified view of the editorial-review pipeline</div>
-
-    <h2>Pending ({pending.length})</h2>
-    {pending.length === 0 ? (
-      <div class="empty">No pending workflows. Start one below, or run <code>/editorial-shortform-draft</code> for a social post.</div>
-    ) : (
-      <>
-        {Array.from(pendingByState.entries()).map(([state, rows]) => (
-          <>
-            <h3>{stateLabel(state)} ({rows.length})</h3>
-            {rows.map(w => (
-              <div class="row">
-                <span class={`badge badge-${w.state}`}>{stateLabel(w.state)}</span>
-                <a class="slug" href={workflowLink(w)}>{w.slug}</a>
-                <span class="kind">{w.contentKind}</span>
-                {w.contentKind === 'shortform' && w.platform && (
-                  <span class="channel">{w.platform}{w.channel ? ` · ${w.channel}` : ''}</span>
-                )}
-                <span>v{w.currentVersion}</span>
-                <span class="ts">{fmtRelTime(w.updatedAt)}</span>
-                {w.state === 'iterating' && (
-                  <span class="hint">Next: <code>/editorial-iterate --site {SITE} {w.slug}</code></span>
-                )}
-              </div>
-            ))}
-          </>
-        ))}
-      </>
-    )}
-
-    <h2>Awaiting apply ({approved.length})</h2>
-    {approved.length === 0 ? (
-      <div class="empty">No approved workflows waiting to be applied.</div>
-    ) : (
-      approved.map(w => (
-        <div class="row">
-          <span class={`badge badge-${w.state}`}>approved</span>
-          <a class="slug" href={workflowLink(w)}>{w.slug}</a>
-          <span class="kind">{w.contentKind}</span>
-          {w.contentKind === 'shortform' && w.platform && (
-            <span class="channel">{w.platform}{w.channel ? ` · ${w.channel}` : ''}</span>
-          )}
-          <span>v{w.currentVersion}</span>
-          <span class="ts">{fmtRelTime(w.updatedAt)}</span>
-          <span class="hint">
-            Run: <code>/editorial-approve --site {SITE} {w.slug}
-            {w.contentKind === 'shortform' && w.platform ? ` --platform ${w.platform}${w.channel ? ` --channel ${w.channel}` : ''}` : ''}
-            </code>
-          </span>
-        </div>
-      ))
-    )}
-
-    <div class="grid-2">
-      <section>
-        <h2>Start a new longform review</h2>
-        <p class="panel-note">
-          Published calendar entries without an active longform workflow ({startableSlugs.length} available).
-        </p>
-        {startableSlugs.length === 0 ? (
-          <div class="empty">Nothing to start. Either the calendar has no Published longform entries, or every one already has a workflow in flight.</div>
-        ) : (
-          <form data-start-form>
-            <label for="start-slug" class="sub">Slug</label>
-            <select id="start-slug" name="slug">
-              {startableSlugs.map(s => (
-                <option value={s.slug}>{s.slug}</option>
-              ))}
-            </select>
-            <button type="submit" class="primary">Start review</button>
-            <span data-start-hint class="sub"></span>
-          </form>
-        )}
-      </section>
-
-      <section>
-        <h2>Shortform</h2>
-        <p class="panel-note">
-          Agent-drafted. Run in Claude Code:
-        </p>
-        <div class="row">
-          <code>/editorial-shortform-draft --site {SITE} &lt;slug&gt; &lt;platform&gt; [channel]</code>
-        </div>
-        <p class="panel-note">
-          After drafting, iterate/approve at <a href="/dev/editorial-review-shortform">/dev/editorial-review-shortform</a>.
-        </p>
-      </section>
+<body data-review-ui="studio">
+  <header class="er-masthead">
+    <div class="er-masthead-kicker">
+      Vol. {volume} · № {issueNum} · Press-check
     </div>
+    <h1 class="er-masthead-title">
+      Editorial <em>Studio</em>
+    </h1>
+    <p class="er-masthead-deck">
+      {SITE}.org &nbsp;·&nbsp; backstage of the desk
+    </p>
+    <div class="er-masthead-meta">
+      <span>{issueDate}</span>
+      <span class="sep">·</span>
+      <span>{pending.length} on the desk</span>
+      <span class="sep">·</span>
+      <span>{approved.length} awaiting press</span>
+    </div>
+  </header>
 
-    <h2>Voice-drift signal</h2>
-    {hasEnoughSignal && topTwo.length > 0 ? (
-      <div class="drift-bar">
-        {topTwo.map(c => (
-          <div class="drift-cat">
-            <strong>{c.category}</strong>: {c.count}
-          </div>
-        ))}
-        <div class="drift-cat sub">
-          (from {report.all.approvedCount} approved, {report.all.cancelledCount} cancelled — run <code>/editorial-review-report --site {SITE}</code> for the full breakdown)
-        </div>
-      </div>
-    ) : (
-      <div class="empty">
-        Not enough data yet ({totalTerminal} terminal workflow{totalTerminal === 1 ? '' : 's'}; need ≥5). Keep cycling drafts through the review loop.
-      </div>
-    )}
+  <main class="er-container">
+    <section class="er-filter" data-filter-strip>
+      <span class="er-filter-label">Find</span>
+      <input
+        type="search"
+        data-filter-input
+        placeholder="slug, platform, channel…"
+        autocomplete="off"
+      />
 
-    <h2>Recent terminal ({terminal.length})</h2>
-    {terminal.length === 0 ? (
-      <div class="empty">No terminal workflows yet.</div>
-    ) : (
-      terminal.map(w => (
-        <div class="row">
-          <span class={`badge badge-${w.state}`}>{w.state}</span>
-          <span class="slug">{w.slug}</span>
-          <span class="kind">{w.contentKind}</span>
-          {w.contentKind === 'shortform' && w.platform && (
-            <span class="channel">{w.platform}{w.channel ? ` · ${w.channel}` : ''}</span>
+      <span class="er-filter-label" style="margin-left: auto;">State</span>
+      <div class="er-chips" role="tablist">
+        <button class="er-chip" aria-pressed="true" data-state-chip="all">all</button>
+        <button class="er-chip" data-state-chip="open">open</button>
+        <button class="er-chip" data-state-chip="in-review">in-review</button>
+        <button class="er-chip" data-state-chip="iterating">iterating</button>
+      </div>
+    </section>
+
+    <div class="er-layout">
+      <div>
+        <section class="er-section">
+          <h2 class="er-section-title">
+            <span>The desk</span>
+            <span class="ornament">※</span>
+            <span class="count">№ <span data-pending-count>{pending.length}</span></span>
+          </h2>
+
+          {pending.length === 0 ? (
+            <div class="er-empty" data-empty-when="pending">
+              The desk is clear.<br />Start a new galley from the sidebar, or wait for the next draft.
+            </div>
+          ) : (
+            <div data-pending-list>
+              {pending.map((w, i) => (
+                <a
+                  class="er-row"
+                  href={workflowLink(w)}
+                  data-slug={w.slug}
+                  data-state={w.state}
+                  data-kind={w.contentKind}
+                  data-platform={w.platform ?? ''}
+                  data-channel={w.channel ?? ''}
+                  data-search={[
+                    w.slug,
+                    w.contentKind,
+                    w.platform ?? '',
+                    w.channel ?? '',
+                    w.state,
+                  ].join(' ').toLowerCase()}
+                >
+                  <span class="er-row-num">№ {String(i + 1).padStart(2, '0')}</span>
+                  <span class="er-row-slug">{w.slug}</span>
+                  <span class="er-row-kind">
+                    {w.contentKind}
+                    {w.contentKind === 'shortform' && w.platform && (
+                      <span class="er-row-channel"> · {w.platform}{w.channel ? ` · ${w.channel}` : ''}</span>
+                    )}
+                  </span>
+                  <span class={`er-stamp er-stamp-${w.state}`}>{stateLabel(w.state)}</span>
+                  <span class="er-row-ts">{fmtRelTime(w.updatedAt)}</span>
+                  {w.state === 'iterating' && (
+                    <span class="er-row-hint">
+                      Next · <code>/editorial-iterate --site {SITE} {w.slug}</code>
+                    </span>
+                  )}
+                </a>
+              ))}
+              <div class="er-empty" data-empty-when="filter" hidden>
+                Nothing matches this filter.
+              </div>
+            </div>
           )}
-          <span class="ts">{fmtRelTime(w.updatedAt)}</span>
-        </div>
-      ))
-    )}
-  </div>
+        </section>
+
+        <section class="er-section">
+          <h2 class="er-section-title">
+            <span>Awaiting press</span>
+            <span class="count">№ {approved.length}</span>
+          </h2>
+
+          {approved.length === 0 ? (
+            <div class="er-empty">
+              Nothing approved and pending apply.
+            </div>
+          ) : (
+            approved.map(w => (
+              <a
+                class="er-row"
+                href={workflowLink(w)}
+                data-slug={w.slug}
+                data-state={w.state}
+              >
+                <span class="er-row-num">→</span>
+                <span class="er-row-slug">{w.slug}</span>
+                <span class="er-row-kind">
+                  {w.contentKind}
+                  {w.contentKind === 'shortform' && w.platform && (
+                    <span class="er-row-channel"> · {w.platform}{w.channel ? ` · ${w.channel}` : ''}</span>
+                  )}
+                </span>
+                <span class="er-stamp er-stamp-approved">approved</span>
+                <span class="er-row-ts">v{w.currentVersion}</span>
+                <span class="er-row-hint">
+                  Run · <code>
+                    /editorial-approve --site {SITE} {w.slug}
+                    {w.contentKind === 'shortform' && w.platform ? ` --platform ${w.platform}${w.channel ? ` --channel ${w.channel}` : ''}` : ''}
+                  </code>
+                </span>
+              </a>
+            ))
+          )}
+        </section>
+
+        <section class="er-section">
+          <h2 class="er-section-title">
+            <span>Recent proofs</span>
+            <span class="count">last {terminal.length}</span>
+          </h2>
+
+          {terminal.length === 0 ? (
+            <div class="er-empty">No finished proofs yet.</div>
+          ) : (
+            terminal.map(w => (
+              <div class="er-row" data-state={w.state}>
+                <span class="er-row-num">—</span>
+                <span class="er-row-slug" style="color: var(--er-ink-soft);">{w.slug}</span>
+                <span class="er-row-kind">
+                  {w.contentKind}
+                  {w.contentKind === 'shortform' && w.platform && (
+                    <span class="er-row-channel"> · {w.platform}</span>
+                  )}
+                </span>
+                <span class={`er-stamp er-stamp-${w.state}`}>{w.state}</span>
+                <span class="er-row-ts">{fmtRelTime(w.updatedAt)}</span>
+              </div>
+            ))
+          )}
+        </section>
+      </div>
+
+      <aside>
+        <section class="er-slip">
+          <div class="er-slip-header">Request for copy</div>
+          <h3 class="er-slip-title">Start a new galley</h3>
+          <p style="font-size: 0.85rem; color: var(--er-ink-soft); margin: 0 0 var(--er-space-2); font-family: var(--er-font-display); font-variation-settings: 'opsz' 18, 'wght' 400;">
+            Pick a Published entry without an active workflow.
+          </p>
+          {startableSlugs.length === 0 ? (
+            <div class="er-slip-hint" style="font-style: italic;">
+              No eligible slugs — every Published entry already has a review in flight, or the calendar is empty.
+            </div>
+          ) : (
+            <form data-start-form>
+              <select name="slug" required>
+                {startableSlugs.map(s => <option value={s.slug}>{s.slug}</option>)}
+              </select>
+              <button type="submit" class="er-btn er-btn-primary">
+                Start review →
+              </button>
+              <div class="er-slip-hint" data-start-hint></div>
+            </form>
+          )}
+        </section>
+
+        <section class="er-drift" style="margin-top: var(--er-space-4);">
+          <div class="er-drift-label">Voice-drift · signal</div>
+          {hasEnoughSignal && topTwo.length > 0 ? (
+            <>
+              <p class="er-drift-primary">
+                <em>{topTwo[0].category}</em>
+                <span class="count"> {topTwo[0].count}</span>
+              </p>
+              {topTwo[1] && (
+                <p class="er-drift-secondary" style="margin: 0;">
+                  then <em style="color: var(--er-red-pencil);">{topTwo[1].category}</em> · {topTwo[1].count}
+                </p>
+              )}
+              <div style="margin-top: var(--er-space-2); font-family: var(--er-font-mono); font-size: 0.68rem; color: var(--er-faded); letter-spacing: 0.05em;">
+                from {report.all.approvedCount} approved · {report.all.cancelledCount} cancelled<br />
+                <code style="margin-top: 0.25rem; display: inline-block;">/editorial-review-report --site {SITE}</code>
+              </div>
+            </>
+          ) : (
+            <p style="font-family: var(--er-font-display); font-style: italic; color: var(--er-ink-soft); margin: 0; font-variation-settings: 'opsz' 24, 'wght' 400;">
+              {totalTerminal === 0
+                ? 'No proofs yet. The signal builds with use.'
+                : `Only ${totalTerminal} terminal ${totalTerminal === 1 ? 'proof' : 'proofs'} so far — need ${5 - totalTerminal} more.`}
+            </p>
+          )}
+        </section>
+
+        <section class="er-slip" style="margin-top: var(--er-space-4);">
+          <div class="er-slip-header">Short form</div>
+          <h3 class="er-slip-title">Social copy</h3>
+          <p style="font-size: 0.85rem; margin: 0 0 var(--er-space-1); color: var(--er-ink-soft); font-family: var(--er-font-display);">
+            Agent-drafted. Run in Claude Code:
+          </p>
+          <code style="display: block; font-size: 0.72rem; padding: var(--er-space-1) var(--er-space-2); word-break: break-all; background: var(--er-paper-2);">
+            /editorial-shortform-draft --site {SITE} &lt;slug&gt; &lt;platform&gt; [channel]
+          </code>
+          <p style="margin-top: var(--er-space-2); font-family: var(--er-font-display);">
+            <a href="/dev/editorial-review-shortform">Go to the shortform desk →</a>
+          </p>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <div class="er-poll-indicator" data-poll>auto-refresh · 10s</div>
 
   <script is:inline>
     (function () {
-      const form = document.querySelector('[data-start-form]');
-      if (!form) return;
-      form.addEventListener('submit', async (ev) => {
-        ev.preventDefault();
-        const slug = form.querySelector('select[name="slug"]').value;
-        const hint = form.querySelector('[data-start-hint]');
-        const button = form.querySelector('button[type="submit"]');
-        button.disabled = true;
-        hint.textContent = 'Starting…';
-        const res = await fetch('/api/dev/editorial-review/start-longform', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ site: document.body.dataset.site || 'audiocontrol', slug }),
-        });
-        const body = await res.json();
-        if (!res.ok) {
-          hint.textContent = 'Failed: ' + (body.error || res.status);
-          button.disabled = false;
-          return;
+      // ----- Filters -----
+      const input = document.querySelector('[data-filter-input]');
+      const chips = Array.from(document.querySelectorAll('[data-state-chip]'));
+      const rows = Array.from(document.querySelectorAll('[data-pending-list] .er-row'));
+      const filterEmpty = document.querySelector('[data-empty-when="filter"]');
+      const pendingCount = document.querySelector('[data-pending-count]');
+
+      let activeState = 'all';
+      let searchQuery = '';
+
+      function applyFilter() {
+        let shown = 0;
+        for (const row of rows) {
+          const search = row.dataset.search || '';
+          const state = row.dataset.state || '';
+          const matchSearch = !searchQuery || search.includes(searchQuery);
+          const matchState = activeState === 'all' || state === activeState;
+          const visible = matchSearch && matchState;
+          row.hidden = !visible;
+          if (visible) shown++;
         }
-        window.location.href = '/dev/editorial-review/' + slug;
+        if (filterEmpty) {
+          filterEmpty.hidden = shown > 0 || rows.length === 0;
+        }
+        if (pendingCount) {
+          pendingCount.textContent = shown + (shown === rows.length ? '' : ' of ' + rows.length);
+        }
+      }
+
+      if (input) {
+        input.addEventListener('input', () => {
+          searchQuery = input.value.toLowerCase().trim();
+          applyFilter();
+        });
+      }
+
+      for (const chip of chips) {
+        chip.addEventListener('click', () => {
+          chips.forEach(c => c.setAttribute('aria-pressed', 'false'));
+          chip.setAttribute('aria-pressed', 'true');
+          activeState = chip.dataset.stateChip;
+          applyFilter();
+        });
+      }
+
+      // ----- Start-new form -----
+      const form = document.querySelector('[data-start-form]');
+      if (form) {
+        form.addEventListener('submit', async (ev) => {
+          ev.preventDefault();
+          const slug = form.querySelector('select[name="slug"]').value;
+          const hint = form.querySelector('[data-start-hint]');
+          const button = form.querySelector('button[type="submit"]');
+          button.disabled = true;
+          hint.textContent = 'Setting the type…';
+          try {
+            const res = await fetch('/api/dev/editorial-review/start-longform', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ site: 'audiocontrol', slug }),
+            });
+            const body = await res.json();
+            if (!res.ok) {
+              hint.textContent = 'Failed · ' + (body.error || res.status);
+              button.disabled = false;
+              return;
+            }
+            window.location.href = '/dev/editorial-review/' + slug;
+          } catch (e) {
+            hint.textContent = 'Network error: ' + e.message;
+            button.disabled = false;
+          }
+        });
+      }
+
+      // ----- Polling: reload every 10s when user is idle -----
+      const pollIndicator = document.querySelector('[data-poll]');
+      let lastInteraction = Date.now();
+      function bumpInteraction() { lastInteraction = Date.now(); }
+      ['input', 'focus', 'keydown', 'mousedown'].forEach(ev => {
+        document.addEventListener(ev, bumpInteraction, { passive: true, capture: true });
       });
+      setInterval(() => {
+        // Skip reload if the user touched something in the last 4 seconds
+        // or if the search box has content (they're filtering).
+        if (Date.now() - lastInteraction < 4000) return;
+        if (input && input.value.trim().length > 0) return;
+        if (pollIndicator) pollIndicator.classList.add('polling');
+        window.location.reload();
+      }, 10000);
     })();
-  </script>
-  <span data-site-marker hidden id="__site" data-site={SITE}></span>
-  <script is:inline>
-    document.body.dataset.site = document.getElementById('__site').dataset.site;
   </script>
 </body>
 </html>
