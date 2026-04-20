@@ -46,3 +46,8 @@ redesign-*.png
 # Phase 13 iteration conversation that Phase 11 fitness scoring and
 # future analysis will compute from. Lose them = lose the design-system
 # evolution.)
+#
+# Same for .editorial-draft-history.jsonl and .editorial-draft-pipeline.jsonl —
+# intentionally tracked. They hold the review workflow's state machine,
+# version history, and annotation log. The editorial-review Phase 12
+# feedback signal (voice-drift aggregation) is computed from them.

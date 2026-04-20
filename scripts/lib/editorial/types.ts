@@ -163,6 +163,15 @@ export interface DistributionRecord {
   dateShared: string;
   /** Optional free-form context */
   notes?: string;
+  /**
+   * Approved short-form copy for this (slug, platform, channel) tuple,
+   * produced by the editorial-review shortform pipeline. Written by
+   * `/editorial-approve` when the workflow's contentKind is `shortform`.
+   * For Reddit, conventionally stores `title: ...\n\n<body>`; for others,
+   * a single blob. May be empty when the distribution hasn't been drafted
+   * through the pipeline.
+   */
+  shortform?: string;
 }
 
 /** The full editorial calendar — entries grouped by stage, plus social distributions. */

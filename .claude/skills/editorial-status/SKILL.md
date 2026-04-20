@@ -1,10 +1,10 @@
 ---
-name: editorial-review
+name: editorial-status
 description: "Display editorial calendar status across all stages."
 user_invocable: true
 ---
 
-# Editorial Review
+# Editorial Status
 
 Show the full editorial calendar status. Do NOT modify anything.
 

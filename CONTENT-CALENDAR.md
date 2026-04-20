@@ -93,7 +93,7 @@ Reddit credentials live at `~/.config/audiocontrol/reddit.json`. See [Reddit Set
 
 | Skill | Purpose |
 |-------|---------|
-| `/editorial-review` | Show calendar entries across all stages |
+| `/editorial-status` | Show calendar entries across all stages |
 | `/editorial-help` | Show the workflow diagram and calendar summary |
 
 ## Typical Workflow

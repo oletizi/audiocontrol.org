@@ -17,6 +17,12 @@
 | Phase 5: Subreddit Tracking & Cross-posting Opportunities | oletizi/audiocontrol.org#56 |
 | Phase 6: YouTube as First-Class Content + Cross-link Audit | oletizi/audiocontrol.org#57 |
 | Phase 7: Tool Cross-link Audit | oletizi/audiocontrol.org#59 |
+| Phase 8: Draft Review Pipeline + Surface Scaffolding | oletizi/audiocontrol.org#90 |
+| Phase 9: Longform Annotation UI | oletizi/audiocontrol.org#91 |
+| Phase 10: Orchestration Skills for the Review Loop | oletizi/audiocontrol.org#92 |
+| Phase 11: Short-form Review (Social Posts) | oletizi/audiocontrol.org#93 |
+| Phase 12: Voice-Library Feedback Signal | oletizi/audiocontrol.org#94 |
+| Phase 13: Editorial Studio (unified dashboard) | oletizi/audiocontrol.org#96 |
 
 ## Files Affected
 
@@ -29,7 +35,7 @@
 - `.claude/skills/editorial-help/SKILL.md` — workflow overview and calendar status
 - `.claude/skills/editorial-add/SKILL.md` — add entry to Ideas
 - `.claude/skills/editorial-plan/SKILL.md` — move entry to Planned
-- `.claude/skills/editorial-review/SKILL.md` — show calendar status
+- `.claude/skills/editorial-status/SKILL.md` — show calendar status (renamed from `editorial-review` in Phase 8)
 - `.claude/skills/editorial-draft/SKILL.md` — scaffold blog post
 - `.claude/skills/editorial-publish/SKILL.md` — mark entry as Published
 - `.claude/skills/editorial-suggest/SKILL.md` — analytics-driven topic suggestions
@@ -47,6 +53,24 @@
 - `scripts/lib/editorial/crosslinks.ts` — extract links from blog MD and YouTube descriptions, diff bidirectional coverage (Phase 6); extended in Phase 7 for tool-page analysis and generalized audiocontrol.org link resolution
 - `.claude/skills/editorial-cross-link-review/SKILL.md` — audit skill (Phase 6)
 - `scripts/lib/http/fetch-page.ts` — minimal HTML fetcher for tool pages (Phase 7)
+- `scripts/lib/editorial-review/types.ts` — draft workflow types (Phase 8)
+- `scripts/lib/editorial-review/pipeline.ts` — append-only history + workflow writers (Phase 8)
+- `scripts/lib/editorial-review/index.ts` — barrel export (Phase 8)
+- `src/sites/editorialcontrol/pages/dev/editorial-review/[slug].astro` — longform review surface (Phase 9)
+- `src/sites/audiocontrol/pages/dev/editorial-review/[slug].astro` — longform review surface mirror (Phase 9)
+- `src/sites/editorialcontrol/pages/dev/api/editorial-review/*.ts` — server endpoints: annotate, list, decision (Phase 8/9)
+- `src/sites/audiocontrol/pages/dev/api/editorial-review/*.ts` — audiocontrol mirror (Phase 8/9)
+- `src/sites/*/pages/dev/editorial-review-shortform.astro` — short-form list view (Phase 11)
+- `.editorial-draft-history.jsonl` — every draft version and annotation, append-only (Phase 8)
+- `.editorial-draft-pipeline.jsonl` — workflow items with state transitions, one record per change (Phase 8)
+- `.claude/skills/editorial-status/SKILL.md` — renamed from `editorial-review` (Phase 8)
+- `.claude/skills/editorial-draft-review/SKILL.md` — enqueue draft, print dev URL (Phase 10)
+- `.claude/skills/editorial-iterate/SKILL.md` — read annotations + voice skill, revise, append (Phase 10)
+- `.claude/skills/editorial-approve/SKILL.md` — write final file, no git ops (Phase 10)
+- `.claude/skills/editorial-review-cancel/SKILL.md` — cancel workflow (Phase 10)
+- `.claude/skills/editorial-review-help/SKILL.md` — pipeline state + next action (Phase 10)
+- `.claude/skills/editorial-shortform-draft/SKILL.md` — draft short-form post (Phase 11)
+- `.claude/skills/editorial-review-report/SKILL.md` — annotation category aggregates (Phase 12)
 
 ## Implementation Phases
 
@@ -411,6 +435,261 @@ No new user-invocable skill. `/editorial-cross-link-review` is extended: when it
 - Should we cache fetched HTML during a single audit run to avoid re-fetching the same URL? (Proposed: **yes** — in-memory per-audit Map, invalidated each run. Cheap to implement, protects against audits getting slow when many entries reference the same tool.)
 - Do we need a way to exclude specific outbound links from the audit (e.g., social icons in the site footer)? (Proposed: **not initially** — if the audit surfaces noise later, add an `editorial-crosslink-ignore.json` file with URL patterns. For now, the report just shows what it finds and the user can ignore.)
 
+### Phase 8: Draft Review Pipeline + Surface Scaffolding
+
+**Deliverable:** The review pipeline's state machine, storage, and dev-only route are in place. No annotation UI yet — the route renders a placeholder. Rename of existing skill frees the namespace.
+
+**Motivation:** The pipeline is the load-bearing part of the system (analogous to feature-image Phase 1–2). Before building UI or skills, the types, JSONL files, and 404-in-prod route need to exist so subsequent phases can wire into them.
+
+#### Skill design (UX first)
+
+| Skill | Input | Output |
+|-------|-------|--------|
+| `/editorial-status` (renamed from `/editorial-review`) | Same as today | Same as today — displays calendar status across all stages |
+| `/editorial-review-help` (new, placeholder) | None | Reports pipeline state: open workflows, in-review, approved pending apply. Real content populated in Phase 10 |
+
+#### Data model
+
+- [x] `DraftWorkflowState` union: `'open' | 'in-review' | 'iterating' | 'approved' | 'applied' | 'cancelled'`
+- [x] `DraftAnnotation` discriminated union:
+  - `{ type: 'comment', range: {start, end}, text, category?, createdAt }`
+  - `{ type: 'edit', beforeVersion, afterMarkdown, diff, createdAt }`
+  - `{ type: 'approve', version, createdAt }`
+  - `{ type: 'reject', version, reason?, createdAt }`
+- [x] `DraftVersion`: `{ version, markdown, createdAt, originatedBy: 'agent' | 'operator' }`
+- [x] `DraftWorkflowItem`: `{ id, site, slug, contentKind, platform?, channel?, state, currentVersion, createdAt, updatedAt }`
+
+#### Implementation
+
+- [x] Rename `/editorial-review` skill to `/editorial-status` (update `.claude/skills/editorial-review/` → `.claude/skills/editorial-status/`, update skill frontmatter, update `/editorial-help` to list the new name)
+- [x] Create `scripts/lib/editorial-review/types.ts` with the union and interfaces above
+- [x] Create `scripts/lib/editorial-review/pipeline.ts` with create/transition/append-version/append-annotation/read* — JSONL, first-arg rootDir for testability (mirrors the `scripts/lib/editorial/calendar.ts` convention)
+- [x] Create `scripts/lib/editorial-review/index.ts` barrel export (re-exports types, pipeline, handlers)
+- [x] Add `.editorial-draft-history.jsonl` and `.editorial-draft-pipeline.jsonl` as tracked files (empty, not gitignored; gitignore block updated to note the intentional non-ignore)
+- [x] Create `src/sites/<site>/pages/dev/editorial-review/[slug].astro` route stubs (both sites) — 404 in prod via `import.meta.env.PROD` guard (matches `feature-image-preview.astro` pattern)
+- [x] Create server endpoints under `src/sites/<site>/pages/api/dev/editorial-review/`: `annotate.ts`, `annotations.ts`, `decision.ts` — all 404 in prod. Shared handler logic in `scripts/lib/editorial-review/handlers.ts`
+- [x] Unit tests: state-machine transitions (valid + invalid), history append/read round-trip, workflow create idempotence, annotation round-trip with version filtering, handler validation + success + 404/409 paths (36 tests total)
+
+**Acceptance Criteria**
+
+- `/editorial-status` works exactly as `/editorial-review` did (no behavior change, just a rename)
+- State machine round-trips in unit tests
+- Dev route loads a placeholder page in `npm run dev`; returns 404 in `npm run preview` (prod build)
+- JSONL files append cleanly; malformed lines produce a per-line error, not an abort
+- `/editorial-help` lists the new skill name and does not list the old one
+
+#### Open questions (resolve before coding)
+
+- Should the JSONL files live at the repo root (mirroring `.feature-image-*.jsonl`) or under `docs/`? (Proposed: **root** — same pattern as feature-image.)
+- Do we need a separate pipeline file per site, or one shared file with a `site` field on each record? (Proposed: **shared file with `site` field** — avoids duplicating infrastructure. Workflows filter by site at read time.)
+
+### Phase 9: Longform Annotation UI
+
+**Deliverable:** Operator can open `/dev/editorial-review/<slug>` in the dev server, read the draft rendered in the real blog layout, annotate inline, and submit version decisions. The "iterate" action calls the Phase 10 skill via a well-documented hand-off; it does not invoke an agent directly.
+
+#### Skill design
+
+No new user-invocable skills in this phase. This is UI work that the Phase 10 skills will drive.
+
+#### Implementation
+
+Phase 9 adds two server endpoints beyond the three scaffolded in Phase 8, to support the UI:
+
+- [x] `GET /api/dev/editorial-review/workflow` — fetch workflow + versions by id or (site, slug). `handleGetWorkflow` in `scripts/lib/editorial-review/handlers.ts`
+- [x] `POST /api/dev/editorial-review/version` — operator edit-mode submission. Server appends a new `DraftVersion` with `originatedBy='operator'` and records an edit annotation carrying a line-level diff. `handleCreateVersion` + `lineDiff` / `applyLineDiff` helpers
+
+Then the UI:
+
+- [x] Mount the draft's markdown through the real blog layout. Route fetches workflow via `handleGetWorkflow`, parses the current version's frontmatter, renders the body through a remark→rehype pipeline, and mounts the result inside `BlogLayout.astro`. Feature image, headings, typography, spacing match production. Sticky review banner shows site/slug, state, version selector, and a "Phase 9 scaffold" note
+- [x] Select-to-comment overlay:
+  - [x] Client-side selection capture → range (character offsets against rendered plain text via TreeWalker; documented pragmatic choice over raw-MD offsets)
+  - [x] Margin-note sidebar: list of comments, each highlighted in the text when hovered
+  - [x] Category selector per comment — closed enum dropdown (voice-drift, missing-receipt, tutorial-framing, saas-vocabulary, fake-authority, structural, other)
+- [x] Edit-mode toggle:
+  - [x] Textarea shows raw MD of the current version (loaded from `draft-state` JSON block)
+  - [x] On submit, POST `/api/dev/editorial-review/version` (server computes diff + appends `DraftVersion`)
+  - [x] Edit-mode submissions create a new `DraftVersion` with `originatedBy: 'operator'` (enforced by endpoint)
+  - [x] Save disabled when textarea unchanged from current-version markdown
+- [x] Version selector: ?v=N URL param + clickable tab strip in the sticky banner (current version highlighted)
+- [x] Controls: **Approve** (records approve annotation + state bridge if open → in-review → approved), **Iterate** (state bridge + transitions to iterating; alerts operator to run `/editorial-iterate <slug>` in Claude Code), **Reject** (prompts for optional reason, transitions to cancelled)
+- [ ] Polling or SSE for annotation updates when the operator refreshes after the agent has iterated (deferred — operator reloads manually; low-value for single-user dev tool)
+
+#### Tests
+
+- [x] Edit-mode diff is reversible (applying the diff to the before-version yields the after-version) — tested via `lineDiff`/`applyLineDiff` round-trip for addition/substitution/deletion/multi-line MD
+- [x] Character-offset ranges survive a round-trip through serialization — verified in `lifecycle.test.ts` comment-range-round-trip test + in handler tests
+- [x] Full lifecycle (open → in-review → iterating → in-review → approved → applied) verified end-to-end in `lifecycle.test.ts`
+- [ ] Approving from an older version than the current is flagged as an operator error (deferred — current UI always approves the visible version; rare edge case)
+- [x] Prod build returns no prerendered `/dev/editorial-review/*` static output (verified via absence in dist/). `astro preview` not directly checkable due to @astrojs/netlify adapter limitation, but the `import.meta.env.PROD` 404 guard is unchanged across all Phase 8/9 endpoints and route stubs.
+
+**Acceptance Criteria**
+
+- Opening the current in-flight dispatch in `/dev/editorial-review/<slug>` renders the draft in the real blog layout
+- Highlighting a sentence and attaching a comment persists and shows up on reload
+- Toggling to edit mode and saving a change creates a new version visible in the version selector
+- Approve / iterate / reject buttons each produce the correct state transition
+- Route 404s in prod
+
+#### Open questions (resolve before coding)
+
+- Should comments be persistable at the HTML-rendered-offset level or the raw-MD-offset level? (Proposed: **raw MD** — stable across rendering changes. Display layer maps MD offsets to rendered DOM.)
+- Do we need per-annotation threading (reply to a comment)? (Proposed: **no** — single-level annotations; if the operator wants to clarify, they edit the comment or add a new one.)
+- When a new version is created, do existing annotations carry over? (Proposed: **no** — annotations are scoped to a specific version. The UI shows prior-version annotations but doesn't re-anchor them. This keeps the version audit trail honest.)
+
+### Phase 10: Orchestration Skills for the Review Loop
+
+**Deliverable:** The five skills that close the loop between the review UI and Claude Code. Operator can iterate a dispatch from v1 to approved-and-written-to-disk entirely through these skills.
+
+#### Skill design (UX first)
+
+| Skill | Input | Output |
+|-------|-------|--------|
+| `/editorial-draft-review` | `<slug>` (site inferred from where the draft lives) | Enqueues draft as an `open` workflow item; prints the dev URL; transitions state to `in-review` when operator opens the page |
+| `/editorial-iterate` | `<slug>` | Reads all open annotations for current version, loads matching voice skill, produces new MD, appends version, transitions state |
+| `/editorial-approve` | `<slug>` | Writes approved version to the real file; transitions to `applied`. Prints the next manual step (git status, diff, commit) |
+| `/editorial-review-cancel` | `<slug>` | Transitions workflow to `cancelled`; leaves file untouched |
+| `/editorial-review-help` | none | Reports: open workflows, in-review, approved pending apply; next action per workflow |
+
+#### Implementation
+
+- [x] `/editorial-draft-review` — resolves draft file path from slug + site, reads its current content as v1, calls `createWorkflow` (idempotent on natural key), returns dev URL
+- [x] `/editorial-iterate` — key logic:
+  - [x] Fetches workflow + versions via `handleGetWorkflow`; validates state is `iterating`
+  - [x] Reads open comment annotations for the current version via `readAnnotations`
+  - [x] Loads the matching voice skill (`audiocontrol-voice` for audiocontrol site, `editorialcontrol-voice` for editorialcontrol site) + relevant reference files
+  - [x] Runs revision in the current Claude Code session; produces full-file markdown that addresses each annotation while holding to voice principles
+  - [x] On completion, appends new `DraftVersion` with `originatedBy: 'agent'` and transitions `iterating` → `in-review`
+- [x] `/editorial-approve` — finds approved version via the latest `approve` annotation, writes its markdown to `src/sites/<site>/pages/blog/<slug>/index.md`, transitions `approved` → `applied`, prints git next-steps. **No git operations.**
+- [x] `/editorial-review-cancel` — validates non-terminal state, transitions to `cancelled`, leaves source file untouched, annotations remain in history
+- [x] `/editorial-review-help` — reads pipeline, filters by state (and optional `--site`), renders a next-action table per workflow, with `--all` to include terminal states
+
+**Important behavior**
+
+- `/editorial-approve` **does not** run `git add`, `git commit`, or `git push`. It only writes the file. Operator drives the git operations.
+- `/editorial-iterate` is a skill Markdown file, not a background process. It defines the conversation shape and hands off to the agent in the current session.
+
+#### Tests
+
+- [x] `/editorial-draft-review` idempotence — verified via `createWorkflow` natural-key test (`pipeline.test.ts`)
+- [x] State-machine invariants protecting `/editorial-approve` re-run — `transitionState` rejects transitions out of `applied` (`pipeline.test.ts`); `handleStartLongform` idempotence (`handlers.test.ts`)
+- [x] `/editorial-review-cancel` rejection on terminal state — covered by the state-machine terminal test (`pipeline.test.ts`)
+- [x] `/editorial-review-help` reads the pipeline correctly — exercised via `listOpen`/`readWorkflows` tests (`pipeline.test.ts`) and the full `lifecycle.test.ts` end-to-end walk
+
+**Acceptance Criteria**
+
+- Full loop works end-to-end on a real draft: `/editorial-draft-review` → operator annotates → `/editorial-iterate` → operator reviews v2 → `/editorial-approve` → `git status` shows the expected file change
+- No git operations happen as a side effect of any skill
+- Voice skill is loaded automatically based on which site the draft belongs to
+
+#### Open questions (resolve before coding)
+
+- Should `/editorial-approve` also update the calendar entry's stage from Drafting to Review? (Proposed: **no** — approve means "this is the final prose." Stage transitions remain with `/editorial-publish`. Keeps the two pipelines orthogonal.)
+- Iteration version cap: keep every version forever, or cap at N with compaction? (Proposed: **forever, append-only** — same rationale as feature-image history. Git-tracked, cheap, disposable if it ever becomes a problem.)
+- Should the operator be able to seed `/editorial-draft-review` with an explicit voice-skill override (e.g., audiocontrol voice on an editorialcontrol draft)? (Proposed: **not initially** — site inference is almost always correct; override can be added if it becomes a pain point.)
+
+### Phase 11: Short-form Review (Social Posts)
+
+**Deliverable:** The same review pipeline handles Reddit titles and bodies, YouTube descriptions, LinkedIn posts, and newsletter blurbs — drafted using the voice skill + calendar context, reviewed through a list-style UI, approved into a `DistributionRecord` field.
+
+**Motivation:** Short-form content is drafted more frequently than long-form (multiple platforms per post), benefits even more from voice consistency, and is where voice drift typically surfaces first (platform pressure toward generic social tone). The longform review loop already generalizes — this phase is mostly surface and integration work, not core pipeline.
+
+#### Skill design
+
+| Skill | Input | Output |
+|-------|-------|--------|
+| `/editorial-shortform-draft` | `<slug> <platform> [channel]` | Loads post metadata + voice skill, drafts platform-appropriate short-form content, enqueues as an `open` shortform workflow item |
+| `/editorial-iterate` (extended) | `<slug>` — branches on workflow's `contentKind` | Same loop; for shortform, the revision target is short — typically one paragraph + optional link block |
+| `/editorial-approve` (extended) | `<slug>` — branches on `contentKind` | For shortform, writes approved text to the attached `DistributionRecord.shortform` field; does NOT write to a file |
+
+#### Data model changes
+
+- [x] Extend `DraftWorkflowItem` with `contentKind: 'longform' | 'shortform'` (landed in Phase 8 types)
+- [x] Add `platform?: Platform` and `channel?: string` fields (landed in Phase 8 types)
+- [x] Extend `DistributionRecord` with optional `shortform?: string`
+- [x] Calendar parser/writer round-trip `shortform` via a separate `## Shortform Copy` section (table cells are wrong for multi-line copy — emitted only when populated)
+
+#### Implementation
+
+- [ ] `/editorial-shortform-draft`:
+  - [ ] Prompts for slug (if not supplied), platform, channel (if platform supports channels)
+  - [ ] Loads post title, dek, target keywords, tags from calendar
+  - [ ] Loads matching voice skill reference for short-form (`social-and-distribution.md` for audiocontrol, `cross-site-and-distribution.md` for editorialcontrol)
+  - [ ] Runs first-pass draft in the current session; appends workflow + v1
+- [ ] Dev route: `src/sites/<site>/pages/dev/editorial-review-shortform.astro` — list view of all open shortform workflows grouped by platform
+- [ ] Per-workflow UI is inline (not a separate route) — each row expands to show the current version, annotation field, edit textarea, and approve/iterate buttons. Matches the feature-image gallery pattern more than the longform review pattern.
+- [ ] `/editorial-iterate` branches on `contentKind` — shortform path uses a terser iteration prompt (the voice skill reference for short-form, not longform)
+- [ ] `/editorial-approve` for shortform writes to `DistributionRecord.shortform`, re-runs calendar round-trip test to confirm persistence, does not touch the filesystem outside the calendar MD
+
+#### Tests
+
+- [ ] Shortform workflow lifecycle: draft → iterate → approve → DistributionRecord updated
+- [ ] Calendar round-trips with and without the `shortform` column
+- [ ] `/editorial-shortform-draft` is idempotent: a second run on the same (slug, platform, channel) tuple reports the existing workflow and does not create a duplicate
+- [ ] Iteration loop works with the short-form voice reference loaded (not the longform one)
+
+**Acceptance Criteria**
+
+- A Reddit title + body for an existing published post can be drafted, annotated, iterated, and approved
+- YouTube description for a published video entry works the same way
+- LinkedIn dispatch and newsletter blurb work the same way
+- Approved text shows up in the calendar under the matching `DistributionRecord`
+- No regressions to longform flow
+
+#### Open questions (resolve before coding)
+
+- Should shortform storage be `DistributionRecord.shortform` (single field) or a separate file? (Proposed: **DistributionRecord.shortform** — attached to the platform/channel, round-trips with the calendar, no separate storage to reason about.)
+- Do Reddit submissions need title + body as separate fields (they're separate in Reddit's API), or one text blob? (Proposed: **one blob** with a convention like `title: ...\n\n<body>` or structured MD. Reddit-specific split can be added if it matters for the distribution skill later.)
+- Should `/editorial-shortform-draft` auto-run after `/editorial-publish`? (Proposed: **no** — explicit invocation. Auto-chaining creates noise; the operator decides when a post is ready for distribution.)
+
+### Phase 12: Voice-Library Feedback Signal
+
+**Deliverable:** Annotation categories aggregate across approved drafts. A report shows which voice-skill principles are catching the most operator corrections, identifying where voice drift is happening most often. This is the Phase 11 fitness-scoring analog of feature-image, scoped to surface the signal — not to automatically mutate the voice skills.
+
+**Motivation:** The voice skills (`audiocontrol-voice`, `editorialcontrol-voice`) are hand-calibrated right now. Over 20+ drafts, patterns will emerge: certain principles will produce drift more than others, certain SKILL.md sections will need refinement or forking. Phase 12 surfaces that signal; any revision to the voice skills stays manual for now.
+
+#### Skill design
+
+| Skill | Input | Output |
+|-------|-------|--------|
+| `/editorial-review-report` | None | Per-category counts across all approved drafts, top-level summary + per-site breakdown |
+
+#### Data model
+
+- [ ] `DraftAnnotation.comment` variant carries optional `category: AnnotationCategory` where `AnnotationCategory = 'voice-drift' | 'missing-receipt' | 'tutorial-framing' | 'saas-vocabulary' | 'fake-authority' | 'structural' | 'other'`
+- [ ] Category is captured in the UI from Phase 9 (dropdown next to the comment input). Default is `'other'`.
+
+#### Implementation
+
+- [ ] Extend annotation type to carry `category`
+- [ ] Update Phase 9 UI (retroactive) to show category dropdown on comment creation
+- [ ] `/editorial-review-report` reads all history entries with state `applied`, aggregates annotation categories, produces:
+  - [ ] Top-level table: category × count, ordered by frequency
+  - [ ] Per-site breakdown: same table filtered by site
+  - [ ] Per-voice-principle breakdown (optional stretch): map categories to specific SKILL.md sections for each voice skill. Requires a mapping table in the report module.
+- [ ] Report is text-only (prints to terminal). No persistent output file — always re-computed from JSONL.
+
+#### Tests
+
+- [ ] Aggregation is correct for a synthetic JSONL with known category counts
+- [ ] Per-site filter is correct
+- [ ] Missing category defaults to `'other'` in the count
+
+**Acceptance Criteria**
+
+- `/editorial-review-report` prints a usable summary after ≥5 drafts have cycled through
+- Operator can identify which voice principles are producing the most drift from the output
+- No changes to the voice skills themselves happen automatically
+
+#### Deferred: Automated voice-skill refinement
+
+**Out of scope for Phase 12.** If the signal from `/editorial-review-report` is clear and stable, a follow-on feature could propose edits to the voice SKILL.md references — forking a new reference when a specific principle recurs, or tightening existing reference text. This is explicitly a human-driven refinement for now: the report surfaces the signal, the operator decides what to change.
+
+#### Open questions (resolve before coding)
+
+- Should categories be a closed enum or free-text with suggestions? (Proposed: **closed enum, `'other'` catch-all** — keeps the aggregate meaningful. Add categories via PRs when a new pattern emerges.)
+- How do we handle edit-mode annotations (no explicit category) in the report? (Proposed: **treat as `'other'` with a note** — edit-mode is too heterogeneous to categorize without a separate taxonomy.)
+- Should the report include rejected drafts? (Proposed: **yes** — rejection is a strong signal. Include with a separate column; a high-reject voice principle is a stronger drift indicator than a high-annotation one.)
+
 ## Verification Checklist
 
 - [x] `npm run build` succeeds (no build breakage)
@@ -419,3 +698,66 @@ No new user-invocable skill. `/editorial-cross-link-review` is extended: when it
 - [x] Post scaffolding matches existing blog conventions
 - [x] Analytics integration produces actionable suggestions
 - [x] No secrets committed to the repository
+- [ ] Dev-only review routes 404 in prod build (Phase 8)
+- [ ] Longform annotation UI round-trips annotations without loss (Phase 9)
+- [ ] `/editorial-approve` does not perform any git operations (Phase 10)
+- [ ] Short-form drafts round-trip through `DistributionRecord.shortform` (Phase 11)
+- [ ] `/editorial-review-report` produces a usable summary from ≥5 cycled drafts (Phase 12)
+- [ ] `/dev/editorial-studio` unified dashboard returns 200 in dev, 404 in prod (Phase 13)
+
+### Phase 13: Editorial Studio (unified dashboard)
+
+**Deliverable:** A single dev-only URL — `/dev/editorial-studio` — shows the whole editorial-review pipeline at a glance, replaces the need to remember two URLs, and gives the operator a dashboard-level starting point analogous to `/dev/feature-image-preview`.
+
+**Motivation:** Phases 9 and 11 shipped two specialized routes — per-slug longform (`/dev/editorial-review/<slug>`) and shortform list (`/dev/editorial-review-shortform`). Operators asked for one unified surface. A unified studio also lets future extensions (filters, bulk actions, polling) have a natural home.
+
+#### Skill design
+
+No new user-invocable skills in this phase. `/editorial-review-help` and `/editorial-help` are updated to link the studio URL at the top.
+
+#### Files affected
+
+- `scripts/lib/editorial-review/handlers.ts` — new `handleStartLongform` handler
+- `src/sites/<site>/pages/api/dev/editorial-review/start-longform.ts` — thin POST endpoint (both sites)
+- `src/sites/<site>/pages/dev/editorial-studio.astro` — the unified dashboard (both sites)
+- `.claude/skills/editorial-review-help/SKILL.md` — add studio URL pointer
+- `.claude/skills/editorial-help/SKILL.md` — link studio under the review-skills block
+- `test/editorial-review/handlers.test.ts` — extend for handleStartLongform
+
+#### Implementation
+
+- [x] Add `handleStartLongform(rootDir, { site, slug })`:
+  - [x] Validates `site` against the `SITES` list
+  - [x] Reads `src/sites/<site>/pages/blog/<slug>/index.md` (400 on missing slug/site, 404 on missing file)
+  - [x] Calls `createWorkflow` with `contentKind: 'longform'` and the file's markdown — idempotent on natural key
+  - [x] Returns `{ workflow, existing: boolean }` so the UI can distinguish "created" vs "already existed"
+- [x] Add `POST /api/dev/editorial-review/start-longform` endpoint (both sites) — thin wrapper around handleStartLongform
+- [x] Create the studio route at `src/sites/<site>/pages/dev/editorial-studio.astro` (both sites; identical except `SITE` constant). Sections:
+  - Masthead: "Editorial Studio · <site> · dev"
+  - Pending panel: non-terminal workflows (open/in-review/iterating) grouped by state, sorted by `updatedAt` descending, link per-row to slug route (longform) or shortform list (shortform). Iterating rows show the exact `/editorial-iterate` command.
+  - Approved panel: highlighted separately with the exact `/editorial-approve` command per row (with `--platform` / `--channel` for shortform)
+  - Start-new longform form: dropdown of Published calendar entries that don't have an active longform workflow; submit POSTs to the new endpoint; on success redirects to the per-slug route
+  - Shortform hint: the `/editorial-shortform-draft` command + link to `/dev/editorial-review-shortform`
+  - Voice-drift mini-panel: top-2 categories from `buildReport()` when ≥5 terminal workflows; placeholder otherwise
+  - Recent terminal panel: last 10 applied/cancelled workflows
+- [x] Update `.claude/skills/editorial-review-help/SKILL.md` — link studio URL at the top
+- [x] Update `.claude/skills/editorial-help/SKILL.md` — link studio URL and list all review-extension skills (Phases 10–13)
+- [x] Unit test `handleStartLongform` — 5 tests covering happy path, idempotence, missing args, missing file, unknown site
+
+#### Tests
+
+- [x] `handleStartLongform` happy path — returns a new workflow with `existing: false`
+- [x] Second call returns the same workflow with `existing: true`
+- [x] 400 on missing slug or site argument
+- [x] 400 on unknown site
+- [x] 404 when blog file doesn't exist on disk
+
+**Acceptance Criteria**
+
+- `/dev/editorial-studio` renders in dev for both sites with non-empty content
+- Pending panel shows all non-terminal workflows across longform + shortform
+- Approved panel shows the exact `/editorial-approve` command per row
+- Start-new longform form lists only Published entries without an active longform workflow; submitting enqueues and redirects
+- Voice-drift panel respects the ≥5 sample threshold
+- Route 404s in prod
+- No regressions to Phase 8–12 behavior

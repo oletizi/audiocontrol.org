@@ -1,0 +1,245 @@
+---
+export const prerender = false;
+
+import BlogLayout from '../../../layouts/BlogLayout.astro';
+import {
+  handleGetWorkflow,
+  type DraftVersion,
+  type DraftWorkflowItem,
+} from '../../../../../../scripts/lib/editorial-review/index.js';
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+
+const { slug } = Astro.params;
+const versionParam = Astro.url.searchParams.get('v');
+
+const SITE = 'editorialcontrol';
+
+const fetched = handleGetWorkflow(process.cwd(), {
+  id: null,
+  site: SITE,
+  slug: slug ?? null,
+  contentKind: 'longform',
+  platform: null,
+  channel: null,
+});
+
+let workflow: DraftWorkflowItem | null = null;
+let versions: DraftVersion[] = [];
+let currentVersion: DraftVersion | null = null;
+let renderedHtml = '';
+let fm: Record<string, string> = {};
+let errorMessage: string | null = null;
+
+if (fetched.status === 200) {
+  const body = fetched.body as { workflow: DraftWorkflowItem; versions: DraftVersion[] };
+  workflow = body.workflow;
+  versions = body.versions;
+
+  const requested = versionParam ? parseInt(versionParam, 10) : workflow.currentVersion;
+  currentVersion = versions.find(v => v.version === requested) ?? versions[versions.length - 1];
+
+  if (currentVersion) {
+    const render = await import('../../../../../../scripts/lib/editorial-review/render.js');
+    const parsed = render.parseDraftFrontmatter(currentVersion.markdown);
+    fm = parsed.frontmatter;
+    renderedHtml = await render.renderMarkdownToHtml(parsed.body);
+  }
+} else {
+  errorMessage = (fetched.body as { error: string }).error;
+}
+
+// Expose the draft state to the client. currentVersion.markdown is the raw
+// source for edit mode; we serialize the whole object so the client has
+// parity with server data without extra round-trips.
+const draftState = workflow && currentVersion
+  ? { workflow, currentVersion, versions }
+  : null;
+
+const terminalState = workflow?.state === 'applied' || workflow?.state === 'cancelled';
+const iteratingState = workflow?.state === 'iterating';
+const approvedState = workflow?.state === 'approved';
+const activeState = workflow?.state === 'open' || workflow?.state === 'in-review';
+---
+
+{errorMessage ? (
+  <div class="review-error">
+    <h1>Editorial Review — dev</h1>
+    <p><strong>Slug:</strong> <code>{slug}</code></p>
+    <div class="review-error-box">
+      <p><strong>No workflow found.</strong></p>
+      <p>{errorMessage}</p>
+      <p>To create one, run <code>/editorial-draft-review {slug}</code> in Claude Code.</p>
+    </div>
+  </div>
+) : (
+  <>
+    <div data-review-banner>
+      <strong>review</strong>
+      <span class="review-dot">·</span>
+      {workflow?.site}/{workflow?.slug}
+      <span class="review-dot">·</span>
+      state: <code data-state-label>{workflow?.state}</code>
+      <span class="review-dot">·</span>
+      version: <code>{currentVersion?.version} / {workflow?.currentVersion}</code>
+      {versions.length > 1 && (
+        <span class="version-nav">
+          {versions.map(v => {
+            const isActive = v.version === currentVersion?.version;
+            return (
+              <a href={`?v=${v.version}`} class={isActive ? 'version-link active' : 'version-link'}>
+                v{v.version}
+              </a>
+            );
+          })}
+        </span>
+      )}
+      <span class="banner-actions">
+        <button type="button" class="banner-btn" data-action="toggle-edit">Edit</button>
+        {activeState && (
+          <>
+            <button type="button" class="banner-btn btn-approve" data-action="approve">Approve</button>
+            <button type="button" class="banner-btn" data-action="iterate">Iterate</button>
+            <button type="button" class="banner-btn btn-reject" data-action="reject">Reject</button>
+          </>
+        )}
+        {approvedState && (
+          <>
+            <button type="button" class="banner-btn" disabled title="Apply not implemented in Phase 9">Apply</button>
+            <button type="button" class="banner-btn btn-reject" data-action="reject">Reject</button>
+          </>
+        )}
+        {iteratingState && (
+          <span class="state-note">iterating — run the skill</span>
+        )}
+        {terminalState && (
+          <span class="state-note">terminal state ({workflow?.state})</span>
+        )}
+      </span>
+    </div>
+    <BlogLayout
+      frontmatter={{
+        title: fm.title ?? `Draft: ${slug}`,
+        description: fm.description,
+        date: fm.date,
+        datePublished: fm.datePublished,
+        dateModified: fm.dateModified,
+        author: fm.author,
+        image: fm.image,
+        socialImage: fm.socialImage,
+      }}
+    >
+      <div class="review-stage">
+        <div id="draft-body" data-draft-body set:html={renderedHtml}></div>
+        <textarea id="draft-edit" data-draft-edit hidden></textarea>
+        <div class="edit-toolbar" data-edit-toolbar hidden>
+          <button type="button" class="banner-btn btn-approve" data-action="save-version">Save as new version</button>
+          <button type="button" class="banner-btn" data-action="cancel-edit">Cancel</button>
+          <span class="edit-hint" data-edit-hint></span>
+        </div>
+        <aside class="comments-sidebar" data-comments-sidebar aria-label="Comments">
+          <p class="sidebar-header">Comments</p>
+          <div class="sidebar-empty" data-sidebar-empty>No comments yet. Select text to add one.</div>
+          <ol class="sidebar-list" data-sidebar-list></ol>
+        </aside>
+      </div>
+    </BlogLayout>
+
+    <button type="button" class="floating-add-btn" data-add-comment-btn hidden>Add comment</button>
+
+    <div class="comment-modal" data-comment-modal hidden role="dialog" aria-modal="true" aria-label="Add comment">
+      <div class="comment-modal-backdrop" data-modal-backdrop></div>
+      <div class="comment-modal-panel">
+        <p class="modal-header">Add comment</p>
+        <blockquote class="modal-quote" data-modal-quote></blockquote>
+        <label class="modal-label" for="comment-category">Category</label>
+        <select id="comment-category" data-comment-category>
+          <option value="other" selected>other</option>
+          <option value="voice-drift">voice-drift</option>
+          <option value="missing-receipt">missing-receipt</option>
+          <option value="tutorial-framing">tutorial-framing</option>
+          <option value="saas-vocabulary">saas-vocabulary</option>
+          <option value="fake-authority">fake-authority</option>
+          <option value="structural">structural</option>
+        </select>
+        <label class="modal-label" for="comment-text">Comment</label>
+        <textarea id="comment-text" data-comment-text rows="4" placeholder="Your comment..."></textarea>
+        <div class="modal-actions">
+          <button type="button" class="banner-btn" data-action="cancel-comment">Cancel</button>
+          <button type="button" class="banner-btn btn-approve" data-action="submit-comment">Submit</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" data-toast hidden></div>
+
+    {draftState && (
+      <script
+        type="application/json"
+        id="draft-state"
+        set:html={JSON.stringify(draftState).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')}
+      />
+    )}
+    <script>
+      import '../../../../../shared/editorial-review-client.ts';
+    </script>
+  </>
+)}
+
+<style>
+  [data-review-banner] { position: sticky; top: 0; z-index: 100; background: #141820; color: #c4ced8; border-bottom: 1px solid #2a323e; padding: 0.5rem 1rem; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.85rem; display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem; }
+  [data-review-banner] .version-nav { margin-left: 1rem; }
+  [data-review-banner] .version-link { margin-right: 0.5rem; color: #c4ced8; text-decoration: none; }
+  [data-review-banner] .version-link.active { color: #2fb8a8; }
+  [data-review-banner] .review-dot { margin: 0 0.75rem; }
+  [data-review-banner] .banner-actions { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+  [data-review-banner] .state-note { opacity: 0.7; font-style: italic; }
+  .review-error { max-width: 48rem; margin: 4rem auto; padding: 2rem; font-family: system-ui, sans-serif; }
+  .review-error-box { border: 1px solid #b45a5a; padding: 1rem; border-radius: 4px; background: #1f1616; color: #e2b4b4; }
+
+  .banner-btn { background: #1f2630; color: #c4ced8; border: 1px solid #2a323e; padding: 0.25rem 0.6rem; border-radius: 3px; font: inherit; font-size: 0.8rem; cursor: pointer; }
+  .banner-btn:hover:not(:disabled) { background: #2a323e; color: #e8eef5; }
+  .banner-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .banner-btn.btn-approve { border-color: #2fb8a8; color: #2fb8a8; }
+  .banner-btn.btn-approve:hover:not(:disabled) { background: #2fb8a8; color: #141820; }
+  .banner-btn.btn-reject { border-color: #b45a5a; color: #e2b4b4; }
+  .banner-btn.btn-reject:hover:not(:disabled) { background: #b45a5a; color: #fff; }
+
+  .review-stage { position: relative; }
+  #draft-body.hidden { display: none; }
+  #draft-edit { width: 100%; min-height: 70vh; padding: 1rem; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.9rem; line-height: 1.5; background: #0f1319; color: #c4ced8; border: 1px solid #2a323e; border-radius: 4px; box-sizing: border-box; }
+  .edit-toolbar { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.85rem; color: #c4ced8; }
+  .edit-hint { opacity: 0.6; }
+
+  :global(mark.draft-comment-highlight) { background: rgba(47, 184, 168, 0.18); padding: 0 2px; border-radius: 2px; cursor: pointer; transition: background 0.1s; }
+  :global(mark.draft-comment-highlight.active) { background: rgba(47, 184, 168, 0.45); }
+
+  .comments-sidebar { position: fixed; top: 4rem; right: 1rem; width: 18rem; max-height: 75vh; overflow-y: auto; background: #141820; color: #c4ced8; border: 1px solid #2a323e; border-radius: 4px; padding: 0.75rem; font-family: 'Inter', system-ui, sans-serif; font-size: 0.85rem; z-index: 50; }
+  .comments-sidebar .sidebar-header { margin: 0 0 0.5rem 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #2fb8a8; }
+  .comments-sidebar .sidebar-empty { opacity: 0.5; font-size: 0.8rem; padding: 0.5rem 0; }
+  .comments-sidebar :global(.sidebar-list) { list-style: none; margin: 0; padding: 0; }
+  .comments-sidebar :global(.sidebar-item) { padding: 0.5rem; border: 1px solid #2a323e; border-radius: 3px; margin-bottom: 0.5rem; cursor: pointer; }
+  .comments-sidebar :global(.sidebar-item:hover), .comments-sidebar :global(.sidebar-item.active) { border-color: #2fb8a8; background: #1a2028; }
+  .comments-sidebar :global(.sidebar-item-cat) { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.7rem; color: #2fb8a8; text-transform: uppercase; letter-spacing: 0.05em; }
+  .comments-sidebar :global(.sidebar-item-quote) { font-style: italic; opacity: 0.7; margin: 0.25rem 0; font-size: 0.75rem; border-left: 2px solid #2a323e; padding-left: 0.5rem; }
+  .comments-sidebar :global(.sidebar-item-text) { margin: 0.25rem 0 0 0; }
+  @media (max-width: 1200px) { .comments-sidebar { position: static; width: auto; max-width: 40rem; margin: 1rem auto; } }
+
+  .floating-add-btn { position: fixed; z-index: 200; background: #2fb8a8; color: #141820; border: none; padding: 0.35rem 0.7rem; border-radius: 3px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.8rem; font-weight: 600; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+  .floating-add-btn:hover { background: #3fd4c2; }
+
+  .comment-modal { position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; }
+  .comment-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+  .comment-modal-panel { position: relative; background: #141820; color: #c4ced8; border: 1px solid #2a323e; border-radius: 6px; padding: 1.25rem; width: min(32rem, 90vw); font-family: 'Inter', system-ui, sans-serif; }
+  .comment-modal .modal-header { margin: 0 0 0.75rem 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.85rem; color: #2fb8a8; text-transform: uppercase; letter-spacing: 0.05em; }
+  .comment-modal .modal-quote { margin: 0 0 0.75rem 0; padding: 0.5rem 0.75rem; border-left: 2px solid #2fb8a8; background: #0f1319; font-style: italic; font-size: 0.85rem; max-height: 6rem; overflow-y: auto; }
+  .comment-modal .modal-label { display: block; margin: 0.5rem 0 0.25rem 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; }
+  .comment-modal select, .comment-modal textarea { width: 100%; background: #0f1319; color: #c4ced8; border: 1px solid #2a323e; border-radius: 3px; padding: 0.4rem; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.85rem; box-sizing: border-box; }
+  .comment-modal .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.75rem; }
+
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 400; background: #141820; color: #c4ced8; border: 1px solid #2fb8a8; border-radius: 4px; padding: 0.6rem 1rem; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.85rem; max-width: 40rem; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  .toast.error { border-color: #b45a5a; color: #e2b4b4; }
+</style>
+</content>

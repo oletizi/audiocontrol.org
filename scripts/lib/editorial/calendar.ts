@@ -194,12 +194,57 @@ function parseDistributions(lines: string[]): DistributionRecord[] {
   return records;
 }
 
-type SectionName = Stage | 'Distribution';
+type SectionName = Stage | 'Distribution' | 'Shortform Copy';
+
+interface ShortformBlock {
+  slug: string;
+  platform: string;
+  channel?: string;
+  text: string;
+}
+
+/**
+ * Parse the `## Shortform Copy` section. Format:
+ *
+ *     ### <slug> · <platform>[ · <channel>]
+ *     <body text, potentially multi-line, until next ### or EOF>
+ *
+ * Unknown platforms are skipped silently.
+ */
+function parseShortformBlocks(lines: string[]): ShortformBlock[] {
+  const blocks: ShortformBlock[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const header = lines[i].match(/^### (.+)$/);
+    if (!header) {
+      i++;
+      continue;
+    }
+    const parts = header[1].split('·').map((s) => s.trim());
+    if (parts.length < 2) {
+      i++;
+      continue;
+    }
+    const [slug, platform, channel] = parts;
+    i++;
+    const bodyLines: string[] = [];
+    while (i < lines.length && !lines[i].startsWith('### ')) {
+      bodyLines.push(lines[i]);
+      i++;
+    }
+    const text = bodyLines.join('\n').replace(/^\n+|\n+$/g, '');
+    if (text.length > 0) {
+      blocks.push({ slug, platform, channel: channel || undefined, text });
+    }
+  }
+  return blocks;
+}
 
 /** Parse the editorial calendar markdown file into an EditorialCalendar. */
 export function parseCalendar(markdown: string): EditorialCalendar {
   const entries: CalendarEntry[] = [];
   const distributions: DistributionRecord[] = [];
+  const shortformBlocks: ShortformBlock[] = [];
   const lines = markdown.split('\n');
 
   let currentSection: SectionName | null = null;
@@ -209,6 +254,8 @@ export function parseCalendar(markdown: string): EditorialCalendar {
     if (currentSection && sectionLines.length > 0) {
       if (currentSection === 'Distribution') {
         distributions.push(...parseDistributions(sectionLines));
+      } else if (currentSection === 'Shortform Copy') {
+        shortformBlocks.push(...parseShortformBlocks(sectionLines));
       } else {
         entries.push(...parseEntries(sectionLines, currentSection));
       }
@@ -225,6 +272,8 @@ export function parseCalendar(markdown: string): EditorialCalendar {
         currentSection = name;
       } else if (name === 'Distribution') {
         currentSection = 'Distribution';
+      } else if (name === 'Shortform Copy') {
+        currentSection = 'Shortform Copy';
       } else {
         currentSection = null;
       }
@@ -233,6 +282,18 @@ export function parseCalendar(markdown: string): EditorialCalendar {
     }
   }
   flushSection();
+
+  // Merge shortform blocks onto their matching DistributionRecord by
+  // (slug, platform, channel) — normalize channel to avoid case drift.
+  for (const b of shortformBlocks) {
+    const rec = distributions.find(
+      (d) =>
+        d.slug === b.slug &&
+        d.platform === b.platform &&
+        (d.channel ?? '').toLowerCase() === (b.channel ?? '').toLowerCase(),
+    );
+    if (rec) rec.shortform = b.text;
+  }
 
   return { entries, distributions };
 }
@@ -347,6 +408,20 @@ export function renderCalendar(calendar: EditorialCalendar): string {
     sections.push('*No entries.*');
   }
   sections.push('');
+
+  const shortformRecords = calendar.distributions.filter(
+    (d) => d.shortform !== undefined && d.shortform !== '',
+  );
+  if (shortformRecords.length > 0) {
+    sections.push('## Shortform Copy', '');
+    for (const r of shortformRecords) {
+      const headerParts: string[] = [r.slug, r.platform];
+      if (r.channel) headerParts.push(r.channel);
+      sections.push(`### ${headerParts.join(' · ')}`, '');
+      sections.push((r.shortform ?? '').replace(/\n+$/, ''));
+      sections.push('');
+    }
+  }
 
   return sections.join('\n');
 }
