@@ -23,6 +23,7 @@ interface UpdateBody {
   rating?: number;
   templateSlug?: string;
   appliedTo?: string;
+  archived?: boolean;
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -56,6 +57,7 @@ export const POST: APIRoute = async ({ request }) => {
   if (body.rating !== undefined) patch.rating = body.rating;
   if (body.templateSlug !== undefined) patch.templateSlug = body.templateSlug;
   if (body.appliedTo !== undefined) patch.appliedTo = body.appliedTo;
+  if (body.archived !== undefined) patch.archived = body.archived;
   const updated = updateLog(body.id, patch);
   if (!updated) {
     return new Response(

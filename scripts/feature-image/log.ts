@@ -48,6 +48,35 @@ export interface LogEntry {
    * Absence means the entry hasn't been applied yet (even if status=approved).
    */
   appliedTo?: string;
+  /**
+   * Soft-delete flag. Archived entries stay in the log (so lineage, thread
+   * references, template examples, and fitness data are preserved) but are
+   * hidden from the default gallery view. Toggleable from the gallery.
+   */
+  archived?: boolean;
+  /**
+   * Where the text panel sits on this entry. Pre-Phase-15 entries lack this
+   * field; consumers should treat absence as 'bottom' (the historical
+   * default). Baked into composited outputs, so it's also what
+   * /feature-image-apply would re-bake against if the user reopens the
+   * entry for another pass.
+   */
+  overlayPosition?:
+    | 'bottom'
+    | 'middle'
+    | 'top'
+    | 'left'
+    | 'right'
+    | 'left-one-third'
+    | 'left-two-thirds'
+    | 'right-one-third'
+    | 'right-two-thirds'
+    | 'full';
+  /**
+   * Vertical alignment of the text stack inside the overlay panel.
+   * 'auto' (or absence) defers to the position's natural anchor.
+   */
+  overlayAlign?: 'auto' | 'top' | 'center' | 'bottom';
 }
 
 /** Read all log entries, oldest first. Empty array if the file doesn't exist. */
@@ -74,7 +103,7 @@ export function appendLog(entry: LogEntry): void {
 /** Update an existing entry by id (rewrites the whole file). */
 export function updateLog(
   id: string,
-  patch: Partial<Pick<LogEntry, 'status' | 'notes' | 'rating' | 'templateSlug' | 'appliedTo'>>,
+  patch: Partial<Pick<LogEntry, 'status' | 'notes' | 'rating' | 'templateSlug' | 'appliedTo' | 'archived'>>,
 ): LogEntry | null {
   const entries = readLog();
   const idx = entries.findIndex(e => e.id === id);

@@ -135,6 +135,32 @@ const siteBrands = {
       font-size: 0.7rem;
       color: var(--text-3);
     }
+    .archived-toggle {
+      background: transparent;
+      border: none;
+      color: var(--text-2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0 0.15rem;
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-color: var(--edge-hi);
+      text-underline-offset: 3px;
+    }
+    .archived-toggle:hover { color: var(--text-0); text-decoration-color: var(--accent); }
+
+    /* Archived entries render dimmed with a dashed edge so they're visually
+     * distinct from live entries when the user has show-archived on. */
+    .card.archived {
+      opacity: 0.55;
+      border-style: dashed;
+    }
+    .card.archived:hover { opacity: 0.85; }
+    .card.archived .card-thumb { filter: grayscale(0.35); }
+
+    /* Destructive menu item in the ⋯ dropdown */
+    .card-compact .dropdown-menu button.danger { color: var(--danger); }
+    .card-compact .dropdown-menu button.danger:hover { background: rgba(228, 115, 115, 0.08); color: var(--danger); }
 
     /* ── Drawers ───────────────────────────────────────────────────────────── */
     .drawer {
@@ -773,7 +799,8 @@ const siteBrands = {
       background: var(--bg-1);
       border: 1px solid var(--edge);
       border-radius: var(--radius);
-      overflow: hidden;
+      /* overflow: visible so the ⋯ dropdown can escape the card. Thumbs
+       * round themselves via .card-thumb { overflow: hidden; border-radius }. */
       transition: border-color 0.15s, transform 0.15s;
     }
     .card:hover { border-color: var(--edge-hi); }
@@ -1945,6 +1972,8 @@ const siteBrands = {
     let activeTemplate = null;
     let focusedEntryId = null;
     let cachedEntries = [];
+    // Show or hide soft-deleted entries in the history grid. Persisted.
+    let showArchived = localStorage.getItem('fi-show-archived') === 'true';
 
     const templateGrid = document.getElementById('template-grid');
     const templateMeta = document.getElementById('template-meta');
@@ -2921,6 +2950,8 @@ const siteBrands = {
       const scanlines = draft.scanlines ?? defaults.scanlines;
       const grain = draft.grain ?? defaults.grain;
       const overlay = draft.overlay ?? 'on';
+      const overlayPosition = draft.overlayPosition ?? entry.overlayPosition ?? 'bottom';
+      const overlayAlign = draft.overlayAlign ?? entry.overlayAlign ?? 'auto';
       const format = draft.format ?? 'og';
       const site = (draft.site === 'editorialcontrol' || entry.site === 'editorialcontrol')
         ? 'editorialcontrol'
@@ -2947,6 +2978,8 @@ const siteBrands = {
              data-scanlines="${escapeAttr(scanlines)}"
              data-grain="${escapeAttr(grain)}"
              data-overlay="${escapeAttr(overlay === true ? 'on' : overlay)}"
+             data-overlay-position="${escapeAttr(overlayPosition)}"
+             data-overlay-align="${escapeAttr(overlayAlign)}"
              data-preset="${escapeAttr(preset)}"
              data-site="${site}"
              style="${escapeAttr(brandStyle(site))}">
@@ -2961,7 +2994,7 @@ const siteBrands = {
 
     function renderCompactCard(entry) {
       const div = document.createElement('div');
-      div.className = 'card';
+      div.className = entry.archived ? 'card archived' : 'card';
       div.dataset.id = entry.id;
 
       const titleHtml = entry.title ? escapeHtml(entry.title) : '<em>(no title)</em>';
@@ -2999,6 +3032,10 @@ const siteBrands = {
                 <div class="dropdown-menu">
                   <button type="button" data-action="copy" title="Copy this entry's prompt, provider, preset and filters into the Generate form">Copy as input</button>
                   <button type="button" data-action="save-template" title="Save this prompt as a reusable template in the library">Save as template</button>
+                  ${entry.archived
+                    ? `<button type="button" data-action="unarchive" title="Restore this entry to the main history view">Un-delete</button>`
+                    : `<button type="button" data-action="archive" class="danger" title="Hide this entry from the history view. Files stay on disk; lineage, thread references, and template examples are preserved. Un-delete from the archived view.">Delete</button>`
+                  }
                 </div>
               </div>
             </div>
@@ -3067,6 +3104,10 @@ const siteBrands = {
             ${rejectBtn}
             <button type="button" class="btn-ghost" data-action="copy" title="Copy this entry's prompt, provider, preset and filters into the Generate form">Copy as input</button>
             <button type="button" class="btn-ghost" data-action="save-template" title="Save this prompt as a reusable template in the library">Save as template</button>
+            ${entry.archived
+              ? `<button type="button" class="btn-ghost" data-action="unarchive" title="Restore this entry to the main history view">Un-delete</button>`
+              : `<button type="button" class="btn-ghost btn-danger-ghost" data-action="archive" title="Hide this entry from the history view. Files stay on disk; lineage, thread references, and template examples are preserved.">Delete</button>`
+            }
           </div>
           <div class="thread-section">
             <div class="thread-header">
@@ -3227,6 +3268,8 @@ const siteBrands = {
           grain: previewEl.dataset.grain,
         },
         overlay: previewEl.dataset.overlay === 'on',
+        overlayPosition: previewEl.dataset.overlayPosition || entry.overlayPosition || 'bottom',
+        overlayAlign: previewEl.dataset.overlayAlign || entry.overlayAlign || 'auto',
       };
     }
 
@@ -3289,6 +3332,8 @@ const siteBrands = {
           if (action === 'copy') return copyAsInput(entry);
           if (action === 'rate') return rateEntry(entry, parseInt(btn.dataset.rate, 10));
           if (action === 'save-template') return openSaveTemplatePanel(entry);
+          if (action === 'archive') return setArchived(entry, true);
+          if (action === 'unarchive') return setArchived(entry, false);
           if (action === 'toggle-menu') {
             const dd = btn.closest('.dropdown');
             dd.classList.toggle('open');
@@ -3323,6 +3368,8 @@ const siteBrands = {
                data-scanlines="${f.scanlines}"
                data-grain="${f.grain}"
                data-overlay="on"
+               data-overlay-position="${escapeAttr(entry.overlayPosition || 'bottom')}"
+               data-overlay-align="${escapeAttr(entry.overlayAlign || 'auto')}"
                data-preset="${preset}"
                data-site="${site}"
                style="${escapeAttr(brandStyle(site))}">
@@ -3348,6 +3395,8 @@ const siteBrands = {
                 <option value="editorialcontrol"${site === 'editorialcontrol' ? ' selected' : ''}>editorialcontrol</option>
               </select></label>
               <label class="cb" title="Show or hide the title/subtitle/brand overlay panel"><input type="checkbox" data-ctl="overlay" checked /> Overlay</label>
+              <label title="Where the text panel sits on the image. 'full' drops the accent rule and covers the whole image."><span>Position</span><select data-ctl="overlayPosition">${selectOptions(['bottom','middle','top','left','left-two-thirds','left-one-third','right','right-two-thirds','right-one-third','full'], entry.overlayPosition || 'bottom')}</select></label>
+              <label title="Vertical anchor of the text stack inside the panel. 'auto' follows the position default (bottom for bottom/left/right columns, center for middle/full, top for top)."><span>Align</span><select data-ctl="overlayAlign">${selectOptions(['auto','top','center','bottom'], entry.overlayAlign || 'auto')}</select></label>
             </div>
             <div class="control-row">
               <label title="Color grade — saturation, hue shift, brightness"><span>Grade</span><select data-ctl="grade">${selectOptions(['none','crt','teal-amber','heavy'], f.grade)}</select></label>
@@ -3398,6 +3447,8 @@ const siteBrands = {
         scanlines: previewEl.dataset.scanlines,
         grain: previewEl.dataset.grain,
         overlay: previewEl.dataset.overlay,
+        overlayPosition: previewEl.dataset.overlayPosition,
+        overlayAlign: previewEl.dataset.overlayAlign,
         site: previewEl.dataset.site,
         allFormats: !!(allFormatsCb && allFormatsCb.checked),
       };
@@ -3409,7 +3460,7 @@ const siteBrands = {
       const subtitleEl = previewEl.querySelector('.og-subtitle-input');
       if (titleEl && typeof draft.title === 'string') titleEl.value = draft.title;
       if (subtitleEl && typeof draft.subtitle === 'string') subtitleEl.value = draft.subtitle;
-      const keys = ['format', 'preset', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay', 'site'];
+      const keys = ['format', 'preset', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay', 'overlayPosition', 'overlayAlign', 'site'];
       for (const k of keys) {
         if (draft[k] !== undefined) {
           previewEl.dataset[k] = draft[k];
@@ -3473,6 +3524,8 @@ const siteBrands = {
               if (sel) sel.value = f[k];
             }
           } else if (ctl === 'overlay') previewEl.dataset.overlay = el.checked ? 'on' : 'off';
+          else if (ctl === 'overlayPosition') previewEl.dataset.overlayPosition = el.value;
+          else if (ctl === 'overlayAlign') previewEl.dataset.overlayAlign = el.value;
           else if (ctl === 'site') {
             const site = el.value === 'editorialcontrol' ? 'editorialcontrol' : 'audiocontrol';
             previewEl.dataset.site = site;
@@ -3502,6 +3555,8 @@ const siteBrands = {
       const title = titleInput ? titleInput.value : '';
       const subtitle = subtitleInput ? subtitleInput.value : '';
       const overlay = previewEl.dataset.overlay === 'on';
+      const overlayPosition = previewEl.dataset.overlayPosition || 'bottom';
+      const overlayAlign = previewEl.dataset.overlayAlign || 'auto';
       const preset = previewEl.dataset.preset || undefined;
       const filters = {};
       for (const k of ['grade', 'phosphor', 'vignette', 'scanlines', 'grain']) filters[k] = previewEl.dataset[k];
@@ -3518,7 +3573,7 @@ const siteBrands = {
         const res = await fetch('/api/dev/feature-image/recomposite', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ sourceEntryId: entry.id, title, subtitle, preset, filters, overlay, formats, site }),
+          body: JSON.stringify({ sourceEntryId: entry.id, title, subtitle, preset, filters, overlay, overlayPosition, overlayAlign, formats, site }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || `status ${res.status}`);
@@ -3540,7 +3595,9 @@ const siteBrands = {
     async function refreshGallery() {
       try {
         cachedEntries = await fetchLog();
-        stageCountEl.textContent = `${cachedEntries.length} ${cachedEntries.length === 1 ? 'entry' : 'entries'}`;
+        const archivedCount = cachedEntries.filter(e => e.archived).length;
+        const visible = showArchived ? cachedEntries : cachedEntries.filter(e => !e.archived);
+        renderStageCount(visible.length, archivedCount);
         galleryEl.innerHTML = '';
         galleryEl.classList.toggle('has-focus', !!focusedEntryId);
         if (cachedEntries.length === 0) {
@@ -3557,13 +3614,31 @@ const siteBrands = {
             return;
           }
         }
-        stageLabelEl.textContent = 'History';
-        for (const entry of cachedEntries) galleryEl.appendChild(renderCompactCard(entry));
+        stageLabelEl.textContent = showArchived ? 'History (incl. archived)' : 'History';
+        if (visible.length === 0) {
+          galleryEl.innerHTML = `<div class="empty-hint">No ${showArchived ? '' : 'visible '}entries.${archivedCount > 0 && !showArchived ? ` ${archivedCount} archived — click "show archived" above.` : ''}</div>`;
+          return;
+        }
+        for (const entry of visible) galleryEl.appendChild(renderCompactCard(entry));
       } catch (err) {
         galleryEl.innerHTML = `<div class="err">Could not load log: ${escapeHtml(err.message)}</div>`;
       }
       // Sync history-help visibility with whether we're in history or focus.
       applyHistoryHelpState(localStorage.getItem('fi-history-help-open') === 'open');
+    }
+
+    function renderStageCount(visibleCount, archivedCount) {
+      const label = `${visibleCount} ${visibleCount === 1 ? 'entry' : 'entries'}`;
+      if (archivedCount === 0) {
+        stageCountEl.textContent = label;
+        return;
+      }
+      stageCountEl.innerHTML = `${label} · <button type="button" class="archived-toggle" data-action="toggle-archived">${showArchived ? 'hide' : 'show'} ${archivedCount} archived</button>`;
+      stageCountEl.querySelector('.archived-toggle').addEventListener('click', () => {
+        showArchived = !showArchived;
+        localStorage.setItem('fi-show-archived', String(showArchived));
+        refreshGallery();
+      });
     }
 
     async function updateStatus(id, status) {
@@ -3577,6 +3652,23 @@ const siteBrands = {
         await refreshGallery();
       } catch (err) {
         alert(`Failed to update status: ${err.message}`);
+      }
+    }
+
+    async function setArchived(entry, archived) {
+      try {
+        const res = await fetch('/api/dev/feature-image/log', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: entry.id, archived }),
+        });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        // If the user just archived the currently-focused entry, pop focus —
+        // they don't want to stare at what they just hid.
+        if (archived && focusedEntryId === entry.id) unfocusEntry();
+        else await refreshGallery();
+      } catch (err) {
+        alert(`Failed to ${archived ? 'delete' : 'un-delete'}: ${err.message}`);
       }
     }
 
@@ -3766,6 +3858,8 @@ const siteBrands = {
       let preset = entry.preset || undefined;
       let filters = {};
       let overlay = true;
+      let overlayPosition = entry.overlayPosition || 'bottom';
+      let overlayAlign = entry.overlayAlign || 'auto';
       let site = entry.site || activeSite;
       if (previewEl) {
         const titleEl = previewEl.querySelector('.og-title-input');
@@ -3777,6 +3871,8 @@ const siteBrands = {
           filters[k] = previewEl.dataset[k];
         }
         overlay = previewEl.dataset.overlay !== 'off';
+        overlayPosition = previewEl.dataset.overlayPosition || overlayPosition;
+        overlayAlign = previewEl.dataset.overlayAlign || overlayAlign;
         site = previewEl.dataset.site || site;
       }
 
@@ -3799,7 +3895,7 @@ const siteBrands = {
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
             sourceEntryId: entry.id,
-            title, subtitle, preset, filters, overlay, site,
+            title, subtitle, preset, filters, overlay, overlayPosition, overlayAlign, site,
             formats: ['og', 'youtube', 'instagram'],
             includeFilteredVariant: true,
           }),
