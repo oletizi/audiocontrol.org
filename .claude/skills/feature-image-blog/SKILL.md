@@ -18,12 +18,24 @@ This skill does NOT generate images directly. It records intent and context so t
 ## Usage
 
 ```
-/feature-image-blog <post-path-or-url>
+/feature-image-blog <post-path-or-slug-or-url>
 ```
 
 ### Arguments
 
-- `<post-path-or-url>` — Path to the blog post markdown file (e.g., `src/sites/audiocontrol/pages/blog/my-post/index.md`) OR a URL (e.g., `https://audiocontrol.org/blog/my-post/` or `http://localhost:4321/blog/my-post/`). URLs resolve via the host to the correct site's `src/sites/<site>/pages/blog/<slug>/index.md`.
+- `<post-path-or-slug-or-url>` — one of:
+  - a repo-relative path, e.g. `src/sites/audiocontrol/pages/blog/my-post/index.md`
+  - a bare slug, e.g. `my-post` (auto-discovers across both sites; ambiguous slugs error out and ask for the full path)
+  - a URL, e.g. `https://audiocontrol.org/blog/my-post/` or `http://localhost:4321/blog/my-post/`
+
+The dev server (default `http://localhost:4321`) must be running for the helper scripts to reach the workflow + template API.
+
+## Helper scripts
+
+Two scripts live next to this SKILL.md. Both accept `--base=<url>` to override the default dev-server port.
+
+- `scan.ts <post-path-or-slug>` — read-only: resolves path+site+slug, parses frontmatter, queries the template library for tag matches, ranks candidates, and prints a JSON recommendation bundle (path, site, tags, `candidateTemplates`, `recommendedTemplateSlug`, `recommendedPrompt`, `recommendedPreset`).
+- `enqueue.ts --post=<path> --prompt=<prompt> --preset=<preset> [--provider=<provider>] [--template=<slug>] [--candidates=slug1,slug2,...] [--notes=<text>]` — POSTs a `feature-image-blog` workflow item and prints the created id + gallery URL.
 
 ## Multi-site awareness
 
@@ -38,66 +50,68 @@ The skill infers `site` from the post's path (the first segment after `src/sites
 
 ## Steps
 
-1. **Resolve the post path + site:**
-   - If the input is a path, read the `src/sites/<site>/...` prefix to derive `site`
-   - If the input is a URL, use the host to pick the site:
-     - `audiocontrol.org` / `localhost:4321` / `orion-m4:4321` → `audiocontrol`
-     - `editorialcontrol.org` / `localhost:4322` / site-specific ports → `editorialcontrol`
-     - If the host is ambiguous (e.g., `localhost` without a port that maps), fall back to `audiocontrol` and note the inference in the output
-   - Extract the slug from the URL's `/blog/<slug>/` segment
-   - Build the path: `src/sites/<site>/pages/blog/<slug>/index.md`
-   - Verify the file exists; error out with a clear message if not
+### 1. Normalise URLs (if needed) before invoking `scan.ts`
 
-2. **Read post frontmatter:**
-   - Extract `title`, `description`, `date`
-   - If `title` is missing, error out
+`scan.ts` accepts a path or a bare slug. If the user gave a URL instead, map the host to a site before handing off:
 
-3. **Read the post's tags** from `src/sites/<site>/pages/blog/index.astro`:
-   - Find the entry whose `slug:` matches and grab its `tags: [...]` array
-   - These drive template matching in the next step
+| Host | Site |
+|------|------|
+| `audiocontrol.org`, `localhost:4321`, `orion-m4:4321` | `audiocontrol` |
+| `editorialcontrol.org`, `localhost:4322` | `editorialcontrol` |
+| ambiguous / unknown `localhost` | fallback to `audiocontrol`; note the inference in your final report |
 
-4. **Suggest matching prompt templates from the library:**
-   - Prefer HTTP if the dev server is up: `GET http://localhost:4322/api/dev/feature-image/templates?tag=<tag>` for each post tag (and merge results, deduping by slug)
-   - Otherwise read `docs/feature-image-prompts.yaml` directly and filter by tag overlap
-   - Filter candidates to templates matching the inferred site (or with no site set — they're site-agnostic)
-   - Sort by fitness (highest first; templates with no usage float to top so they accumulate ratings)
-   - Pick the top 3 (or fewer)
+Pull the slug from the `/blog/<slug>/` segment. Use the bare slug — `scan.ts` will auto-discover which site it lives under.
 
-5. **Compose the suggested prompt:**
-   - If a strong template match exists (good tag overlap, decent fitness), use its `prompt` and `preset`/`provider` as the suggestion baseline; record its `slug` so the gallery records `templateSlug` on generations
-   - Otherwise draft a fresh abstract prompt tuned to the site's brand. For `audiocontrol` bias toward service-manual / flight-instrumentation / phosphor-amber. For `editorialcontrol` bias toward publication-dark / chartreuse-pencil / ink-on-cream marginalia.
-   - ALWAYS append: `"no text, no words, no letters, no typography, no labels"`
+### 2. Scan for a recommended template
 
-6. **Optionally check recent related work** in `.feature-image-history.jsonl` for similar topics (filtered to the same site) the user already approved/rated (informs the prompt or template choice)
+```bash
+tsx .claude/skills/feature-image-blog/scan.ts <post-path-or-slug>
+```
 
-7. **Enqueue a workflow item** via `POST /api/dev/feature-image/workflow`:
-   ```json
-   {
-     "action": "create",
-     "type": "feature-image-blog",
-     "createdBy": "agent",
-     "context": {
-       "postPath": "src/sites/<site>/pages/blog/<slug>/index.md",
-       "slug": "<slug>",
-       "site": "<audiocontrol|editorialcontrol>",
-       "title": "<post title>",
-       "description": "<post description>",
-       "suggestedPrompt": "<drafted prompt>",
-       "suggestedPreset": "retro-crt",
-       "suggestedTemplateSlug": "<template-slug-or-omitted>",
-       "candidateTemplates": ["slug-1", "slug-2", "slug-3"],
-       "notes": "<context including which templates were considered and which site>"
-     }
-   }
-   ```
-   The endpoint returns the created workflow item with its `id`.
+Output is JSON with `postPath`, `site`, `slug`, `title`, `description`, `tags`, `candidateTemplates` (ranked, top 5), `recommendedTemplateSlug`, `recommendedPrompt`, and `recommendedPreset` / `recommendedProvider`.
 
-8. **Report to the user:**
-   - Echo the workflow `id`, the inferred site, the candidate templates considered, the suggested prompt, and which template (if any) was the baseline
-   - Tell the user to open the gallery (check `npm run dev` output for the current port — usually `http://localhost:4321/dev/feature-image-preview` for audiocontrol; the gallery itself is shared between sites and lives under audiocontrol's dev routes)
-   - Note that the Generate drawer's Site selector will auto-pre-select the inferred site when the workflow is activated
+Ranking: templates with the most matched tags first, then by fitness (highest), then by use count (lowest — so unused templates surface to accumulate data). Templates are filtered to ones matching the post's site (plus site-agnostic ones).
 
-9. **Do NOT apply changes** — the agent waits. When the user finishes iterating and submits a decision via the gallery, they invoke `/feature-image-apply` to have the agent process the decision.
+If `recommendedTemplateSlug` is set, the prompt is ready to use as-is — it already has the no-text guard appended. If it's `null`, no template had any tag match; draft a fresh abstract prompt tuned to the site's brand:
+- `audiocontrol` → service-manual / flight-instrumentation / phosphor-amber
+- `editorialcontrol` → publication-dark / chartreuse-pencil / ink-on-cream marginalia
+
+Always append the no-text guard: `no text, no words, no letters, no typography, no labels`.
+
+### 3. Optionally consult history
+
+Read `.feature-image-history.jsonl` for recent approved / highly-rated entries on similar topics for the same site — the gallery already feeds this back into template fitness, but it can inform prompt adjustments or pre-empt a template that's underperformed.
+
+### 4. Enqueue the workflow
+
+Prompts are multi-line and inline quoting is brittle — write the prompt to a file and pass `--prompt-file=<path>`:
+
+```bash
+# example: run scan, extract prompt into a tmpfile, then enqueue
+tsx .claude/skills/feature-image-blog/scan.ts <slug> > /tmp/fi-scan.json
+jq -r '.recommendedPrompt' /tmp/fi-scan.json > /tmp/fi-prompt.txt
+
+tsx .claude/skills/feature-image-blog/enqueue.ts \
+  --post=<postPath> \
+  --prompt-file=/tmp/fi-prompt.txt \
+  --preset=<recommendedPreset> \
+  [--provider=<recommendedProvider>] \
+  [--template=<recommendedTemplateSlug>] \
+  [--candidates=slug1,slug2,slug3] \
+  [--notes-file=/tmp/fi-notes.txt | --notes="<short context>"]
+```
+
+`--prompt=<string>` and `--notes=<string>` still work for short inline values, but `--prompt-file` is the safe default for a scan-derived prompt. `enqueue.ts` re-reads the post to pull authoritative `title` + `description`, derives `site` + `slug` from the path, and POSTs the workflow item. On success it prints a JSON block with `workflowId`, `galleryUrl`, and the echoed context.
+
+### 5. Report to the user
+
+- Echo the workflow `id`, inferred site, recommended template (if any), and the candidates considered
+- Point them at the gallery URL printed by `enqueue.ts`
+- Note that the Generate drawer's Site selector will auto-pre-select the inferred site when the workflow is activated
+
+### 6. Do NOT apply changes
+
+The agent waits. When the user submits a decision or approves an entry in the gallery, `/feature-image-apply` picks it up.
 
 ## Environment
 
