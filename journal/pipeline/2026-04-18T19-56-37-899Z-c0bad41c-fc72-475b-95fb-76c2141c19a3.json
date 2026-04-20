@@ -1,0 +1,16 @@
+{
+  "id": "c0bad41c-fc72-475b-95fb-76c2141c19a3",
+  "type": "feature-image-iterate",
+  "createdAt": "2026-04-18T19:56:37.899Z",
+  "createdBy": "user",
+  "state": "cancelled",
+  "context": {
+    "threadId": "7bc18fed-1846-45ab-b780-c5944ee9c299",
+    "sourceEntryId": "7bc18fed-1846-45ab-b780-c5944ee9c299",
+    "userFeedback": "make it less literal",
+    "snapshot": {
+      "title": "Test",
+      "preset": "retro-crt"
+    }
+  }
+}

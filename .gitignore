@@ -40,14 +40,16 @@ public/images/generated/
 .playwright-mcp/
 redesign-*.png
 
-# (note: .feature-image-history.jsonl, .feature-image-pipeline.jsonl,
-# and .feature-image-threads.jsonl are intentionally NOT gitignored —
-# they hold the generation history, workflow-decision audit trail, and
-# Phase 13 iteration conversation that Phase 11 fitness scoring and
-# future analysis will compute from. Lose them = lose the design-system
-# evolution.)
+# (feature-image Phase 15 migration note: the generation history, workflow
+# pipeline, and thread messages used to live in .feature-image-history.jsonl,
+# .feature-image-pipeline.jsonl, and .feature-image-threads.jsonl at the
+# repo root. They now live as per-entry JSON files under journal/. The
+# journal/ tree is intentionally NOT gitignored — Phase 11 fitness scoring
+# and the lineage graph depend on it.)
 #
-# Same for .editorial-draft-history.jsonl and .editorial-draft-pipeline.jsonl —
-# intentionally tracked. They hold the review workflow's state machine,
-# version history, and annotation log. The editorial-review Phase 12
-# feedback signal (voice-drift aggregation) is computed from them.
+# .editorial-draft-history.jsonl and .editorial-draft-pipeline.jsonl are
+# also intentionally tracked. They hold the editorial-review workflow's
+# state machine, version history, and annotation log. The editorial-review
+# Phase 12 feedback signal (voice-drift aggregation) is computed from them.
+# (Candidate for the same journal/-style migration if they start hitting
+# merge conflicts — see docs/.../feature-image-generator Phase 15.)

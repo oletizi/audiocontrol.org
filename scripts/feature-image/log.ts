@@ -1,10 +1,10 @@
-import { readFileSync, existsSync, appendFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { appendJournal, readJournal, updateJournal } from './journal.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, '..', '..');
-const LOG_PATH = join(rootDir, '.feature-image-history.jsonl');
+const HISTORY_DIR = join(rootDir, 'journal', 'history');
 
 export type LogStatus = 'generated' | 'approved' | 'rejected';
 
@@ -79,44 +79,25 @@ export interface LogEntry {
   overlayAlign?: 'auto' | 'top' | 'center' | 'bottom';
 }
 
-/** Read all log entries, oldest first. Empty array if the file doesn't exist. */
+/** Read all log entries, oldest first. Empty array if nothing has been logged yet. */
 export function readLog(): LogEntry[] {
-  if (!existsSync(LOG_PATH)) return [];
-  const content = readFileSync(LOG_PATH, 'utf-8');
-  const lines = content.split('\n').filter(l => l.trim().length > 0);
-  const entries: LogEntry[] = [];
-  for (const line of lines) {
-    try {
-      entries.push(JSON.parse(line) as LogEntry);
-    } catch {
-      // skip malformed lines rather than crash
-    }
-  }
-  return entries;
+  return readJournal<LogEntry>(HISTORY_DIR);
 }
 
-/** Append a new entry to the log. */
+/** Append a new entry to the journal. Writes one file, never conflicts. */
 export function appendLog(entry: LogEntry): void {
-  appendFileSync(LOG_PATH, JSON.stringify(entry) + '\n', 'utf-8');
+  appendJournal(HISTORY_DIR, entry);
 }
 
-/** Update an existing entry by id (rewrites the whole file). */
+/** Update an existing entry by id. Touches exactly one file. */
 export function updateLog(
   id: string,
   patch: Partial<Pick<LogEntry, 'status' | 'notes' | 'rating' | 'templateSlug' | 'appliedTo' | 'archived'>>,
 ): LogEntry | null {
-  const entries = readLog();
-  const idx = entries.findIndex(e => e.id === id);
-  if (idx === -1) return null;
-  entries[idx] = { ...entries[idx], ...patch };
-  writeFileSync(
-    LOG_PATH,
-    entries.map(e => JSON.stringify(e)).join('\n') + '\n',
-    'utf-8',
-  );
-  return entries[idx];
+  return updateJournal<LogEntry>(HISTORY_DIR, id, patch);
 }
 
+/** Directory where history entries are stored (one JSON file per entry). */
 export function getLogPath(): string {
-  return LOG_PATH;
+  return HISTORY_DIR;
 }

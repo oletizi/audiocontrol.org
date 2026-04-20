@@ -1,11 +1,11 @@
-import { readFileSync, existsSync, appendFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
+import { appendJournal, readJournal, updateJournal } from './journal.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, '..', '..');
-const PIPELINE_PATH = join(rootDir, '.feature-image-pipeline.jsonl');
+const PIPELINE_DIR = join(rootDir, 'journal', 'pipeline');
 
 export type WorkflowType = 'feature-image-blog' | 'feature-image-iterate';
 export type WorkflowState = 'open' | 'decided' | 'applied' | 'cancelled';
@@ -46,7 +46,7 @@ export interface WorkflowContext {
 export interface WorkflowDecision {
   /** When the user submitted the decision */
   decidedAt: string;
-  /** The log entry (from .feature-image-history.jsonl) the user approved */
+  /** The log entry (from journal/history/) the user approved */
   logEntryId: string;
   /** Optional user notes captured at decision time */
   userNotes?: string;
@@ -72,46 +72,27 @@ export interface WorkflowItem {
   application?: WorkflowApplication;
 }
 
+/** Directory where workflow items are stored (one JSON file per item). */
 export function getPipelinePath(): string {
-  return PIPELINE_PATH;
+  return PIPELINE_DIR;
 }
 
-/** Read all workflow items, oldest first. Empty array if the file doesn't exist. */
+/** Read all workflow items, oldest first. Empty array if nothing has been logged yet. */
 export function readWorkflow(): WorkflowItem[] {
-  if (!existsSync(PIPELINE_PATH)) return [];
-  const content = readFileSync(PIPELINE_PATH, 'utf-8');
-  const lines = content.split('\n').filter(l => l.trim().length > 0);
-  const items: WorkflowItem[] = [];
-  for (const line of lines) {
-    try {
-      items.push(JSON.parse(line) as WorkflowItem);
-    } catch {
-      // skip malformed lines
-    }
-  }
-  return items;
+  return readJournal<WorkflowItem>(PIPELINE_DIR, { timestampField: 'createdAt' });
 }
 
-/** Append a new workflow item to the pipeline. */
+/** Append a new workflow item. Writes one file, never conflicts. */
 export function appendWorkflow(item: WorkflowItem): void {
-  appendFileSync(PIPELINE_PATH, JSON.stringify(item) + '\n', 'utf-8');
+  appendJournal(PIPELINE_DIR, item, { timestampField: 'createdAt' });
 }
 
-/** Update an existing workflow item by id. Rewrites the whole file. */
+/** Update an existing workflow item by id. Touches exactly one file. */
 export function updateWorkflow(
   id: string,
   patch: Partial<Pick<WorkflowItem, 'state' | 'decision' | 'application'>>,
 ): WorkflowItem | null {
-  const items = readWorkflow();
-  const idx = items.findIndex(i => i.id === id);
-  if (idx === -1) return null;
-  items[idx] = { ...items[idx], ...patch };
-  writeFileSync(
-    PIPELINE_PATH,
-    items.map(i => JSON.stringify(i)).join('\n') + '\n',
-    'utf-8',
-  );
-  return items[idx];
+  return updateJournal<WorkflowItem>(PIPELINE_DIR, id, patch);
 }
 
 /** Create a new `open` workflow item. */

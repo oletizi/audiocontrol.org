@@ -1,0 +1,41 @@
+{
+  "id": "9e1b865a-1e2a-49e0-b45b-8b9e0007e445",
+  "timestamp": "2026-04-18T20:04:51.086Z",
+  "prompt": "Irregular cluster of geometric panels at varied scales and orientations — a loose population of candidates under selection pressure, not arranged on a grid. Flat vector style with subtle gradients. Muted palette of deep indigo, teal, and warm off-white. Organic spacing, overlapping shapes at slight angles, some panels fading at their edges. Minimal lines, no text, no literal machinery or AI imagery. Slight grain texture. Evokes iteration, refinement, and organic variation without being on-the-nose.",
+  "provider": "dom-bake",
+  "preset": "retro-crt",
+  "filters": "{\"grade\":\"crt\",\"phosphor\":\"on\",\"vignette\":\"on\",\"scanlines\":\"on\",\"grain\":\"on\"}",
+  "title": "DOM Bake Test",
+  "subtitle": "Phase 12 proof",
+  "formats": "og,youtube,instagram",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-feature-image-generator/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/ca8eccec-raw.png"
+    ],
+    "filtered": [
+      "/images/generated/9e1b865a-filtered.png"
+    ],
+    "composited": [
+      {
+        "provider": "dom",
+        "format": "og",
+        "path": "/images/generated/9e1b865a-og.png"
+      },
+      {
+        "provider": "dom",
+        "format": "youtube",
+        "path": "/images/generated/9e1b865a-youtube.png"
+      },
+      {
+        "provider": "dom",
+        "format": "instagram",
+        "path": "/images/generated/9e1b865a-instagram.png"
+      }
+    ]
+  },
+  "durationMs": 4326,
+  "parentEntryId": "ca8eccec-6354-4082-8ae2-3c6c5d8443c2",
+  "templateSlug": "cubiste-nouveau",
+  "archived": true
+}

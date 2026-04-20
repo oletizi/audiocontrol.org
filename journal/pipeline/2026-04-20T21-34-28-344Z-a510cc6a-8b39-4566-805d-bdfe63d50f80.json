@@ -1,0 +1,23 @@
+{
+  "id": "a510cc6a-8b39-4566-805d-bdfe63d50f80",
+  "type": "feature-image-blog",
+  "createdAt": "2026-04-20T21:34:28.344Z",
+  "createdBy": "agent",
+  "state": "open",
+  "context": {
+    "postPath": "src/sites/editorialcontrol/pages/blog/building-the-editorial-calendar-feature/index.md",
+    "slug": "building-the-editorial-calendar-feature",
+    "site": "editorialcontrol",
+    "title": "Your Content Workflow Is Already Obsolete. Your AI Agent Is the Replacement.",
+    "description": "AI in content marketing is table stakes; most workflows using it aren't fast or flexible enough to keep up. The third option: stop treating AI as a feature bolted onto your workflow and start treating the agent as the workflow. An editorial calendar built on top of a coding agent (Claude Code, Codex, Cursor, any of them), Markdown files, and a weekend of work.",
+    "suggestedPrompt": "Abstract tracked-changes revision marks, flowing horizontal\nsignal-green chartreuse strokes underlining and striking\nthrough invisible text, scattered warm parchment-cream caret\nmarks and small annotations drifting in the margins, ink-bleed\nsoftness at each stroke edge, cool ink-near-black background,\neditorial revision-pass atmosphere, sparse and intentional\nplacement, compositional weight in the upper half with quiet\nmeasure below, no text no words no letters no typography no\nlabels no people no objects",
+    "suggestedPreset": "subtle",
+    "suggestedProvider": "flux",
+    "suggestedTemplateSlug": "tracked-changes",
+    "candidateTemplates": [
+      "tracked-changes",
+      "proof-constellation"
+    ],
+    "notes": "AI-agent editorial workflow post; tracked-changes baseline (ai-agents + editorial tags matched); proof-constellation as fallback (workflow). editorialcontrol brand."
+  }
+}

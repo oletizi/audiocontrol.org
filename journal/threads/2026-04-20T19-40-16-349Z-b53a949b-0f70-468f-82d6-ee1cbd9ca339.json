@@ -1,0 +1,8 @@
+{
+  "threadId": "912b1bac-98cb-4552-916f-2768f53d85fe",
+  "timestamp": "2026-04-20T19:40:16.349Z",
+  "role": "assistant",
+  "text": "Applied. Copied the baked files into src/sites/editorialcontrol/public/images/blog/ai-doesnt-remember/ (feature-filtered, feature-og, feature-raw). Wired image + socialImage into the post frontmatter and bumped dateModified to today. Run npm run dev and visit /blog/ai-doesnt-remember on the editorialcontrol build to preview. Commit when you're satisfied.",
+  "logEntryId": "8ce69485-92c5-4fe2-a483-96a98b10f450",
+  "messageId": "b53a949b-0f70-468f-82d6-ee1cbd9ca339"
+}
