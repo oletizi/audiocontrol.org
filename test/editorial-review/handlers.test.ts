@@ -19,6 +19,12 @@ let workflowId: string;
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'editorial-review-handlers-'));
+  // handleCreateVersion now enforces the single-source-of-truth
+  // invariant and writes new version markdown to the blog file
+  // on disk before snapshotting. Tests must scaffold the file.
+  const blogDir = join(root, 'src', 'sites', 'editorialcontrol', 'pages', 'blog', 'test-post');
+  mkdirSync(blogDir, { recursive: true });
+  writeFileSync(join(blogDir, 'index.md'), 'hello world', 'utf-8');
   const w = createWorkflow(root, {
     site: 'editorialcontrol',
     slug: 'test-post',
