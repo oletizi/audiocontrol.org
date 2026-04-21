@@ -966,6 +966,11 @@ body:has([data-review-ui="longform"]) .site-footer {
  * so the pointing triangle below stays stable. */
 .er-pencil-btn {
   position: absolute;
+  /* The client sets top/left to the selection's midpoint (in
+   * offsetParent coordinates); CSS then translates back by half the
+   * button's own width so it centers on that point regardless of
+   * rendered width. Translate-Y is zero; hover scales around center. */
+  transform: translate(-50%, 0);
   font-family: var(--er-font-display);
   font-variation-settings: "opsz" 36, "wght" 700;
   font-size: 0.95rem;
@@ -983,7 +988,7 @@ body:has([data-review-ui="longform"]) .site-footer {
   animation: er-pencil-pulse 1.6s ease-out 1;
 }
 .er-pencil-btn:hover {
-  transform: scale(1.06);
+  transform: translate(-50%, 0) scale(1.06);
   box-shadow: 0 8px 18px rgba(184,54,42,0.55), 0 0 0 3px rgba(245,241,232,0.25);
 }
 .er-pencil-btn::before { content: '✎ '; }

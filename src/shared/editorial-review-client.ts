@@ -211,9 +211,25 @@ export function initEditorialReview(): void {
     const offsets = computeOffsetFromRange(range);
     if (!offsets) { addBtn.hidden = true; return; }
     const rect = range.getBoundingClientRect();
-    addBtn.style.top = `${window.scrollY + rect.top - 34}px`;
-    addBtn.style.left = `${window.scrollX + rect.left + rect.width / 2 - 50}px`;
+    // The pencil uses `position: absolute`, so `top/left` are relative
+    // to the nearest positioned ancestor (the .er-review-shell div).
+    // Subtract that ancestor's viewport position from the selection's
+    // viewport rect to get the correct offset. Horizontal centering is
+    // handled in CSS with `translateX(-50%)` so we don't need to know
+    // the pencil's rendered width here.
+    // Un-hide FIRST so offsetParent + offsetHeight are measurable.
     addBtn.hidden = false;
+    const parent = addBtn.offsetParent instanceof HTMLElement ? addBtn.offsetParent.getBoundingClientRect() : null;
+    if (!parent) { addBtn.hidden = true; return; }
+    // The pencil uses `position: absolute`, so `top/left` are relative
+    // to the nearest positioned ancestor (the .er-review-shell div).
+    // Subtract that ancestor's viewport position from the selection's
+    // viewport rect to get the correct offset. Horizontal centering
+    // is handled in CSS with `translateX(-50%)` so we don't need to
+    // know the pencil's rendered width here.
+    const PENCIL_GAP = 14; // breathing room (triangle tip + a few px)
+    addBtn.style.top = `${rect.top - parent.top - addBtn.offsetHeight - PENCIL_GAP}px`;
+    addBtn.style.left = `${rect.left - parent.left + rect.width / 2}px`;
     pendingRange = offsets;
   });
 
