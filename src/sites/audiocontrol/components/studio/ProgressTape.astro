@@ -1,0 +1,736 @@
+---
+/*
+ * ProgressTape — the Studio's flagship long-running-operation feedback.
+ *
+ * Renders into StudioLayout's tape-mount. Idle state collapses to a
+ * hairline amber rule at the bottom of the viewport. When an operation
+ * starts via window.studioTape.start({...}), the tape expands, paints
+ * numbered stage markers across a reel, fills left-to-right as stages
+ * complete, and ticks live elapsed + estimated-remaining readouts.
+ *
+ * Estimates come from a localStorage EMA of prior runs keyed by
+ * operation identifier, falling back to per-stage `estimateMs` hints
+ * when a key has no history.
+ *
+ * Imperative API (attached to window):
+ *
+ *   studioTape.start({ key, operation, stages, cancelable?, onCancel? });
+ *   studioTape.advance();          // marks current stage complete,
+ *                                  // starts the next
+ *   studioTape.advance(idx);       // jumps to a specific stage
+ *   studioTape.complete(summary?); // marks final stage complete
+ *   studioTape.fail(error);        // marks current stage failed
+ *   studioTape.cancel();           // operator-initiated abort
+ *
+ * Callers provide a stable `key` per operation type (e.g.
+ * "approve-3-formats" vs "generate-flux-og"). The EMA uses this key
+ * so cross-operation runs don't pollute each other.
+ *
+ * Aesthetic: service-manual reel-to-reel with a numbered sprocket
+ * track. No spinners. No scope creep. One component, one voice.
+ */
+---
+
+<script>
+  type StageState = 'pending' | 'active' | 'complete' | 'failed';
+
+  interface StageSpec {
+    label: string;
+    estimateMs?: number;
+  }
+
+  interface StartOpts {
+    key: string;
+    operation: string;
+    stages: StageSpec[];
+    cancelable?: boolean;
+    onCancel?: () => void;
+  }
+
+  interface TapeApi {
+    start(opts: StartOpts): void;
+    advance(idx?: number): void;
+    complete(summary?: string): void;
+    fail(error: string): void;
+    cancel(): void;
+    isActive(): boolean;
+  }
+
+  declare global {
+    interface Window {
+      studioTape: TapeApi;
+    }
+  }
+
+  const EMA_KEY = 'fi-studio-tape-ema-v1';
+  const EMA_ALPHA = 0.3;
+  const IDLE_SUMMARY_MS = 5200;
+  const TICK_INTERVAL_MS = 100;
+
+  interface EmaRecord {
+    stagesMs: number[];
+    runs: number;
+  }
+
+  type EmaStore = Record<string, EmaRecord>;
+
+  function readEma(): EmaStore {
+    try {
+      const raw = localStorage.getItem(EMA_KEY);
+      return raw ? (JSON.parse(raw) as EmaStore) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function writeEma(store: EmaStore): void {
+    try {
+      localStorage.setItem(EMA_KEY, JSON.stringify(store));
+    } catch {
+      // localStorage full / disabled — non-fatal
+    }
+  }
+
+  function updateEma(key: string, actualStagesMs: number[]): void {
+    const store = readEma();
+    const prev = store[key];
+    const stagesMs: number[] = prev?.stagesMs ?? [];
+    const next: number[] = actualStagesMs.map((actual, i) => {
+      const prior = stagesMs[i];
+      if (prior === undefined) return actual;
+      return Math.round(EMA_ALPHA * actual + (1 - EMA_ALPHA) * prior);
+    });
+    store[key] = { stagesMs: next, runs: (prev?.runs ?? 0) + 1 };
+    writeEma(store);
+  }
+
+  function readEmaStages(key: string): number[] | null {
+    const store = readEma();
+    const rec = store[key];
+    return rec ? rec.stagesMs : null;
+  }
+
+  // ── Rendering helpers ────────────────────────────────────────────────
+
+  function formatDuration(ms: number): string {
+    if (!isFinite(ms) || ms < 0) return '—';
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }
+
+  function stageMarker(idx: number, label: string, state: StageState): string {
+    const glyph =
+      state === 'complete' ? '&#x2713;' :
+      state === 'failed' ? '&#x2715;' :
+      state === 'active' ? '&#x25CF;' :
+      '&#x25CB;';
+    return `
+      <div class="studio-tape__stage" data-state="${state}" aria-label="Stage ${idx + 1}: ${label}">
+        <span class="studio-tape__stage-dot" aria-hidden="true">${glyph}</span>
+        <span class="studio-tape__stage-num">${String(idx + 1).padStart(2, '0')}</span>
+        <span class="studio-tape__stage-label">${label}</span>
+      </div>
+    `;
+  }
+
+  // ── Tape instance state ──────────────────────────────────────────────
+
+  interface RunState {
+    key: string;
+    operation: string;
+    stages: StageSpec[];
+    currentIdx: number;
+    states: StageState[];
+    startedAt: number;
+    stageStartedAt: number;
+    estimatesMs: number[];        // per-stage, used for ETA math
+    actualStagesMs: number[];      // filled in as stages complete
+    cancelable: boolean;
+    onCancel?: () => void;
+    tickHandle: number | null;
+    summaryHandle: number | null;
+  }
+
+  let run: RunState | null = null;
+  let summaryTimer: number | null = null;
+
+  // ── DOM ──────────────────────────────────────────────────────────────
+
+  const mount = document.querySelector<HTMLElement>('[data-studio-tape]');
+  if (!mount) {
+    // eslint-disable-next-line no-console
+    console.warn('ProgressTape: no mount element (expected StudioLayout on this page)');
+  }
+
+  function renderEmpty(): void {
+    if (!mount) return;
+    mount.classList.remove('studio-tape-mount--active');
+    mount.innerHTML = '';
+  }
+
+  function renderSummary(summary: string, ok: boolean): void {
+    if (!mount) return;
+    mount.classList.remove('studio-tape-mount--active');
+    mount.innerHTML = `
+      <div class="studio-tape studio-tape--summary" data-ok="${ok ? '1' : '0'}">
+        <div class="studio-tape__summary">
+          <span class="studio-stamp studio-stamp--${ok ? 'approved' : 'rejected'}">
+            ${ok ? '<span class="studio-stamp__led" aria-hidden="true"></span>' : ''}
+            <span>${summary}</span>
+          </span>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderActive(): void {
+    if (!mount || !run) return;
+    mount.classList.add('studio-tape-mount--active');
+    const completedCount = run.states.filter(s => s === 'complete').length;
+    const activeIdx = run.currentIdx;
+    const now = performance.now();
+    const totalElapsed = now - run.startedAt;
+    const totalEstimated = run.estimatesMs.reduce((a, b) => a + b, 0);
+    const remainingEstimated = run.estimatesMs
+      .slice(activeIdx + 1)
+      .reduce((a, b) => a + b, 0);
+    const currentStageElapsed = now - run.stageStartedAt;
+    const currentStageEstimated = run.estimatesMs[activeIdx] ?? 1000;
+    const currentStageRemaining = Math.max(0, currentStageEstimated - currentStageElapsed);
+    const etaMs = remainingEstimated + currentStageRemaining;
+
+    // Progress fill: completed stages + fractional current stage.
+    const completedFraction = activeIdx / run.stages.length;
+    const activeFraction = Math.min(1, currentStageElapsed / currentStageEstimated) / run.stages.length;
+    const fillPct = Math.min(99, (completedFraction + activeFraction) * 100);
+
+    const stagesHtml = run.stages
+      .map((s, i) => stageMarker(i, s.label, run!.states[i]))
+      .join('');
+
+    const cancelBtn = run.cancelable
+      ? `<button type="button" class="studio-tape__cancel studio-btn studio-btn--danger" data-action="cancel">Cancel</button>`
+      : '';
+
+    mount.innerHTML = `
+      <aside class="studio-tape" data-state="active" role="status" aria-live="polite">
+        <div class="studio-tape__header">
+          <div class="studio-tape__op">
+            <span class="studio-tape__op-num">STAGE ${String(activeIdx + 1).padStart(2, '0')}/${String(run.stages.length).padStart(2, '0')}</span>
+            <span class="studio-tape__op-label">${run.operation}</span>
+          </div>
+          <div class="studio-tape__readouts">
+            <div class="studio-readout">
+              <span class="studio-readout__kicker">Elapsed</span>
+              <span class="studio-readout__value studio-readout__value--phosphor" data-tape-elapsed>${formatDuration(totalElapsed)}</span>
+            </div>
+            <div class="studio-readout">
+              <span class="studio-readout__kicker">ETA</span>
+              <span class="studio-readout__value" data-tape-eta>~${formatDuration(etaMs)}</span>
+            </div>
+            ${cancelBtn}
+          </div>
+        </div>
+        <div class="studio-tape__reel" aria-hidden="true">
+          <div class="studio-tape__track"></div>
+          <div class="studio-tape__fill" data-tape-fill style="width: ${fillPct}%"></div>
+          <div class="studio-tape__playhead" data-tape-playhead style="left: ${fillPct}%"></div>
+          <div class="studio-tape__stages">${stagesHtml}</div>
+        </div>
+      </aside>
+    `;
+
+    const cancel = mount.querySelector<HTMLButtonElement>('[data-action="cancel"]');
+    if (cancel) {
+      cancel.addEventListener('click', () => api.cancel());
+    }
+  }
+
+  function tick(): void {
+    if (!run || !mount) return;
+    const now = performance.now();
+    const totalElapsed = now - run.startedAt;
+    const currentStageElapsed = now - run.stageStartedAt;
+    const currentStageEstimated = run.estimatesMs[run.currentIdx] ?? 1000;
+    const currentStageRemaining = Math.max(0, currentStageEstimated - currentStageElapsed);
+    const remainingEstimated = run.estimatesMs
+      .slice(run.currentIdx + 1)
+      .reduce((a, b) => a + b, 0);
+    const etaMs = remainingEstimated + currentStageRemaining;
+
+    const elapsedEl = mount.querySelector<HTMLElement>('[data-tape-elapsed]');
+    const etaEl = mount.querySelector<HTMLElement>('[data-tape-eta]');
+    const fillEl = mount.querySelector<HTMLElement>('[data-tape-fill]');
+    const playheadEl = mount.querySelector<HTMLElement>('[data-tape-playhead]');
+
+    if (elapsedEl) elapsedEl.textContent = formatDuration(totalElapsed);
+    if (etaEl) etaEl.textContent = '~' + formatDuration(etaMs);
+
+    const completedFraction = run.currentIdx / run.stages.length;
+    const activeFraction = Math.min(1, currentStageElapsed / currentStageEstimated) / run.stages.length;
+    const fillPct = Math.min(99, (completedFraction + activeFraction) * 100);
+    if (fillEl) fillEl.style.width = fillPct + '%';
+    if (playheadEl) playheadEl.style.left = fillPct + '%';
+  }
+
+  function stopTick(): void {
+    if (run && run.tickHandle !== null) {
+      clearInterval(run.tickHandle);
+      run.tickHandle = null;
+    }
+  }
+
+  function clearSummaryTimer(): void {
+    if (summaryTimer !== null) {
+      clearTimeout(summaryTimer);
+      summaryTimer = null;
+    }
+  }
+
+  // ── API ──────────────────────────────────────────────────────────────
+
+  const api: TapeApi = {
+    start(opts) {
+      clearSummaryTimer();
+      stopTick();
+
+      const priorEma = readEmaStages(opts.key);
+      const estimatesMs = opts.stages.map((stage, i) => {
+        const priorMs = priorEma?.[i];
+        if (priorMs !== undefined && priorMs > 0) return priorMs;
+        return stage.estimateMs ?? 1500;
+      });
+      const states: StageState[] = opts.stages.map(() => 'pending');
+      states[0] = 'active';
+
+      const now = performance.now();
+      run = {
+        key: opts.key,
+        operation: opts.operation,
+        stages: opts.stages,
+        currentIdx: 0,
+        states,
+        startedAt: now,
+        stageStartedAt: now,
+        estimatesMs,
+        actualStagesMs: [],
+        cancelable: opts.cancelable !== false,
+        onCancel: opts.onCancel,
+        tickHandle: null,
+        summaryHandle: null,
+      };
+
+      renderActive();
+      run.tickHandle = window.setInterval(tick, TICK_INTERVAL_MS);
+    },
+
+    advance(idx) {
+      if (!run) return;
+      // Mark the just-finished stage as complete; record its actual ms.
+      const finishedIdx = run.currentIdx;
+      const now = performance.now();
+      run.actualStagesMs[finishedIdx] = now - run.stageStartedAt;
+      run.states[finishedIdx] = 'complete';
+
+      const nextIdx = idx !== undefined ? idx : finishedIdx + 1;
+      if (nextIdx >= run.stages.length) {
+        // No next stage — caller should have used complete()
+        api.complete();
+        return;
+      }
+
+      run.currentIdx = nextIdx;
+      run.states[nextIdx] = 'active';
+      run.stageStartedAt = now;
+      renderActive();
+    },
+
+    complete(summary) {
+      if (!run) return;
+      stopTick();
+      const finishedIdx = run.currentIdx;
+      const now = performance.now();
+      run.actualStagesMs[finishedIdx] = now - run.stageStartedAt;
+      run.states[finishedIdx] = 'complete';
+
+      // Persist EMA for successful runs only.
+      if (run.actualStagesMs.length === run.stages.length && run.actualStagesMs.every(ms => ms > 0)) {
+        updateEma(run.key, run.actualStagesMs);
+      }
+
+      const totalElapsed = now - run.startedAt;
+      const op = run.operation.toUpperCase();
+      const label = summary
+        ? summary.toUpperCase()
+        : `${op} · ${formatDuration(totalElapsed)} · COMPLETE`;
+
+      run = null;
+      renderSummary(label, true);
+      summaryTimer = window.setTimeout(() => {
+        clearSummaryTimer();
+        renderEmpty();
+      }, IDLE_SUMMARY_MS);
+    },
+
+    fail(error) {
+      if (!run) return;
+      stopTick();
+      const failedIdx = run.currentIdx;
+      run.states[failedIdx] = 'failed';
+      const op = run.operation.toUpperCase();
+      const label = `${op} · STAGE ${String(failedIdx + 1).padStart(2, '0')} FAILED · ${error}`;
+
+      run = null;
+      renderSummary(label, false);
+      summaryTimer = window.setTimeout(() => {
+        clearSummaryTimer();
+        renderEmpty();
+      }, IDLE_SUMMARY_MS * 1.6); // failures linger longer
+    },
+
+    cancel() {
+      if (!run) return;
+      stopTick();
+      const onCancel = run.onCancel;
+      const op = run.operation.toUpperCase();
+      const label = `${op} · CANCELLED BY OPERATOR`;
+
+      run = null;
+      renderSummary(label, false);
+      summaryTimer = window.setTimeout(() => {
+        clearSummaryTimer();
+        renderEmpty();
+      }, IDLE_SUMMARY_MS);
+
+      // Fire the caller's cancel hook after rendering so we don't
+      // block the UI on potentially-slow teardown work.
+      if (onCancel) {
+        queueMicrotask(() => {
+          try {
+            onCancel();
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error('ProgressTape onCancel handler threw:', err);
+          }
+        });
+      }
+    },
+
+    isActive() {
+      return run !== null;
+    },
+  };
+
+  window.studioTape = api;
+</script>
+
+<style is:global>
+  /* ──────────────────────────────────────────────────────────────────
+   * TAPE — the active and summary states
+   * The idle state (just the amber hairline) is already painted by
+   * .studio-tape-mount::before in studio-tokens.css.
+   * ────────────────────────────────────────────────────────────── */
+  .studio-tape {
+    width: 100%;
+    height: var(--studio-tape-active-h);
+    background:
+      linear-gradient(
+        180deg,
+        hsl(var(--studio-surface-1)) 0%,
+        hsl(var(--studio-surface-pressed)) 100%
+      );
+    border-top: 1px solid hsl(var(--primary) / 0.4);
+    border-bottom: 1px solid hsl(0 0% 0% / 0.5);
+    box-shadow:
+      inset 0 1px 0 hsl(var(--primary) / 0.12),
+      0 -4px 16px hsl(0 0% 0% / 0.35);
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-body);
+    animation: studio-tape-expand 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes studio-tape-expand {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Summary / idle-with-recent state — compact, centered stamp. */
+  .studio-tape--summary {
+    height: auto;
+    padding: 0.5rem 1.5rem;
+    border-top: 1px solid hsl(var(--primary) / 0.3);
+    border-bottom: none;
+    box-shadow: 0 -3px 10px hsl(0 0% 0% / 0.3);
+    animation: studio-tape-summary-in 0.28s ease-out;
+  }
+
+  @keyframes studio-tape-summary-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .studio-tape--summary[data-ok="0"] {
+    border-top-color: hsl(var(--studio-danger) / 0.5);
+  }
+
+  .studio-tape__summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Active tape header ───────────────────────────────────────── */
+  .studio-tape__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 1.25rem 0.3rem;
+    gap: 1rem;
+  }
+
+  .studio-tape__op {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .studio-tape__op-num {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    color: hsl(var(--primary));
+    text-shadow: var(--phosphor-glow);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .studio-tape__op-label {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: hsl(var(--foreground));
+    text-transform: uppercase;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .studio-tape__readouts {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+  }
+
+  .studio-tape__readouts .studio-readout {
+    padding: 0.2rem 0.625rem;
+  }
+
+  .studio-tape__cancel {
+    align-self: stretch;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+  }
+
+  /* ── Reel — the stage track + progress fill + playhead ────────── */
+  .studio-tape__reel {
+    position: relative;
+    flex: 1 1 auto;
+    height: 100%;
+    margin: 0 1.25rem;
+    overflow: hidden;
+  }
+
+  .studio-tape__track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 2px;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        hsl(var(--border)) 0 6px,
+        hsl(var(--border) / 0.35) 6px 9px
+      );
+  }
+
+  .studio-tape__fill {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      hsl(var(--primary) / 0.4) 0%,
+      hsl(var(--primary)) 60%,
+      hsl(var(--primary)) 100%
+    );
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.5);
+    transition: width 0.12s linear;
+  }
+
+  /* The playhead is a thin amber bar riding the progress front — a
+   * reel-to-reel read-head indicator. */
+  .studio-tape__playhead {
+    position: absolute;
+    top: 10%;
+    bottom: 10%;
+    width: 2px;
+    background: hsl(var(--primary));
+    box-shadow:
+      0 0 10px hsl(var(--primary) / 0.9),
+      0 0 2px hsl(var(--primary));
+    transform: translateX(-50%);
+    transition: left 0.12s linear;
+    pointer-events: none;
+    animation: studio-tape-playhead-pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes studio-tape-playhead-pulse {
+    0%, 100% {
+      box-shadow: 0 0 8px hsl(var(--primary) / 0.7);
+    }
+    50% {
+      box-shadow: 0 0 14px hsl(var(--primary)),
+                  0 0 2px hsl(var(--primary));
+    }
+  }
+
+  /* Stage markers distributed evenly across the reel. */
+  .studio-tape__stages {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .studio-tape__stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    min-width: 0;
+    padding: 0 0.25rem;
+    background: hsl(var(--studio-surface-pressed));
+    position: relative;
+    z-index: 1;
+  }
+
+  .studio-tape__stage:first-child {
+    padding-left: 0;
+  }
+
+  .studio-tape__stage:last-child {
+    padding-right: 0;
+  }
+
+  .studio-tape__stage-dot {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1;
+    width: 1.1rem;
+    height: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid hsl(var(--border-hover));
+    border-radius: 50%;
+    background: hsl(var(--studio-surface-pressed));
+    color: hsl(var(--muted-foreground));
+    transition: color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .studio-tape__stage[data-state="active"] .studio-tape__stage-dot {
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.15);
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.55);
+    animation: studio-tape-stage-pulse 1.4s ease-in-out infinite;
+  }
+
+  .studio-tape__stage[data-state="complete"] .studio-tape__stage-dot {
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary) / 0.7);
+    background: hsl(var(--primary) / 0.08);
+  }
+
+  .studio-tape__stage[data-state="failed"] .studio-tape__stage-dot {
+    color: hsl(var(--studio-danger));
+    border-color: hsl(var(--studio-danger));
+    background: hsl(var(--studio-danger) / 0.12);
+  }
+
+  @keyframes studio-tape-stage-pulse {
+    0%, 100% { box-shadow: 0 0 8px hsl(var(--primary) / 0.4); }
+    50%      { box-shadow: 0 0 14px hsl(var(--primary) / 0.8), 0 0 3px hsl(var(--primary)); }
+  }
+
+  .studio-tape__stage-num {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    color: hsl(var(--muted-foreground));
+    line-height: 1;
+  }
+
+  .studio-tape__stage[data-state="active"] .studio-tape__stage-num,
+  .studio-tape__stage[data-state="complete"] .studio-tape__stage-num {
+    color: hsl(var(--primary));
+  }
+
+  .studio-tape__stage-label {
+    font-family: var(--font-display);
+    font-size: 0.55rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+    line-height: 1;
+  }
+
+  .studio-tape__stage[data-state="active"] .studio-tape__stage-label {
+    color: hsl(var(--primary));
+    text-shadow: var(--phosphor-glow);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .studio-tape,
+    .studio-tape--summary,
+    .studio-tape__fill,
+    .studio-tape__playhead,
+    .studio-tape__stage-dot {
+      animation: none;
+      transition: none;
+    }
+  }
+
+  /* Narrow viewports — the stage labels get noisy. Hide them so the
+   * numbered dots and readouts keep their rhythm. */
+  @media (max-width: 900px) {
+    .studio-tape__stage-label {
+      display: none;
+    }
+    .studio-tape__readouts {
+      gap: 0.25rem;
+    }
+  }
+</style>

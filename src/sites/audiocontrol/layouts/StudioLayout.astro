@@ -16,6 +16,7 @@
 
 import '../styles/design-tokens.css';
 import '../styles/studio-tokens.css';
+import ProgressTape from '../components/studio/ProgressTape.astro';
 
 type Site = 'audiocontrol' | 'editorialcontrol';
 
@@ -129,6 +130,8 @@ const targetLabel = target === 'audiocontrol' ? 'AUDIOCONTROL' : 'EDITORIALCONTR
       aria-live="polite"
       aria-label="Operation progress"
     ></div>
+
+    <ProgressTape />
 
     <script>
       // Runtime target-switch API. Child pages (focus, generate) call

@@ -1,0 +1,336 @@
+---
+/*
+ * /dev/studio/proto/progress — demo harness for the ProgressTape.
+ *
+ * Exercises the tape with fake multi-step operations so its aesthetic
+ * can be iterated in isolation. Real wiring into the approve /
+ * generate / recomposite paths lands in Commits 3-5.
+ *
+ * Dev-only.
+ */
+
+export const prerender = false;
+
+import StudioLayout from '../../../../layouts/StudioLayout.astro';
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+---
+
+<StudioLayout title="FI · Studio · ProgressTape proto" activeTab="Help">
+  <section class="studio-proto">
+    <header class="studio-proto__head">
+      <span class="studio-kicker">Prototype · Commit 2 of 6</span>
+      <h1 class="studio-proto__title">Progress tape — reel harness</h1>
+      <p class="studio-proto__lede">
+        Click a button to kick off a fake multi-step operation. The tape
+        expands from the viewport bottom, paints its numbered stage reel,
+        and ticks live elapsed + ETA until it completes, fails, or you
+        cancel. Summary stamp lingers ~5s, then the mount collapses to a
+        hairline.
+      </p>
+      <p class="studio-proto__lede studio-proto__lede--muted">
+        Estimates come from a localStorage EMA keyed per operation. Run
+        a successful scenario a few times and the ETA will converge on
+        the real run duration.
+      </p>
+    </header>
+
+    <hr class="rule-ticked" />
+
+    <div class="studio-proto__grid">
+      <article class="studio-proto__card studio-regmark">
+        <header class="studio-proto__card-head">
+          <span class="studio-kicker studio-kicker--muted">Scenario 01</span>
+          <h2 class="studio-proto__card-title">Generate — flux · og</h2>
+        </header>
+        <p class="studio-proto__card-body">
+          Three stages. Approximates the FLUX provider path: request,
+          apply filters, satori composite.
+        </p>
+        <button type="button" class="studio-btn studio-btn--primary" data-demo="generate">
+          Run
+        </button>
+      </article>
+
+      <article class="studio-proto__card studio-regmark">
+        <header class="studio-proto__card-head">
+          <span class="studio-kicker studio-kicker--muted">Scenario 02</span>
+          <h2 class="studio-proto__card-title">Approve · bake 3 formats</h2>
+        </header>
+        <p class="studio-proto__card-body">
+          Four stages. Mirrors the real approve flow: bake og, bake
+          youtube, bake instagram, mark approved.
+        </p>
+        <button type="button" class="studio-btn studio-btn--primary" data-demo="approve">
+          Run
+        </button>
+      </article>
+
+      <article class="studio-proto__card studio-regmark">
+        <header class="studio-proto__card-head">
+          <span class="studio-kicker studio-kicker--muted">Scenario 03</span>
+          <h2 class="studio-proto__card-title">Apply · short op</h2>
+        </header>
+        <p class="studio-proto__card-body">
+          Two stages, short. Mirrors /feature-image-apply: copy files,
+          wire frontmatter.
+        </p>
+        <button type="button" class="studio-btn studio-btn--primary" data-demo="apply">
+          Run
+        </button>
+      </article>
+
+      <article class="studio-proto__card studio-regmark">
+        <header class="studio-proto__card-head">
+          <span class="studio-kicker studio-kicker--muted">Scenario 04</span>
+          <h2 class="studio-proto__card-title">Failure on stage 2</h2>
+        </header>
+        <p class="studio-proto__card-body">
+          Stage 01 completes, stage 02 fails mid-run. Summary stamp
+          reads as rejected and lingers longer than a success.
+        </p>
+        <button type="button" class="studio-btn studio-btn--danger" data-demo="fail">
+          Run
+        </button>
+      </article>
+
+      <article class="studio-proto__card studio-regmark">
+        <header class="studio-proto__card-head">
+          <span class="studio-kicker studio-kicker--muted">Scenario 05</span>
+          <h2 class="studio-proto__card-title">Long op · cancellable</h2>
+        </header>
+        <p class="studio-proto__card-body">
+          Slow five-stage run. Use the Cancel button on the tape to
+          abort mid-run; summary stamp reads "CANCELLED BY OPERATOR".
+        </p>
+        <button type="button" class="studio-btn studio-btn--primary" data-demo="long">
+          Run
+        </button>
+      </article>
+
+      <article class="studio-proto__card studio-proto__card--note">
+        <header class="studio-proto__card-head">
+          <span class="studio-kicker">Reset</span>
+          <h2 class="studio-proto__card-title">Clear EMA history</h2>
+        </header>
+        <p class="studio-proto__card-body">
+          Deletes the localStorage entry so ETA falls back to per-stage
+          estimates on the next run.
+        </p>
+        <button type="button" class="studio-btn studio-btn--danger" data-demo="reset-ema">
+          Purge
+        </button>
+      </article>
+    </div>
+  </section>
+
+  <script>
+    interface Stage {
+      label: string;
+      estimateMs: number;
+      actualMs: number;
+    }
+
+    type ScenarioKey = 'generate' | 'approve' | 'apply' | 'fail' | 'long';
+
+    const scenarios: Record<ScenarioKey, { key: string; op: string; stages: Stage[]; failAt?: number }> = {
+      generate: {
+        key: 'proto-generate-flux-og',
+        op: 'Generate · flux · og',
+        stages: [
+          { label: 'Request',   estimateMs: 2500, actualMs: 2100 + Math.random() * 800 },
+          { label: 'Filter',    estimateMs: 600,  actualMs: 450  + Math.random() * 250 },
+          { label: 'Composite', estimateMs: 900,  actualMs: 800  + Math.random() * 300 },
+        ],
+      },
+      approve: {
+        key: 'proto-approve-3-formats',
+        op: 'Approve · bake 3 formats',
+        stages: [
+          { label: 'Bake og',        estimateMs: 1500, actualMs: 1400 + Math.random() * 400 },
+          { label: 'Bake youtube',   estimateMs: 1500, actualMs: 1350 + Math.random() * 400 },
+          { label: 'Bake instagram', estimateMs: 1500, actualMs: 1500 + Math.random() * 400 },
+          { label: 'Mark approved',  estimateMs: 300,  actualMs: 180  + Math.random() * 120 },
+        ],
+      },
+      apply: {
+        key: 'proto-apply',
+        op: 'Apply · wire post',
+        stages: [
+          { label: 'Copy files',  estimateMs: 500, actualMs: 320 + Math.random() * 200 },
+          { label: 'Frontmatter', estimateMs: 300, actualMs: 180 + Math.random() * 120 },
+        ],
+      },
+      fail: {
+        key: 'proto-fail-scenario',
+        op: 'Approve · bake 3 formats',
+        stages: [
+          { label: 'Bake og',        estimateMs: 1500, actualMs: 1300 },
+          { label: 'Bake youtube',   estimateMs: 1500, actualMs: 2200 },
+          { label: 'Bake instagram', estimateMs: 1500, actualMs: 1400 },
+          { label: 'Mark approved',  estimateMs: 300,  actualMs: 180 },
+        ],
+        failAt: 1,
+      },
+      long: {
+        key: 'proto-long-op',
+        op: 'Long op · cancellable',
+        stages: [
+          { label: 'Prep',     estimateMs: 2200, actualMs: 2000 },
+          { label: 'Phase A',  estimateMs: 3500, actualMs: 3200 },
+          { label: 'Phase B',  estimateMs: 3500, actualMs: 3400 },
+          { label: 'Phase C',  estimateMs: 3500, actualMs: 3300 },
+          { label: 'Finalise', estimateMs: 1500, actualMs: 1200 },
+        ],
+      },
+    };
+
+    async function runScenario(name: ScenarioKey) {
+      if (!window.studioTape) {
+        // eslint-disable-next-line no-console
+        console.error('studioTape not available');
+        return;
+      }
+      if (window.studioTape.isActive()) return;
+
+      const scenario = scenarios[name];
+      const failAt = scenario.failAt;
+
+      window.studioTape.start({
+        key: scenario.key,
+        operation: scenario.op,
+        stages: scenario.stages.map(s => ({ label: s.label, estimateMs: s.estimateMs })),
+        cancelable: true,
+      });
+
+      for (let i = 0; i < scenario.stages.length; i++) {
+        const stage = scenario.stages[i];
+        await sleep(stage.actualMs);
+
+        // Bail if the operator cancelled mid-run.
+        if (!window.studioTape.isActive()) return;
+
+        if (failAt !== undefined && i === failAt) {
+          window.studioTape.fail('provider returned 502');
+          return;
+        }
+
+        if (i === scenario.stages.length - 1) {
+          window.studioTape.complete();
+        } else {
+          window.studioTape.advance();
+        }
+      }
+    }
+
+    function sleep(ms: number): Promise<void> {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('[data-demo]').forEach((btn) => {
+      const kind = btn.dataset.demo;
+      btn.addEventListener('click', () => {
+        if (kind === 'reset-ema') {
+          try { localStorage.removeItem('fi-studio-tape-ema-v1'); } catch { /* noop */ }
+          btn.textContent = 'Purged ✓';
+          setTimeout(() => { btn.textContent = 'Purge'; }, 1200);
+          return;
+        }
+        if (kind && kind in scenarios) {
+          runScenario(kind as ScenarioKey);
+        }
+      });
+    });
+  </script>
+</StudioLayout>
+
+<style is:global>
+  .studio-proto {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  .studio-proto__head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .studio-proto__title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .studio-proto__lede {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+    max-width: 42rem;
+    margin: 0;
+  }
+
+  .studio-proto__lede--muted {
+    color: hsl(var(--muted-foreground) / 0.75);
+    font-size: 0.875rem;
+  }
+
+  .studio-proto__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+
+  .studio-proto__card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 1.25rem;
+    background: hsl(var(--studio-surface-1));
+    border: 1px solid hsl(var(--border));
+    border-radius: 1px;
+  }
+
+  .studio-proto__card--note {
+    background: linear-gradient(180deg, hsl(var(--studio-danger) / 0.04) 0%, hsl(var(--studio-surface-1)) 100%);
+    border-color: hsl(var(--studio-danger) / 0.3);
+  }
+
+  .studio-proto__card-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .studio-proto__card-title {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground));
+    margin: 0;
+  }
+
+  .studio-proto__card-body {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    flex: 1 1 auto;
+  }
+
+  .studio-proto__card .studio-btn {
+    align-self: flex-start;
+  }
+</style>
