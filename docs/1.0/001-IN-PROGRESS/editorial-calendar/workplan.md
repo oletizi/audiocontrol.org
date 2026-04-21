@@ -884,3 +884,45 @@ No new user-invocable skills in this phase. `/editorial-review-help` and `/edito
 - [x] `npx vitest run` — 224 tests pass (2 pre-existing network-integration failures unrelated)
 - [x] Live verification: edit toggle, text-select → Mark → modal → submit → highlight on reload, dblclick → edit mode, site chip filter, per-site action routing all exercised via Playwright
 - [x] Net −1,644 lines of duplicated code removed
+
+### Phase 16: Pipeline drive-through — skill helpers, voice-skill consultation, body-state gate, first drafted dispatch, session archive
+
+**Deliverable:** 13 commits on `feature/editorial-calendar` atop the merged Phase 15. Walked the pipeline by-the-book for the first time, found and fixed every friction point as it surfaced, drafted the first dispatch end-to-end, and added the session-transcript archive so future LLM-analysis sessions have data to work against.
+
+**Motivation:** Phase 15 shipped a multi-site studio but had never been driven end-to-end from Ideas → Drafting by a human operator plus Claude. The test-drive surfaced a series of gaps — some procedural (one-liners instead of helpers), some structural (scaffold→draft step missing from the studio UI), some visual (dark-on-dark body text, Mark pencil positioning off by ~900px, host-site header occluding the review chrome). The thesis of the article we drafted during this phase ("You Don't Need a Better Prompt. You Need Selection Pressure.") is that evolution-by-selection is a daily-workflow posture — every friction point is an opportunity to fix the tool. This phase is that thesis made literal.
+
+#### 16a. Ideas, plans, and the first drafted dispatch
+
+- [x] Batch-added 7 new ideas, moved 5 from audiocontrol → editorialcontrol per operator classification rule ("general AI-agents / content-marketing → EC; developing the audiocontrol project → AC"). AC now has 4 Ideas + 10 Published; EC has 9 Ideas + 2 Published.
+- [x] Planned `evolution-by-artificial-selection-for-prompt-generation` on EC. Two strategic calls: (1) wide-net keywords over narrow "SEO heroes" until analytics data earns the narrowing; (2) consulted `editorialcontrol-voice` skill mid-planning to reframe the title from a topic-header to the site's signature two-sentence claim — "You Don't Need a Better Prompt. You Need Selection Pressure." Paired with `feature-image-automation-evolution-gallery-claude-code` (the applied half); cross-link decision pinned in both descriptions.
+- [x] Drafted the dispatch (~1,900 words). Uses the site's signature moves: thesis → two failure modes (the perfectionist, the collector) → third option; worked example with date-receipts on the feature-image library; "If you're still reading, here's the short version" numbered list; meta-move close that names the dispatch's own reframing by the voice skill.
+
+#### 16b. Skill-helper + voice-skill enshrinement
+
+- [x] `.claude/skills/editorial-draft-review/enqueue.ts` — reusable helper that reads the blog file, calls `createWorkflow`, reports fresh-vs-existing + any body-state warning. Replaces the earlier ad-hoc `npx tsx -e "..."` pattern. Also auto-syncs: when an existing workflow's current version differs from the file, the helper appends a new version instead of silently returning the stale one.
+- [x] `/editorial-plan`, `/editorial-draft`, `/editorial-draft-review` skills updated to MANDATE voice-skill consultation before any copy generation (title/dek framing at plan time, body drafting at draft time). `/editorial-draft` also grew a dual-mode flow (missing-scaffold vs placeholder-body) to support the studio's Scaffold button flow.
+- [x] Removed stale GitHub-issue language from `/editorial-draft` (dropped in Phase 14; skill doc was outdated).
+
+#### 16c. Studio + review-page fixes surfaced by the drive-through
+
+- [x] **Body-state detection.** `scripts/lib/editorial/body-state.ts` classifies a scaffolded post as `missing | placeholder | written`. Studio rows in Drafting/Review now branch on this: placeholder body → `draft body →` primary action; written body → `copy /review`. File dot colors match. Unit tests: 9 cases including the regression for scaffoldBlogPost's blank-line-between-frontmatter-and-H1 shape.
+- [x] **Stale v1 on review page.** Review page reads `currentVersion.markdown` from the journal, not disk. Workflow enqueued with placeholder v1 showed the placeholder long after the file had real prose. Enqueue helper now detects divergence and appends a new version.
+- [x] **Host site header occluded the review chrome.** Editorialcontrol's header is `position: sticky; top: 0; z-index: 100` — won the z-index fight vs. the review strip and margin sidebar. Hidden on longform review pages via `body:has([data-review-ui="longform"]) .header-wrapper { display: none }`.
+- [x] **Dark-on-dark body text.** `[data-review-ui]` sets `color: var(--er-ink)` — correct on cream studio/shortform pages, wrong on the dark BlogLayout-hosted longform page. `#draft-body` now gets an explicit `color: hsl(var(--foreground))` so prose cascades from the host token; tag-specific host rules (em/strong/a/code/h2/h3) keep their own colors.
+- [x] **Scaffold chrome in the body.** Voice-skill reference prescribed an in-body byline + rule + "In this dispatch" numbered ToC, but the shipped dispatches on the site don't follow that — BlogLayout handles byline + auto-ToC. Stripped the in-body chrome; draft now matches the shape of shipped dispatches. Noted: the voice-skill reference is out of date on this detail.
+- [x] **Click-in-margin to mark.** The natural operator gesture (select text → click margin area) now opens the Mark modal. `mousedown` on the marginalia sidebar preventDefaults so the selection survives; `click` opens the modal if a pending range is set, otherwise toasts the instruction.
+- [x] **Mark pencil visibility.** Bigger (opsz 36/wght 700), heavier shadow + cream halo, one-shot pulse animation on spawn, downward-pointing triangle tip anchoring it to the selection below.
+- [x] **Mark pencil positioning bug.** `top = window.scrollY + rect.top - 34` assumed document-absolute coordinates but `position: absolute` is offsetParent-relative. Result: pencil rendered ~900px below the selection — invisible to the operator since Phase 14. Fixed with `rect.top - offsetParent.top - offsetHeight - 14` and CSS `translate(-50%, 0)` for horizontal centering.
+
+#### 16d. Session-transcript archive
+
+- [x] Ported `tools/extract-session-content.ts` from `../audiocontrol/`. Scoped by default to this monorepo's Claude session dir (not every project on the laptop).
+- [x] Added focused `/extract-session-content` skill that just runs the extractor (no LLM analysis, no report). Larger pipeline (extract → encrypt → LLM → report) stays in the parent repo.
+- [x] Archived the 2 sessions leading into this phase's test-drive: 3,376 entries, ~2.9MB encrypted across `data/sessions/content/`.
+
+#### Verification
+
+- [x] `npm run build` clean on both sites.
+- [x] 232 tests pass (9 new `bodyState` tests + 2 pre-existing network-integration failures unrelated).
+- [x] Drove the full pipeline: `/editorial-add` → `/editorial-plan` → Scaffold button (studio) → `/editorial-draft` → `/editorial-draft-review` → review page rendering the drafted dispatch with all four sites of review UI working (Edit toggle, margin-click / pencil-click Mark, selection highlight, iterate/approve buttons).
+- [x] Session content extractor: 2 sessions encrypted, decrypt round-trip verified on one file.
