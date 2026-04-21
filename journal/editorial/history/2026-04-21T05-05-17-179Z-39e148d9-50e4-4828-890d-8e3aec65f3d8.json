@@ -1,0 +1,21 @@
+{
+  "id": "39e148d9-50e4-4828-890d-8e3aec65f3d8",
+  "timestamp": "2026-04-21T05:05:17.179Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-21T05:05:17.179Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "b4244d6a-912c-4faa-864b-d9146ec2f4b8",
+      "version": 4,
+      "range": {
+        "start": 4320,
+        "end": 4359
+      },
+      "text": "This is an hallucination. The entire infrastructure is less than a week old.\n\nWe need to analyze the claude sessions that we built the tooling with to help us tell the story. There's gold in those sessions.",
+      "category": "other",
+      "id": "39e148d9-50e4-4828-890d-8e3aec65f3d8",
+      "createdAt": "2026-04-21T05:05:17.179Z"
+    }
+  }
+}
