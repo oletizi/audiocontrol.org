@@ -291,7 +291,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                             type="button"
                             data-action="mark-published"
                             data-slug={entry.slug}
-                            title="flip to Published + close GH issue"
+                            title="flip to Published + set date"
                           >publish →</button>
                         )}
                         {stage === 'Published' && !wf && (
@@ -642,8 +642,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
               btn.textContent = originalText;
               return;
             }
-            showToast('Scaffolded ' + body.relativePath +
-              (body.issueNumber ? ' · issue #' + body.issueNumber : ''));
+            showToast('Scaffolded ' + body.relativePath);
             setTimeout(() => window.location.reload(), 900);
           } catch (e) {
             showToast('Network error: ' + e.message, true);
@@ -657,7 +656,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
       document.querySelectorAll('[data-action="mark-published"]').forEach((btn) => {
         btn.addEventListener('click', async () => {
           const slug = btn.dataset.slug;
-          if (!confirm('Publish ' + slug + '? This sets datePublished and closes the GH issue.')) return;
+          if (!confirm('Publish ' + slug + '? This sets datePublished to today.')) return;
           btn.disabled = true;
           const originalText = btn.textContent;
           btn.textContent = 'publishing…';
@@ -674,8 +673,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
               btn.textContent = originalText;
               return;
             }
-            showToast('Published ' + slug +
-              (body.closedIssue ? ' · closed #' + body.closedIssue : ''));
+            showToast('Published ' + slug);
             setTimeout(() => window.location.reload(), 900);
           } catch (e) {
             showToast('Network error: ' + e.message, true);

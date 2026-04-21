@@ -495,7 +495,7 @@ export function planEntry(
 export function draftEntry(
   calendar: EditorialCalendar,
   slug: string,
-  issueNumber: number,
+  issueNumber?: number,
 ): CalendarEntry {
   const entry = calendar.entries.find((e) => e.slug === slug);
   if (!entry) {
@@ -507,7 +507,9 @@ export function draftEntry(
     );
   }
   entry.stage = 'Drafting';
-  entry.issueNumber = issueNumber;
+  if (issueNumber !== undefined) {
+    entry.issueNumber = issueNumber;
+  }
   return entry;
 }
 

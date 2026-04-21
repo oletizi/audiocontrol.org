@@ -1,8 +1,10 @@
 /**
  * Unit tests for editorial-calendar-actions handlers.
  *
- * All tests pass `skipGhIssue: true` so `gh` is never actually invoked.
- * The GH shell-out path is an integration concern caught by the operator.
+ * GitHub issue integration is out of scope for these handlers; the tests
+ * never needed to mock it out since it isn't called. Legacy entries in
+ * the fixture still carry issueNumber values to prove the writer keeps
+ * reading them correctly, but no new issues are created or closed.
  */
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -75,20 +77,21 @@ describe('handleDraftStart', () => {
     const result = handleDraftStart(root, {
       site: SITE,
       slug: 'test-post',
-      skipGhIssue: true,
     });
     expect(result.status).toBe(200);
     if (typeof result.body !== 'object' || result.body === null) {
       throw new Error('expected object body');
     }
     const body = result.body;
-    expect(Reflect.get(body, 'issueNumber')).toBe(0);
+    // No issueNumber field should appear in the response body.
+    expect('issueNumber' in body).toBe(false);
     const entry = Reflect.get(body, 'entry');
     if (typeof entry !== 'object' || entry === null) {
       throw new Error('expected entry object');
     }
     expect(Reflect.get(entry, 'stage')).toBe('Drafting');
-    expect(Reflect.get(entry, 'issueNumber')).toBe(0);
+    // And not on the entry — draftEntry doesn't mint one anymore.
+    expect(Reflect.get(entry, 'issueNumber')).toBeUndefined();
 
     const filePath = Reflect.get(body, 'filePath');
     expect(typeof filePath).toBe('string');
@@ -105,12 +108,12 @@ describe('handleDraftStart', () => {
   });
 
   it('returns 400 when site is missing', () => {
-    const result = handleDraftStart(root, { slug: 'test-post', skipGhIssue: true });
+    const result = handleDraftStart(root, { slug: 'test-post' });
     expect(result.status).toBe(400);
   });
 
   it('returns 400 when slug is missing', () => {
-    const result = handleDraftStart(root, { site: SITE, skipGhIssue: true });
+    const result = handleDraftStart(root, { site: SITE });
     expect(result.status).toBe(400);
   });
 
@@ -118,7 +121,6 @@ describe('handleDraftStart', () => {
     const result = handleDraftStart(root, {
       site: SITE,
       slug: '../foo',
-      skipGhIssue: true,
     });
     expect(result.status).toBe(400);
   });
@@ -127,7 +129,6 @@ describe('handleDraftStart', () => {
     const result = handleDraftStart(root, {
       site: 'not-a-site',
       slug: 'test-post',
-      skipGhIssue: true,
     });
     expect(result.status).toBe(400);
   });
@@ -138,7 +139,6 @@ describe('handleDraftStart', () => {
       const result = handleDraftStart(emptyRoot, {
         site: SITE,
         slug: 'test-post',
-        skipGhIssue: true,
       });
       expect(result.status).toBe(404);
     } finally {
@@ -150,7 +150,6 @@ describe('handleDraftStart', () => {
     const result = handleDraftStart(root, {
       site: SITE,
       slug: 'does-not-exist',
-      skipGhIssue: true,
     });
     expect(result.status).toBe(404);
     if (typeof result.body !== 'object' || result.body === null) {
@@ -167,7 +166,6 @@ describe('handleDraftStart', () => {
     const result = handleDraftStart(root, {
       site: SITE,
       slug: 'existing-draft',
-      skipGhIssue: true,
     });
     expect(result.status).toBe(409);
   });
@@ -180,7 +178,6 @@ describe('handleDraftStart', () => {
     const result = handleDraftStart(root, {
       site: SITE,
       slug: 'test-post',
-      skipGhIssue: true,
     });
     expect(result.status).toBe(409);
   });
@@ -191,7 +188,6 @@ describe('handlePublish', () => {
     const result = handlePublish(root, {
       site: SITE,
       slug: 'existing-draft',
-      skipGhIssue: true,
     });
     expect(result.status).toBe(200);
     if (typeof result.body !== 'object' || result.body === null) {
@@ -206,13 +202,14 @@ describe('handlePublish', () => {
     expect(typeof datePublished).toBe('string');
     if (typeof datePublished !== 'string') throw new Error('bad date');
     expect(/^\d{4}-\d{2}-\d{2}$/.test(datePublished)).toBe(true);
+    // Response no longer carries a closedIssue field.
+    expect('closedIssue' in result.body).toBe(false);
   });
 
   it('happy path from Review: flips to Published', () => {
     const result = handlePublish(root, {
       site: SITE,
       slug: 'in-review',
-      skipGhIssue: true,
     });
     expect(result.status).toBe(200);
 
@@ -222,7 +219,7 @@ describe('handlePublish', () => {
   });
 
   it('returns 400 on missing site', () => {
-    const result = handlePublish(root, { slug: 'existing-draft', skipGhIssue: true });
+    const result = handlePublish(root, { slug: 'existing-draft' });
     expect(result.status).toBe(400);
   });
 
@@ -230,7 +227,6 @@ describe('handlePublish', () => {
     const result = handlePublish(root, {
       site: SITE,
       slug: 'bad slug!',
-      skipGhIssue: true,
     });
     expect(result.status).toBe(400);
   });
@@ -239,7 +235,6 @@ describe('handlePublish', () => {
     const result = handlePublish(root, {
       site: SITE,
       slug: 'existing-draft',
-      skipGhIssue: true,
       datePublished: 'yesterday',
     });
     expect(result.status).toBe(400);
@@ -249,7 +244,6 @@ describe('handlePublish', () => {
     const result = handlePublish(root, {
       site: SITE,
       slug: 'test-post',
-      skipGhIssue: true,
     });
     expect(result.status).toBe(409);
   });
@@ -271,37 +265,24 @@ describe('handlePublish', () => {
     const result = handlePublish(root, {
       site: SITE,
       slug: 'raw-idea',
-      skipGhIssue: true,
     });
     expect(result.status).toBe(409);
   });
 
-  it('publishes even when entry has no issue number (nothing to close)', () => {
-    // Rewrite existing-draft without the issue column value.
-    const md = readFileSync(calendarPath(root, SITE), 'utf-8');
-    const rewritten = md.replace(
-      '| existing-draft | Existing Draft | Already drafting | kw | manual | #42 |',
-      '| existing-draft | Existing Draft | Already drafting | kw | manual |  |',
-    );
-    writeFileSync(calendarPath(root, SITE), rewritten, 'utf-8');
-
+  it('publishes without regard to legacy issue numbers on the entry', () => {
+    // existing-draft has issueNumber #42 in the fixture; publish should
+    // advance the stage without attempting to close anything.
     const result = handlePublish(root, {
       site: SITE,
       slug: 'existing-draft',
-      skipGhIssue: true,
     });
     expect(result.status).toBe(200);
-    if (typeof result.body !== 'object' || result.body === null) {
-      throw new Error('expected body');
-    }
-    expect(Reflect.get(result.body, 'closedIssue')).toBeUndefined();
   });
 
   it('accepts a custom datePublished and stores it', () => {
     const result = handlePublish(root, {
       site: SITE,
       slug: 'existing-draft',
-      skipGhIssue: true,
       datePublished: '2026-01-15',
     });
     expect(result.status).toBe(200);

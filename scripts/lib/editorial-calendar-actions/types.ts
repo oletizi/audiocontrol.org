@@ -3,7 +3,13 @@
  * (scaffold draft, mark published) that the Editorial Studio calls into.
  *
  * Cognitive work (drafting, revising, approving prose) stays in Claude
- * Code. These handlers only drive state transitions and issue bookkeeping.
+ * Code. These handlers only drive calendar state transitions.
+ *
+ * GitHub issue integration is intentionally out of scope. Phase 14 used
+ * to shell out to `gh issue create|close` from here; that coupling has
+ * been dropped. Legacy entries still carry `issueNumber` from before —
+ * the calendar writer will keep rendering the field when present — but
+ * nothing in this module creates or closes issues.
  */
 
 import type { CalendarEntry, Site } from '../editorial/types.js';
@@ -11,12 +17,6 @@ import type { CalendarEntry, Site } from '../editorial/types.js';
 export interface DraftStartRequest {
   site: Site;
   slug: string;
-  /**
-   * When true, skip the `gh issue create` shell-out. The calendar still
-   * advances to Drafting with issueNumber=0 as a sentinel so the operator
-   * can recognize the issue was not minted automatically.
-   */
-  skipGhIssue?: boolean;
 }
 
 export interface DraftStartResponse {
@@ -25,21 +25,15 @@ export interface DraftStartResponse {
   filePath: string;
   /** Path relative to the project root */
   relativePath: string;
-  /** GH issue number minted by `gh issue create`, or 0 when skipped */
-  issueNumber?: number;
 }
 
 export interface PublishRequest {
   site: Site;
   slug: string;
-  /** When true, skip the `gh issue close` shell-out. */
-  skipGhIssue?: boolean;
   /** ISO YYYY-MM-DD. Defaults to today's date when omitted. */
   datePublished?: string;
 }
 
 export interface PublishResponse {
   entry: CalendarEntry;
-  /** Issue number that was closed, or undefined when nothing to close. */
-  closedIssue?: number;
 }
