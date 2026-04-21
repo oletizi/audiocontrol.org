@@ -1,0 +1,16 @@
+{
+  "id": "0dc1058e-5265-4b4d-a5b9-89bc5afd8919",
+  "timestamp": "2026-04-21T23:07:40.436Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-21T23:07:40.436Z",
+    "annotation": {
+      "type": "resolve",
+      "workflowId": "bebefd2d-9724-44f1-b5a0-ddc4dc879d98",
+      "commentId": "ee152d39-51d4-4f28-b8ab-745523e8f467",
+      "resolved": true,
+      "id": "0dc1058e-5265-4b4d-a5b9-89bc5afd8919",
+      "createdAt": "2026-04-21T23:07:40.436Z"
+    }
+  }
+}
