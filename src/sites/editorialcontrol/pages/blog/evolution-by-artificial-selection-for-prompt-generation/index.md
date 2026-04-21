@@ -48,15 +48,17 @@ That's the thing to internalize. The reason to reach for selection pressure now 
 
 ## 03 What the feature-image library taught
 
-Audiocontrol.org — the sibling site — needed a feature image for every blog post. The first generator shipped a year ago. It worked: a prompt, an image, drop it into the post. Fifteen posts later, the set had drifted. Every image looked plausible in isolation; no two of them looked like they belonged to the same publication. Brand collapse by a thousand tiny drifts.
+Audiocontrol.org — the sibling site — needed a feature image for every blog post. The generator that produces those images shipped six days ago, on 2026-04-15 (commit `6fb0908`). An AI background, a branded text overlay, drop it into the post.
 
-Two pieces of infrastructure got added over the next few months. A rating step: every generated image gets a five-star score from the operator before it lands in a post. A lineage graph: prompts fork, and the fork points back to its parent, so we can see which ancestors produced which descendants. Then a recency-weighted fitness score so yesterday's winner doesn't pin the brand forever.
+Six days later it has run on five posts: the two Claude-vs-Codex pieces the day after the generator shipped, then the Akai S3000XL reverse-engineering post, then the 2,400-sessions post, then `ai-doesnt-remember` on this publication. Same workflow each time. An afternoon of iteration. A choice. A commit.
 
-Now there's a small web app at `/dev/studio` on the dev server. It shows the library sorted by fitness × recency. Click a prompt, see the thread of conversations that produced it. Click *fork*, get a mutation, generate a new candidate. Rate the result. The population improves as a side effect of actual work.
+The evolutionary layer on top of the generator is younger still. The prompt library with fitness-scoring, lineage forks, and a recency-weighted rank shipped yesterday — Phase 16 of the feature-image project, PR #105 on the audiocontrol repo, merged 2026-04-20. There is no accumulated year of data. The library is a seed.
 
-Concrete numbers. Between January 2025 and March 2026, the hardware blog shipped three posts with hand-made feature images, every one of which was a one-off. In the first three weeks of April 2026, once the prompt library had accumulated enough rated generations to pick from, it shipped seven posts — with feature images that visibly belong to the same publication. Same author. Same subject matter. The generator got no smarter. The population around it got a fitness signal.
+That is the point, not a limitation. The claim of this piece is that selection pressure is newly cheap to introduce — an afternoon's worth of agent-written code for the rating UI and the fitness scorer. Not that you need a year of ratings to benefit. The posture pays back in the second generation, because the operator feels it working: the next candidate looks more like the one they just accepted. A population of two is already a population.
 
-The library is the artifact. But the library is not the point. The point is that running the library — using it, rating its output, forking the good ones, culling the bad ones — has itself become how the publication gets its images. Selection *is* the workflow, not an optimization on top of the workflow.
+There is a small web app at `/dev/studio` on the dev server. It shows the library sorted by fitness × recency. Click a prompt, see the thread of conversations that produced it. Click *fork*, get a mutation, generate a new candidate. Rate the result. The population improves as a side effect of actual work. That app is also one day old, and its oldest fitness ratings are younger than the beer in the fridge.
+
+The library is the artifact. Running the library — rating, forking, culling — is how the publication gets its images now. Selection *is* the workflow, not an optimization on top of the workflow.
 
 ---
 
@@ -88,7 +90,7 @@ The specific skill, the thing the operator has to cultivate, is looking at a wor
 2. **Three parts, always.** Variation (cheap — the generator gives it to you). Rating (you add this). Lineage (so forks track where they came from).
 3. **Agent-written infrastructure.** The review surface, the fitness scorer, the gallery — an afternoon of Claude Code skills produces each. That's what makes weekly selection pressure practical; it used to be prohibitive.
 4. **The skill is noticing.** The tooling is now cheap. The hard part is spotting which of today's tuning tasks could become tomorrow's population-under-selection.
-5. **Applied sibling piece.** For the worked-example version — the feature-image gallery, the fitness-scoring logic, the lineage graph — read *Feature-Image Automation, One Year On: Evolution by Selection, the Gallery, and Why You Stay in Claude Code*. This dispatch is the theory; that one is the how.
+5. **Applied sibling piece.** For the worked-example half of the pair — the feature-image gallery, the fitness-scoring logic, the lineage graph, how the pieces compose in practice — see the dispatch with slug `feature-image-automation-evolution-gallery-claude-code` (in drafting at the time of this writing). This dispatch is the theory; that one is the how.
 
 ---
 
@@ -98,7 +100,9 @@ The dispatch you just read was itself reframed mid-planning. The first version o
 
 The voice skill is itself a population under selection. Every operator correction is a fitness event. Over the next few dispatches, the drifts that produce the most corrections will feed back into its references, and the skill will fork toward whatever consistently ships.
 
-Still-open questions: how much of the approach generalizes to workflows where the rating signal is expensive (code-review quality, say, where "good" takes weeks to verify)? Does population-level selection need a minimum cadence to be worth the infrastructure? The honest answer to both is that the feature-image library is a single case study, and the lessons from it travel as far as they travel.
+A more specific correction happened on v1 of this piece. The first draft carried a paragraph of fabricated receipts — an invented year-long before-window and a specific "seven posts in three weeks" after-number — none of it grounded in anything. The operator caught it in the review page's margin: *"This is an hallucination. The entire infrastructure is less than a week old. We need to analyze the claude sessions that we built the tooling with to help us tell the story. There's gold in those sessions."* This dispatch replaces the fabricated numbers with what the git log actually records and points at the archived Claude session transcripts as the next ground-truth pass. The rule the correction made concrete: agent-drafted prose must cite artifacts a skeptical reader could verify; paraphrased-from-memory figures are a failure mode the review loop has to catch. And did.
+
+Still-open questions: how much of the approach generalizes to workflows where the rating signal is expensive (code-review quality, say, where "good" takes weeks to verify)? Does population-level selection need a minimum cadence to be worth the infrastructure? The honest answer to both is that the feature-image library is a six-day-old pilot, the prompt-evolution layer on top is a one-day-old pilot, and the lessons from either travel as far as they travel. The next dispatch from this desk will be grounded against the session transcripts, not paraphrased.
 
 Otherwise: the infrastructure got cheap, so the mindset became the work.
 

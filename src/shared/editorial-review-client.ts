@@ -451,14 +451,39 @@ export function initEditorialReview(): void {
   const iterateBtn = qn<HTMLButtonElement>('[data-action="iterate"]');
   const rejectBtn = qn<HTMLButtonElement>('[data-action="reject"]');
 
+  /**
+   * Copy the Claude Code command that the operator needs to run next
+   * to the clipboard. Studio clicks only transition the workflow state;
+   * the actual cognitive work (iterate, approve-and-write, etc.) lives
+   * in a skill that must be invoked by the operator. Without the
+   * clipboard copy + toast, the operator is left staring at a page
+   * that looks like it did something but didn't tell them what's next.
+   */
+  async function copyAndToast(command: string, hint: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(command);
+      showToast(`${hint}  (command copied — paste into Claude Code)`);
+    } catch {
+      showToast(`${hint}  Run: ${command}`, true);
+    }
+  }
+
   approveBtn?.addEventListener('click', async () => {
     approveBtn.disabled = true;
     const bridged = await ensureInReview();
     if (!bridged) { approveBtn.disabled = false; return; }
     await postApproveAnnotation();
     const ok = await postDecision('approved');
-    if (ok) window.location.reload();
-    else approveBtn.disabled = false;
+    if (!ok) { approveBtn.disabled = false; return; }
+    // Approve writes to disk + transitions to applied; both are done
+    // by /editorial-approve in Claude Code, not by the studio click.
+    const site = state.workflow.site;
+    const slug = state.workflow.slug;
+    await copyAndToast(
+      `/editorial-approve --site ${site} ${slug}`,
+      `Approved v${versionNum}. Next: /editorial-approve writes the file and marks the workflow applied.`,
+    );
+    setTimeout(() => window.location.reload(), 2400);
   });
 
   iterateBtn?.addEventListener('click', async () => {
@@ -466,14 +491,14 @@ export function initEditorialReview(): void {
     const bridged = await ensureInReview();
     if (!bridged) { iterateBtn.disabled = false; return; }
     const ok = await postDecision('iterating');
-    if (ok) {
-      showToast(
-        `Run /editorial-iterate ${state.workflow.slug} in Claude Code to draft v${versionNum + 1}`,
-      );
-      setTimeout(() => window.location.reload(), 1800);
-    } else {
-      iterateBtn.disabled = false;
-    }
+    if (!ok) { iterateBtn.disabled = false; return; }
+    const site = state.workflow.site;
+    const slug = state.workflow.slug;
+    await copyAndToast(
+      `/editorial-iterate --site ${site} ${slug}`,
+      `Iterating on v${versionNum}. Next: /editorial-iterate revises against your comments and appends v${versionNum + 1}.`,
+    );
+    setTimeout(() => window.location.reload(), 2400);
   });
 
   rejectBtn?.addEventListener('click', async () => {
@@ -481,8 +506,14 @@ export function initEditorialReview(): void {
     rejectBtn.disabled = true;
     if (reason) await postRejectAnnotation(reason);
     const ok = await postDecision('cancelled');
-    if (ok) window.location.reload();
-    else rejectBtn.disabled = false;
+    if (ok) {
+      // Reject is terminal; nothing for the operator to run in Claude
+      // Code. Just confirm and reload.
+      showToast('Workflow cancelled.');
+      setTimeout(() => window.location.reload(), 900);
+    } else {
+      rejectBtn.disabled = false;
+    }
   });
 
   // ---- Keyboard shortcuts ----
