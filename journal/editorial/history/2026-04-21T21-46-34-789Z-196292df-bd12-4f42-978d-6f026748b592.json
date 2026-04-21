@@ -1,0 +1,21 @@
+{
+  "id": "196292df-bd12-4f42-978d-6f026748b592",
+  "timestamp": "2026-04-21T21:46:34.789Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-21T21:46:34.789Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "bebefd2d-9724-44f1-b5a0-ddc4dc879d98",
+      "version": 2,
+      "range": {
+        "start": 686,
+        "end": 718
+      },
+      "text": "The problem is not expense, it's disconnected workflow and tooling. With a workflow that ranges across brute force manual collaboration and bolted-on excursions to AI, the *easiest* thing to do is let prompts stay static--or, worse, start with a blank page every time. The workflow and tooling itself must reinforce the application of selection pressure. Evolution through artificial selection should be the *easiest* thing to do, not something that takes conscious application of willpower to enact.",
+      "category": "other",
+      "id": "196292df-bd12-4f42-978d-6f026748b592",
+      "createdAt": "2026-04-21T21:46:34.789Z"
+    }
+  }
+}

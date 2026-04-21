@@ -29,6 +29,7 @@ interface DraftWorkflow {
   slug: string;
   state: string;
   currentVersion: number;
+  contentKind: 'longform' | 'shortform' | 'outline';
 }
 
 interface CommentAnnotation {
@@ -476,13 +477,21 @@ export function initEditorialReview(): void {
     const ok = await postDecision('approved');
     if (!ok) { approveBtn.disabled = false; return; }
     // Approve writes to disk + transitions to applied; both are done
-    // by /editorial-approve in Claude Code, not by the studio click.
+    // by /editorial-approve (longform/shortform) or
+    // /editorial-outline-approve (outline) in Claude Code, not by
+    // the studio click. Build the command that matches the workflow.
     const site = state.workflow.site;
     const slug = state.workflow.slug;
-    await copyAndToast(
-      `/editorial-approve --site ${site} ${slug}`,
-      `Approved v${versionNum}. Next: /editorial-approve writes the file and marks the workflow applied.`,
-    );
+    const kind = state.workflow.contentKind;
+    const approveCmd =
+      kind === 'outline'
+        ? `/editorial-outline-approve --site ${site} ${slug}`
+        : `/editorial-approve --site ${site} ${slug}`;
+    const approveHint =
+      kind === 'outline'
+        ? `Approved outline v${versionNum}. Next: /editorial-outline-approve advances the calendar Outlining → Drafting.`
+        : `Approved v${versionNum}. Next: /editorial-approve writes the file and marks the workflow applied.`;
+    await copyAndToast(approveCmd, approveHint);
     setTimeout(() => window.location.reload(), 2400);
   });
 
@@ -494,9 +503,16 @@ export function initEditorialReview(): void {
     if (!ok) { iterateBtn.disabled = false; return; }
     const site = state.workflow.site;
     const slug = state.workflow.slug;
+    const kind = state.workflow.contentKind;
+    // /editorial-iterate defaults to --kind longform; outline
+    // workflows need the flag so the helper picks the right workflow.
+    const iterateCmd =
+      kind === 'outline'
+        ? `/editorial-iterate --kind outline --site ${site} ${slug}`
+        : `/editorial-iterate --site ${site} ${slug}`;
     await copyAndToast(
-      `/editorial-iterate --site ${site} ${slug}`,
-      `Iterating on v${versionNum}. Next: /editorial-iterate revises against your comments and appends v${versionNum + 1}.`,
+      iterateCmd,
+      `Iterating on v${versionNum}. Next: ${iterateCmd} revises against your comments and appends v${versionNum + 1}.`,
     );
     setTimeout(() => window.location.reload(), 2400);
   });

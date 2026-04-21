@@ -1,0 +1,21 @@
+{
+  "id": "5fe76c3e-6f07-4309-9fdc-a82292679c64",
+  "timestamp": "2026-04-21T21:42:55.740Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-21T21:42:55.740Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "bebefd2d-9724-44f1-b5a0-ddc4dc879d98",
+      "version": 2,
+      "range": {
+        "start": 591,
+        "end": 610
+      },
+      "text": "Name *some* of the failure modes. We don't want to be overly precise in our framing--declaring exactly two failure modes sounds too neat and tidy and doesn't actually match the real world. Astute readers will immediately reject the overly simple thesis.",
+      "category": "other",
+      "id": "5fe76c3e-6f07-4309-9fdc-a82292679c64",
+      "createdAt": "2026-04-21T21:42:55.740Z"
+    }
+  }
+}

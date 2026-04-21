@@ -12,15 +12,32 @@ state: draft
 
 ## Outline
 
-<!-- Backfilled during Phase 17c to retroactively shape the already-drafted piece. Shows what the outline for this dispatch looked like once it was written; in the normal flow the outline comes before the body. Iterate here via the review UI until the operator is satisfied, then /editorial-outline-approve. -->
+<!-- Backfilled during Phase 17c to retroactively shape the already-drafted piece. Shows what the outline for this dispatch looks like after the first round of review. Iterate here via the review UI until the operator is satisfied, then /editorial-outline-approve. -->
 
-- **Thesis.** Prompt quality matters, but the instinct it produces — "write a better prompt" — is wrong. Selection pressure over a population beats tuning a single prompt.
-- **01 The prompt-tuning trap.** Two failure modes of the write-a-better-prompt instinct: the perfectionist (can't ship) and the collector (hoards prompts without selection).
-- **02 The move used to be expensive.** Variation + selection is the evolutionary framework. Three reasons it used to be infeasible: no cheap variation, no captured fitness, no UI. Agents remove all three.
-- **03 What the feature-image library taught.** The worked example. Git-grounded receipts: generator shipped 2026-04-15 (commit 6fb0908); 5 posts through it; prompt-evolution infra merged 2026-04-20 (PR #105). Fitness × recency, lineage forks, side-by-side review.
-- **04 The mindset is the skill.** The evolutionary posture (notice where variation + selection could replace engineering) is what operators develop. Agents are the leverage, not the skill.
-- **05 Short version.** Numbered takeaways a skimmer needs.
-- **06 Where this is going + meta-close.** Name the reframing the voice skill did to this dispatch mid-planning — the move is itself the point.
+- **Thesis.** Prompt quality matters, but the instinct it produces — *write a better prompt* — is wrong. A single champion prompt can't track a moving world; selection pressure over a population can.
+- **01 The prompt-tuning trap.** Two recurring shapes the *write-a-better-prompt* instinct produces: the perfectionist (ships a champion that goes stale as subject matter drifts) and the collector (hoards prompts without any signal for which ones won). These aren't the only failure modes — genetic drift (variation continues without selection pressure, so nothing converges) and first-principles-every-time (throw last week's work away, start from a blank page, relearn the same lessons) fail the same structural test. Naming all four would bury the argument; the two most operators recognize are the perfectionist and the collector, so lead with those, but acknowledge the others and name the shared diagnosis: *no fitness signal.* Paragraph shape: concede "nobody is defending sloppy prompts" up front; name the two shapes in bold-lead-in paragraphs; a one-line paragraph for the diagnosis; one sentence acknowledging other shapes fail it too.
+- **02 The workflow decides what's easy.** Reframe from "this used to be expensive and now it's cheap." The real problem was never expense — it's that disconnected workflow and tooling make the *wrong* move the easy one. When prompts live in a Notion page separate from the work, the easiest path is to start from a blank page (amnesia) or keep one static champion (calcification). Selection-driven prompting only happens when the workflow itself makes it the easiest path — when variation, fitness, and selection are on the gradient, not off to the side requiring willpower to enact. Three properties a workflow needs to tilt the gradient:
+  - **Variation lives in the workflow.** The agent generates variants as part of doing the work, not as a separate research exercise. Cost of producing ten plausible variants rounds to zero if it's one `/skill` invocation.
+  - **Fitness is captured where the work happens.** A rating column in the same journal the agent already writes to. Not a parallel spreadsheet the operator remembers to update.
+  - **Population persists and is retrievable.** Markdown on disk, with lineage forks when a prompt gets remixed. The review UI is downstream of persistence — once you have a population you can query, a side-by-side view becomes a weekend.
+  Hinge sentence that opens §03: *"An agent with variation and fitness on the easy path turns prompt quality from a craft problem into an evolutionary one."*
+- **03 What the feature-image library taught — and why images are the easy case.** The worked example. Git-grounded receipts: feature-image generator first-shipped 2026-04-15 (commit 6fb0908); ~5 posts through it; prompt-evolution infra merged 2026-04-20 (PR #105). Fitness × recency weighting, lineage forks when a prompt gets remixed, side-by-side review in a dev-only gallery app built in an afternoon. Then the honest caveat: **images are the easy case.** Visual fitness is immediate — a composited image either lands or it doesn't; the operator's judgment is fast and doesn't need a rubric. Code-generation prompts, analysis prompts, copy-critique prompts don't have visual fitness. The shape still works: *capture any signal, even a thumbs-up column in a spreadsheet, over no signal at all.* Perfect fitness is the enemy of any fitness.
+- **04 The mindset is the skill.** The evolutionary posture operationalized as three concrete moves the operator learns to run:
+  1. **Notice when you're tuning a single artifact and stop.** The fix isn't more tuning; it's generating variants and letting selection do the work.
+  2. **Capture fitness cheaply — even crudely.** A thumbs column beats no signal. A fitness × recency sort beats a timestamped archive. Perfect fitness never arrives; any fitness is already doing work.
+  3. **Prune aggressively.** Selection requires death. The collector's failure is retention without selection; the evolutionary posture says a population that never loses variants isn't a population, it's a landfill.
+  Agents are the leverage that makes these moves tractable. The moves are the skill.
+- **05 Short version.** Numbered takeaways a skimmer needs. Restates: (a) the three moves from §04, (b) the generalization claim from §03 (the shape transfers; the fitness signal gets cruder outside images), (c) the §02 reframe — selection pressure isn't about cost, it's about which move the workflow makes easy.
+- **06 Where this is going.** Forward-pointing close. Land on the mindset-is-the-skill beat. *Omit* the meta-close this round: the content-workflow dispatch already used "this post was made by the pipeline it describes"; doing it again in dispatch #2 turns a signature move into a tic. Save it for a dispatch where it earns its weight — or, if a meta-close fits here, make it structurally different (the voice-skill reframing happened during *planning*, not *publishing*, which is a distinct beat).
+
+<!--
+Body-level notes from outline review (not outline structure, but worth remembering when drafting/editing the body):
+
+- "Go back to the document. Tune again. The loop never stops…" — the third "tune again" is implied; cut it so the rhythm reads short-short-great instead of short-short-short-great. Lets "the world is a high-variance search space and the champion is a single point in it" land harder.
+- "Both failures are stuck on the same structural issue: no fitness signal." — break out as its own single-line paragraph. Parallel to the content-workflow dispatch's "a process that isn't clear, isn't low-friction, isn't repeatable…" line. Reinforces series feel.
+- Third-option hinge sentence candidates (the line that opens §03 or closes §02): "An agent with cheap variation and captured fitness turns prompt quality from a craft problem into an evolutionary one." Adopt this one — reviewer flagged it as closest to the voice.
+-->
+
 
 Everyone has noticed that prompt quality matters. That part isn't controversial. If a team is shipping AI-assisted work and the prompts are sloppy, the output drifts, the brand softens, and every new session has to relitigate decisions the last session already made. Nobody is defending sloppy prompts.
 
