@@ -217,7 +217,7 @@ export function initEditorialReview(): void {
     pendingRange = offsets;
   });
 
-  addBtn.addEventListener('click', () => {
+  function openMarkModal(): void {
     if (!pendingRange) return;
     modalQuote.textContent = extractQuote(pendingRange);
     textArea.value = '';
@@ -225,6 +225,33 @@ export function initEditorialReview(): void {
     modal.hidden = false;
     addBtn.hidden = true;
     textArea.focus();
+  }
+
+  addBtn.addEventListener('click', openMarkModal);
+
+  // Operator-friendly second entry: click anywhere in the margin-notes
+  // sidebar (but not on an existing note, which has its own scroll-to
+  // behavior) to open the Mark modal for the current selection. This
+  // honors the natural "I selected text → now I click the margin"
+  // instinct that the floating pencil alone doesn't satisfy.
+  const sidebar = q<HTMLElement>('[data-comments-sidebar]');
+  sidebar.addEventListener('mousedown', (ev) => {
+    const target = ev.target instanceof HTMLElement ? ev.target : null;
+    // Clicks on an existing note: let that handler run (scroll to highlight).
+    if (target?.closest('.er-marginalia-item')) return;
+    // Preserve the selection the browser is about to clear on mouseup.
+    // selectionchange already stashed `pendingRange`; just suppress the
+    // default mousedown so the selection survives into click.
+    ev.preventDefault();
+  });
+  sidebar.addEventListener('click', (ev) => {
+    const target = ev.target instanceof HTMLElement ? ev.target : null;
+    if (target?.closest('.er-marginalia-item')) return;
+    if (!pendingRange) {
+      showToast('Select text in the draft first, then click here to mark it.');
+      return;
+    }
+    openMarkModal();
   });
 
   // ---- Modal submission ----
