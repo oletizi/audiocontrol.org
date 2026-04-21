@@ -33,7 +33,22 @@ Automates the creation of feature images for blog posts, pages, and social media
 | 13. Conversation Thread with Claude | #76 | Complete |
 | 14. Multi-Site Feature Images | #85 | Complete |
 | 15. Journal Records (one file per entry) | #99 | Complete (PR [#100](https://github.com/oletizi/audiocontrol.org/pull/100)) |
-| 16. Studio Redesign (service-manual + ProgressTape) | #103 | Not Started |
+| 16. Studio Redesign (service-manual + ProgressTape) | #103 | Complete |
+
+## Studio layout (Phase 16)
+
+The dev-only Feature Image Studio at `/dev/studio` replaces the old 4096-line `/dev/feature-image-preview` page. Five routes under a shared service-manual chrome (Departure Mono + IBM Plex Sans + JetBrains Mono, warm-ink + phosphor-amber + Roland-blue palette):
+
+```
+/dev/studio               Gallery — timeline-ordered history wall
+/dev/studio/focus/[id]    Focus canvas — image hero + DIP-switch panel + thread
+/dev/studio/generate      Generate — ground-school specimen sheet
+/dev/studio/templates     Templates — filterable grid + detail pane
+/dev/studio/help          Help — service-manual document
+/dev/studio/proto/progress  ProgressTape demo harness
+```
+
+Every long-running operation (generate, recomposite / commit, approve, apply) routes through a shared `ProgressTape` primitive fixed to the viewport bottom: numbered stage reel, live elapsed + EMA-driven ETA, cancel affordance. The old `/dev/feature-image-preview` URL redirects to `/dev/studio`.
 
 ## Storage layout
 
