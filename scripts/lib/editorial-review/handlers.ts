@@ -87,6 +87,22 @@ export function handleAnnotate(rootDir: string, body: unknown): HandlerResult {
       appendAnnotation(rootDir, annotation);
       return ok({ annotation });
     }
+    case 'resolve': {
+      const d = draft as Partial<Extract<AnnotationDraft, { type: 'resolve' }>>;
+      if (typeof d.commentId !== 'string' || d.commentId.length === 0) {
+        return err(400, 'resolve.commentId is required');
+      }
+      // Accept `resolved` either way; default to true (resolve).
+      const resolved = typeof d.resolved === 'boolean' ? d.resolved : true;
+      const annotation = mintAnnotation({
+        type: 'resolve',
+        workflowId: draft.workflowId,
+        commentId: d.commentId,
+        resolved,
+      });
+      appendAnnotation(rootDir, annotation);
+      return ok({ annotation });
+    }
     default:
       return err(400, `unknown annotation type: ${String(draft.type)}`);
   }

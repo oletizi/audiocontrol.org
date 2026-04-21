@@ -45,6 +45,15 @@ interface CommentAnnotation {
   anchor?: string;
 }
 
+interface ResolveAnnotation {
+  id: string;
+  type: 'resolve';
+  workflowId: string;
+  commentId: string;
+  resolved: boolean;
+  createdAt: string;
+}
+
 /**
  * Classification applied to every comment annotation when the page
  * renders. Determines how the comment shows up in the UI:
@@ -239,6 +248,22 @@ export function initEditorialReview(): void {
     li.appendChild(quote);
     li.appendChild(text);
 
+    // Every live item gets a Resolve affordance, including unresolved
+    // (anchor-missing) prior-version comments — resolving them is how
+    // the operator says "the edit already handled this."
+    const actions = document.createElement('div');
+    actions.className = 'er-marginalia-actions';
+    const resolveBtn = document.createElement('button');
+    resolveBtn.type = 'button';
+    resolveBtn.className = 'er-marginalia-action';
+    resolveBtn.textContent = 'Resolve';
+    resolveBtn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      void resolveComment(annotation, status);
+    });
+    actions.appendChild(resolveBtn);
+    li.appendChild(actions);
+
     if (status !== 'unresolved') {
       li.addEventListener('mouseenter', () => setActiveHighlight(annotation.id, true));
       li.addEventListener('mouseleave', () => setActiveHighlight(annotation.id, false));
@@ -399,6 +424,28 @@ export function initEditorialReview(): void {
     return { start: first, end: first + anchor.length };
   }
 
+  /**
+   * Walk the resolve annotations for this workflow and compute
+   * which comments are currently resolved. Resolves are append-only
+   * events; the latest event for a given commentId wins. This lets
+   * Resolve/Reopen both persist through the same journal shape
+   * without mutating past records.
+   */
+  function computeResolvedSet(all: ResolveAnnotation[]): Set<string> {
+    const byCreatedAt = [...all].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    const state = new Map<string, boolean>();
+    for (const r of byCreatedAt) state.set(r.commentId, r.resolved);
+    const resolved = new Set<string>();
+    for (const [commentId, isResolved] of state) {
+      if (isResolved) resolved.add(commentId);
+    }
+    return resolved;
+  }
+
+  /** Resolved comments kept in memory so the "Show resolved" toggle
+   * can render them without a re-fetch. */
+  const resolvedHistory: { ann: CommentAnnotation; status: AnnotationStatus }[] = [];
+
   async function loadAnnotations(): Promise<void> {
     try {
       // Omit `version` — the server returns every annotation for the
@@ -409,27 +456,39 @@ export function initEditorialReview(): void {
       const res = await fetch(url);
       if (!res.ok) return;
       const body = await res.json();
-      const comments: CommentAnnotation[] = (body.annotations || []).filter(
-        (a: { type: string }) => a.type === 'comment',
-      );
+      const all: Array<CommentAnnotation | ResolveAnnotation> = body.annotations || [];
+      const comments = all.filter((a): a is CommentAnnotation => a.type === 'comment');
+      const resolves = all.filter((a): a is ResolveAnnotation => a.type === 'resolve');
+      const resolvedIds = computeResolvedSet(resolves);
+
       // Stable render order: current-version first, then rebased
       // (by original version desc), then unresolved (by original
       // version desc). Keeps the natural reading focus on the
       // version actually under review.
       const current: CommentAnnotation[] = [];
       const rebased: { ann: CommentAnnotation; range: DraftRange }[] = [];
-      const unresolved: CommentAnnotation[] = [];
+      const unanchored: CommentAnnotation[] = [];
       for (const a of comments) {
+        if (resolvedIds.has(a.id)) {
+          // Resolved — keep in history so the toggle can resurface
+          // them, but don't render in the live stream.
+          let status: AnnotationStatus = 'current';
+          if (a.version !== versionNum) {
+            status = rebaseAnchor(a.anchor) ? 'rebased' : 'unresolved';
+          }
+          resolvedHistory.push({ ann: a, status });
+          continue;
+        }
         if (a.version === versionNum) {
           current.push(a);
           continue;
         }
         const rebasedRange = rebaseAnchor(a.anchor);
         if (rebasedRange) rebased.push({ ann: a, range: rebasedRange });
-        else unresolved.push(a);
+        else unanchored.push(a);
       }
       rebased.sort((a, b) => b.ann.version - a.ann.version);
-      unresolved.sort((a, b) => b.version - a.version);
+      unanchored.sort((a, b) => b.version - a.version);
 
       for (const a of current) {
         wrapRange(a.range, a.id);
@@ -439,13 +498,165 @@ export function initEditorialReview(): void {
         wrapRange(r.range, r.ann.id);
         addSidebarItem(r.ann, 'rebased');
       }
-      for (const a of unresolved) {
+      for (const a of unanchored) {
         // No body highlight; sidebar-only.
         addSidebarItem(a, 'unresolved');
       }
+      updateResolvedFooter();
     } catch (e) {
       showToast(`Failed to load annotations: ${(e as Error).message}`, true);
     }
+  }
+
+  // ---- Resolve / re-open ----
+
+  async function postResolve(commentId: string, resolved: boolean): Promise<boolean> {
+    try {
+      const res = await fetch('/api/dev/editorial-review/annotate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ type: 'resolve', workflowId, commentId, resolved }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        showToast(`Resolve failed: ${body.error || res.status}`, true);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      showToast(`Network error: ${(e as Error).message}`, true);
+      return false;
+    }
+  }
+
+  async function resolveComment(annotation: CommentAnnotation, status: AnnotationStatus): Promise<void> {
+    const ok = await postResolve(annotation.id, true);
+    if (!ok) return;
+    // Remove highlight + sidebar item; stash in resolvedHistory.
+    removeHighlight(annotation.id);
+    const item = sidebarIndex.get(annotation.id);
+    if (item) item.remove();
+    sidebarIndex.delete(annotation.id);
+    resolvedHistory.push({ ann: annotation, status });
+    updateResolvedFooter();
+    maybeShowEmpty();
+    showToast('Marked resolved');
+  }
+
+  async function reopenComment(annotation: CommentAnnotation, status: AnnotationStatus): Promise<void> {
+    const ok = await postResolve(annotation.id, false);
+    if (!ok) return;
+    // Pop from history, render back into the live list.
+    const idx = resolvedHistory.findIndex(r => r.ann.id === annotation.id);
+    if (idx >= 0) resolvedHistory.splice(idx, 1);
+    if (status === 'rebased') {
+      const r = rebaseAnchor(annotation.anchor);
+      if (r) wrapRange(r, annotation.id);
+    } else if (status === 'current') {
+      wrapRange(annotation.range, annotation.id);
+    }
+    addSidebarItem(annotation, status);
+    updateResolvedFooter();
+    showToast('Re-opened');
+  }
+
+  function removeHighlight(annotationId: string): void {
+    draftBody
+      .querySelectorAll<HTMLElement>(`mark[data-annotation-id="${annotationId}"]`)
+      .forEach(m => {
+        const parent = m.parentNode;
+        if (!parent) return;
+        // Replace the mark with a plain text node so the draft body
+        // reads cleanly after resolve. Adjacent text nodes will be
+        // merged on the next re-render; fine for dev.
+        parent.replaceChild(document.createTextNode(m.textContent ?? ''), m);
+      });
+  }
+
+  function maybeShowEmpty(): void {
+    const anyLive = sidebarList.querySelector('.er-marginalia-item');
+    sidebarEmpty.hidden = !!anyLive;
+  }
+
+  /** The collapsible "Resolved" footer at the bottom of the sidebar. */
+  function updateResolvedFooter(): void {
+    let footer = sidebar.querySelector<HTMLElement>('[data-resolved-footer]');
+    if (resolvedHistory.length === 0) {
+      if (footer) footer.remove();
+      return;
+    }
+    if (!footer) {
+      footer = document.createElement('div');
+      footer.className = 'er-marginalia-resolved';
+      footer.dataset.resolvedFooter = '';
+      const header = document.createElement('button');
+      header.type = 'button';
+      header.className = 'er-marginalia-resolved-header';
+      header.dataset.resolvedToggle = '';
+      header.setAttribute('aria-expanded', 'false');
+      const list = document.createElement('ol');
+      list.className = 'er-marginalia-resolved-list';
+      list.dataset.resolvedList = '';
+      list.hidden = true;
+      footer.appendChild(header);
+      footer.appendChild(list);
+      sidebar.appendChild(footer);
+
+      header.addEventListener('click', () => {
+        const open = list.hidden;
+        list.hidden = !open;
+        header.setAttribute('aria-expanded', String(open));
+      });
+    }
+    const headerBtn = footer.querySelector<HTMLButtonElement>('[data-resolved-toggle]');
+    const list = footer.querySelector<HTMLElement>('[data-resolved-list]');
+    if (!headerBtn || !list) return;
+    headerBtn.textContent = `Resolved (${resolvedHistory.length}) ▾`;
+    list.innerHTML = '';
+    for (const { ann, status } of resolvedHistory) {
+      list.appendChild(renderResolvedItem(ann, status));
+    }
+  }
+
+  function renderResolvedItem(ann: CommentAnnotation, status: AnnotationStatus): HTMLElement {
+    const li = document.createElement('li');
+    li.className = 'er-marginalia-item er-marginalia-item--resolved';
+    li.dataset.annotationId = ann.id;
+
+    const cat = document.createElement('div');
+    cat.className = 'cat';
+    const origin = status === 'current' ? `v${ann.version}` : `from v${ann.version}`;
+    cat.textContent = `${origin} · ${ann.category || 'other'} · resolved`;
+
+    const quote = document.createElement('div');
+    quote.className = 'quote';
+    quote.textContent = ann.anchor
+      ? ann.anchor
+      : status === 'unresolved'
+        ? '(legacy — no anchor captured)'
+        : extractQuote(ann.range);
+
+    const text = document.createElement('p');
+    text.className = 'note';
+    text.textContent = ann.text;
+
+    const actions = document.createElement('div');
+    actions.className = 'er-marginalia-actions';
+    const reopenBtn = document.createElement('button');
+    reopenBtn.type = 'button';
+    reopenBtn.className = 'er-marginalia-action';
+    reopenBtn.textContent = 'Re-open';
+    reopenBtn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      void reopenComment(ann, status);
+    });
+    actions.appendChild(reopenBtn);
+
+    li.appendChild(cat);
+    li.appendChild(quote);
+    li.appendChild(text);
+    li.appendChild(actions);
+    return li;
   }
 
   // ---- Edit mode ----

@@ -137,6 +137,60 @@ describe('handleAnnotate', () => {
     const ann = (list.body as { annotations: Array<{ anchor?: string }> }).annotations[0];
     expect(ann.anchor).toBeUndefined();
   });
+
+  it('records a resolve for a prior comment', () => {
+    const created = handleAnnotate(root, {
+      type: 'comment',
+      workflowId,
+      version: 1,
+      range: { start: 0, end: 5 },
+      text: 'to be resolved',
+    });
+    const commentId = (created.body as { annotation: { id: string } }).annotation.id;
+    const resolved = handleAnnotate(root, {
+      type: 'resolve',
+      workflowId,
+      commentId,
+    });
+    expect(resolved.status).toBe(200);
+    const list = handleListAnnotations(root, { workflowId, version: null });
+    const annotations = (list.body as {
+      annotations: Array<{ type: string; commentId?: string; resolved?: boolean }>;
+    }).annotations;
+    const resolves = annotations.filter(a => a.type === 'resolve');
+    expect(resolves).toHaveLength(1);
+    expect(resolves[0].commentId).toBe(commentId);
+    expect(resolves[0].resolved).toBe(true);
+  });
+
+  it('records a reopen (resolve with resolved:false) for re-opening', () => {
+    const created = handleAnnotate(root, {
+      type: 'comment',
+      workflowId,
+      version: 1,
+      range: { start: 0, end: 5 },
+      text: 'reopen me',
+    });
+    const commentId = (created.body as { annotation: { id: string } }).annotation.id;
+    handleAnnotate(root, { type: 'resolve', workflowId, commentId });
+    const reopened = handleAnnotate(root, {
+      type: 'resolve',
+      workflowId,
+      commentId,
+      resolved: false,
+    });
+    expect(reopened.status).toBe(200);
+    const body = reopened.body as { annotation: { resolved: boolean } };
+    expect(body.annotation.resolved).toBe(false);
+  });
+
+  it('returns 400 for resolve without commentId', () => {
+    const result = handleAnnotate(root, {
+      type: 'resolve',
+      workflowId,
+    });
+    expect(result.status).toBe(400);
+  });
 });
 
 describe('handleListAnnotations', () => {

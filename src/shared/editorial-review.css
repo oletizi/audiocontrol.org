@@ -905,6 +905,69 @@ body:has([data-review-ui="longform"]) .site-footer {
   color: var(--er-faded);
 }
 
+/* Per-item action row — Resolve / Re-open button sits flush-right
+ * under the note so it's reachable without displacing the quote or
+ * the prose. */
+.er-marginalia-actions {
+  margin-top: var(--er-space-1);
+  display: flex;
+  justify-content: flex-end;
+}
+.er-marginalia-action {
+  font-family: var(--er-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--er-faded);
+  background: transparent;
+  border: 1px solid var(--er-border-soft, rgba(0, 0, 0, 0.15));
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.er-marginalia-action:hover {
+  color: var(--er-red-pencil, var(--er-red-soft));
+  border-color: var(--er-red-pencil, var(--er-red-soft));
+}
+
+/* Collapsible "Resolved (N) ▾" footer at the bottom of the sidebar.
+ * Resolved comments live here until the operator chooses to re-open
+ * one; they're archived, not deleted. */
+.er-marginalia-resolved {
+  margin-top: var(--er-space-2);
+  padding-top: var(--er-space-1);
+  border-top: 1px dashed var(--er-border-soft, rgba(0, 0, 0, 0.15));
+}
+.er-marginalia-resolved-header {
+  font-family: var(--er-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--er-faded);
+  background: transparent;
+  border: 0;
+  padding: var(--er-space-1) 0;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+.er-marginalia-resolved-header:hover {
+  color: var(--er-ink);
+}
+.er-marginalia-resolved-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.er-marginalia-item--resolved {
+  opacity: 0.55;
+}
+.er-marginalia-item--resolved .quote {
+  text-decoration: line-through;
+  text-decoration-color: var(--er-faded);
+  text-decoration-thickness: 1px;
+}
+
 /* Draft body wrapper within BlogLayout */
 .er-draft-frame {
   position: relative;
