@@ -885,6 +885,26 @@ body:has([data-review-ui="longform"]) .site-footer {
  * renders below a 5000+ px tall hidden-in-name-only element. */
 #draft-body.hidden { display: none; }
 
+/* Un-inherit the press-check ink color inside the rendered draft body.
+ *
+ * `[data-review-ui]` sets `color: var(--er-ink)` for the studio and
+ * shortform routes (both of which sit on cream paper), but on the
+ * longform route the draft renders INSIDE BlogLayout on the host
+ * site's background (dark on editorialcontrol, darker still on
+ * audiocontrol). Inheriting the press-check ink produces dark text
+ * on a dark background — unreadable.
+ *
+ * Set an explicit host-token color ON #draft-body itself (not a
+ * universal descendant selector — that would override the host's
+ * `.essay-body em { color: accent }` rule and mis-color italics).
+ * Block-level descendants (p, li, blockquote) inherit this value
+ * through normal CSS inheritance; inline rules (em, strong, a, code)
+ * that target specific tags keep their host-side colors and cascade
+ * correctly. */
+[data-review-ui="longform"] #draft-body {
+  color: hsl(var(--foreground));
+}
+
 /* Signal that the rendered draft is interactive — the client attaches a
  * double-click → edit-mode handler. Keep the `text` cursor within
  * paragraphs (so selection-to-comment still feels natural), and show

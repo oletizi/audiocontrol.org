@@ -8,19 +8,6 @@ dateModified: "2026-04-21"
 author: "Orion Letizi"
 ---
 
-April 2026 · Orion Letizi
-
----
-
-In this dispatch
-
-1. 01 The prompt-tuning trap
-2. 02 The move used to be expensive
-3. 03 What the feature-image library taught
-4. 04 The mindset is the skill
-5. 05 If you're still reading, here's the short version
-6. 06 Where this is going
-
 # You Don't Need a Better Prompt. You Need Selection Pressure.
 
 Everyone has noticed that prompt quality matters. That part isn't controversial. If a team is shipping AI-assisted work and the prompts are sloppy, the output drifts, the brand softens, and every new session has to relitigate decisions the last session already made. Nobody is defending sloppy prompts.
