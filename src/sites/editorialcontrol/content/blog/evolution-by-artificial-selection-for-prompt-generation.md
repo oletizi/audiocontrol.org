@@ -36,3 +36,115 @@ state: draft
   Agents are the leverage that makes these moves tractable. The moves are the skill.
 - **05 Where this is going.** Forward-pointing close. Land on the mindset-is-the-skill beat. *Omit* the meta-close this round: the content-workflow dispatch already used "this post was made by the pipeline it describes"; doing it again in dispatch #2 turns a signature move into a tic. Save it for a dispatch where it earns its weight — or, if a meta-close fits here, make it structurally different (the voice-skill reframing happened during *planning*, not *publishing*, which is a distinct beat). Note: the previous "short version at the end" beat has been moved to §00 as a front-of-dispatch TL;DR; dropping it at the tail is the deliberate shape change. The argument is now front-loaded for skimmers, with the worked example and mindset sections earning the assertion.
 
+---
+
+AI-assisted output quality is table stakes. The instinct that produces — *write a better prompt* — is the wrong one. A single champion prompt can't track a world that keeps moving; selection pressure over a population can. What makes that tractable isn't a budget. It's a workflow where the agent doing the work also builds the tools that make selection the easy path.
+
+April 2026 · Orion Letizi
+
+---
+
+In this dispatch
+
+1. 00 The short version, up top
+2. 01 The prompt-tuning trap
+3. 02 The workflow decides what's easy
+4. 03 What the feature-image library taught
+5. 04 The mindset is the skill
+6. 05 Where this is going
+
+---
+
+## You Don't Need a Better Prompt. You Need Selection Pressure.
+
+## 00 The short version, up top
+
+Skimmers shouldn't have to read fifteen hundred words to find the move. Here it is:
+
+1. **Stop tuning one champion prompt.** A single prompt can't track a shifting subject matter. A population can.
+2. **Keep the population, and capture any fitness signal.** Even a thumbs column on a journal row. Perfect fitness is the enemy of any fitness.
+3. **Prune.** Selection requires deletion. A population that never loses variants isn't a population — it's a landfill.
+4. **The workflow has to make this the easy path.** If selection-driven prompting takes willpower, it won't happen. Variation, fitness, and retention need to live on the same gradient as the work.
+5. **Version control is non-negotiable** — *especially* with agents in the loop. It's useful for human-only workflows. It's mandatory once an agent is the one editing files.
+
+The rest of this dispatch is why each of those is load-bearing, and what the whole move looks like on an actual project.
+
+---
+
+## 01 The prompt-tuning trap
+
+Everyone has noticed that prompt quality matters. That part isn't controversial. If a team is shipping AI-assisted work and the prompts are sloppy, the output drifts, the brand softens, and every new session has to relitigate decisions the last session already made. Nobody is defending sloppy prompts.
+
+What's less obvious: the instinct the quality problem produces — *write a better prompt* — is the wrong instinct. Two recurring shapes follow from it.
+
+**The perfectionist.** Engineer the one right prompt, in a document, on paper, off to the side. Tune, revise, second-guess, rewrite. Ship the champion. Then next week the subject matter shifts half a degree and the champion is suddenly wrong for the new territory. Go back to the document. The loop never stops because the world is a high-variance search space and the champion is a single point in it.
+
+**The collector.** Hoard prompts. A Notion page, a markdown file, a folder of `.txt` files named after the post they were used for. Nothing ever gets pruned. The library grows because pruning feels like throwing work away. Finding the right prompt six months later means reading most of the library, because there's no ordering and no signal for which ones worked.
+
+Both failures are stuck on the same structural issue: no fitness signal.
+
+The perfectionist is tuning against an imagined reader. The collector is accumulating without feedback. Neither converges. Neither compounds. Adding more effort to either loop doesn't change its shape. And they aren't the only shapes — variation can continue without selection pressure at all (a pile of forked prompts that never get compared), or the operator can start from a blank page every week and relearn last week's lessons. Same diagnosis, different silhouette: no signal for what won.
+
+There's a third option that didn't exist eighteen months ago.
+
+---
+
+## 02 The workflow decides what's easy
+
+The third option isn't that the infrastructure got cheap. That framing misses the actual shift. Selection pressure has always been a feasible idea. What used to make it unworkable on a real project wasn't cost — it was friction. Disconnected workflow and tooling made the *wrong* move the easy one.
+
+When prompts live in a Notion page separate from the work, the easiest path is to start from a blank page (amnesia) or keep one static champion (calcification). Selection-driven prompting requires pulling prompts out of a parallel store, remembering which ones performed, deliberately generating variants, rating them somewhere, and pruning the losers. Every one of those steps is a small cliff. A workflow made of small cliffs won't get climbed.
+
+Selection-driven prompting only happens when the workflow itself makes it the easy path — when variation, fitness, and selection are on the gradient, not off to the side requiring willpower to enact. Three properties a workflow needs to tilt the gradient:
+
+**Variation lives in the workflow.** The agent generates variants as part of doing the work, not as a separate research exercise. Producing a handful of plausible variants is one `/skill` invocation — two or three is usually the right number. Much more than that and the operator burns out of review, which itself kills the fitness signal.
+
+**Fitness is captured where the work happens.** A rating column in the same journal the agent already writes to. Not a parallel spreadsheet the operator remembers to update. If the operator has to context-switch to rate an output, they won't, and without ratings there's no signal for the next round to select against.
+
+**Population persists under version control.** Markdown on disk, committed to git, with lineage forks when a prompt gets remixed. The review UI is downstream of persistence — once you have a population you can query, a side-by-side view becomes a weekend. Without persistence, every variant evaporates on the next session and the loop starts over.
+
+Flat rule, stated plainly after the three properties: never let an agent operate on files that aren't under distributed version control. Persistence without VCS is persistence one bad diff away from deletion, and agents produce a lot of diffs — most correct, some not. The same property that makes selection pressure work (a retrievable population) is what makes it survive a mistake.
+
+An agent with variation and fitness on the easy path turns prompt quality from a craft problem into an evolutionary one.
+
+---
+
+## 03 What the feature-image library taught — and why the agent being the workflow is the whole move
+
+The sibling site, audiocontrol.org, runs a feature-image generator for its blog posts. First shipped 2026-04-15 (commit `6fb0908`). Five posts have gone through it. The prompt-evolution infrastructure merged 2026-04-20 as PR #105. Fitness × recency weighting, lineage forks when a prompt gets remixed, side-by-side review in a dev-only gallery app.
+
+The gallery app was built in an afternoon.
+
+None of these artifacts were built in a separate system. The gallery, the journal, the rating surface, the side-by-side review — all of them are accreted extensions of the same coding agent (Claude Code) that was already doing the work of generating images. When your workflow engine and your build tool are the same agent, building evolution infrastructure takes an afternoon.
+
+That's the whole move.
+
+The reason selection-driven prompting is finally tractable on a one-person operation is not that it got cheaper. It's that the world shifted underneath every creative workflow, and the pace of the status quo ante is no longer survivable. An agent that operates inside the work — the same one generating output, the same one building the tools that review that output — is the difference between keeping pace and falling out of the race. The gallery didn't ship because someone sized it in a sprint. It shipped because during a review session it became obvious that a side-by-side view would help, and *the same agent open in the terminal* built it. That's not a cost advantage. It's how the transition gets survived.
+
+**Corollary, stated plainly.** If the AI in your stack is stapled onto a separate workflow — editor → ChatGPT → back to editor → maybe Midjourney in another tab — the agent can't help you build the infrastructure that makes any of this actionable, and you're trying to run a new race on old legs. Selection pressure wants an agent that operates *inside* the work, not adjacent to it. A prompt library works when the agent can read it, rate it, fork it, and prune it without the operator leaving the window they're already in.
+
+One honest note, because the worked example is a generous case. Feature-image generation has a relatively easy fitness signal — a composited image either looks right or it doesn't; the operator's judgment is fast and doesn't need a rubric. Harder domains (code-generation prompts, analysis prompts, copy-critique prompts) need cruder measurement. *Any* fitness signal beats none, even a thumbs column in the journal. But the accessibility comes from the agent-as-workflow-engine shape, not from images being forgiving.
+
+---
+
+## 04 The mindset is the skill
+
+The infrastructure argument is the tractable half. The harder half is the posture the operator has to develop.
+
+**Notice when you're tuning a single artifact and stop.** The cue is frustration with the current output. The instinct is to rewrite the prompt. The right move is to step back one level and ask whether there should be a population here instead of a champion — whether the fix is more tuning or more variation. Most of the time it's more variation. Generate three variants, rate them, keep one, fork another.
+
+**Capture fitness cheaply — even crudely.** A thumbs column beats no signal. A fitness × recency sort beats a timestamped archive. Perfect fitness never arrives; any fitness is already doing work. Resist the pull to build a rating system that measures the right thing before capturing any data at all. The crude rating system informs what the good rating system should look like.
+
+**Prune aggressively.** Selection requires death. The collector's failure is retention without selection; the evolutionary posture says a population that never loses variants isn't a population, it's a landfill. Deleting a prompt that lost feels like throwing work away. It isn't. The work was the rating that said it lost; keeping the prompt around longer doesn't preserve the work, it dilutes it.
+
+Agents are the leverage that makes these moves tractable. The moves are the skill. The operator learns to see a static-artifact problem and instinctively reach for variation + selection instead of another tuning pass — and the agent that's already in the session builds whatever minimal infrastructure lets that loop close.
+
+---
+
+## 05 Where this is going
+
+The mindset is portable even where the example isn't. Feature-image generation was an easy first case: strong fitness signal, visual, quick to rate, cheap to generate variants. The shape — population + fitness + pruning, made easy by an agent that lives inside the work — transfers to any domain where a single-champion prompt keeps going stale. Code-review rubrics, classification prompts, summarization prompts, copy-critique passes. The signal gets cruder; the move doesn't change.
+
+What does change is which workflows can host the move at all. A workflow where the agent is an accessory — where the work happens one place and the AI assistance happens another — can't accrete the infrastructure required to make selection the easy path. The operator in that setup is running on old legs; the investment required to get to where the new infrastructure is cheap is itself the investment the separate workflow made unaffordable. The agent-as-workflow shape isn't one configuration among many. It's the shape where the advice in this dispatch can take hold.
+
+What I'm watching for next: how the posture spreads to the non-image domains. The easy case is in hand. The copy-critique loop on this very publication is a candidate — crude rating of dispatches against the voice skill, forking the voice skill when a pattern repeats, retiring rules that never fire. Reach out if you're running an evolutionary loop on harder signal and want to compare notes.
