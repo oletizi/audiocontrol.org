@@ -83,4 +83,31 @@ describe('bodyState', () => {
     const path = writeTo('post.md', content);
     expect(bodyState(path)).toBe('placeholder');
   });
+
+  // Phase 17c: the scaffold now writes a `## Outline` section between
+  // the H1 and the body placeholder. Outline content is real authored
+  // text but isn't the body — bodyState must report 'placeholder' when
+  // the body hasn't been drafted, regardless of how much outline work
+  // has been done.
+  it('returns "placeholder" when outline has content but body is still the placeholder', () => {
+    const outline = '## Outline\n\n- First beat.\n- Second beat.\n- Third beat.\n';
+    const content = `${FRONTMATTER}# Test Post\n\n${outline}\n${PLACEHOLDER_MARKER}\n`;
+    const path = writeTo('post.md', content);
+    expect(bodyState(path)).toBe('placeholder');
+  });
+
+  it('returns "placeholder" when outline is scaffolded (empty) and body is still the placeholder', () => {
+    const outline = '## Outline\n\n<!-- Outline the shape of the article here before drafting the body. -->\n';
+    const content = `${FRONTMATTER}# Test Post\n\n${outline}\n${PLACEHOLDER_MARKER}\n`;
+    const path = writeTo('post.md', content);
+    expect(bodyState(path)).toBe('placeholder');
+  });
+
+  it('returns "written" when outline has content AND body has prose below it', () => {
+    const outline = '## Outline\n\n- A beat.\n- Another beat.\n';
+    const body = '## 01 The opening\n\nReal prose starts here and continues for a while.\n';
+    const content = `${FRONTMATTER}# Test Post\n\n${outline}\n${body}`;
+    const path = writeTo('post.md', content);
+    expect(bodyState(path)).toBe('written');
+  });
 });

@@ -3,9 +3,18 @@
  * or has been replaced with real prose.
  *
  * The scaffold produced by `scaffoldBlogPost` writes a `# <title>`
- * heading followed by `<!-- Write your post here -->`. Until an
- * operator (or drafter) replaces that comment, every version the
- * review pipeline picks up will be a placeholder.
+ * heading followed by a `## Outline` section (scaffold placeholder
+ * for outline work) followed by `<!-- Write your post here -->`.
+ * Until an operator (or drafter) replaces the body placeholder with
+ * prose, the article body is considered un-drafted — even if the
+ * outline section has been filled in.
+ *
+ * This matters because the Outlining stage (Phase 17c) fills in the
+ * outline section but leaves the body placeholder intact. A post
+ * moving from Outlining → Drafting has an outline full of real
+ * content and still a body that hasn't been written. `bodyState`
+ * must not confuse the two — it specifically reports on the
+ * *article body*, i.e. the prose below the outline section.
  *
  * This helper lets both the studio UI and the `/editorial-draft` /
  * `/editorial-draft-review` skills branch on body state instead of
@@ -16,20 +25,42 @@ import { existsSync, readFileSync } from 'fs';
 
 export type BodyState = 'missing' | 'placeholder' | 'written';
 
-/** The marker written by `scaffoldBlogPost`. Exact string. */
+/** The body-placeholder marker written by `scaffoldBlogPost`. Exact string. */
 export const PLACEHOLDER_MARKER = '<!-- Write your post here -->';
+
+/**
+ * Strip the `## Outline` section (heading + everything through the
+ * next H2 or end-of-file) before we classify the body. The outline
+ * is a legitimate authored artifact during Outlining; its presence
+ * should not make the body look written.
+ *
+ * Implemented line-wise (not by regex) because multiline + end-of-
+ * string lookahead in JS regex has enough footguns to be worse
+ * than a four-line scan.
+ */
+function stripOutlineSection(body: string): string {
+  const lines = body.split('\n');
+  const startIdx = lines.findIndex((line) => /^##[ \t]+Outline\b/.test(line));
+  if (startIdx < 0) return body;
+  let endIdx = lines.length;
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    if (/^##[ \t]+/.test(lines[i])) {
+      endIdx = i;
+      break;
+    }
+  }
+  return [...lines.slice(0, startIdx), ...lines.slice(endIdx)].join('\n');
+}
 
 /**
  * Classify the body of a scaffolded blog post.
  *
  * - `missing`      — file does not exist.
- * - `placeholder`  — file exists and its body is ONLY frontmatter +
- *                    H1 heading + the placeholder comment + blank
- *                    lines. No real prose.
- * - `written`      — file exists and the body has content beyond
- *                    the placeholder (either the placeholder was
- *                    replaced with prose, or prose was added
- *                    alongside it).
+ * - `placeholder`  — file exists and its body (after the outline
+ *                    section is stripped) is ONLY the placeholder
+ *                    comment and whitespace. No real prose.
+ * - `written`      — file exists and prose exists below the
+ *                    outline section, beyond the placeholder.
  */
 export function bodyState(filePath: string): BodyState {
   if (!existsSync(filePath)) return 'missing';
@@ -45,8 +76,12 @@ export function bodyState(filePath: string): BodyState {
   // of the body and this regex misses.
   const withoutH1 = body.replace(/^\s*#[^\n]*\n?/, '');
 
+  // Strip the outline section so its (potentially large) content
+  // doesn't masquerade as article body prose.
+  const withoutOutline = stripOutlineSection(withoutH1);
+
   // The placeholder + any whitespace = placeholder state.
-  const trimmed = withoutH1.trim();
+  const trimmed = withoutOutline.trim();
   if (trimmed === PLACEHOLDER_MARKER) return 'placeholder';
   if (trimmed === '') return 'placeholder';
 
