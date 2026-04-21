@@ -1,9 +1,10 @@
 # Editorial Calendar
 
-**Status:** Phases 1-13 Complete + Phase 14 In Progress (studio as calendar command center + journal migration)
+**Status:** Phases 1-14 Complete (Phase 14 open as PR #104)
 **Feature Branch:** `feature/editorial-calendar`
 **GitHub Issue:** oletizi/audiocontrol.org#29 (parent)
 **Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7), #89 (content edits), #98 (Phases 8-13 editorial-review extension), #101 (editorial-review redesign)
+**Open PR:** #104 (Phase 14 — studio as calendar command center + journal migration)
 
 ## Overview
 
@@ -28,7 +29,7 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 11 | Short-form Review (Social Posts) | Complete |
 | 12 | Voice-Library Feedback Signal | Complete |
 | 13 | Editorial Studio (unified dashboard) | Complete |
-| 14 | Studio as calendar command center + journal migration | In Progress |
+| 14 | Studio as calendar command center + journal migration | Complete (PR #104) |
 
 ## Dependencies
 
