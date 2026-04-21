@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync } from 'fs';
+import { mkdtempSync, rmSync, existsSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import {
@@ -273,7 +273,7 @@ describe('pipeline — listOpen and compaction', () => {
     expect(ecOpen).toHaveLength(1);
   });
 
-  it('compactPipeline reduces duplicate snapshots without changing latest state', () => {
+  it('compactPipeline is a no-op under journal storage (one file per workflow)', () => {
     const w = createWorkflow(root, {
       site: 'audiocontrol',
       slug: 'p',
@@ -283,30 +283,32 @@ describe('pipeline — listOpen and compaction', () => {
     transitionState(root, w.id, 'in-review');
     transitionState(root, w.id, 'iterating');
 
-    const beforeLines = readFileSync(pipelinePath(root), 'utf-8').trim().split('\n').length;
-    expect(beforeLines).toBe(3);
+    // Journal storage: each workflow lives in one file, overwritten in
+    // place on transition. No duplicate snapshots exist to compact.
+    const before = readWorkflows(root);
+    expect(before).toHaveLength(1);
+    expect(before[0].state).toBe('iterating');
 
     compactPipeline(root);
-    const afterLines = readFileSync(pipelinePath(root), 'utf-8').trim().split('\n').length;
-    expect(afterLines).toBe(1);
 
-    const post = readWorkflow(root, w.id);
-    expect(post?.state).toBe('iterating');
+    const after = readWorkflows(root);
+    expect(after).toHaveLength(1);
+    expect(after[0].state).toBe('iterating');
+    expect(after[0].id).toBe(w.id);
   });
 });
 
 describe('pipeline — malformed input', () => {
-  it('skips malformed JSONL lines without aborting', () => {
-    const path = pipelinePath(root);
+  it('skips corrupt JSON files in the journal directory without aborting', () => {
     createWorkflow(root, {
       site: 'audiocontrol',
       slug: 'p',
       contentKind: 'longform',
       initialMarkdown: 'v1',
     });
-    const content = readFileSync(path, 'utf-8');
-    const garbled = content + 'this is not json\n\n{"partial":';
-    writeFileSync(path, garbled, 'utf-8');
+    // Drop a corrupt JSON file into the pipeline directory alongside
+    // the real workflow. readWorkflows should silently skip it.
+    writeFileSync(join(pipelinePath(root), 'bogus-entry.json'), '{"partial":', 'utf-8');
     const read = readWorkflows(root);
     expect(read).toHaveLength(1);
   });

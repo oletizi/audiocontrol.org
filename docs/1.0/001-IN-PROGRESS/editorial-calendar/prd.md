@@ -75,6 +75,19 @@ One new POST endpoint: `/api/dev/editorial-review/start-longform` — takes `{ s
 
 **Out of scope for Phase 13:** polling for live updates, shortform drafting from the dashboard form (agent-driven, stays on `/editorial-shortform-draft`), filters/search across the pending list. These can extend the studio later if the UX gets cramped.
 
+## In Scope (Phase 14 addition: studio as calendar command center + journal migration)
+
+The Editorial Studio becomes the single situation room for the entire editorial calendar, not just the review pipeline. Calendar stages (Ideas → Planned → Drafting → Review → Published) are first-class in the UI; mechanical state transitions run via HTTP endpoints directly from the studio; cognitive work (drafting, revising, approving prose) stays in Claude Code.
+
+This phase also migrates the editorial-review JSONL pipeline+history to the per-entry `journal/` layout introduced in feature-image-generator Phase 15, pre-empting the same merge-conflict pain that motivated the feature-image migration.
+
+- **Calendar stage panels** — studio grows columns for Ideas, Planned, Drafting, and (implicit) Review, alongside the existing Published-based "The desk" view. Each row annotates the entry with: has-file? active-workflow? next-move hint.
+- **Mechanical-action endpoints + buttons** — `POST /api/dev/editorial-calendar/draft` (Planned → Drafting; wraps `scaffoldBlogPost` + GH issue + calendar write) and `POST /api/dev/editorial-calendar/publish` (→ Published; wraps publish logic + GH issue close). Buttons in the studio wired up. Both sites, thin handlers around existing library functions. Actions that need writer input (Ideas → Planned with target keywords; prose drafting; iterate; approve) keep their Claude Code command + copy-to-clipboard button.
+- **Journal migration for editorial-review** — `.editorial-draft-history.jsonl` and `.editorial-draft-pipeline.jsonl` decompose into `journal/editorial/{history,pipeline}/<timestamp>-<id>.json` per feature-image Phase 15's pattern. Extract the feature-image `journal.ts` (already generic on `dir` + `timestampField`) into `scripts/lib/journal/` as a shared utility; wire both features to it. Idempotent migration script with `journal/editorial/MIGRATED.txt` receipt. Public API of `scripts/lib/editorial-review/pipeline.ts` unchanged — callers continue to work through `readWorkflows` / `appendAnnotation` / etc.
+- **Polish** — short-form draft queue panel (Published × platforms matrix showing which have no `DistributionRecord.shortform` yet), column-jump keyboard shortcuts in the studio (`1–5` to jump between stage columns), optional GH issue status display per entry if cheap.
+
+**Out of scope for Phase 14:** Ideas-stage creation from the studio (needs target-keyword form; Claude Code is fine), inline editing of calendar metadata (title/description), shortform drafting from the studio (still agent-driven via `/editorial-shortform-draft`), stage reordering / custom stages.
+
 ## Deferred Scope
 
 - **Reddit auto-posting (Tier 3)**: programmatically submitting link posts to subreddits. Documented in detail in the [workplan](./workplan.md#deferred-tier-3--auto-posting-to-reddit). Deferred indefinitely — operational risk (bot bans, spam filters), per-subreddit rule complexity, and limited value-add over manual posting outweigh the automation benefit. A clipboard-helper alternative is proposed there if partial automation becomes interesting later.
@@ -133,6 +146,7 @@ Structured markdown file with tables per stage. Each entry includes: title, slug
 - `feature-image-generator` feature — optionally invoked during `draft` stage (future enhancement)
 - Existing blog post conventions (BlogLayout.astro, directory structure in src/pages/blog/)
 - Voice skills (`audiocontrol-voice`, `editorialcontrol-voice`) — required by `/editorial-iterate` and `/editorial-shortform-draft` (Phases 10–11) for voice-consistent drafting and revision
+- `scripts/feature-image/journal.ts` (from feature-image-generator Phase 15) — extracted to `scripts/lib/journal/` in Phase 14 and shared with editorial-review's per-entry record store
 
 ## Open Questions
 
