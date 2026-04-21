@@ -1,0 +1,720 @@
+---
+/*
+ * /dev/studio/focus/[id] — the Studio's focus canvas.
+ *
+ * Image hero LEFT (live OGPreview with inline-editable title +
+ * subtitle), DIP-switch parameter panel RIGHT (format / preset /
+ * grade / phosphor / vignette / scanlines / grain / position /
+ * align / overlay / site), paper-ruled thread composer BELOW.
+ *
+ * Commit + approve route through window.studioTape for rich feedback.
+ * Approve, if an active workflow is in localStorage, also submits the
+ * workflow decision so /feature-image-apply can pick it up.
+ *
+ * Keyboard: ESC → gallery, Cmd/Ctrl+Enter → send thread message.
+ */
+
+export const prerender = false;
+
+import StudioLayout from '../../../../layouts/StudioLayout.astro';
+import OGPreview from '../../../../../../components/dev/OGPreview.astro';
+import '../../../../styles/og-preview.css';
+import { readLog, type LogEntry } from '../../../../../../../scripts/feature-image/log.js';
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+
+const { id } = Astro.params;
+if (!id) return Astro.redirect('/dev/studio');
+
+const entries = readLog();
+const entry = entries.find((e) => e.id === id);
+if (!entry) {
+  return new Response(`Entry ${id} not found`, { status: 404 });
+}
+
+type Site = 'audiocontrol' | 'editorialcontrol';
+const site: Site = entry.site === 'editorialcontrol' ? 'editorialcontrol' : 'audiocontrol';
+
+type PresetName = 'none' | 'subtle' | 'retro-crt' | 'teal-amber' | 'heavy-crt';
+const preset: PresetName | undefined = (() => {
+  const valid: PresetName[] = ['none', 'subtle', 'retro-crt', 'teal-amber', 'heavy-crt'];
+  if (entry.preset && (valid as string[]).includes(entry.preset)) return entry.preset as PresetName;
+  return undefined;
+})();
+
+const storedFilters: Record<string, string> = (() => {
+  if (!entry.filters) return {};
+  try { return JSON.parse(entry.filters) as Record<string, string>; }
+  catch { return {}; }
+})();
+
+const bgSrc = entry.outputs?.raw?.[0] ?? entry.outputs?.filtered?.[0] ?? '';
+
+const presets: PresetName[] = ['none', 'subtle', 'retro-crt', 'teal-amber', 'heavy-crt'];
+const grades = ['none', 'crt', 'teal-amber', 'heavy'];
+const onoffheavy = ['off', 'on', 'heavy'];
+const vignetteOpts = ['off', 'subtle', 'on', 'heavy'];
+const grainOpts = ['off', 'light', 'on', 'heavy'];
+const positions = [
+  'bottom', 'middle', 'top',
+  'left', 'left-two-thirds', 'left-one-third',
+  'right', 'right-two-thirds', 'right-one-third',
+  'full',
+];
+const aligns = ['auto', 'top', 'center', 'bottom'];
+
+const overlayPosition = entry.overlayPosition ?? 'bottom';
+const overlayAlign = entry.overlayAlign ?? 'auto';
+
+const timestamp = new Date(entry.timestamp);
+const timeLabel = timestamp.toLocaleString('en-US', {
+  weekday: 'short',
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: false,
+});
+
+const cardTargetHsl = site === 'editorialcontrol' ? '74 82% 58%' : '35 95% 62%';
+const durMs = entry.durationMs ?? 0;
+
+function selectOptions(values: string[], selected: string): string {
+  return values
+    .map((v) => `<option value="${v}"${v === selected ? ' selected' : ''}>${v}</option>`)
+    .join('');
+}
+---
+
+<StudioLayout
+  title={`FI · Studio · Focus · ${entry.title ?? id.slice(0, 8)}`}
+  target={site}
+  activeTab="Focus"
+>
+  <section
+    class="studio-focus"
+    data-entry-id={entry.id}
+    data-entry-site={site}
+    style={`--card-target: ${cardTargetHsl};`}
+  >
+    <nav class="studio-focus__nav">
+      <a href="/dev/studio" class="studio-focus__back">
+        <span aria-hidden="true">←</span>
+        <span>Gallery</span>
+      </a>
+      <div class="studio-focus__crumbs">
+        <span class="studio-readout studio-readout--inline">
+          <span class="studio-readout__kicker">Entry</span>
+          <span class="studio-readout__value">{entry.id.slice(0, 8)}</span>
+        </span>
+        <span class="studio-readout studio-readout--inline">
+          <span class="studio-readout__kicker">Timestamp</span>
+          <span class="studio-readout__value">{timeLabel}</span>
+        </span>
+        {entry.provider && (
+          <span class="studio-readout studio-readout--inline">
+            <span class="studio-readout__kicker">Provider</span>
+            <span class="studio-readout__value">{entry.provider}</span>
+          </span>
+        )}
+        {durMs > 0 && (
+          <span class="studio-readout studio-readout--inline">
+            <span class="studio-readout__kicker">Dur</span>
+            <span class="studio-readout__value">{(durMs / 1000).toFixed(1)}s</span>
+          </span>
+        )}
+      </div>
+    </nav>
+
+    <div class="studio-focus__workbench">
+      <div class="studio-focus__hero">
+        <div class="studio-focus__format-tabs" role="tablist" aria-label="Preview format">
+          <button type="button" class="studio-focus__format-tab" data-format-tab="og" aria-selected="true">
+            <span class="studio-focus__format-num">01</span>
+            <span class="studio-focus__format-label">OG</span>
+            <span class="studio-focus__format-dim">1200×630</span>
+          </button>
+          <button type="button" class="studio-focus__format-tab" data-format-tab="youtube" aria-selected="false">
+            <span class="studio-focus__format-num">02</span>
+            <span class="studio-focus__format-label">YouTube</span>
+            <span class="studio-focus__format-dim">1280×720</span>
+          </button>
+          <button type="button" class="studio-focus__format-tab" data-format-tab="instagram" aria-selected="false">
+            <span class="studio-focus__format-num">03</span>
+            <span class="studio-focus__format-label">Instagram</span>
+            <span class="studio-focus__format-dim">1080×1080</span>
+          </button>
+        </div>
+
+        <div class="studio-focus__hero-frame studio-framed">
+          {bgSrc ? (
+            <OGPreview
+              bgSrc={bgSrc}
+              title={entry.title ?? ''}
+              subtitle={entry.subtitle ?? ''}
+              format="og"
+              preset={preset}
+              filters={storedFilters as any}
+              overlay={true}
+              overlayPosition={overlayPosition as any}
+              overlayAlign={overlayAlign as any}
+              editable={true}
+              site={site}
+              id="studio-focus-preview"
+            />
+          ) : (
+            <div class="studio-focus__empty">No raw output on this entry.</div>
+          )}
+        </div>
+
+        <div class="studio-focus__hero-meta">
+          <span class={`studio-stamp studio-stamp--${entry.status ?? 'generated'}`}>
+            {entry.status === 'approved'
+              ? <Fragment><span class="studio-stamp__led" aria-hidden="true"></span><span>✓ Approved</span></Fragment>
+              : entry.status === 'rejected'
+                ? <span>✗ Rejected</span>
+                : <span>Generated</span>
+            }
+          </span>
+          <span class="studio-stamp studio-stamp--target studio-focus__target">
+            <span class="studio-stamp__led" aria-hidden="true"></span>
+            <span>{site.toUpperCase()}</span>
+          </span>
+          {entry.appliedTo && (
+            <span class="studio-readout studio-readout--inline">
+              <span class="studio-readout__kicker">Applied</span>
+              <span class="studio-readout__value">{entry.appliedTo}</span>
+            </span>
+          )}
+          <div class="studio-focus__rating" data-rating={entry.rating ?? 0}>
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                type="button"
+                class={entry.rating && entry.rating >= n ? 'on' : ''}
+                data-action="rate"
+                data-rating={n}
+                aria-label={`Rate ${n} of 5`}
+              >★</button>
+            ))}
+          </div>
+        </div>
+
+        {entry.prompt && (
+          <details class="studio-focus__prompt">
+            <summary class="studio-kicker studio-kicker--muted">Prompt</summary>
+            <p>{entry.prompt}</p>
+          </details>
+        )}
+      </div>
+
+      <aside class="studio-focus__panel">
+        <header class="studio-focus__panel-head">
+          <span class="studio-kicker">Parameters</span>
+          <h2 class="studio-focus__panel-title">DIP · BANK 1</h2>
+        </header>
+
+        <ul class="studio-spec" data-focus-spec set:html={`
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Format</span>
+            <select class="studio-select" data-ctl="format">${selectOptions(['og','youtube','instagram'], 'og')}</select>
+            <span class="studio-spec__unit">aspect</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Site</span>
+            <select class="studio-select" data-ctl="site">${selectOptions(['audiocontrol','editorialcontrol'], site)}</select>
+            <span class="studio-spec__unit">brand</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Preset</span>
+            <select class="studio-select" data-ctl="preset">${selectOptions(presets, preset ?? 'retro-crt')}</select>
+            <span class="studio-spec__unit">bank</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Grade</span>
+            <select class="studio-select" data-ctl="grade">${selectOptions(grades, storedFilters.grade ?? 'crt')}</select>
+            <span class="studio-spec__unit">color</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Phosphor</span>
+            <select class="studio-select" data-ctl="phosphor">${selectOptions(onoffheavy, storedFilters.phosphor ?? 'on')}</select>
+            <span class="studio-spec__unit">glow</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Vignette</span>
+            <select class="studio-select" data-ctl="vignette">${selectOptions(vignetteOpts, storedFilters.vignette ?? 'on')}</select>
+            <span class="studio-spec__unit">edge</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Scanlines</span>
+            <select class="studio-select" data-ctl="scanlines">${selectOptions(onoffheavy, storedFilters.scanlines ?? 'on')}</select>
+            <span class="studio-spec__unit">crt</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Grain</span>
+            <select class="studio-select" data-ctl="grain">${selectOptions(grainOpts, storedFilters.grain ?? 'on')}</select>
+            <span class="studio-spec__unit">film</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Position</span>
+            <select class="studio-select" data-ctl="overlayPosition">${selectOptions(positions, overlayPosition)}</select>
+            <span class="studio-spec__unit">anchor</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Align</span>
+            <select class="studio-select" data-ctl="overlayAlign">${selectOptions(aligns, overlayAlign)}</select>
+            <span class="studio-spec__unit">y-axis</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Overlay</span>
+            <select class="studio-select" data-ctl="overlay">${selectOptions(['on','off'], 'on')}</select>
+            <span class="studio-spec__unit">panel</span>
+          </li>
+        `} />
+
+        <div class="studio-focus__panel-actions">
+          <label class="studio-focus__all-formats">
+            <input type="checkbox" data-ctl="all-formats" />
+            <span>Bake all 3 formats</span>
+          </label>
+          <div class="studio-focus__btn-row">
+            <button type="button" class="studio-btn" data-action="commit">Commit → bake</button>
+            {entry.status === 'approved'
+              ? <button type="button" class="studio-btn" disabled>Approved ✓</button>
+              : <button type="button" class="studio-btn studio-btn--primary" data-action="approve">Approve</button>
+            }
+            {entry.status === 'rejected'
+              ? <button type="button" class="studio-btn" disabled>Rejected ✗</button>
+              : <button type="button" class="studio-btn studio-btn--danger" data-action="reject">Reject</button>
+            }
+          </div>
+          <div class="studio-focus__status" data-focus-status></div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="studio-focus__thread">
+      <header class="studio-focus__thread-head">
+        <span class="studio-kicker">Thread with Claude</span>
+        <h2 class="studio-focus__thread-title">Iterate · /feature-image-iterate</h2>
+        <p class="studio-focus__thread-lede">
+          Describe what to change and Claude will iterate — a new entry
+          lands in history, linked to this one's lineage.
+        </p>
+      </header>
+
+      <div class="studio-focus__messages studio-paper" data-focus-messages>
+        <p class="studio-focus__thread-empty">Loading thread…</p>
+      </div>
+
+      <form class="studio-focus__composer" data-focus-composer>
+        <textarea
+          class="studio-textarea"
+          name="message"
+          rows="2"
+          placeholder="Ask Claude to iterate…  (Cmd/Ctrl+Enter to send)"
+          data-focus-input
+        ></textarea>
+        <button type="submit" class="studio-btn studio-btn--primary" data-action="send-thread">Send →</button>
+      </form>
+    </section>
+  </section>
+
+  <script>
+    import '../../../../components/studio/focus-client.ts';
+  </script>
+</StudioLayout>
+
+<style is:global>
+  .studio-focus {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 1.75rem 1.5rem 4.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  /* ── Breadcrumb nav ───────────────────────────────────────────── */
+  .studio-focus__nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .studio-focus__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 1px;
+    background: hsl(var(--studio-surface-1));
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .studio-focus__back:hover {
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary) / 0.6);
+    text-shadow: var(--phosphor-glow);
+  }
+
+  .studio-focus__crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  /* ── Workbench (image hero + parameter panel) ─────────────────── */
+  .studio-focus__workbench {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 22rem;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 1100px) {
+    .studio-focus__workbench {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ── Image hero ───────────────────────────────────────────────── */
+  .studio-focus__hero {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .studio-focus__format-tabs {
+    display: flex;
+    gap: 0;
+  }
+
+  .studio-focus__format-tab {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--studio-surface-1));
+    border: 1px solid hsl(var(--border));
+    border-bottom: 0;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 1px 1px 0 0;
+    transition: color 0.15s, background 0.15s;
+  }
+
+  .studio-focus__format-tab:not(:last-child) {
+    border-right: 0;
+  }
+
+  .studio-focus__format-tab:hover {
+    color: hsl(var(--foreground));
+    background: hsl(var(--studio-surface-2));
+  }
+
+  .studio-focus__format-tab[aria-selected="true"] {
+    color: hsl(var(--primary));
+    text-shadow: var(--phosphor-glow);
+    background: hsl(var(--primary) / 0.08);
+    border-color: hsl(var(--primary) / 0.6);
+  }
+
+  .studio-focus__format-num {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-variant-numeric: tabular-nums;
+    color: currentColor;
+    opacity: 0.75;
+  }
+
+  .studio-focus__format-label {
+    flex: 1 1 auto;
+  }
+
+  .studio-focus__format-dim {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    opacity: 0.6;
+  }
+
+  .studio-focus__hero-frame {
+    position: relative;
+    background: hsl(var(--studio-surface-pressed));
+    border: 1px solid hsl(var(--border));
+    padding: 1.5rem;
+  }
+
+  .studio-focus__empty {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1200 / 630;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-display);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .studio-focus__hero-frame .og-preview {
+    margin: 0 auto;
+    max-width: 100%;
+    box-shadow: 0 8px 28px hsl(0 0% 0% / 0.4);
+  }
+
+  .studio-focus__hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .studio-focus__target {
+    color: hsl(var(--card-target));
+    border-color: hsl(var(--card-target) / 0.55);
+    background: hsl(var(--card-target) / 0.12);
+  }
+
+  .studio-focus__target::before,
+  .studio-focus__target::after {
+    border-color: hsl(var(--card-target)) !important;
+  }
+
+  .studio-focus__rating {
+    display: inline-flex;
+    gap: 0.15rem;
+    margin-left: auto;
+  }
+
+  .studio-focus__rating button {
+    background: transparent;
+    border: 0;
+    padding: 0.15rem 0.15rem;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    line-height: 1;
+    color: hsl(var(--border-hover));
+    transition: color 0.12s, text-shadow 0.12s;
+  }
+
+  .studio-focus__rating button.on {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 6px hsl(var(--primary) / 0.4);
+  }
+
+  .studio-focus__rating button:hover {
+    color: hsl(var(--primary));
+  }
+
+  .studio-focus__prompt {
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--studio-surface-1));
+    padding: 0.75rem 1rem;
+  }
+
+  .studio-focus__prompt summary {
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .studio-focus__prompt summary::-webkit-details-marker { display: none; }
+
+  .studio-focus__prompt p {
+    margin: 0.75rem 0 0;
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+    white-space: pre-wrap;
+  }
+
+  /* ── Parameter panel (right column) ───────────────────────────── */
+  .studio-focus__panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 1rem;
+    background: hsl(var(--studio-surface-1));
+    border: 1px solid hsl(var(--border));
+    border-radius: 1px;
+    height: fit-content;
+    position: sticky;
+    top: calc(var(--studio-header-h) + 1.25rem);
+  }
+
+  .studio-focus__panel-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .studio-focus__panel-title {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .studio-focus__panel .studio-spec__row {
+    grid-template-columns: 6rem 1fr auto;
+  }
+
+  .studio-focus__panel .studio-select {
+    max-width: 100%;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .studio-focus__panel-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .studio-focus__all-formats {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+  }
+
+  .studio-focus__btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .studio-focus__status {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    min-height: 1rem;
+  }
+
+  .studio-focus__status[data-state="error"] {
+    color: hsl(var(--studio-danger));
+  }
+
+  .studio-focus__status[data-state="ok"] {
+    color: hsl(var(--primary));
+  }
+
+  /* ── Thread composer ──────────────────────────────────────────── */
+  .studio-focus__thread {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .studio-focus__thread-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .studio-focus__thread-title {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .studio-focus__thread-lede {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    max-width: 44rem;
+  }
+
+  .studio-focus__messages {
+    min-height: 6rem;
+    padding: 1rem 1.25rem !important;
+  }
+
+  .studio-focus__thread-empty {
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    margin: 0;
+  }
+
+  .studio-focus__msg {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem 0;
+  }
+
+  .studio-focus__msg + .studio-focus__msg {
+    border-top: 1px solid hsl(var(--border) / 0.6);
+  }
+
+  .studio-focus__msg-kicker {
+    font-family: var(--font-display);
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .studio-focus__msg[data-role="assistant"] .studio-focus__msg-kicker {
+    color: hsl(var(--primary));
+  }
+
+  .studio-focus__msg-text {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    line-height: 1.5rem;
+    color: hsl(var(--foreground));
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  .studio-focus__composer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .studio-focus__composer textarea {
+    min-height: 2.5rem;
+  }
+
+  @media (max-width: 720px) {
+    .studio-focus__composer {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
