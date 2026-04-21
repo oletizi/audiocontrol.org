@@ -10,6 +10,18 @@ state: draft
 
 # You Don't Need a Better Prompt. You Need Selection Pressure.
 
+## Outline
+
+<!-- Backfilled during Phase 17c to retroactively shape the already-drafted piece. Shows what the outline for this dispatch looked like once it was written; in the normal flow the outline comes before the body. Iterate here via the review UI until the operator is satisfied, then /editorial-outline-approve. -->
+
+- **Thesis.** Prompt quality matters, but the instinct it produces — "write a better prompt" — is wrong. Selection pressure over a population beats tuning a single prompt.
+- **01 The prompt-tuning trap.** Two failure modes of the write-a-better-prompt instinct: the perfectionist (can't ship) and the collector (hoards prompts without selection).
+- **02 The move used to be expensive.** Variation + selection is the evolutionary framework. Three reasons it used to be infeasible: no cheap variation, no captured fitness, no UI. Agents remove all three.
+- **03 What the feature-image library taught.** The worked example. Git-grounded receipts: generator shipped 2026-04-15 (commit 6fb0908); 5 posts through it; prompt-evolution infra merged 2026-04-20 (PR #105). Fitness × recency, lineage forks, side-by-side review.
+- **04 The mindset is the skill.** The evolutionary posture (notice where variation + selection could replace engineering) is what operators develop. Agents are the leverage, not the skill.
+- **05 Short version.** Numbered takeaways a skimmer needs.
+- **06 Where this is going + meta-close.** Name the reframing the voice skill did to this dispatch mid-planning — the move is itself the point.
+
 Everyone has noticed that prompt quality matters. That part isn't controversial. If a team is shipping AI-assisted work and the prompts are sloppy, the output drifts, the brand softens, and every new session has to relitigate decisions the last session already made. Nobody is defending sloppy prompts.
 
 What's less obvious: the instinct the quality problem produces — *write a better prompt* — is the wrong instinct. Two failure modes follow from it.

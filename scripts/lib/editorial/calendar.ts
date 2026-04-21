@@ -491,7 +491,31 @@ export function planEntry(
   return entry;
 }
 
-/** Move an entry to the Drafting stage and record its GitHub issue. */
+/** Move an entry to the Outlining stage. Precondition: Planned.
+ *
+ *  The `/editorial-outline` skill scaffolds the blog file with an
+ *  empty `## Outline` section and advances the entry to this stage;
+ *  an outline-review workflow is enqueued separately so the operator
+ *  can iterate on the shape before the agent drafts the body. */
+export function outlineEntry(
+  calendar: EditorialCalendar,
+  slug: string,
+): CalendarEntry {
+  const entry = calendar.entries.find((e) => e.slug === slug);
+  if (!entry) {
+    throw new Error(`No calendar entry found with slug: ${slug}`);
+  }
+  if (entry.stage !== 'Planned') {
+    throw new Error(
+      `Entry "${slug}" is in stage "${entry.stage}" — must be in Planned to outline`,
+    );
+  }
+  entry.stage = 'Outlining';
+  return entry;
+}
+
+/** Move an entry to the Drafting stage. Precondition: Outlining (the
+ *  approved outline is the handoff into body-drafting). */
 export function draftEntry(
   calendar: EditorialCalendar,
   slug: string,
@@ -501,9 +525,9 @@ export function draftEntry(
   if (!entry) {
     throw new Error(`No calendar entry found with slug: ${slug}`);
   }
-  if (entry.stage !== 'Planned') {
+  if (entry.stage !== 'Outlining') {
     throw new Error(
-      `Entry "${slug}" is in stage "${entry.stage}" — must be in Planned to draft`,
+      `Entry "${slug}" is in stage "${entry.stage}" — must be in Outlining to draft`,
     );
   }
   entry.stage = 'Drafting';

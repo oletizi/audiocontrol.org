@@ -41,28 +41,40 @@ import { assertSite, type Site } from '../../../scripts/lib/editorial/index.js';
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 
+type IterableKind = 'longform' | 'outline';
+
 interface Args {
   site: Site;
   slug: string;
+  kind: IterableKind;
+}
+
+function parseKind(value: string | undefined): IterableKind {
+  if (value === undefined || value === '' || value === 'longform') return 'longform';
+  if (value === 'outline') return 'outline';
+  throw new Error(`invalid --kind: ${value} (expected 'longform' or 'outline')`);
 }
 
 function parseArgs(argv: readonly string[]): Args {
   let site: string | undefined;
+  let kindRaw: string | undefined;
   const positional: string[] = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--site') { site = argv[++i]; continue; }
     if (a.startsWith('--site=')) { site = a.slice('--site='.length); continue; }
+    if (a === '--kind') { kindRaw = argv[++i]; continue; }
+    if (a.startsWith('--kind=')) { kindRaw = a.slice('--kind='.length); continue; }
     positional.push(a);
   }
   if (positional.length !== 1) {
-    throw new Error('Usage: finalize.ts [--site <site>] <slug>');
+    throw new Error('Usage: finalize.ts [--site <site>] [--kind <longform|outline>] <slug>');
   }
   const slug = positional[0];
   if (!SLUG_RE.test(slug)) {
     throw new Error(`invalid slug: ${slug} (must match ${SLUG_RE})`);
   }
-  return { site: assertSite(site), slug };
+  return { site: assertSite(site), slug, kind: parseKind(kindRaw) };
 }
 
 function blogFilePath(rootDir: string, site: Site, slug: string): string {
@@ -97,15 +109,19 @@ function main(): void {
     id: null,
     site: args.site,
     slug: args.slug,
-    contentKind: 'longform',
+    contentKind: args.kind,
     platform: null,
     channel: null,
   });
 
   if (fetched.status !== 200 || !isSuccessBody(fetched.body)) {
+    const starter =
+      args.kind === 'outline'
+        ? `/editorial-outline --site ${args.site} ${args.slug}`
+        : `/editorial-draft-review --site ${args.site} ${args.slug}`;
     throw new Error(
-      `no workflow for ${args.site}/${args.slug} (longform): ${errorFromBody(fetched.body)}\n` +
-      `Start one with: /editorial-draft-review --site ${args.site} ${args.slug}`,
+      `no workflow for ${args.site}/${args.slug} (${args.kind}): ${errorFromBody(fetched.body)}\n` +
+      `Start one with: ${starter}`,
     );
   }
 

@@ -8,7 +8,7 @@ export type DraftWorkflowState =
   | 'applied'
   | 'cancelled';
 
-export type ContentKind = 'longform' | 'shortform';
+export type ContentKind = 'longform' | 'shortform' | 'outline';
 
 export type OriginatedBy = 'agent' | 'operator';
 

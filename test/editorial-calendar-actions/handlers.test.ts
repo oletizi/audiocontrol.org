@@ -73,7 +73,7 @@ afterEach(() => {
 });
 
 describe('handleDraftStart', () => {
-  it('happy path: scaffolds file and flips Planned to Drafting', () => {
+  it('happy path: scaffolds file and flips Planned to Outlining', () => {
     const result = handleDraftStart(root, {
       site: SITE,
       slug: 'test-post',
@@ -89,8 +89,10 @@ describe('handleDraftStart', () => {
     if (typeof entry !== 'object' || entry === null) {
       throw new Error('expected entry object');
     }
-    expect(Reflect.get(entry, 'stage')).toBe('Drafting');
-    // And not on the entry — draftEntry doesn't mint one anymore.
+    // Phase 17c: scaffold now advances into Outlining, not Drafting.
+    // The operator iterates on the outline before /editorial-outline-approve
+    // flips Outlining → Drafting.
+    expect(Reflect.get(entry, 'stage')).toBe('Outlining');
     expect(Reflect.get(entry, 'issueNumber')).toBeUndefined();
 
     const filePath = Reflect.get(body, 'filePath');
@@ -100,11 +102,12 @@ describe('handleDraftStart', () => {
     const contents = readFileSync(filePath, 'utf-8');
     expect(contents).toContain('title: "Test Post"');
     expect(contents).toContain('# Test Post');
+    expect(contents).toContain('## Outline');
 
     // Calendar file should reflect the transition.
     const cal = parseCalendar(readFileSync(calendarPath(root, SITE), 'utf-8'));
     const updated = cal.entries.find((e) => e.slug === 'test-post');
-    expect(updated?.stage).toBe('Drafting');
+    expect(updated?.stage).toBe('Outlining');
   });
 
   it('returns 400 when site is missing', () => {

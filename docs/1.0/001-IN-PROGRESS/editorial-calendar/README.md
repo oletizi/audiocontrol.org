@@ -32,7 +32,7 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 14 | Studio as calendar command center + journal migration | Complete (PR #104) |
 | 15 | Review-UI fixes, dblclick-to-edit, manual, multi-site consolidation | Complete (PR #106) |
 | 16 | Pipeline drive-through: skill helpers, voice consultation, body-state gate, session archive | In Flight (unmerged commits) |
-| 17 | Content collections + draft prod gate + outline stage | Planned |
+| 17 | Content collections + draft prod gate + outline stage | In Flight (17a+b committed; 17c code shipped, studio pill + /editorial-draft post-outline refactor deferred) |
 
 ## Dependencies
 

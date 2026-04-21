@@ -207,7 +207,7 @@ export function handleCreateVersion(rootDir: string, body: unknown): HandlerResu
   // For shortform there is no separate file — the workflow's
   // currentVersion markdown IS the working copy. See
   // `/editorial-approve` for the apply step.
-  if (workflow.contentKind === 'longform') {
+  if (workflow.contentKind === 'longform' || workflow.contentKind === 'outline') {
     const blogFile = join(
       rootDir,
       'src',
@@ -221,7 +221,7 @@ export function handleCreateVersion(rootDir: string, body: unknown): HandlerResu
       return err(
         500,
         `cannot save: blog file missing at ${blogFile}. ` +
-        `Scaffold the post with /editorial-draft before saving edits.`,
+        `Scaffold the post with /editorial-outline or /editorial-draft before saving edits.`,
       );
     }
     writeFileSync(blogFile, d.afterMarkdown, 'utf-8');

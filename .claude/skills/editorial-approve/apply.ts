@@ -218,6 +218,9 @@ function applyShortform(
 function main(): void {
   const args = parseArgs(process.argv.slice(2));
   const rootDir = process.cwd();
+  // /editorial-approve is terminal for longform and shortform only.
+  // Outline approvals go through /editorial-outline-approve, which
+  // advances the calendar Outlining → Drafting instead of finalizing.
   const contentKind = args.platform ? 'shortform' : 'longform';
 
   const fetched = handleGetWorkflow(rootDir, {

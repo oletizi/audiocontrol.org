@@ -53,6 +53,7 @@ export function assertSite(value: string | undefined | null): Site {
 export const STAGES = [
   'Ideas',
   'Planned',
+  'Outlining',
   'Drafting',
   'Review',
   'Published',

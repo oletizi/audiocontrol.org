@@ -73,6 +73,10 @@ export function scaffoldBlogPost(
     '',
     `# ${entry.title}`,
     '',
+    '## Outline',
+    '',
+    '<!-- Outline the shape of the article here before drafting the body. -->',
+    '',
     '<!-- Write your post here -->',
     '',
   ].join('\n');

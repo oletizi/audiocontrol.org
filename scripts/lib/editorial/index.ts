@@ -32,6 +32,7 @@ export {
   addEntry,
   addDistribution,
   planEntry,
+  outlineEntry,
   draftEntry,
   publishEntry,
   findEntry,
