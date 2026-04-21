@@ -150,7 +150,6 @@
     cancelable: boolean;
     onCancel?: () => void;
     tickHandle: number | null;
-    summaryHandle: number | null;
   }
 
   let run: RunState | null = null;
@@ -319,7 +318,6 @@
         cancelable: opts.cancelable !== false,
         onCancel: opts.onCancel,
         tickHandle: null,
-        summaryHandle: null,
       };
 
       renderActive();
@@ -424,6 +422,16 @@
   };
 
   window.studioTape = api;
+
+  // On page navigation (SPA nav or close), stop the tick loop and clear
+  // any pending summary timer so a torn-down mount doesn't keep ticking
+  // against a stale DOM element. `pagehide` fires on both navigations
+  // and tab close; bfcache-friendly (doesn't block the cache like
+  // `beforeunload` does).
+  window.addEventListener('pagehide', () => {
+    stopTick();
+    clearSummaryTimer();
+  });
 </script>
 
 <style is:global>

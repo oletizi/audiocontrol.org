@@ -81,9 +81,25 @@ const timeLabel = timestamp.toLocaleString('en-US', {
 const cardTargetHsl = site === 'editorialcontrol' ? '74 82% 58%' : '35 95% 62%';
 const durMs = entry.durationMs ?? 0;
 
+function attrEscape(s: string): string {
+  // Values flow into option value="..." attributes and visible text.
+  // Escape both the attribute-quoting character and the HTML-context
+  // specials so an unexpected string in a filter or preset field
+  // can't break out of either.
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 function selectOptions(values: string[], selected: string): string {
+  const sel = attrEscape(selected);
   return values
-    .map((v) => `<option value="${v}"${v === selected ? ' selected' : ''}>${v}</option>`)
+    .map((v) => {
+      const esc = attrEscape(v);
+      return `<option value="${esc}"${esc === sel ? ' selected' : ''}>${esc}</option>`;
+    })
     .join('');
 }
 ---
