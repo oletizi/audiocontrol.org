@@ -8,6 +8,7 @@ import {
   type DraftVersion,
   type DraftWorkflowItem,
 } from '../../../../../../scripts/lib/editorial-review/index.js';
+import { isSite } from '../../../../../../scripts/lib/editorial/index.js';
 
 if (import.meta.env.PROD) {
   return new Response('Not Found', { status: 404 });
@@ -16,11 +17,20 @@ if (import.meta.env.PROD) {
 const { slug } = Astro.params;
 const versionParam = Astro.url.searchParams.get('v');
 
-const SITE = 'editorialcontrol';
+// Which site's calendar to look up the workflow against. The studio
+// passes it explicitly via `?site=<site>` when deep-linking; default to
+// editorialcontrol (the dev host) for bare URLs. The draft always
+// renders inside editorialcontrol's BlogLayout — importing the
+// audiocontrol layout from here would tangle two sites' global style
+// graphs. It's a compromise worth noting: the operator sees an
+// audiocontrol draft in editorialcontrol chrome. The review UI still
+// works; the published render is the source of truth for hat check.
+const rawSite = Astro.url.searchParams.get('site');
+const site = rawSite && isSite(rawSite) ? rawSite : 'editorialcontrol';
 
 const fetched = handleGetWorkflow(process.cwd(), {
   id: null,
-  site: SITE,
+  site,
   slug: slug ?? null,
   contentKind: 'longform',
   platform: null,
@@ -34,10 +44,23 @@ let renderedHtml = '';
 let fm: Record<string, string> = {};
 let errorMessage: string | null = null;
 
-if (fetched.status === 200) {
-  const body = fetched.body as { workflow: DraftWorkflowItem; versions: DraftVersion[] };
-  workflow = body.workflow;
-  versions = body.versions;
+// `handleGetWorkflow` returns `body: unknown`; narrow it through the
+// discriminated response shape rather than coercing with `as`.
+function isSuccessBody(body: unknown): body is { workflow: DraftWorkflowItem; versions: DraftVersion[] } {
+  if (typeof body !== 'object' || body === null) return false;
+  return 'workflow' in body && 'versions' in body;
+}
+function errorFromBody(body: unknown): string {
+  if (typeof body === 'object' && body !== null) {
+    const value = Reflect.get(body, 'error');
+    if (typeof value === 'string') return value;
+  }
+  return 'unknown error';
+}
+
+if (fetched.status === 200 && isSuccessBody(fetched.body)) {
+  workflow = fetched.body.workflow;
+  versions = fetched.body.versions;
 
   const requested = versionParam ? parseInt(versionParam, 10) : workflow.currentVersion;
   currentVersion = versions.find(v => v.version === requested) ?? versions[versions.length - 1];
@@ -49,7 +72,7 @@ if (fetched.status === 200) {
     renderedHtml = await render.renderMarkdownToHtml(parsed.body);
   }
 } else {
-  errorMessage = (fetched.body as { error: string }).error;
+  errorMessage = errorFromBody(fetched.body);
 }
 
 const draftState = workflow && currentVersion
@@ -73,7 +96,7 @@ function stateLabel(state?: string): string {
       <p><strong>Slug:</strong> <code>{slug}</code></p>
       <p>{errorMessage}</p>
       <p>Start one with:</p>
-      <p><code>/editorial-draft-review --site {SITE} {slug}</code></p>
+      <p><code>/editorial-draft-review --site {site} {slug}</code></p>
       <p style="margin-top: 2rem;"><a href="/dev/editorial-studio">← back to the studio</a></p>
     </div>
   </div>
@@ -90,9 +113,9 @@ function stateLabel(state?: string): string {
       socialImage: fm.socialImage,
     }}
   >
-    <div data-review-ui="longform">
+    <div data-review-ui="longform" class="er-review-shell">
       <div class="er-draft-frame">
-        <div id="draft-body" data-draft-body set:html={renderedHtml}></div>
+        <div id="draft-body" data-draft-body title="Double-click to edit · select text to leave a margin note" set:html={renderedHtml}></div>
         <div class="er-edit-mode" data-edit-toolbar hidden>
           <textarea id="draft-edit" data-draft-edit></textarea>
           <div class="er-edit-actions">
@@ -102,12 +125,7 @@ function stateLabel(state?: string): string {
           </div>
         </div>
       </div>
-    </div>
-  </BlogLayout>
-)}
 
-{!errorMessage && (
-  <div data-review-ui="longform">
     <div class="er-strip">
       <span class="er-strip-galley">Galley <em>№ {currentVersion?.version}</em></span>
       <span class="er-strip-slug">{workflow?.site} / {workflow?.slug}</span>
@@ -127,6 +145,7 @@ function stateLabel(state?: string): string {
         <span class={`er-stamp er-stamp-big er-stamp-${workflow?.state}`} data-state-label>
           {stateLabel(workflow?.state)}
         </span>
+        <span class="er-strip-hint" aria-hidden="true">select text to mark · double-click to edit · <kbd>?</kbd> for shortcuts</span>
       </span>
       <span class="er-strip-right">
         <button class="er-btn er-btn-small" data-action="toggle-edit" type="button">Edit</button>
@@ -196,7 +215,8 @@ function stateLabel(state?: string): string {
       <div class="er-shortcuts-panel">
         <h2>Keyboard</h2>
         <dl>
-          <dt><kbd>e</kbd></dt><dd>toggle edit mode</dd>
+          <dt><kbd>e</kbd> / dbl-click</dt><dd>toggle edit mode</dd>
+          <dt>select text</dt><dd>leave a margin note</dd>
           <dt><kbd>a</kbd></dt><dd>approve</dd>
           <dt><kbd>i</kbd></dt><dd>iterate</dd>
           <dt><kbd>r</kbd></dt><dd>reject</dd>
@@ -220,5 +240,6 @@ function stateLabel(state?: string): string {
     <script>
       import '../../../../../shared/editorial-review-client.ts';
     </script>
-  </div>
+    </div>
+  </BlogLayout>
 )}

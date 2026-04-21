@@ -833,3 +833,54 @@ No new user-invocable skills in this phase. `/editorial-review-help` and `/edito
 - [x] `npx vitest run` — all pre-existing tests pass (2 s330 failures unrelated to this branch); new tests for `handleDraftStart`, `handlePublish`, and the migration script all green
 - [x] Manual end-to-end: scaffolding and publish flow exercised via studio UI buttons; shortform matrix + copy commands verified
 - [x] Journal migration: exercised against fresh repo (receipt written, subsequent runs no-op); pipeline/history records serialize + deserialize identically
+
+### Phase 15: Review-UI fixes, dblclick-to-edit, the Manual, multi-site consolidation
+
+**Deliverable:** Four in-flight commits on `feature/editorial-calendar` atop the merged Phase 14: the longform review UI now actually works end-to-end, the rendered draft accepts a double-click to enter edit mode, a Compositor's Manual lives at `/dev/editorial-help`, and the editorial dev routes have been consolidated to a single multi-site studio hosted on editorialcontrol.
+
+**Motivation:** Phase 14 shipped a structurally broken longform review (strip + sidebar + modal + client script rendering outside `</html>` because of a two-sibling Astro template). User reported "couldn't edit or comment" and "big gaps between text blocks"; root cause was the document structure plus a missing `.hidden { display: none }` rule. Also: the two-site lockstep pattern duplicated ~1,750 lines across byte-identical dev routes. User asked for a single multi-site studio; that refactor also kills the duplication.
+
+#### 15a. Longform review UI — make edit + comment actually work
+
+- [x] Move all review chrome (strip, sidebar, modal, toast, shortcuts overlay, poll indicator, `#draft-state` JSON, client-module import) INSIDE the `BlogLayout` slot so the client script actually attaches.
+- [x] Add `#draft-body.hidden { display: none }` — without it `.hidden` is a no-op and the textarea renders 6000px below the fold.
+- [x] Neutralize editorialcontrol's drop-cap leak onto the margin-notes sidebar (`!important` override scoped to `.er-review-shell`).
+- [x] Auto-scroll the textarea into view on edit-enter + focus it; `scroll-margin-top: 5rem` so it clears the fixed strip.
+- [x] Tighten review-mode prose rhythm (h2 3rem → 1.75rem, p 1.25rem → 0.9rem) so the view is dense without losing hierarchy.
+- [x] Add a strip hint ("select text to mark · double-click to edit · ? for shortcuts") for discoverability.
+
+**Acceptance:** clicking Edit hides the rendered draft and shows the textarea focused and in view; selecting text in the draft raises the Mark button and submitting saves a comment that highlights on reload. Verified end-to-end via Playwright.
+
+#### 15b. Double-click to edit
+
+- [x] `dblclick` on `#draft-body` fires `enterEdit()`; guarded against dbl-clicking an existing highlight (reserved for comment navigation).
+- [x] Clears the browser-generated word selection on entry so the Mark button doesn't race with the textarea.
+- [x] `cursor: text` + native `title` tooltip on the draft body for discoverability.
+- [x] Shortcuts overlay row for `e` / dbl-click toggling edit mode.
+
+#### 15c. The Compositor's Manual
+
+- [x] `/dev/editorial-help` on editorialcontrol — a dev-only help page in the press-check desk voice.
+- [x] Six sections: (I) the two state machines as typographic diagrams, (II) three tracks (longform/shortform/distribution), (III) alphabetised skill catalogue with kind stamps, (IV) studio map, (V) worked run-through, (VI) reference card.
+- [x] `src/shared/editorial-help.css` companion stylesheet (`body[data-review-ui="manual"]` scope).
+- [x] Linked from the studio masthead in red-pencil.
+
+#### 15d. Multi-site consolidation
+
+- [x] Studio reads every site's calendar and workflow; per-row site badge (AC / EC) and `data-site` on every action button.
+- [x] Site chip strip in the filter bar (all / ac / ec); filter also scopes the shortform coverage matrix.
+- [x] `editorial-studio-client.ts` reads site from `data-site` on the clicked button rather than a page-wide marker; site-chip handler added to `initFilter`.
+- [x] Shortform review page reads every site's open shortforms; per-card site badge.
+- [x] Longform review accepts `?site=<site>` query param (default editorialcontrol); renders in editorialcontrol's BlogLayout regardless to avoid cross-site style-graph tangle.
+- [x] Help page drops the `SITE` constant; imprint says "audiocontrol.org · editorialcontrol.org".
+- [x] Delete audiocontrol's duplicate dev routes and API endpoints (1,752 lines removed).
+- [x] `.er-row-site` badge rule promoted to `editorial-review.css` so shortform + longform inherit it.
+
+**Acceptance:** running `npm run dev:editorialcontrol`, `/dev/editorial-studio` shows entries from both sites; clicking the AC chip narrows to audiocontrol-only rows; scaffold / publish buttons POST with the correct site; `/dev/editorial-review/<slug>?site=<site>` looks up the right workflow. Audiocontrol dev server no longer has editorial routes (by design).
+
+#### Verification
+
+- [x] `npm run build` clean on both sites
+- [x] `npx vitest run` — 224 tests pass (2 pre-existing network-integration failures unrelated)
+- [x] Live verification: edit toggle, text-select → Mark → modal → submit → highlight on reload, dblclick → edit mode, site chip filter, per-site action routing all exercised via Playwright
+- [x] Net −1,644 lines of duplicated code removed

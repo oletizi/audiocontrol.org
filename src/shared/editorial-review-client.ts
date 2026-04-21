@@ -299,6 +299,10 @@ export function initEditorialReview(): void {
     toggleBtn.textContent = 'View';
     editing = true;
     updateSaveState();
+    // Scroll the textarea into view — BlogLayout header and feature
+    // image otherwise keep it below the fold on first click.
+    draftEdit.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    draftEdit.focus({ preventScroll: true });
   }
 
   function exitEdit(): void {
@@ -318,6 +322,21 @@ export function initEditorialReview(): void {
   toggleBtn.addEventListener('click', () => { if (editing) { exitEdit(); } else { enterEdit(); } });
   cancelEditBtn.addEventListener('click', exitEdit);
   draftEdit.addEventListener('input', updateSaveState);
+
+  // Double-click anywhere in the rendered draft enters edit mode. This
+  // mirrors the comment gesture (select → Mark) with its own shape so
+  // the operator doesn't have to reach for the top strip. Ignore
+  // double-clicks inside highlight marks so we don't steal the
+  // annotation scroll-to behavior that click handlers attach later.
+  draftBody.addEventListener('dblclick', (ev) => {
+    if (editing) return;
+    const target = ev.target;
+    if (target instanceof HTMLElement && target.closest('mark.draft-comment-highlight')) return;
+    // Clear the double-click text selection the browser made on the way in
+    // — otherwise the Mark button reappears alongside the textarea.
+    window.getSelection()?.removeAllRanges();
+    enterEdit();
+  });
 
   saveVersionBtn.addEventListener('click', async () => {
     if (saveVersionBtn.disabled) return;

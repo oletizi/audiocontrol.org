@@ -13,11 +13,13 @@ import {
 import { readCalendar } from '../../../../../scripts/lib/editorial/calendar.js';
 import {
   PLATFORMS,
+  SITES,
   STAGES,
   effectiveContentType,
   hasRepoContent,
   type CalendarEntry,
   type Platform,
+  type Site,
   type Stage,
 } from '../../../../../scripts/lib/editorial/types.js';
 
@@ -25,24 +27,41 @@ if (import.meta.env.PROD) {
   return new Response('Not Found', { status: 404 });
 }
 
-const SITE = 'editorialcontrol';
+// Cross-site studio: read every site's calendar, and index entries by
+// their (site, slug) pair. The UI carries a site chip strip so the
+// operator can filter; every row and action button carries `data-site`
+// so the client knows which calendar to POST against.
+interface SitedEntry {
+  site: Site;
+  entry: CalendarEntry;
+}
+interface SitedDistribution {
+  site: Site;
+  platform: string;
+  slug: string;
+  shortform: boolean;
+}
 
-const workflows = readWorkflows(process.cwd()).filter(w => w.site === SITE);
+const calendarEntries: SitedEntry[] = [];
+const distributions: SitedDistribution[] = [];
+for (const site of SITES) {
+  try {
+    const cal = readCalendar(process.cwd(), site);
+    for (const entry of cal.entries) calendarEntries.push({ site, entry });
+    for (const d of cal.distributions) {
+      distributions.push({ site, platform: d.platform, slug: d.slug, shortform: d.shortform ?? false });
+    }
+  } catch (e) {
+    console.error(`[editorial-studio] failed to read calendar for ${site}:`, e);
+  }
+}
+
+const workflows = readWorkflows(process.cwd());
 const approved = workflows.filter(w => w.state === 'approved');
 const terminal = workflows
   .filter(w => w.state === 'applied' || w.state === 'cancelled')
   .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
   .slice(0, 10);
-
-let calendarEntries: CalendarEntry[] = [];
-let distributions: ReturnType<typeof readCalendar>['distributions'] = [];
-try {
-  const cal = readCalendar(process.cwd(), SITE);
-  calendarEntries = cal.entries;
-  distributions = cal.distributions;
-} catch (e) {
-  console.error('[editorial-studio] failed to read calendar:', e);
-}
 
 // Shortform coverage matrix: which Published entries have shortform copy
 // on each platform. Used by the "Short form" panel below Published.
@@ -51,47 +70,55 @@ const PLATFORMS_ORDER = ['reddit', 'linkedin', 'youtube', 'instagram'] as const 
 function isPlatform(value: string): value is Platform {
   return (PLATFORMS as readonly string[]).includes(value);
 }
+// Keyed by `${site}::${slug}` so two sites can legitimately use the same
+// slug without their shortform coverage entangling.
 const shortformCoverage = new Map<string, Set<Platform>>();
+function covKey(site: Site, slug: string): string { return `${site}::${slug}`; }
 for (const d of distributions) {
   if (!d.shortform) continue;
   if (!isPlatform(d.platform)) continue;
-  const set = shortformCoverage.get(d.slug) ?? new Set<Platform>();
+  const key = covKey(d.site, d.slug);
+  const set = shortformCoverage.get(key) ?? new Set<Platform>();
   set.add(d.platform);
-  shortformCoverage.set(d.slug, set);
+  shortformCoverage.set(key, set);
 }
 // Sort published entries by datePublished descending for the matrix.
 const publishedBlogEntries = calendarEntries
-  .filter(e => e.stage === 'Published' && effectiveContentType(e) === 'blog')
-  .sort((a, b) => (b.datePublished ?? '').localeCompare(a.datePublished ?? ''));
+  .filter(({ entry }) => entry.stage === 'Published' && effectiveContentType(entry) === 'blog')
+  .sort((a, b) => (b.entry.datePublished ?? '').localeCompare(a.entry.datePublished ?? ''));
 
-// Index active workflows by slug for fast per-entry lookup.
-const activeWorkflowsBySlug = new Map<string, DraftWorkflowItem[]>();
+// Index active workflows by (site, slug) for fast per-entry lookup.
+const activeWorkflowsBySitedSlug = new Map<string, DraftWorkflowItem[]>();
 for (const w of workflows) {
   if (w.state === 'applied' || w.state === 'cancelled') continue;
-  const list = activeWorkflowsBySlug.get(w.slug) ?? [];
+  const key = covKey(w.site, w.slug);
+  const list = activeWorkflowsBySitedSlug.get(key) ?? [];
   list.push(w);
-  activeWorkflowsBySlug.set(w.slug, list);
+  activeWorkflowsBySitedSlug.set(key, list);
 }
 
-function longformWorkflow(slug: string): DraftWorkflowItem | undefined {
-  return activeWorkflowsBySlug.get(slug)?.find(w => w.contentKind === 'longform');
+function longformWorkflow(site: Site, slug: string): DraftWorkflowItem | undefined {
+  return activeWorkflowsBySitedSlug.get(covKey(site, slug))?.find(w => w.contentKind === 'longform');
 }
 
-function entryHasFile(entry: CalendarEntry): boolean {
+function entryHasFile(site: Site, entry: CalendarEntry): boolean {
   if (!hasRepoContent(effectiveContentType(entry))) return false;
   const path = join(
     process.cwd(),
-    'src', 'sites', SITE, 'pages', 'blog', entry.slug, 'index.md',
+    'src', 'sites', site, 'pages', 'blog', entry.slug, 'index.md',
   );
   return existsSync(path);
 }
 
-// Group entries by stage (preserve stage order).
-const entriesByStage = new Map<Stage, CalendarEntry[]>();
+// Group entries by stage (preserve stage order). Each entry keeps its site tag.
+const entriesByStage = new Map<Stage, SitedEntry[]>();
 for (const stage of STAGES) entriesByStage.set(stage, []);
-for (const e of calendarEntries) entriesByStage.get(e.stage)?.push(e);
+for (const e of calendarEntries) entriesByStage.get(e.entry.stage)?.push(e);
 
-const report = buildReport(process.cwd(), { site: SITE });
+// Voice-drift report: aggregate across all sites. Skip the site filter so
+// the signal reflects the whole pipeline; the operator can still run
+// /editorial-review-report --site <site> in Claude Code for a per-site view.
+const report = buildReport(process.cwd(), {});
 const totalTerminal = report.all.approvedCount + report.all.cancelledCount;
 const hasEnoughSignal = totalTerminal >= 5;
 const topTwo = report.topCategories.filter(c => c.count > 0).slice(0, 2);
@@ -121,7 +148,12 @@ function workflowLink(w: DraftWorkflowItem): string {
   if (w.contentKind === 'shortform') {
     return `/dev/editorial-review-shortform?focus=${w.id}#workflow-${w.id}`;
   }
-  return `/dev/editorial-review/${w.slug}`;
+  return `/dev/editorial-review/${w.slug}?site=${w.site}`;
+}
+
+// Short, mono site label shown on each row and card.
+function siteLabel(site: Site): string {
+  return site === 'audiocontrol' ? 'AC' : 'EC';
 }
 
 function stateLabel(state: string): string {
@@ -143,7 +175,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Editorial Studio — {SITE} — dev</title>
+  <title>Editorial Studio — all sites — dev</title>
 </head>
 <body data-review-ui="studio">
   <header class="er-masthead">
@@ -154,14 +186,14 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
       Editorial <em>Studio</em>
     </h1>
     <p class="er-masthead-deck">
-      {SITE}.org &nbsp;·&nbsp; backstage of the desk
+      Both sites &nbsp;·&nbsp; backstage of the desk &nbsp;·&nbsp; <a href="/dev/editorial-help" style="color: var(--er-red-pencil);">the manual</a>
     </p>
     <div class="er-masthead-meta">
       <span>{issueDate}</span>
       <span class="sep">·</span>
       <span>{calendarEntries.length} on the calendar</span>
       <span class="sep">·</span>
-      <span>{activeWorkflowsBySlug.size} in review</span>
+      <span>{activeWorkflowsBySitedSlug.size} in review</span>
       <span class="sep">·</span>
       <span>{approved.length} awaiting press</span>
     </div>
@@ -177,7 +209,15 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
         autocomplete="off"
       />
 
-      <span class="er-filter-label" style="margin-left: auto;">Stage</span>
+      <span class="er-filter-label" style="margin-left: 1rem;">Site</span>
+      <div class="er-chips" role="tablist">
+        <button class="er-chip" aria-pressed="true" data-site-chip="all">all</button>
+        {SITES.map(s => (
+          <button class="er-chip" data-site-chip={s}>{siteLabel(s).toLowerCase()}</button>
+        ))}
+      </div>
+
+      <span class="er-filter-label" style="margin-left: 1rem;">Stage</span>
       <div class="er-chips" role="tablist">
         <button class="er-chip" aria-pressed="true" data-stage-chip="all">all</button>
         {STAGES.map(s => (
@@ -207,25 +247,28 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                   {stage === 'Published' && 'No published posts yet.'}
                 </div>
               ) : (
-                stageEntries.map((entry, i) => {
+                stageEntries.map(({ site, entry }, i) => {
                   const kind = effectiveContentType(entry);
-                  const hasFile = entryHasFile(entry);
-                  const wf = longformWorkflow(entry.slug);
+                  const hasFile = entryHasFile(site, entry);
+                  const wf = longformWorkflow(site, entry.slug);
                   const search = [
                     entry.slug,
                     entry.title,
                     (entry.targetKeywords ?? []).join(' '),
                     kind,
+                    site,
                   ].join(' ').toLowerCase();
                   return (
                     <div
                       class="er-calendar-row"
                       data-stage={stage}
+                      data-site={site}
                       data-slug={entry.slug}
                       data-search={search}
                     >
                       <span class="er-row-num">№ {String(i + 1).padStart(2, '0')}</span>
                       <div class="er-calendar-body">
+                        <span class={`er-row-site er-row-site--${site}`} title={`${site}.org`}>{siteLabel(site)}</span>
                         <span class="er-row-slug">
                           {wf ? (
                             <a href={workflowLink(wf)}>{entry.slug}</a>
@@ -265,7 +308,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                           <button
                             class="er-btn er-btn-small er-copy-btn"
                             type="button"
-                            data-copy={`/editorial-plan --site ${SITE} ${entry.slug}`}
+                            data-copy={`/editorial-plan --site ${site} ${entry.slug}`}
                             title="copy command"
                           >plan →</button>
                         )}
@@ -274,6 +317,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                             class="er-btn er-btn-small er-btn-primary"
                             type="button"
                             data-action="scaffold-draft"
+                            data-site={site}
                             data-slug={entry.slug}
                           >scaffold →</button>
                         )}
@@ -281,14 +325,14 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                           <button
                             class="er-btn er-btn-small er-copy-btn"
                             type="button"
-                            data-copy={`/editorial-draft --site ${SITE} ${entry.slug}`}
+                            data-copy={`/editorial-draft --site ${site} ${entry.slug}`}
                           >copy /draft</button>
                         )}
                         {(stage === 'Drafting' || stage === 'Review') && !wf && (
                           <button
                             class="er-btn er-btn-small er-copy-btn"
                             type="button"
-                            data-copy={`/editorial-draft-review --site ${SITE} ${entry.slug}`}
+                            data-copy={`/editorial-draft-review --site ${site} ${entry.slug}`}
                           >copy /review</button>
                         )}
                         {(stage === 'Drafting' || stage === 'Review') && (
@@ -296,6 +340,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                             class="er-btn er-btn-small er-btn-approve"
                             type="button"
                             data-action="mark-published"
+                            data-site={site}
                             data-slug={entry.slug}
                             title="flip to Published + set date"
                           >publish →</button>
@@ -304,7 +349,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                           <button
                             class="er-btn er-btn-small er-copy-btn"
                             type="button"
-                            data-copy={`/editorial-draft-review --site ${SITE} ${entry.slug}`}
+                            data-copy={`/editorial-draft-review --site ${site} ${entry.slug}`}
                             title="re-review a published post"
                           >re-review</button>
                         )}
@@ -333,11 +378,14 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                 </tr>
               </thead>
               <tbody>
-                {publishedBlogEntries.map(entry => {
-                  const covered = shortformCoverage.get(entry.slug) ?? new Set();
+                {publishedBlogEntries.map(({ site, entry }) => {
+                  const covered = shortformCoverage.get(covKey(site, entry.slug)) ?? new Set();
                   return (
-                    <tr>
-                      <th scope="row" class="er-sf-slug">{entry.slug}</th>
+                    <tr data-site={site}>
+                      <th scope="row" class="er-sf-slug">
+                        <span class={`er-row-site er-row-site--${site}`} title={`${site}.org`}>{siteLabel(site)}</span>
+                        {entry.slug}
+                      </th>
                       {PLATFORMS_ORDER.map(p => {
                         const has = covered.has(p);
                         return (
@@ -348,7 +396,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                               <button
                                 class="er-copy-btn er-sf-draft-btn"
                                 type="button"
-                                data-copy={`/editorial-shortform-draft --site ${SITE} ${entry.slug} ${p}`}
+                                data-copy={`/editorial-shortform-draft --site ${site} ${entry.slug} ${p}`}
                                 title={`copy /editorial-shortform-draft for ${p}`}
                               >draft</button>
                             )}
@@ -370,8 +418,9 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
               <span class="count">№ {approved.length}</span>
             </h2>
             {approved.map(w => (
-              <a class="er-row" href={workflowLink(w)} data-slug={w.slug} data-state={w.state}>
+              <a class="er-row" href={workflowLink(w)} data-slug={w.slug} data-site={w.site} data-state={w.state}>
                 <span class="er-row-num">→</span>
+                <span class={`er-row-site er-row-site--${w.site}`} title={`${w.site}.org`}>{siteLabel(w.site)}</span>
                 <span class="er-row-slug">{w.slug}</span>
                 <span class="er-row-kind">
                   {w.contentKind}
@@ -383,7 +432,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                 <span class="er-row-ts">v{w.currentVersion}</span>
                 <span class="er-row-hint">
                   Run · <code>
-                    /editorial-approve --site {SITE} {w.slug}
+                    /editorial-approve --site {w.site} {w.slug}
                     {w.contentKind === 'shortform' && w.platform ? ` --platform ${w.platform}${w.channel ? ` --channel ${w.channel}` : ''}` : ''}
                   </code>
                 </span>
@@ -399,8 +448,9 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
               <span class="count">last {terminal.length}</span>
             </h2>
             {terminal.map(w => (
-              <div class="er-row" data-state={w.state}>
+              <div class="er-row" data-state={w.state} data-site={w.site}>
                 <span class="er-row-num">—</span>
+                <span class={`er-row-site er-row-site--${w.site}`} title={`${w.site}.org`}>{siteLabel(w.site)}</span>
                 <span class="er-row-slug" style="color: var(--er-ink-soft);">{w.slug}</span>
                 <span class="er-row-kind">
                   {w.contentKind}
@@ -432,7 +482,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
               )}
               <div style="margin-top: var(--er-space-2); font-family: var(--er-font-mono); font-size: 0.68rem; color: var(--er-faded); letter-spacing: 0.05em;">
                 from {report.all.approvedCount} approved · {report.all.cancelledCount} cancelled<br />
-                <code style="margin-top: 0.25rem; display: inline-block;">/editorial-review-report --site {SITE}</code>
+                <code style="margin-top: 0.25rem; display: inline-block;">/editorial-review-report --site &lt;site&gt;</code>
               </div>
             </>
           ) : (
@@ -451,7 +501,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
             Agent-drafted. Run in Claude Code:
           </p>
           <code style="display: block; font-size: 0.72rem; padding: var(--er-space-1) var(--er-space-2); word-break: break-all; background: var(--er-paper-2);">
-            /editorial-shortform-draft --site {SITE} &lt;slug&gt; &lt;platform&gt; [channel]
+            /editorial-shortform-draft --site &lt;site&gt; &lt;slug&gt; &lt;platform&gt; [channel]
           </code>
           <p style="margin-top: var(--er-space-2); font-family: var(--er-font-display);">
             <a href="/dev/editorial-review-shortform">Go to the shortform desk →</a>
@@ -464,10 +514,6 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
   <div class="er-toast" data-toast hidden></div>
   <div class="er-poll-indicator" data-poll>auto-refresh · 10s</div>
 
-  <span data-site-marker hidden id="__site" data-site={SITE}></span>
-  <script is:inline>
-    document.body.dataset.site = document.getElementById('__site').dataset.site;
-  </script>
   <script>
     import '../../../../shared/editorial-studio-client.ts';
   </script>

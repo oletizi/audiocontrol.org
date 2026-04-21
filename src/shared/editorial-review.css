@@ -704,7 +704,32 @@ body:has([data-review-ui="longform"] .er-strip) { padding-top: 3.2rem; }
   text-transform: uppercase;
 }
 
-.er-strip-center { margin-left: auto; margin-right: auto; }
+.er-strip-center {
+  margin-left: auto;
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--er-space-2);
+}
+.er-strip-hint {
+  font-family: var(--er-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--er-faded);
+  text-transform: lowercase;
+}
+.er-strip-hint kbd {
+  font-family: var(--er-font-mono);
+  font-size: 0.7rem;
+  padding: 0.05rem 0.3rem;
+  border: 1px solid var(--er-faded-2);
+  border-radius: 2px;
+  color: var(--er-ink-soft);
+  background: var(--er-paper);
+}
+@media (max-width: 900px) {
+  .er-strip-hint { display: none; }
+}
 .er-strip-right { margin-left: auto; display: flex; gap: var(--er-space-1); flex-wrap: wrap; }
 
 .er-strip-versions {
@@ -820,6 +845,73 @@ body:has([data-review-ui="longform"] .er-strip) { padding-top: 3.2rem; }
   position: relative;
 }
 
+/* Per-row site badge. Two letters (AC / EC) so the operator can scan a
+ * mixed-site list without reading slugs. Colour differs per site so the
+ * signal is pre-linguistic. Shared across studio, shortform, longform —
+ * scoped under `[data-review-ui]` so the rule honours this file's
+ * documented scoping invariant (see header comment, line 6–9). */
+[data-review-ui] .er-row-site {
+  display: inline-block;
+  font-family: var(--er-font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  margin-right: 0.45rem;
+  vertical-align: 1px;
+  line-height: 1;
+  font-weight: 500;
+}
+[data-review-ui] .er-row-site--audiocontrol    { color: var(--er-proof-blue); }
+[data-review-ui] .er-row-site--editorialcontrol { color: var(--er-red-pencil); }
+
+/* When the operator flips to edit mode the client toggles `.hidden` on
+ * #draft-body. Without this rule it stays visible and the textarea
+ * renders below a 5000+ px tall hidden-in-name-only element. */
+#draft-body.hidden { display: none; }
+
+/* Signal that the rendered draft is interactive — the client attaches a
+ * double-click → edit-mode handler. Keep the `text` cursor within
+ * paragraphs (so selection-to-comment still feels natural), and show
+ * the native tooltip on hover so the gesture is discoverable. */
+.er-review-shell #draft-body {
+  cursor: text;
+}
+.er-review-shell #draft-body[title]:hover {
+  /* the browser renders the title attribute as a tooltip automatically */
+}
+
+/* Reading-mode overrides for the review view.
+ * The host BlogLayouts on both sites optimize for published reading (drop
+ * caps on editorialcontrol, large 2.75–3rem h2 top margins on both).
+ * In review mode the operator wants density and a clean signal for where
+ * to select text, so suppress the drop cap and tighten the heading rhythm.
+ * Scoped to the review-shell so we don't leak into real blog pages. */
+.er-review-shell #draft-body :is(p, h1, h2, h3, h4, h5, h6):first-child {
+  margin-top: 0;
+}
+/* Neutralize the editorialcontrol drop cap anywhere inside the review
+ * shell. The host `.essay-body :global(p:first-of-type:first-letter)`
+ * rule compiles to a scoped selector with specificity (0,3,2); the cascade
+ * winner at equal specificity is whichever is declared later, which tends
+ * to be the host. `!important` is used sparingly and intentionally here
+ * because the host styles are deliberate for published reading and we're
+ * opting out for the review view only. Without this, the first paragraph
+ * of any sidebar/panel gets a giant floated letter (the "M" on Margin Notes). */
+.er-review-shell p::first-letter {
+  float: none !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+  font-weight: inherit !important;
+  color: inherit !important;
+}
+.er-review-shell #draft-body h2 { margin-top: 1.75rem; }
+.er-review-shell #draft-body h3 { margin-top: 1.25rem; }
+.er-review-shell #draft-body p  { margin-bottom: 0.9rem; }
+
 /* Selection highlights within the draft body */
 #draft-body .draft-comment-highlight,
 [data-review-ui="longform"] .draft-comment-highlight {
@@ -872,6 +964,9 @@ body:has([data-review-ui="longform"] .er-strip) { padding-top: 3.2rem; }
   background: var(--er-paper);
   border: var(--er-rule-thin);
   color: var(--er-ink);
+  /* Clears the fixed-position strip when scrollIntoView places the
+   * textarea at the top of the viewport. */
+  scroll-margin-top: 5rem;
   resize: vertical;
   border-radius: 2px;
 }
