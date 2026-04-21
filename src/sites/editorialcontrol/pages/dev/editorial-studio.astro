@@ -106,7 +106,7 @@ function entryBodyState(site: Site, entry: CalendarEntry): BodyState {
   if (!hasRepoContent(effectiveContentType(entry))) return 'missing';
   const path = join(
     process.cwd(),
-    'src', 'sites', site, 'pages', 'blog', entry.slug, 'index.md',
+    'src', 'sites', site, 'content', 'blog', `${entry.slug}.md`,
   );
   return bodyState(path);
 }

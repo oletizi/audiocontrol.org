@@ -926,3 +926,81 @@ No new user-invocable skills in this phase. `/editorial-review-help` and `/edito
 - [x] 232 tests pass (9 new `bodyState` tests + 2 pre-existing network-integration failures unrelated).
 - [x] Drove the full pipeline: `/editorial-add` → `/editorial-plan` → Scaffold button (studio) → `/editorial-draft` → `/editorial-draft-review` → review page rendering the drafted dispatch with all four sites of review UI working (Edit toggle, margin-click / pencil-click Mark, selection highlight, iterate/approve buttons).
 - [x] Session content extractor: 2 sessions encrypted, decrypt round-trip verified on one file.
+
+### Phase 17: Content collections + draft prod gate + outline stage
+
+**Deliverable:** Three reviewable commits that (a) migrate blog articles from file-based routing to Astro content collections, (b) add a `state: draft | published` frontmatter field that gates production rendering while keeping dev unchanged, and (c) introduce a new `Outlining` calendar stage with an outline-review sub-workflow, all applied recursively to the SSOT invariant established in Phase 16.
+
+**Motivation:** The Phase 16 drive-through surfaced two architectural gaps that only became visible once the pipeline was exercised end-to-end.
+
+1. **No outline phase.** The pipeline goes straight from a planned brief to a fully-drafted first version. Real editorial teams outline first; the operator reviews the shape before the agent invests in prose. Without this step, iteration burns tokens on structural problems that a 30-second outline review would have caught.
+2. **No draft/publish gate.** Any in-flight article in `src/sites/<site>/pages/blog/<slug>/` is visible on production the moment it's built. The SSOT invariant says disk IS the article — which means the article file exists from scaffold time forward, long before it's ready for the world.
+
+The user also raised a data-ownership question applying the SSOT invariant recursively: if the article file owns the article's content, should it also own the article's lifecycle state? The agreed answer: **split ownership by who writes most often.** Workflow state (churn-heavy, machine-owned) stays in the journal. A single `state: draft | published` field (rarely written, human-owned at publish time) moves to frontmatter as the production-render gate. Dek ownership passes from calendar to `index.md` frontmatter at scaffold time (calendar flushes once, then frontmatter is authoritative).
+
+File-based routing can't conditionally skip pages, so the gate requires content collections: `src/sites/<site>/content/blog/<slug>/index.md` plus a dynamic `[slug].astro` route whose `getStaticPaths` filters on `state` (in prod) or passes everything (in dev). This is the Astro-native shape blogs "should have had from the beginning."
+
+#### 17a. Content collections migration
+
+- [ ] Add `src/sites/<site>/content/config.ts` (×2 sites) with a Zod schema for the blog collection. Schema mirrors current frontmatter (title, description, date, datePublished, dateModified, author, optional feature-image fields) plus `state: z.enum(['draft', 'published']).default('draft')`.
+- [ ] Move every `src/sites/<site>/pages/blog/<slug>/index.md` → `src/sites/<site>/content/blog/<slug>/index.md`. Keep the directory shape so co-located images (`images/...`) resolve with their existing relative imports.
+- [ ] Add `src/sites/<site>/pages/blog/[slug].astro` (×2 sites) — dynamic route. `getStaticPaths` returns all entries in the `blog` collection with `params.slug`. The component renders via `<Content />` from `entry.render()` wrapped in `BlogLayout`.
+- [ ] Drop obsolete `layout:` frontmatter lines from every migrated article (Astro content collections don't use the frontmatter `layout` mechanism).
+- [ ] Update `src/sites/<site>/pages/blog/index.astro` to use `getCollection('blog')` instead of `Astro.glob()` / `import.meta.glob()`.
+- [ ] Backfill `state` in frontmatter for every existing article: merged/published posts get `state: published`; the in-flight `evolution-by-artificial-selection-for-prompt-generation` on editorialcontrol gets `state: draft`.
+- [ ] Update every path reference in helper scripts and skills: `scripts/lib/editorial/scaffold.ts`, `scripts/lib/editorial/body-state.ts`, `scripts/lib/editorial-review/handlers.ts`, `.claude/skills/editorial-draft-review/enqueue.ts`, `.claude/skills/editorial-iterate/finalize.ts`, `.claude/skills/editorial-approve/apply.ts`, `.claude/skills/editorial-draft/SKILL.md`, `.claude/skills/editorial-draft-review/SKILL.md`, feature-image generator refs, sitemap/customPages config in `astro.config.mjs`.
+- [ ] Update test fixtures in `test/editorial-review/*.test.ts` and `test/editorial/body-state.test.ts` to scaffold blog files under the new `content/blog/` path.
+- [ ] Update `scaffoldBlogPost()` to write under `content/blog/` and include `state: 'draft'` in the frontmatter it generates.
+
+**Acceptance criteria — 17a:**
+
+- [ ] `npm run build` succeeds on both sites with all existing articles rendering at their existing URLs.
+- [ ] `npm test` passes (vitest suite adjusted for new paths).
+- [ ] Feature image generation still locates source articles via the new content collection path.
+- [ ] Dev server renders the in-flight draft at `/blog/evolution-by-artificial-selection-for-prompt-generation` on both sites.
+- [ ] No URL change for any shipped article (the dynamic `[slug]` route preserves `/blog/<slug>/`).
+
+#### 17b. Draft prod gate
+
+- [ ] `getStaticPaths` in `[slug].astro` filters by `state`:
+  ```ts
+  const entries = await getCollection('blog', ({ data }) =>
+    import.meta.env.PROD ? data.state === 'published' : true
+  );
+  ```
+- [ ] Blog index page (`pages/blog/index.astro`) applies the same env-gated filter so drafts don't appear in the listing in prod.
+- [ ] Sitemap config in `astro.config.mjs` — verify the `@astrojs/sitemap` integration only sees the built pages. Because `getStaticPaths` omits drafts in prod, they're auto-excluded from the sitemap.
+- [ ] Feature-image OG generation for drafts still works in dev (needed for review UI previews) but prod build skips drafts naturally.
+
+**Acceptance criteria — 17b:**
+
+- [ ] `npm run dev` renders both draft and published articles.
+- [ ] `npm run build` produces zero HTML files for draft articles; curl against the built output for a draft slug returns a 404 (or no file).
+- [ ] Blog index in built prod output excludes drafts; blog index in dev includes them.
+- [ ] Sitemap in the prod build excludes draft slugs.
+- [ ] Review UI at `/dev/editorial-review/<slug>` still works for draft articles (dev-only, unchanged).
+
+#### 17c. Outline stage + backfill
+
+- [ ] Add `'Outlining'` to the `STAGES` array in `scripts/lib/editorial/types.ts`, inserted between `'Planned'` and `'Drafting'`. Update the markdown calendar parser/writer to round-trip the new stage's table.
+- [ ] Extend the `contentKind` union on `DraftWorkflowItem` to include `'outline'` (join `'longform' | 'shortform'`). Update discriminant usage in handlers and skills.
+- [ ] New skill `/editorial-outline` — loads the voice skill, reads the calendar brief, appends a `## Outline` body section to `index.md` under the scaffolded `# <title>` heading, transitions calendar stage to `Outlining`, enqueues an outline review workflow in `open` via `createWorkflow({ contentKind: 'outline' })`.
+- [ ] New skill `/editorial-outline-approve` (helper: `.claude/skills/editorial-outline-approve/apply.ts`) — advances calendar stage `Outlining` → `Drafting` in one click. Does not write the draft; that's the job of `/editorial-draft`, which now preserves the approved outline in the body during drafting.
+- [ ] `/editorial-iterate` branches on `workflow.contentKind`: for `'outline'`, finalize snapshots the updated outline section. For `'longform'`, behavior is unchanged.
+- [ ] `/editorial-approve` refuses (or no-ops) for `contentKind: 'outline'` — outline approval is a one-click advance (17c), not the terminal write step.
+- [ ] Studio row display: new column or pill indicating contentKind so the operator can see at a glance which workflows are outline-vs-longform.
+- [ ] Backfill: add a `## Outline` section to `evolution-by-artificial-selection-for-prompt-generation/index.md`, rewind calendar entry from `Drafting` → `Outlining`, create an outline review workflow in state `iterating`.
+
+**Acceptance criteria — 17c:**
+
+- [ ] A Planned entry can be advanced to Outlining via `/editorial-outline <slug>`, produces a `## Outline` section on disk, and creates a workflow with `contentKind: 'outline'`.
+- [ ] The operator can iterate on the outline via the existing review UI — margin notes, Save, Iterate all work end-to-end because contentKind branching is invisible to the UI layer.
+- [ ] Approving the outline (via `/editorial-outline-approve`) advances the calendar to Drafting; disk is unchanged except for the calendar file.
+- [ ] `/editorial-draft` run on an entry in Drafting with an existing `## Outline` section writes the article body but leaves the outline section intact (agent can consult it while drafting).
+- [ ] The evolution dispatch shows up in the studio as an outline-in-iteration, with the rest of the pipeline state (current version, annotations) preserved.
+
+#### Open questions — 17
+
+- Should the outline section be stripped from the article on publish, preserved as a commented-out block, or kept as an authored section? (Proposed: **preserve inline as-authored** for the first pass. Operators who want it gone can strip manually; we can add an auto-strip later if it becomes a pattern.)
+- Does the outline workflow need its own list view in the studio, or does the existing unified list with a contentKind pill cover it? (Proposed: **unified list with pill** — avoids multiplying surfaces. Revisit if outline reviews get lost.)
+- Should there be an `Outline Approved` explicit sub-stage, or is the Outlining → Drafting transition sufficient signal? (Proposed: **just Drafting** — the outline is approved when the workflow moves to Drafting; a separate "outline approved" stage would be redundant with the calendar stage transition.)

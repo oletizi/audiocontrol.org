@@ -66,7 +66,7 @@ function parseArgs(argv: readonly string[]): Args {
 }
 
 function blogFilePath(rootDir: string, site: Site, slug: string): string {
-  return join(rootDir, 'src', 'sites', site, 'pages', 'blog', slug, 'index.md');
+  return join(rootDir, 'src', 'sites', site, 'content', 'blog', `${slug}.md`);
 }
 
 function isSuccessBody(

@@ -171,9 +171,9 @@ describe('handleDraftStart', () => {
   });
 
   it('returns 409 when the blog file already exists on disk', () => {
-    const blogDir = join(root, 'src', 'sites', SITE, 'pages', 'blog', 'test-post');
+    const blogDir = join(root, 'src', 'sites', SITE, 'content', 'blog');
     mkdirSync(blogDir, { recursive: true });
-    writeFileSync(join(blogDir, 'index.md'), 'pre-existing content', 'utf-8');
+    writeFileSync(join(blogDir, 'test-post.md'), 'pre-existing content', 'utf-8');
 
     const result = handleDraftStart(root, {
       site: SITE,
@@ -184,9 +184,9 @@ describe('handleDraftStart', () => {
 
   it('does not mutate the calendar when scaffold fails', () => {
     const calendarBefore = readFileSync(calendarPath(root, SITE), 'utf-8');
-    const blogDir = join(root, 'src', 'sites', SITE, 'pages', 'blog', 'test-post');
+    const blogDir = join(root, 'src', 'sites', SITE, 'content', 'blog');
     mkdirSync(blogDir, { recursive: true });
-    writeFileSync(join(blogDir, 'index.md'), 'pre-existing content', 'utf-8');
+    writeFileSync(join(blogDir, 'test-post.md'), 'pre-existing content', 'utf-8');
 
     const result = handleDraftStart(root, {
       site: SITE,

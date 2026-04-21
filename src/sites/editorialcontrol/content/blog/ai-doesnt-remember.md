@@ -1,5 +1,4 @@
 ---
-layout: ../../../layouts/BlogLayout.astro
 title: "AI Doesn't Remember"
 description: "Brand consistency is an in-process problem. On the in-process infrastructure that keeps AI-assisted content from drifting off-brand across a hundred independent sessions."
 date: "April 2026"
@@ -9,6 +8,7 @@ author: "Orion Letizi"
 tags: ["AI", "Automation", "Design", "Workflow"]
 image: "/images/blog/ai-doesnt-remember/feature-filtered.png"
 socialImage: "/images/blog/ai-doesnt-remember/feature-og.png"
+state: published
 ---
 
 # Your Brand Survives the First Generation. Does It Survive the Hundredth?

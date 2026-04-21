@@ -1,5 +1,4 @@
 ---
-layout: ../../../layouts/BlogLayout.astro
 title: "Instructions Are Not Enough: What 2,400 Sessions Taught Us About AI Agent Workflow"
 description: "Telling an AI agent what to do is easy. Getting it to reliably follow process requires something structural — skills, session journals, and correction-driven guardrails."
 date: "April 2026"
@@ -9,6 +8,7 @@ author: "Orion Letizi"
 image: "/images/blog/what-2400-session-taught-us-about-agent-workflow/feature-filtered.png"
 socialImage: "/images/blog/what-2400-session-taught-us-about-agent-workflow/feature-og.png"
 tags: ["AI", "Claude", "Workflow", "Process"]
+state: published
 ---
 # Instructions Are Not Enough: What 2,400 Sessions Taught Us About AI Agent Workflow
 

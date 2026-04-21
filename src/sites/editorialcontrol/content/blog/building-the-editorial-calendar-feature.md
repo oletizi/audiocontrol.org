@@ -1,5 +1,4 @@
 ---
-layout: ../../../layouts/BlogLayout.astro
 title: "Your Content Workflow Is Already Obsolete. Your AI Agent Is the Replacement."
 description: "AI in content marketing is table stakes; most workflows using it aren't fast or flexible enough to keep up. The third option: stop treating AI as a feature bolted onto your workflow and start treating the agent as the workflow. An editorial calendar built on top of a coding agent (Claude Code, Codex, Cursor, any of them), Markdown files, and a weekend of work."
 date: "April 2026"
@@ -7,6 +6,7 @@ datePublished: "2026-04-18"
 dateModified: "2026-04-18"
 author: "Orion Letizi"
 tags: ["AI agents", "Editorial", "Workflow", "Claude"]
+state: published
 ---
 
 # Your Content Workflow Is Already Obsolete. Your AI Agent Is the Replacement.

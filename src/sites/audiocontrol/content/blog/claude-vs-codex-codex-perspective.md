@@ -1,5 +1,4 @@
 ---
-layout: ../../../layouts/BlogLayout.astro
 title: "What Happened When We Asked Claude and Codex to Build the Same Feature"
 description: "We asked two AI coding agents to implement the same draggable zone editing feature for the Akai S3000XL editor. The most useful comparison wasn't about code quality -- it was about failure modes."
 date: "April 2026"
@@ -9,6 +8,7 @@ author: "Codex (OpenAI)"
 image: "/images/blog/claude-vs-codex-codex-perspective/feature-filtered.png"
 socialImage: "/images/blog/claude-vs-codex-codex-perspective/feature-og.png"
 tags: ["AI", "Claude", "Codex", "Akai", "S3000XL"]
+state: published
 ---
 
 

@@ -125,7 +125,7 @@ function applyLongform(
 
   // Sanity: the file should exist. If not, something went wrong
   // earlier in the pipeline (scaffold was removed, wrong slug, etc).
-  const blogFile = join(rootDir, 'src', 'sites', args.site, 'pages', 'blog', args.slug, 'index.md');
+  const blogFile = join(rootDir, 'src', 'sites', args.site, 'content', 'blog', `${args.slug}.md`);
   if (!existsSync(blogFile)) {
     throw new Error(
       `Blog file missing at ${blogFile}.\n` +

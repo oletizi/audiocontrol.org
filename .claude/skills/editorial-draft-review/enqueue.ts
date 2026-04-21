@@ -2,7 +2,7 @@
 /*
  * enqueue.ts — helper for the /editorial-draft-review skill.
  *
- * Reads the blog markdown at src/sites/<site>/pages/blog/<slug>/index.md
+ * Reads the blog markdown at src/sites/<site>/content/blog/<slug>.md
  * and creates a longform review workflow in state `open`. The creation
  * is idempotent on (site, slug, contentKind): if a non-terminal workflow
  * already matches, the existing one is returned and we report it.
@@ -58,35 +58,29 @@ function parseArgs(argv: readonly string[]): Args {
   return { site: assertSite(site), slug };
 }
 
-function blogDir(rootDir: string, site: Site, slug: string): string {
-  return join(rootDir, 'src', 'sites', site, 'pages', 'blog', slug);
+function blogFilePath(rootDir: string, site: Site, slug: string): string {
+  return join(rootDir, 'src', 'sites', site, 'content', 'blog', `${slug}.md`);
 }
 
 function listSiblingSlugs(rootDir: string, site: Site): string[] {
-  const base = join(rootDir, 'src', 'sites', site, 'pages', 'blog');
+  const base = join(rootDir, 'src', 'sites', site, 'content', 'blog');
   if (!existsSync(base)) return [];
-  return readdirSync(base).filter((name) => {
-    const p = join(base, name);
-    try {
-      return statSync(p).isDirectory() && existsSync(join(p, 'index.md'));
-    } catch {
-      return false;
-    }
-  });
+  return readdirSync(base)
+    .filter((name) => name.endsWith('.md'))
+    .map((name) => name.replace(/\.md$/, ''));
 }
 
 function main(): void {
   const args = parseArgs(process.argv.slice(2));
   const rootDir = process.cwd();
-  const dir = blogDir(rootDir, args.site, args.slug);
-  const file = join(dir, 'index.md');
+  const file = blogFilePath(rootDir, args.site, args.slug);
 
   if (!existsSync(file)) {
     const siblings = listSiblingSlugs(rootDir, args.site);
     const list = siblings.length > 0 ? siblings.map((s) => `  - ${s}`).join('\n') : '  (no posts yet)';
     throw new Error(
       `no blog markdown at ${file}\n` +
-      `Expected scaffold under src/sites/${args.site}/pages/blog/${args.slug}/.\n` +
+      `Expected scaffold under src/sites/${args.site}/content/blog/${args.slug}.md.\n` +
       `Existing slugs on ${args.site}:\n${list}\n` +
       `Run /editorial-draft --site ${args.site} ${args.slug} (or click Scaffold in the studio) to create it.`,
     );

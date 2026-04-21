@@ -1,5 +1,4 @@
 ---
-layout: ../../../layouts/BlogLayout.astro
 title: "SCSI Over WiFi: Talking to Vintage Hardware from Your Phone"
 description: "An open-source Raspberry Pi bridge that lets you send SCSI commands to vintage samplers and computers over HTTP and WebSocket -- no SCSI card required."
 date: "April 2026"
@@ -8,6 +7,7 @@ dateModified: "2026-04-07"
 author: "Orion Letizi"
 image: "/images/scsi-over-wifi.png"
 tags: ["SCSI", "Raspberry Pi", "Open Source", "PiSCSI"]
+state: published
 ---
 
 # SCSI Over WiFi: Talking to Vintage Hardware from Your Phone

@@ -1,5 +1,4 @@
 ---
-layout: ../../../layouts/BlogLayout.astro
 title: "Reverse-Engineering the Akai S3000XL MIDI-over-SCSI Protocol: An Odyssey"
 description: "How a failed attempt to run Akai's MESA II in a Mac OS 9 emulator led us through 38 disproven theories in five days of intense debugging, and ultimately to a standalone 68k emulator that cracked the protocol in four hours."
 date: "April 2026"
@@ -9,6 +8,7 @@ author: "Orion Letizi"
 image: "/images/blog/reverse-engineering-akai-s3000xl-midi-over-scsi/feature-filtered.png"
 socialImage: "/images/blog/reverse-engineering-akai-s3000xl-midi-over-scsi/feature-og.png"
 tags: ["Akai", "S3000XL", "SCSI", "Reverse Engineering"]
+state: published
 ---
 
 # Reverse-Engineering the Akai S3000XL MIDI-over-SCSI Protocol

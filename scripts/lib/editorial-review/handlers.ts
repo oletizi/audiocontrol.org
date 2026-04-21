@@ -203,19 +203,19 @@ export function handleCreateVersion(rootDir: string, body: unknown): HandlerResu
   // article. The journal stores versioned snapshots for history; disk
   // is canonical. Every path that creates a new version must write
   // disk first, then snapshot to the journal. For longform, that's
-  // `src/sites/<site>/pages/blog/<slug>/index.md`. For shortform there
-  // is no separate file — the workflow's currentVersion markdown IS
-  // the working copy. See `/editorial-approve` for the apply step.
+  // the content-collection file at `src/sites/<site>/content/blog/<slug>.md`.
+  // For shortform there is no separate file — the workflow's
+  // currentVersion markdown IS the working copy. See
+  // `/editorial-approve` for the apply step.
   if (workflow.contentKind === 'longform') {
     const blogFile = join(
       rootDir,
       'src',
       'sites',
       workflow.site,
-      'pages',
+      'content',
       'blog',
-      workflow.slug,
-      'index.md',
+      `${workflow.slug}.md`,
     );
     if (!existsSync(blogFile)) {
       return err(
@@ -248,7 +248,7 @@ interface StartLongformBody {
  * Blog-post slugs are restricted to the URL-safe kebab-case shape
  * also used by `/editorial-add` / `/editorial-plan`. This rejects
  * path-traversal attempts (`../foo`, `foo/bar`) and other characters
- * that would escape the expected `src/sites/<site>/pages/blog/<slug>/`
+ * that would escape the expected `src/sites/<site>/content/blog/<slug>.md`
  * scope.
  */
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
@@ -271,7 +271,7 @@ export function handleStartLongform(rootDir: string, body: unknown): HandlerResu
     return err(400, `invalid slug: ${b.slug}. Must match ${SLUG_RE}`);
   }
 
-  const path = join(rootDir, 'src', 'sites', b.site, 'pages', 'blog', b.slug, 'index.md');
+  const path = join(rootDir, 'src', 'sites', b.site, 'content', 'blog', `${b.slug}.md`);
   if (!existsSync(path)) {
     return err(404, `blog draft not found at ${path}`);
   }

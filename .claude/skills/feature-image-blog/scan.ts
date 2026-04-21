@@ -116,9 +116,9 @@ function resolvePost(input: string): PostResolution {
     if (!existsSync(abs)) {
       throw new Error(`post not found at ${input}`);
     }
-    const m = input.match(/^src\/sites\/(audiocontrol|editorialcontrol)\/pages\/blog\/([^/]+)\/index\.md$/);
+    const m = input.match(/^src\/sites\/(audiocontrol|editorialcontrol)\/content\/blog\/([^/]+)\.md$/);
     if (!m) {
-      throw new Error(`path doesn't match src/sites/<site>/pages/blog/<slug>/index.md: ${input}`);
+      throw new Error(`path doesn't match src/sites/<site>/content/blog/<slug>.md: ${input}`);
     }
     return { postPath: input, site: m[1] as Site, slug: m[2] };
   }
@@ -126,13 +126,13 @@ function resolvePost(input: string): PostResolution {
   const slug = input;
   const candidates: PostResolution[] = [];
   for (const site of ['audiocontrol', 'editorialcontrol'] as const) {
-    const relPath = `src/sites/${site}/pages/blog/${slug}/index.md`;
+    const relPath = `src/sites/${site}/content/blog/${slug}.md`;
     if (existsSync(join(root, relPath))) {
       candidates.push({ postPath: relPath, site, slug });
     }
   }
   if (candidates.length === 0) {
-    throw new Error(`no post with slug "${slug}" under src/sites/*/pages/blog/`);
+    throw new Error(`no post with slug "${slug}" under src/sites/*/content/blog/`);
   }
   if (candidates.length > 1) {
     throw new Error(

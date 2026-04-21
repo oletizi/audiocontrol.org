@@ -1,6 +1,6 @@
 # Editorial Calendar
 
-**Status:** Phases 1-15 Complete + Phase 16 in flight (pipeline-drive: skill helpers, voice-skill consultation, body-state detection, first drafted dispatch, session-content archive)
+**Status:** Phases 1-15 Complete + Phase 16 in flight (pipeline-drive: skill helpers, voice-skill consultation, body-state detection, first drafted dispatch, session-content archive) + Phase 17 planned (content collections + draft prod gate + outline stage)
 **Feature Branch:** `feature/editorial-calendar`
 **GitHub Issue:** oletizi/audiocontrol.org#29 (parent)
 **Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7), #89 (content edits), #98 (Phases 8-13 editorial-review extension), #101 (editorial-review redesign), #104 (Phase 14 — studio as command center + journal migration), #106 (Phase 15 — UI fixes, dblclick-edit, manual, multi-site consolidation)
@@ -32,6 +32,7 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 14 | Studio as calendar command center + journal migration | Complete (PR #104) |
 | 15 | Review-UI fixes, dblclick-to-edit, manual, multi-site consolidation | Complete (PR #106) |
 | 16 | Pipeline drive-through: skill helpers, voice consultation, body-state gate, session archive | In Flight (unmerged commits) |
+| 17 | Content collections + draft prod gate + outline stage | Planned |
 
 ## Dependencies
 

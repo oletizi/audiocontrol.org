@@ -1,5 +1,4 @@
 ---
-layout: ../../../layouts/BlogLayout.astro
 title: "What's New in the Roland S-330 Web Editor: February 2026"
 description: "Real-time hardware sync, integrated video capture, debug tools, and quality-of-life improvements for the free S-330 sampler editor."
 date: "February 2026"
@@ -7,6 +6,7 @@ datePublished: "2026-02-09"
 dateModified: "2026-02-09"
 author: "Orion Letizi"
 tags: ["Roland", "S-330", "Release"]
+state: published
 ---
 
 # What's New in the S-330 Web Editor

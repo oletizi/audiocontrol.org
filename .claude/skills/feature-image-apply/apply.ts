@@ -113,7 +113,9 @@ function siteFromPostPath(postPath: string): Site {
 }
 
 function slugFromPostPath(postPath: string): string {
-  const match = postPath.match(/pages\/blog\/([^/]+)\/index\.md$/);
+  const match =
+    postPath.match(/content\/blog\/([^/]+)\.md$/) ??
+    postPath.match(/pages\/blog\/([^/]+)\/index\.md$/);
   if (!match) throw new Error(`Cannot infer slug from post path: ${postPath}`);
   return match[1];
 }

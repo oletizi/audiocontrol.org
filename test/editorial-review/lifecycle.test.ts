@@ -28,9 +28,9 @@ let root: string;
 // single-source-of-truth invariant (write-to-disk-then-snapshot) is
 // satisfied for each fixture workflow.
 function seedBlogFile(root: string, site: string, slug: string, md: string): void {
-  const dir = join(root, 'src', 'sites', site, 'pages', 'blog', slug);
+  const dir = join(root, 'src', 'sites', site, 'content', 'blog');
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, 'index.md'), md, 'utf-8');
+  writeFileSync(join(dir, `${slug}.md`), md, 'utf-8');
 }
 
 beforeEach(() => {

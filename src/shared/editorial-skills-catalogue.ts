@@ -75,7 +75,7 @@ export const SKILLS: readonly Skill[] = [
     kind: 'mechanical',
     desc: 'Scaffold the blog post directory + frontmatter from a Planned entry and advance to Drafting.',
     when: 'Ready to begin writing. Can also be triggered from the studio button.',
-    changes: 'Creates src/sites/<site>/pages/blog/<slug>/index.md with frontmatter; calendar stage flips to Drafting.',
+    changes: 'Creates src/sites/<site>/content/blog/<slug>.md with frontmatter (state: draft); calendar stage flips to Drafting.',
     flags: '--site <slug> <slug>',
   },
   {

@@ -22,9 +22,9 @@ beforeEach(() => {
   // handleCreateVersion now enforces the single-source-of-truth
   // invariant and writes new version markdown to the blog file
   // on disk before snapshotting. Tests must scaffold the file.
-  const blogDir = join(root, 'src', 'sites', 'editorialcontrol', 'pages', 'blog', 'test-post');
+  const blogDir = join(root, 'src', 'sites', 'editorialcontrol', 'content', 'blog');
   mkdirSync(blogDir, { recursive: true });
-  writeFileSync(join(blogDir, 'index.md'), 'hello world', 'utf-8');
+  writeFileSync(join(blogDir, 'test-post.md'), 'hello world', 'utf-8');
   const w = createWorkflow(root, {
     site: 'editorialcontrol',
     slug: 'test-post',
@@ -294,9 +294,9 @@ describe('handleDecision', () => {
 
 describe('handleStartLongform', () => {
   function seedBlogFile(site: string, slug: string, content: string): string {
-    const dir = join(root, 'src', 'sites', site, 'pages', 'blog', slug);
+    const dir = join(root, 'src', 'sites', site, 'content', 'blog');
     mkdirSync(dir, { recursive: true });
-    const path = join(dir, 'index.md');
+    const path = join(dir, `${slug}.md`);
     writeFileSync(path, content, 'utf-8');
     return path;
   }
