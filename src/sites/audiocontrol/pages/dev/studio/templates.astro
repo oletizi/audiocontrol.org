@@ -1,0 +1,493 @@
+---
+/*
+ * /dev/studio/templates — the prompt library at first-class size.
+ *
+ * LEFT: filterable + sortable grid of template cards. Each card shows
+ * name, slug, site, preset, tag chips, fitness readout.
+ * RIGHT: detail pane for the selected template — description, full
+ * prompt, lineage (parent + forks), example log entries, fork +
+ * archive actions.
+ *
+ * Dev-only — returns 404 in prod.
+ */
+
+export const prerender = false;
+
+import StudioLayout from '../../../layouts/StudioLayout.astro';
+import { readTemplates, rankTemplates, computeFitness } from '../../../../../../scripts/feature-image/templates.js';
+import { readLog } from '../../../../../../scripts/feature-image/log.js';
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+
+const templates = readTemplates();
+const history = readLog();
+const ranked = rankTemplates(templates, history);
+const fitness = computeFitness(templates, history);
+
+// Collect all tags used across any non-archived template for the filter bar.
+const allTags = new Set<string>();
+for (const t of templates) {
+  if (t.archived) continue;
+  for (const tag of t.tags) allTags.add(tag);
+}
+const tagList = [...allTags].sort();
+
+// Serialize the library for the client. We send the already-ranked data
+// so first paint shows fitness without a round-trip.
+const rankedSerialized = JSON.stringify(
+  ranked.map((t) => ({
+    slug: t.slug,
+    name: t.name,
+    description: t.description,
+    tags: t.tags,
+    prompt: t.prompt,
+    preset: t.preset ?? null,
+    provider: t.provider ?? null,
+    parent: t.parent ?? null,
+    archived: !!t.archived,
+    examples: t.examples,
+    site: t.site ?? null,
+    fitness: {
+      usageCount: t.fitness.usageCount,
+      averageRating: t.fitness.averageRating,
+      recentAverageRating: t.fitness.recentAverageRating,
+      fitness: t.fitness.fitness,
+    },
+  })),
+);
+---
+
+<StudioLayout title="FI · Studio · Templates" activeTab="Templates">
+  <section class="studio-tpl">
+    <header class="studio-tpl__masthead">
+      <span class="studio-kicker">Library · Bank 04</span>
+      <h1 class="studio-tpl__title">Templates</h1>
+      <p class="studio-tpl__lede">
+        The prompt library is the design system under artificial
+        selection. Good templates accumulate ratings and float to the
+        top; poor ones drift down and eventually get archived. Fork,
+        edit, and rerun the ones that earn it.
+      </p>
+    </header>
+
+    <hr class="rule-ticked" />
+
+    <div class="studio-tpl__filterbar">
+      <div class="studio-tpl__filter-group">
+        <span class="studio-label">Site</span>
+        <div class="studio-tpl__chip-row" data-filter-site>
+          <button type="button" class="studio-tpl__chip" data-filter-site-value="" data-active="true">Any</button>
+          <button type="button" class="studio-tpl__chip" data-filter-site-value="audiocontrol">audiocontrol</button>
+          <button type="button" class="studio-tpl__chip" data-filter-site-value="editorialcontrol">editorialcontrol</button>
+        </div>
+      </div>
+
+      {tagList.length > 0 && (
+        <div class="studio-tpl__filter-group">
+          <span class="studio-label">Tag</span>
+          <div class="studio-tpl__chip-row" data-filter-tag>
+            <button type="button" class="studio-tpl__chip" data-filter-tag-value="" data-active="true">Any</button>
+            {tagList.map((tag) => (
+              <button type="button" class="studio-tpl__chip" data-filter-tag-value={tag}>{tag}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div class="studio-tpl__filter-group">
+        <span class="studio-label">Sort</span>
+        <select class="studio-select studio-tpl__sort" data-filter-sort>
+          <option value="fitness" selected>Fitness (best first)</option>
+          <option value="name">Name (A–Z)</option>
+          <option value="recent">Recent activity</option>
+          <option value="usage">Usage count</option>
+        </select>
+      </div>
+
+      <div class="studio-tpl__filter-group">
+        <label class="studio-tpl__archived-toggle">
+          <input type="checkbox" data-filter-archived />
+          <span>Include archived</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="studio-tpl__workbench">
+      <div class="studio-tpl__grid" data-tpl-grid></div>
+      <aside class="studio-tpl__detail" data-tpl-detail>
+        <div class="studio-tpl__detail-empty">
+          <span class="studio-kicker studio-kicker--muted">Select a template</span>
+          <p>Click a card to inspect its prompt, lineage, and examples.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <script define:vars={{ rankedSerialized }}>
+    window.__studioTemplates = JSON.parse(rankedSerialized);
+  </script>
+  <script>
+    import '../../../components/studio/templates-client.ts';
+  </script>
+</StudioLayout>
+
+<style is:global>
+  .studio-tpl {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4.5rem;
+  }
+
+  .studio-tpl__masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .studio-tpl__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 3.25rem);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .studio-tpl__lede {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+    max-width: 44rem;
+    margin: 0;
+  }
+
+  /* ── Filter bar ───────────────────────────────────────────────── */
+  .studio-tpl__filterbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1.25rem;
+    margin: 0.5rem 0 1.5rem;
+    padding: 0.875rem 1rem;
+    background: hsl(var(--studio-surface-1));
+    border: 1px solid hsl(var(--border));
+    border-radius: 1px;
+  }
+
+  .studio-tpl__filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .studio-tpl__chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .studio-tpl__chip {
+    background: hsl(var(--studio-surface-pressed));
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--muted-foreground));
+    padding: 0.25rem 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: color 0.12s, border-color 0.12s, background 0.12s;
+  }
+
+  .studio-tpl__chip:hover {
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border-hover));
+  }
+
+  .studio-tpl__chip[data-active="true"] {
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary) / 0.6);
+    background: hsl(var(--primary) / 0.08);
+    text-shadow: var(--phosphor-glow);
+  }
+
+  .studio-tpl__sort {
+    max-width: 14rem;
+  }
+
+  .studio-tpl__archived-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    padding-top: 1.2rem;
+  }
+
+  /* ── Workbench: grid + detail ─────────────────────────────────── */
+  .studio-tpl__workbench {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 22rem;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 1100px) {
+    .studio-tpl__workbench {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .studio-tpl__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 0.75rem;
+    align-content: start;
+  }
+
+  .studio-tpl__card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.85rem;
+    background: hsl(var(--studio-surface-1));
+    border: 1px solid hsl(var(--border));
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: left;
+    color: hsl(var(--foreground));
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .studio-tpl__card[data-archived="true"] {
+    opacity: 0.55;
+  }
+
+  .studio-tpl__card:hover {
+    border-color: hsl(var(--primary) / 0.55);
+    box-shadow: 0 0 14px hsl(var(--primary) / 0.15);
+  }
+
+  .studio-tpl__card[data-selected="true"] {
+    border-color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.05);
+    box-shadow: 0 0 18px hsl(var(--primary) / 0.2);
+  }
+
+  .studio-tpl__card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .studio-tpl__card-name {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    color: hsl(var(--foreground));
+  }
+
+  .studio-tpl__card-fit {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    color: hsl(var(--primary));
+  }
+
+  .studio-tpl__card-desc {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .studio-tpl__card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .studio-tpl__card-tag {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    color: hsl(var(--muted-foreground));
+    padding: 0.08rem 0.35rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 1px;
+  }
+
+  .studio-tpl__card-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.4rem;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .studio-tpl__card-site {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .studio-tpl__card-slug {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: hsl(var(--primary));
+  }
+
+  .studio-tpl__card--archived-stamp {
+    font-family: var(--font-display);
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--studio-danger));
+    padding: 0.1rem 0.4rem;
+    border: 1px solid hsl(var(--studio-danger) / 0.5);
+    border-radius: 1px;
+  }
+
+  /* ── Detail pane ──────────────────────────────────────────────── */
+  .studio-tpl__detail {
+    position: sticky;
+    top: calc(var(--studio-header-h) + 1.25rem);
+    padding: 1rem;
+    background: hsl(var(--studio-surface-1));
+    border: 1px solid hsl(var(--border));
+    border-radius: 1px;
+    height: fit-content;
+    max-height: calc(100vh - var(--studio-header-h) - 3rem);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .studio-tpl__detail-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+
+  .studio-tpl__detail-empty p {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .studio-tpl__detail-title {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    letter-spacing: 0.04em;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .studio-tpl__detail-slug {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: hsl(var(--primary));
+  }
+
+  .studio-tpl__detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .studio-tpl__detail-desc {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .studio-tpl__detail-prompt {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: hsl(var(--foreground));
+    background: hsl(var(--studio-surface-pressed));
+    padding: 0.75rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 1px;
+    white-space: pre-wrap;
+    max-height: 18rem;
+    overflow-y: auto;
+    margin: 0;
+  }
+
+  .studio-tpl__detail-lineage {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .studio-tpl__detail-kicker {
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .studio-tpl__detail-lineage a {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: hsl(var(--primary));
+    text-decoration: none;
+    border-bottom: 1px solid hsl(var(--primary) / 0.3);
+  }
+
+  .studio-tpl__detail-lineage a:hover {
+    border-bottom-color: hsl(var(--primary));
+    text-shadow: var(--phosphor-glow);
+  }
+
+  .studio-tpl__detail-examples {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .studio-tpl__detail-examples li {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 1px;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .studio-tpl__detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid hsl(var(--border));
+  }
+</style>
