@@ -54,6 +54,7 @@ export function handleAnnotate(rootDir: string, body: unknown): HandlerResult {
         range: d.range,
         text: d.text,
         category: d.category,
+        ...(typeof d.anchor === 'string' ? { anchor: d.anchor } : {}),
       });
       appendAnnotation(rootDir, annotation);
       return ok({ annotation });

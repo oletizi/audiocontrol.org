@@ -51,6 +51,16 @@ export interface CommentAnnotation extends AnnotationBase {
   text: string;
   /** Optional category for Phase 12 aggregation. */
   category?: AnnotationCategory;
+  /**
+   * The displayed text the operator selected when they made the
+   * comment. Captured at creation time against the version's
+   * rendered body. Used on later versions to re-locate the anchor
+   * via `indexOf`: if the quote appears exactly once in the new
+   * version, the comment is rebased; otherwise it's shown as
+   * unresolved-from-v{N}. Optional so pre-rebase annotations still
+   * load; they render as unresolved.
+   */
+  anchor?: string;
 }
 
 export interface EditAnnotation extends AnnotationBase {

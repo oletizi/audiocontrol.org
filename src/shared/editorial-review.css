@@ -877,6 +877,34 @@ body:has([data-review-ui="longform"]) .site-footer {
   color: var(--er-ink);
 }
 
+/* Prior-version comments that survived rebasing. Subtle left-rail
+ * treatment so they read as "carried forward" rather than pristine. */
+.er-marginalia-item--rebased .cat {
+  color: var(--er-red-pencil, var(--er-red-soft));
+}
+.er-marginalia-item--rebased .quote {
+  border-left-color: var(--er-red-pencil, var(--er-red-soft));
+  opacity: 0.88;
+}
+
+/* Unresolved prior-version comments — anchor no longer in the text
+ * (edit removed it or collapsed it). Rendered desaturated and
+ * non-interactive; the operator decides whether to re-anchor
+ * manually or treat it as resolved by the edit. */
+.er-marginalia-item--unresolved {
+  opacity: 0.65;
+  cursor: default;
+}
+.er-marginalia-item--unresolved:hover,
+.er-marginalia-item--unresolved.active {
+  background: transparent;
+}
+.er-marginalia-item--unresolved .quote {
+  font-style: normal;
+  border-left-style: dashed;
+  color: var(--er-faded);
+}
+
 /* Draft body wrapper within BlogLayout */
 .er-draft-frame {
   position: relative;

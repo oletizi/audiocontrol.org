@@ -41,7 +41,24 @@ interface CommentAnnotation {
   text: string;
   category?: string;
   createdAt: string;
+  /** Quote text captured at comment time against the original version. */
+  anchor?: string;
 }
+
+/**
+ * Classification applied to every comment annotation when the page
+ * renders. Determines how the comment shows up in the UI:
+ *   - `current`: anchor belongs to the version being viewed; render
+ *     body highlight + sidebar item like before.
+ *   - `rebased`: anchor appears exactly once in the current body
+ *     text; compute a new range against current text and render the
+ *     highlight + a "from v{N}" pill in the sidebar.
+ *   - `unresolved`: anchor is missing, absent from the current body,
+ *     or appears more than once (ambiguous). Sidebar-only; no body
+ *     highlight; labeled "from v{N} · unresolved" so the operator
+ *     sees the comment and can re-anchor manually if they want.
+ */
+type AnnotationStatus = 'current' | 'rebased' | 'unresolved';
 
 interface DraftState {
   workflow: DraftWorkflow;
@@ -181,26 +198,53 @@ export function initEditorialReview(): void {
 
   // ---- Sidebar rendering ----
 
-  function addSidebarItem(annotation: CommentAnnotation): void {
+  function addSidebarItem(annotation: CommentAnnotation, status: AnnotationStatus): void {
     sidebarEmpty.hidden = true;
     const li = document.createElement('li');
-    li.className = 'er-marginalia-item';
+    li.className = `er-marginalia-item er-marginalia-item--${status}`;
     li.dataset.annotationId = annotation.id;
+    li.dataset.status = status;
+
     const cat = document.createElement('div');
     cat.className = 'cat';
-    cat.textContent = annotation.category || 'other';
+    // Prefix the status for non-current items so the sidebar makes
+    // it unambiguous where the comment came from.
+    if (status === 'rebased') {
+      cat.textContent = `from v${annotation.version} · ${annotation.category || 'other'}`;
+    } else if (status === 'unresolved') {
+      cat.textContent = `from v${annotation.version} · unresolved`;
+    } else {
+      cat.textContent = annotation.category || 'other';
+    }
+
     const quote = document.createElement('div');
     quote.className = 'quote';
-    quote.textContent = extractQuote(annotation.range);
+    // Rebased comments show the anchor text (displayed at the
+    // current, rebased position). Unresolved comments show the
+    // original anchor if we have one; legacy annotations without
+    // anchor say so explicitly rather than rendering a wrong slice.
+    if (status === 'unresolved') {
+      quote.textContent = annotation.anchor
+        ? annotation.anchor
+        : '(legacy comment — no anchor captured)';
+    } else {
+      quote.textContent = extractQuote(annotation.range);
+    }
+
     const text = document.createElement('p');
     text.className = 'note';
     text.textContent = annotation.text;
+
     li.appendChild(cat);
     li.appendChild(quote);
     li.appendChild(text);
-    li.addEventListener('mouseenter', () => setActiveHighlight(annotation.id, true));
-    li.addEventListener('mouseleave', () => setActiveHighlight(annotation.id, false));
-    li.addEventListener('click', () => scrollToHighlight(annotation.id));
+
+    if (status !== 'unresolved') {
+      li.addEventListener('mouseenter', () => setActiveHighlight(annotation.id, true));
+      li.addEventListener('mouseleave', () => setActiveHighlight(annotation.id, false));
+      li.addEventListener('click', () => scrollToHighlight(annotation.id));
+    }
+
     sidebarList.appendChild(li);
     sidebarIndex.set(annotation.id, li);
   }
@@ -305,6 +349,11 @@ export function initEditorialReview(): void {
     if (!pendingRange) { closeModal(); return; }
     const text = textArea.value.trim();
     if (!text) { showToast('Comment text is required', true); return; }
+    // Capture the selected text at comment time so later versions
+    // can try to re-locate the anchor by content. This is the
+    // difference between "margin notes vanish after an edit" and
+    // "margin notes survive edits, possibly with a re-anchor hint."
+    const anchor = extractQuote(pendingRange);
     const payload = {
       type: 'comment',
       workflowId,
@@ -312,6 +361,7 @@ export function initEditorialReview(): void {
       range: pendingRange,
       text,
       category: categorySel.value,
+      anchor,
     };
     try {
       const res = await fetch('/api/dev/editorial-review/annotate', {
@@ -322,7 +372,7 @@ export function initEditorialReview(): void {
       const body = await res.json();
       if (!res.ok) { showToast(`Annotate failed: ${body.error || res.status}`, true); return; }
       wrapRange(body.annotation.range, body.annotation.id);
-      addSidebarItem(body.annotation);
+      addSidebarItem(body.annotation, 'current');
       closeModal();
       showToast('Comment saved');
     } catch (e) {
@@ -332,18 +382,66 @@ export function initEditorialReview(): void {
 
   // ---- Load existing annotations ----
 
+  /**
+   * Try to re-locate a prior-version anchor in the current body.
+   * Returns a current-body range if the anchor appears exactly
+   * once, null otherwise. Missing anchors (legacy annotations)
+   * also return null — those fall through to "unresolved" in the
+   * caller.
+   */
+  function rebaseAnchor(anchor: string | undefined): DraftRange | null {
+    if (!anchor || anchor.length === 0) return null;
+    const text = draftPlainText();
+    const first = text.indexOf(anchor);
+    if (first < 0) return null;
+    const next = text.indexOf(anchor, first + 1);
+    if (next >= 0) return null; // ambiguous — refuse to guess.
+    return { start: first, end: first + anchor.length };
+  }
+
   async function loadAnnotations(): Promise<void> {
     try {
-      const url = `/api/dev/editorial-review/annotations?workflowId=${encodeURIComponent(workflowId)}&version=${versionNum}`;
+      // Omit `version` — the server returns every annotation for the
+      // workflow. The client decides per-annotation how to display
+      // it based on whether it belongs to the current version, can
+      // be rebased, or is unresolved.
+      const url = `/api/dev/editorial-review/annotations?workflowId=${encodeURIComponent(workflowId)}`;
       const res = await fetch(url);
       if (!res.ok) return;
       const body = await res.json();
       const comments: CommentAnnotation[] = (body.annotations || []).filter(
         (a: { type: string }) => a.type === 'comment',
       );
+      // Stable render order: current-version first, then rebased
+      // (by original version desc), then unresolved (by original
+      // version desc). Keeps the natural reading focus on the
+      // version actually under review.
+      const current: CommentAnnotation[] = [];
+      const rebased: { ann: CommentAnnotation; range: DraftRange }[] = [];
+      const unresolved: CommentAnnotation[] = [];
       for (const a of comments) {
+        if (a.version === versionNum) {
+          current.push(a);
+          continue;
+        }
+        const rebasedRange = rebaseAnchor(a.anchor);
+        if (rebasedRange) rebased.push({ ann: a, range: rebasedRange });
+        else unresolved.push(a);
+      }
+      rebased.sort((a, b) => b.ann.version - a.ann.version);
+      unresolved.sort((a, b) => b.version - a.version);
+
+      for (const a of current) {
         wrapRange(a.range, a.id);
-        addSidebarItem(a);
+        addSidebarItem(a, 'current');
+      }
+      for (const r of rebased) {
+        wrapRange(r.range, r.ann.id);
+        addSidebarItem(r.ann, 'rebased');
+      }
+      for (const a of unresolved) {
+        // No body highlight; sidebar-only.
+        addSidebarItem(a, 'unresolved');
       }
     } catch (e) {
       showToast(`Failed to load annotations: ${(e as Error).message}`, true);

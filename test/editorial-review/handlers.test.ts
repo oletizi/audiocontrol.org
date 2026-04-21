@@ -106,6 +106,37 @@ describe('handleAnnotate', () => {
     });
     expect(result.status).toBe(400);
   });
+
+  it('records and round-trips the anchor field on a comment', () => {
+    const anchor = 'hello world';
+    const result = handleAnnotate(root, {
+      type: 'comment',
+      workflowId,
+      version: 1,
+      range: { start: 0, end: 11 },
+      text: 'look at this phrase',
+      category: 'voice-drift',
+      anchor,
+    });
+    expect(result.status).toBe(200);
+    const list = handleListAnnotations(root, { workflowId, version: '1' });
+    const ann = (list.body as { annotations: Array<{ anchor?: string }> }).annotations[0];
+    expect(ann.anchor).toBe(anchor);
+  });
+
+  it('accepts a comment without anchor (legacy) and stores it without one', () => {
+    const result = handleAnnotate(root, {
+      type: 'comment',
+      workflowId,
+      version: 1,
+      range: { start: 0, end: 5 },
+      text: 'no anchor captured',
+    });
+    expect(result.status).toBe(200);
+    const list = handleListAnnotations(root, { workflowId, version: '1' });
+    const ann = (list.body as { annotations: Array<{ anchor?: string }> }).annotations[0];
+    expect(ann.anchor).toBeUndefined();
+  });
 });
 
 describe('handleListAnnotations', () => {
