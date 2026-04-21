@@ -92,7 +92,7 @@ function stateLabel(state?: string): string {
   >
     <div data-review-ui="longform" class="er-review-shell">
       <div class="er-draft-frame">
-        <div id="draft-body" data-draft-body set:html={renderedHtml}></div>
+        <div id="draft-body" data-draft-body title="Double-click to edit · select text to leave a margin note" set:html={renderedHtml}></div>
         <div class="er-edit-mode" data-edit-toolbar hidden>
           <textarea id="draft-edit" data-draft-edit></textarea>
           <div class="er-edit-actions">
@@ -122,7 +122,7 @@ function stateLabel(state?: string): string {
         <span class={`er-stamp er-stamp-big er-stamp-${workflow?.state}`} data-state-label>
           {stateLabel(workflow?.state)}
         </span>
-        <span class="er-strip-hint" aria-hidden="true">select text to mark · <kbd>?</kbd> for shortcuts</span>
+        <span class="er-strip-hint" aria-hidden="true">select text to mark · double-click to edit · <kbd>?</kbd> for shortcuts</span>
       </span>
       <span class="er-strip-right">
         <button class="er-btn er-btn-small" data-action="toggle-edit" type="button">Edit</button>
@@ -192,7 +192,8 @@ function stateLabel(state?: string): string {
       <div class="er-shortcuts-panel">
         <h2>Keyboard</h2>
         <dl>
-          <dt><kbd>e</kbd></dt><dd>toggle edit mode</dd>
+          <dt><kbd>e</kbd> / dbl-click</dt><dd>toggle edit mode</dd>
+          <dt>select text</dt><dd>leave a margin note</dd>
           <dt><kbd>a</kbd></dt><dd>approve</dd>
           <dt><kbd>i</kbd></dt><dd>iterate</dd>
           <dt><kbd>r</kbd></dt><dd>reject</dd>

@@ -850,6 +850,17 @@ body:has([data-review-ui="longform"] .er-strip) { padding-top: 3.2rem; }
  * renders below a 5000+ px tall hidden-in-name-only element. */
 #draft-body.hidden { display: none; }
 
+/* Signal that the rendered draft is interactive — the client attaches a
+ * double-click → edit-mode handler. Keep the `text` cursor within
+ * paragraphs (so selection-to-comment still feels natural), and show
+ * the native tooltip on hover so the gesture is discoverable. */
+.er-review-shell #draft-body {
+  cursor: text;
+}
+.er-review-shell #draft-body[title]:hover {
+  /* the browser renders the title attribute as a tooltip automatically */
+}
+
 /* Reading-mode overrides for the review view.
  * The host BlogLayouts on both sites optimize for published reading (drop
  * caps on editorialcontrol, large 2.75–3rem h2 top margins on both).
