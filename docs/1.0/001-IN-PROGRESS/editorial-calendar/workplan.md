@@ -995,9 +995,34 @@ File-based routing can't conditionally skip pages, so the gate requires content 
 
 - [x] A Planned entry can be advanced to Outlining via `/editorial-outline <slug>`, produces a `## Outline` section on disk, and creates a workflow with `contentKind: 'outline'`.
 - [x] The operator can iterate on the outline via the existing review UI — margin notes, Save, Iterate all work end-to-end because contentKind branching is invisible to the UI layer.
-- [ ] Approving the outline (via `/editorial-outline-approve`) advances the calendar to Drafting; disk is unchanged except for the calendar file.
-- [ ] `/editorial-draft` run on an entry in Drafting with an existing `## Outline` section writes the article body but leaves the outline section intact (agent can consult it while drafting).
+- [x] Approving the outline (via `/editorial-outline-approve`) advances the calendar to Drafting; disk is unchanged except for the calendar file.
+- [x] `/editorial-draft` run on an entry in Drafting with an existing `## Outline` section writes the article body but leaves the outline section intact (agent can consult it while drafting).
 - [x] The evolution dispatch shows up in the studio as an outline-in-iteration, with the rest of the pipeline state (current version, annotations) preserved.
+
+### Phase 17d: Review-UI and studio follow-ons surfaced by the drive-through
+
+**Deliverable:** Ten commits on `feature/editorial-calendar` addressing bugs, UX gaps, and architectural improvements surfaced by driving the evolution dispatch through the newly-shipped Outlining stage.
+
+**Motivation:** Phase 17c shipped the pipeline code but left several UX gaps that only became visible once a real operator used the new stage: no actions in the Outlining studio row, wrong clipboard commands, a deep-link that pointed at the wrong workflow, a quote-offset bug, margin notes disappearing after edits. Each one was a follow-on of Phase 17c; none were worth deferring to a separate phase.
+
+- [x] Studio renders actions for Outlining rows (review outline / iterate outline / approve outline buttons keyed to workflow state).
+- [x] `/dev/editorial-review/[slug]` accepts `?kind=outline` to select the outline workflow; studio's `workflowLink()` emits the param.
+- [x] Iterate and Approve buttons in the review UI emit contentKind-aware commands (`/editorial-iterate --kind outline`, `/editorial-outline-approve`).
+- [x] `extractQuote` aligned with `computeOffsetFromRange`'s walker coordinate space; margin-note quotes no longer drop leading/trailing chars on block-heavy markdown.
+- [x] Comment annotations grow an `anchor?: string` field capturing the quote text at creation time. On later versions, the client rebases comments via `indexOf(anchor)`: if unique in the current body, render as "from v{N}" with highlight at the new position; if missing/ambiguous, render as "from v{N} · unresolved" in the sidebar only.
+- [x] Resolve/re-open as a new `ResolveAnnotation` type (`type: 'resolve'`, `commentId`, `resolved`). Append-only; re-open is a second resolve with `resolved: false`. Live items grow a Resolve button; resolved items archive to a collapsible `Resolved (N) ▾` footer with a Re-open button.
+- [x] `/dev/` index pages per site listing all dev-only surfaces.
+- [x] `← studio` back-link in the review chrome; `← /dev` in the studio masthead. Scoped CSS to beat BlogLayout's prose.css link color.
+- [x] `bodyState` strips the `## Outline` section before classifying — a post with a filled-in outline and a placeholder body correctly reports `placeholder`, so the studio surfaces the `draft body →` action instead of `copy /review`.
+- [x] Full dispatch body drafted (v1) for `evolution-by-artificial-selection-for-prompt-generation`, ~2,000 words against editorialcontrol-voice + dispatch-longform reference.
+
+**Acceptance criteria — 17d:**
+
+- [x] Every new UI affordance built for outline workflows renders correctly for both longform and outline kinds — no regressions.
+- [x] Margin notes survive version bumps: either anchor-rebased (highlight + sidebar) or unresolved (sidebar-only, operator can resolve or re-anchor). Verified on the evolution dispatch across v1-v8.
+- [x] Resolve and Re-open both persist across page reload + version switches.
+- [x] `npm test` passes (248+ tests, 2 pre-existing network-integration failures unrelated).
+- [x] `npm run build` clean on both sites; drafts still excluded from prod.
 
 #### Open questions — 17
 

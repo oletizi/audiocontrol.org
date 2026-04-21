@@ -1,10 +1,10 @@
 # Editorial Calendar
 
-**Status:** Phases 1-15 Complete + Phase 16 in flight (pipeline-drive: skill helpers, voice-skill consultation, body-state detection, first drafted dispatch, session-content archive) + Phase 17 planned (content collections + draft prod gate + outline stage)
+**Status:** Phases 1-15 Complete + Phase 16 in flight (pipeline-drive: skill helpers, voice-skill consultation, body-state detection, first drafted dispatch, session-content archive) + Phase 17 shipped on branch (content collections, draft prod gate, outline stage, margin-note anchor rebasing, resolve/re-open, dev nav, quote-offset fix)
 **Feature Branch:** `feature/editorial-calendar`
 **GitHub Issue:** oletizi/audiocontrol.org#29 (parent)
 **Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7), #89 (content edits), #98 (Phases 8-13 editorial-review extension), #101 (editorial-review redesign), #104 (Phase 14 — studio as command center + journal migration), #106 (Phase 15 — UI fixes, dblclick-edit, manual, multi-site consolidation)
-**Unshipped commits on branch:** 13 (Phase 16 — see workplan)
+**Unshipped commits on branch:** ~27 (Phase 16 + Phase 17 — see workplan)
 
 ## Overview
 
@@ -32,7 +32,7 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 14 | Studio as calendar command center + journal migration | Complete (PR #104) |
 | 15 | Review-UI fixes, dblclick-to-edit, manual, multi-site consolidation | Complete (PR #106) |
 | 16 | Pipeline drive-through: skill helpers, voice consultation, body-state gate, session archive | In Flight (unmerged commits) |
-| 17 | Content collections + draft prod gate + outline stage | In Flight (17a+b committed; 17c code shipped, studio pill + /editorial-draft post-outline refactor deferred) |
+| 17 | Content collections + draft prod gate + outline stage | Complete on branch (17a+b+c) + UX follow-ons (anchor-rebased margin notes, resolve/re-open, /dev navigation, walker-space offset fix, outline-aware body-state) |
 
 ## Dependencies
 

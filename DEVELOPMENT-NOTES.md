@@ -4,6 +4,67 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-21: Editorial Calendar — Phase 17 shipped (content collections, prod gate, outline stage) + 17d UX follow-ons
+
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar
+
+**Goal:** Design and ship the outline phase (Phase 17c) that the Phase-16 drive-through surfaced as missing. Ended up also shipping Phase 17a (content collections migration) and 17b (draft prod gate) in the same session because the architecture branch led there, plus ten UX follow-ons (17d) exposed by driving the new stage end-to-end on the evolution dispatch.
+
+**Accomplished:**
+
+- **Phase 17a — Content collections migration.** Moved all 11 blog articles from `src/sites/<site>/pages/blog/<slug>/index.md` to `src/sites/<site>/content/blog/<slug>.md` with per-site `content.config.ts` + dynamic `[slug].astro` route. Added `state: 'draft' | 'published'` to the schema. Updated every path reference: scaffold, body-state, handlers, enqueue helpers, finalize helpers, apply helpers, feature-image scripts, studio. Tests adjusted. Zero URL regressions. One commit (`c9be0b6`).
+- **Phase 17b — Draft prod gate.** `getStaticPaths` in `[slug].astro` filters by `state` in prod but not dev. Blog index and sitemap auto-exclude drafts. Verified: evolution dispatch (state: draft) is excluded from prod build; dev renders it. Same commit as 17a.
+- **Phase 17c — Outlining stage.** Inserted between Planned and Drafting in STAGES. Added `contentKind: 'outline'` to DraftWorkflowItem. Two new skills + helpers: `/editorial-outline` and `/editorial-outline-approve`. `/editorial-iterate` grew `--kind outline`. Scaffold writes `## Outline` under the H1. Backfilled the evolution dispatch: rewound calendar to Outlining, cancelled prior longform workflow, created outline workflow in iterating. One commit (`b70bb52`).
+- **Baton framing (user's).** Applied SSOT recursively to the new design: workflow state (machine-owned, churn-heavy) stays in the journal; `state: draft | published` (rare writes, human-owned at publish) moves to frontmatter; dek ownership passes from calendar to frontmatter at scaffold time. Framing shaped where each new field lives.
+- **Phase 17d — Drive-through UX follow-ons (10 commits):**
+  - Studio row actions for Outlining (review/iterate/approve buttons keyed to workflow state).
+  - Review page accepts `?kind=outline`; studio's `workflowLink()` emits it.
+  - Iterate/Approve buttons emit contentKind-aware clipboard commands.
+  - `extractQuote` aligned with `computeOffsetFromRange` walker-coordinate space.
+  - **Margin-note anchor rebasing** — new `anchor?: string` field; client re-locates via `indexOf`; renders rebased or unresolved accordingly.
+  - **Resolve/re-open** as append-only `ResolveAnnotation`; collapsible Resolved footer; Re-open is a second resolve with `resolved: false`.
+  - `/dev/` index pages per site.
+  - `← studio` and `← /dev` navigation back-links.
+  - `bodyState` strips `## Outline` before classifying.
+- **Evolution dispatch drive-through.** Outline iterated v1 → v8 against operator margin notes. Outline approved; calendar flipped to Drafting. Full body drafted (~2,000 words) against editorialcontrol-voice + dispatch-longform reference. state: draft keeps it out of prod; bodyState now reports `written`.
+
+**Didn't Work:**
+
+- **First regex attempt at stripping `## Outline`** used `\Z` (end-of-string) — not supported in JavaScript regex. Rewrote line-wise (find header, scan to next H2 or EOF, splice). Multiline + end-of-string lookahead in JS has enough footguns to be worse than a four-line scan.
+- **First iterate pass missed two of four v4 annotations.** Filtered history files by timestamp and the two I missed had earlier timestamps than my threshold. Caught the miss on a re-scan, produced v6 to address them. Don't filter the operator's comments by proxy signals; read the whole set.
+
+**Course Corrections:**
+
+- [PROCESS] Shipped 17c code without updating the studio UI for the new stage. Operator's first screenshot: Outlining row with no actions. Pattern: when adding a new state to a state machine with UI surfaces, update every surface in the same commit.
+- [PROCESS] Review page was hard-coded to `contentKind: 'longform'`. Same class of miss — shipped backend for new contentKind without updating the frontend that reads it.
+- [UX] `← studio` link rendered chartreuse on cream — unreadable. Forgot to scope the CSS rule under `[data-review-ui="longform"]`. BlogLayout's prose.css link color won the specificity fight. Recurring failure mode on this file.
+- [PROCESS] Iterate button's clipboard command didn't include `--kind outline`. Inherited the longform-only assumption from the original implementation.
+- [UX] Operator reported "selected text capture off by a few characters" — `computeOffsetFromRange` walks raw text nodes, `extractQuote` used `innerText` (CSS-collapsed). Different coordinate spaces, subtle drift.
+- [PROCESS] Margin notes disappeared after Save-as-new-version — scoped to version by design, but the UX gave no signal. Fix was architectural (anchor rebasing), not cosmetic. User flagged it; would have been a durable source of anxiety.
+- [PROCESS] `bodyState` didn't know about `## Outline` after Phase 17c. Scaffold writes outline content in Outlining, but the classifier counted it as body prose. Not caught because 17c's tests exercised scaffold shape, not outline-filled + body-empty. Added three new test cases.
+
+**Quantitative:**
+
+- Messages: ~95 user turns.
+- Commits: 15 (c9be0b6, b70bb52, fc4760c, 383ee8f, f01090a, a53f6ab, 24e1e4a, 8799f09, 04cebfc, b698181, 9cfd134, 54cb5a5, 32d2bca, d9f6932, bfbb7af).
+- Corrections: ~7 (5 [PROCESS], 2 [UX]).
+- Tests: 251 passing (4 new bodyState, 3 new handler; 2 pre-existing unrelated failures).
+- Files changed: ~25 source + calendar + journal + article.
+- Dispatch progress: evolution-by-artificial-selection went Planned → Outlining (backfilled) → outline v1–v8 → Drafting → body v1. state: draft; not in prod.
+- Lines of prose: ~2,000 words body + outline.
+
+**Insights:**
+
+- **Baton framing made architectural decisions crisp.** "Workflow state vs content ownership — who holds the baton, and when does it pass?" resolved three ambiguities at once: where `state` lives, who owns the dek, how outline approval propagates. Worth adopting explicitly for similar design work.
+- **Driving the pipeline through a real article surfaces bugs unit tests can't.** Every [PROCESS] correction this session came from the operator using the system. Content collections retrofitted in response to the prod gate; margin-note rebasing designed in response to "the notes disappeared"; studio actions for Outlining surfaced by screenshot.
+- **Append-only event types scale to new state dimensions cleanly.** `ResolveAnnotation` as a new annotation kind (rather than mutating existing comments) slotted into every reader and writer without schema migration. Pattern: new state dimension on an existing entity → consider a new event type before adding mutable fields.
+- **Outline phase fit the review machinery with minimal new code.** `contentKind: 'outline'` + skill pair + existing version-scoped review UI handled everything. Hard part was downstream UI surfaces that didn't know about the new contentKind yet.
+- **Character-offset anchors are fragile; content anchors are robust.** Offset-only (original design) broke on every edit. Adding the quote text as a secondary anchor and `indexOf` in the new version gave us "still applies / no longer applies" without heuristic. Less clever, more durable.
+- **Don't ship a stage without updating every surface that exposes stage.** Phase 17c's weakest moment was between "contentKind: outline shipped" and "studio knows about outline" — a UX gap the operator saw immediately. Surface inventory before shipping state-machine changes.
+
+---
+
 ## 2026-04-20: Editorial Calendar — Phase 16 (pipeline drive-through, first drafted dispatch, session archive)
 ### Feature: editorial-calendar
 ### Worktree: audiocontrol.org-editorial-calendar
