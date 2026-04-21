@@ -19,13 +19,13 @@
 
 ## Outlining
 
-| Slug | Title | Description | Keywords | Topics | Source |
-|------|------|------|------|------|------|
-| evolution-by-artificial-selection-for-prompt-generation | You Don't Need a Better Prompt. You Need Selection Pressure. | The **theory / strategic-framework** half of a pair. Selection pressure as the default workflow posture, with feature-image prompts as the worked example (fitness from user ratings, lineage through forks, fitness×recency weighting). The broader claim: AI agents make selection infrastructure (rating UIs, fitness signals, side-by-side review apps) cheap enough to build weekly, so the operator's skill is noticing where variation + selection can replace engineering. The evolutionary mindset is the skill; the agent is what makes it practical. Pairs with `feature-image-automation-evolution-gallery-claude-code` (the applied half — how the framework plays out in practice); the two should cross-link. Close uses the meta move: this dispatch was itself reframed mid-planning by consulting the `editorialcontrol-voice` skill. | selection pressure workflow, evolutionary mindset AI, artificial selection workflow, feature image generator prompts, feature image prompt library, prompt library evolution, brand consistency AI image generation, AI agent custom software, agent-written review UIs, fitness signals AI workflow, side-by-side review Claude Code, rating UI prompts, prompt lineage forks, population-based prompt search, human-in-the-loop selection | content-marketing, ai-agents, claude, agent-as-workflow | manual |
+*No entries.*
 
 ## Drafting
 
-*No entries.*
+| Slug | Title | Description | Keywords | Topics | Source |
+|------|------|------|------|------|------|
+| evolution-by-artificial-selection-for-prompt-generation | You Don't Need a Better Prompt. You Need Selection Pressure. | The **theory / strategic-framework** half of a pair. Selection pressure as the default workflow posture, with feature-image prompts as the worked example (fitness from user ratings, lineage through forks, fitness×recency weighting). The broader claim: AI agents make selection infrastructure (rating UIs, fitness signals, side-by-side review apps) cheap enough to build weekly, so the operator's skill is noticing where variation + selection can replace engineering. The evolutionary mindset is the skill; the agent is what makes it practical. Pairs with `feature-image-automation-evolution-gallery-claude-code` (the applied half — how the framework plays out in practice); the two should cross-link. Close uses the meta move: this dispatch was itself reframed mid-planning by consulting the `editorialcontrol-voice` skill. | selection pressure workflow, evolutionary mindset AI, artificial selection workflow, feature image generator prompts, feature image prompt library, prompt library evolution, brand consistency AI image generation, AI agent custom software, agent-written review UIs, fitness signals AI workflow, side-by-side review Claude Code, rating UI prompts, prompt lineage forks, population-based prompt search, human-in-the-loop selection | content-marketing, ai-agents, claude, agent-as-workflow | manual |
 
 ## Review
 
