@@ -91,7 +91,7 @@ const publishedBlogEntries = calendarEntries
 const activeWorkflowsBySitedSlug = new Map<string, DraftWorkflowItem[]>();
 for (const w of workflows) {
   if (w.state === 'applied' || w.state === 'cancelled') continue;
-  const key = covKey(w.site as Site, w.slug);
+  const key = covKey(w.site, w.slug);
   const list = activeWorkflowsBySitedSlug.get(key) ?? [];
   list.push(w);
   activeWorkflowsBySitedSlug.set(key, list);
@@ -420,7 +420,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
             {approved.map(w => (
               <a class="er-row" href={workflowLink(w)} data-slug={w.slug} data-site={w.site} data-state={w.state}>
                 <span class="er-row-num">→</span>
-                <span class={`er-row-site er-row-site--${w.site}`} title={`${w.site}.org`}>{siteLabel(w.site as Site)}</span>
+                <span class={`er-row-site er-row-site--${w.site}`} title={`${w.site}.org`}>{siteLabel(w.site)}</span>
                 <span class="er-row-slug">{w.slug}</span>
                 <span class="er-row-kind">
                   {w.contentKind}
@@ -450,7 +450,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
             {terminal.map(w => (
               <div class="er-row" data-state={w.state} data-site={w.site}>
                 <span class="er-row-num">—</span>
-                <span class={`er-row-site er-row-site--${w.site}`} title={`${w.site}.org`}>{siteLabel(w.site as Site)}</span>
+                <span class={`er-row-site er-row-site--${w.site}`} title={`${w.site}.org`}>{siteLabel(w.site)}</span>
                 <span class="er-row-slug" style="color: var(--er-ink-soft);">{w.slug}</span>
                 <span class="er-row-kind">
                   {w.contentKind}

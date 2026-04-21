@@ -847,8 +847,10 @@ body:has([data-review-ui="longform"] .er-strip) { padding-top: 3.2rem; }
 
 /* Per-row site badge. Two letters (AC / EC) so the operator can scan a
  * mixed-site list without reading slugs. Colour differs per site so the
- * signal is pre-linguistic. Shared across studio, shortform, longform. */
-.er-row-site {
+ * signal is pre-linguistic. Shared across studio, shortform, longform —
+ * scoped under `[data-review-ui]` so the rule honours this file's
+ * documented scoping invariant (see header comment, line 6–9). */
+[data-review-ui] .er-row-site {
   display: inline-block;
   font-family: var(--er-font-mono);
   font-size: 0.58rem;
@@ -861,8 +863,8 @@ body:has([data-review-ui="longform"] .er-strip) { padding-top: 3.2rem; }
   line-height: 1;
   font-weight: 500;
 }
-.er-row-site--audiocontrol    { color: var(--er-proof-blue); }
-.er-row-site--editorialcontrol { color: var(--er-red-pencil); }
+[data-review-ui] .er-row-site--audiocontrol    { color: var(--er-proof-blue); }
+[data-review-ui] .er-row-site--editorialcontrol { color: var(--er-red-pencil); }
 
 /* When the operator flips to edit mode the client toggles `.hidden` on
  * #draft-body. Without this rule it stays visible and the textarea
