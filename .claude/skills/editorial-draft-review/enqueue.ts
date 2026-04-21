@@ -21,7 +21,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
 import {
-  appendVersion,
   createWorkflow,
   readVersions,
 } from '../../../scripts/lib/editorial-review/index.js';
@@ -101,7 +100,7 @@ function main(): void {
   // returned. Capture a timestamp BEFORE the call and treat any
   // workflow whose createdAt is at-or-after that moment as fresh.
   const before = Date.now();
-  let workflow = createWorkflow(rootDir, {
+  const workflow = createWorkflow(rootDir, {
     site: args.site,
     slug: args.slug,
     contentKind: 'longform',
@@ -110,25 +109,37 @@ function main(): void {
   });
   const fresh = Date.parse(workflow.createdAt) >= before;
 
-  // If an existing workflow was matched (not freshly created) and its
-  // current version's markdown doesn't match what's on disk now, the
-  // file has moved on since the last enqueue (typical case: scaffold
-  // → enqueue → /editorial-draft wrote the body). Append a new
-  // version so the review UI reflects the current file instead of
-  // the stale placeholder. This is what turns the review page from
-  // "show v1 with placeholder" into "show v2 with real prose."
-  let appended: 'none' | 'resync' = 'none';
+  // If an existing workflow was matched and the file on disk differs
+  // from the workflow's current version, DO NOT silently append disk
+  // as a new version. That was a previous behavior of this helper and
+  // it produced a real bug: the operator's save-as-new-version edit
+  // lived only in the journal (disk wasn't being written by the
+  // review-UI Save handler), and the next resync copied the stale
+  // disk over the operator's edit, obliterating it.
+  //
+  // The single-source-of-truth invariant is: the markdown file on
+  // disk IS the article. The review-UI Save handler now writes to
+  // disk first, then snapshots to the journal, so disk and the
+  // latest version should agree at rest. Divergence here means
+  // either:
+  //
+  //   a) The agent edited disk directly (e.g. via /editorial-iterate
+  //      finalize) but hasn't snapshotted to the journal yet. That's
+  //      legitimate uncommitted work — don't auto-commit it. The
+  //      iterate skill takes care of its own snapshot.
+  //   b) Stale journal from before the SSOT fix. The operator needs
+  //      to reconcile manually.
+  //
+  // Report the divergence; don't fix it.
+  let divergence: { diskLen: number; versionLen: number } | null = null;
   if (!fresh) {
     const versions = readVersions(rootDir, workflow.id);
     const current = versions.find((v) => v.version === workflow.currentVersion);
     if (current && current.markdown !== initialMarkdown) {
-      appendVersion(rootDir, workflow.id, initialMarkdown, 'agent');
-      appended = 'resync';
-      const reRead = readVersions(rootDir, workflow.id);
-      const latest = reRead[reRead.length - 1];
-      if (latest) {
-        workflow = { ...workflow, currentVersion: latest.version, updatedAt: latest.createdAt };
-      }
+      divergence = {
+        diskLen: initialMarkdown.length,
+        versionLen: current.markdown.length,
+      };
     }
   }
 
@@ -137,8 +148,6 @@ function main(): void {
   const lines = [
     fresh
       ? 'Enqueued new review workflow.'
-      : appended === 'resync'
-      ? 'Existing workflow matched; file diverged from last version — appended a new version.'
       : 'Existing review workflow matched; nothing created.',
     `  id      ${workflow.id}`,
     `  site    ${workflow.site}`,
@@ -146,6 +155,24 @@ function main(): void {
     `  state   ${workflow.state}`,
     `  version ${workflow.currentVersion}`,
   ];
+  if (divergence) {
+    lines.push('');
+    lines.push(
+      '⚠  disk differs from the workflow\'s current version.',
+    );
+    lines.push(
+      `   disk length = ${divergence.diskLen}, v${workflow.currentVersion} length = ${divergence.versionLen}.`,
+    );
+    lines.push(
+      '   The file on disk is the source of truth. If this divergence was',
+    );
+    lines.push(
+      '   intentional (agent edits mid-iterate), run /editorial-iterate to',
+    );
+    lines.push(
+      '   snapshot. If unintended, reconcile manually before approving.',
+    );
+  }
   if (body === 'placeholder') {
     lines.push('');
     lines.push('⚠  body is still the scaffold placeholder.');

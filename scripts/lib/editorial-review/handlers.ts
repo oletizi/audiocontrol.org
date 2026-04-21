@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import type { DraftAnnotation, DraftWorkflowState } from './types.js';
 import { SITES, type Site } from '../editorial/types.js';
@@ -198,6 +198,35 @@ export function handleCreateVersion(rootDir: string, body: unknown): HandlerResu
   }
 
   const diff = lineDiff(before.markdown, d.afterMarkdown);
+
+  // Single-source-of-truth invariant: the markdown file on disk IS the
+  // article. The journal stores versioned snapshots for history; disk
+  // is canonical. Every path that creates a new version must write
+  // disk first, then snapshot to the journal. For longform, that's
+  // `src/sites/<site>/pages/blog/<slug>/index.md`. For shortform there
+  // is no separate file — the workflow's currentVersion markdown IS
+  // the working copy. See `/editorial-approve` for the apply step.
+  if (workflow.contentKind === 'longform') {
+    const blogFile = join(
+      rootDir,
+      'src',
+      'sites',
+      workflow.site,
+      'pages',
+      'blog',
+      workflow.slug,
+      'index.md',
+    );
+    if (!existsSync(blogFile)) {
+      return err(
+        500,
+        `cannot save: blog file missing at ${blogFile}. ` +
+        `Scaffold the post with /editorial-draft before saving edits.`,
+      );
+    }
+    writeFileSync(blogFile, d.afterMarkdown, 'utf-8');
+  }
+
   const version = appendVersion(rootDir, d.workflowId, d.afterMarkdown, 'operator');
   const annotation = mintAnnotation({
     type: 'edit',
