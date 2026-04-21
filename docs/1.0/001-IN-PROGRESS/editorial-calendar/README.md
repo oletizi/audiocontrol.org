@@ -1,10 +1,10 @@
 # Editorial Calendar
 
-**Status:** Phases 1-14 Complete + Phase 15 in flight (UI fixes, dblclick-edit, manual, multi-site consolidation)
+**Status:** Phases 1-14 Complete + Phase 15 open as PR #106
 **Feature Branch:** `feature/editorial-calendar`
 **GitHub Issue:** oletizi/audiocontrol.org#29 (parent)
 **Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7), #89 (content edits), #98 (Phases 8-13 editorial-review extension), #101 (editorial-review redesign), #104 (Phase 14 — studio as command center + journal migration)
-**Unshipped commits on branch:** 4 (longform UI fixes, dblclick-to-edit, /dev/editorial-help manual, multi-site consolidation)
+**Open PR:** #106 (Phase 15 — UI fixes, dblclick-edit, manual, multi-site consolidation)
 
 ## Overview
 
@@ -30,7 +30,7 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 12 | Voice-Library Feedback Signal | Complete |
 | 13 | Editorial Studio (unified dashboard) | Complete |
 | 14 | Studio as calendar command center + journal migration | Complete (PR #104) |
-| 15 | Review-UI fixes, dblclick-to-edit, manual, multi-site consolidation | In Flight (unmerged commits) |
+| 15 | Review-UI fixes, dblclick-to-edit, manual, multi-site consolidation | Open (PR #106) |
 
 ## Dependencies
 
