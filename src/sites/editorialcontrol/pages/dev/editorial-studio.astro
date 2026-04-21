@@ -102,6 +102,16 @@ function longformWorkflow(site: Site, slug: string): DraftWorkflowItem | undefin
   return activeWorkflowsBySitedSlug.get(covKey(site, slug))?.find(w => w.contentKind === 'longform');
 }
 
+function outlineWorkflow(site: Site, slug: string): DraftWorkflowItem | undefined {
+  return activeWorkflowsBySitedSlug.get(covKey(site, slug))?.find(w => w.contentKind === 'outline');
+}
+
+/** Whichever workflow is relevant given the entry's calendar stage. */
+function stageWorkflow(site: Site, slug: string, stage: Stage): DraftWorkflowItem | undefined {
+  if (stage === 'Outlining') return outlineWorkflow(site, slug);
+  return longformWorkflow(site, slug);
+}
+
 function entryBodyState(site: Site, entry: CalendarEntry): BodyState {
   if (!hasRepoContent(effectiveContentType(entry))) return 'missing';
   const path = join(
@@ -169,6 +179,7 @@ function stateLabel(state: string): string {
 const STAGE_ORNAMENTS: Record<Stage, string> = {
   Ideas: '◇',
   Planned: '§',
+  Outlining: '⊹',
   Drafting: '✎',
   Review: '※',
   Published: '✓',
@@ -247,6 +258,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                 <div class="er-empty" style="padding: 1rem 0.25rem; font-size: 0.95rem;">
                   {stage === 'Ideas' && 'No open ideas. Run /editorial-add to capture one.'}
                   {stage === 'Planned' && 'Nothing planned. /editorial-plan <slug> to promote an idea.'}
+                  {stage === 'Outlining' && 'Nothing in outlining. /editorial-outline <slug> to start one.'}
                   {stage === 'Drafting' && 'No posts in drafting.'}
                   {stage === 'Review' && 'Nothing in review stage.'}
                   {stage === 'Published' && 'No published posts yet.'}
@@ -257,7 +269,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                   const body = entryBodyState(site, entry);
                   const hasFile = body !== 'missing';
                   const bodyWritten = body === 'written';
-                  const wf = longformWorkflow(site, entry.slug);
+                  const wf = stageWorkflow(site, entry.slug, stage);
                   const search = [
                     entry.slug,
                     entry.title,
@@ -336,9 +348,40 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                           <button
                             class="er-btn er-btn-small er-copy-btn"
                             type="button"
-                            data-copy={`/editorial-draft --site ${site} ${entry.slug}`}
-                            title="the scaffold file exists — /editorial-draft will draft body content"
-                          >copy /draft</button>
+                            data-copy={`/editorial-outline --site ${site} ${entry.slug}`}
+                            title="scaffold file exists — /editorial-outline will sketch the outline"
+                          >copy /outline</button>
+                        )}
+                        {stage === 'Outlining' && wf && wf.state === 'iterating' && (
+                          <button
+                            class="er-btn er-btn-small er-btn-primary er-copy-btn"
+                            type="button"
+                            data-copy={`/editorial-iterate --kind outline --site ${site} ${entry.slug}`}
+                            title="operator clicked Iterate — run this to revise the outline in Claude Code"
+                          >iterate outline →</button>
+                        )}
+                        {stage === 'Outlining' && wf && wf.state === 'approved' && (
+                          <button
+                            class="er-btn er-btn-small er-btn-approve er-copy-btn"
+                            type="button"
+                            data-copy={`/editorial-outline-approve --site ${site} ${entry.slug}`}
+                            title="outline approved — advance to Drafting"
+                          >approve outline →</button>
+                        )}
+                        {stage === 'Outlining' && wf && (wf.state === 'open' || wf.state === 'in-review') && (
+                          <a
+                            class="er-btn er-btn-small"
+                            href={workflowLink(wf)}
+                            title="open the review surface to annotate / edit the outline"
+                          >review outline →</a>
+                        )}
+                        {stage === 'Outlining' && !wf && (
+                          <button
+                            class="er-btn er-btn-small er-copy-btn"
+                            type="button"
+                            data-copy={`/editorial-outline --site ${site} ${entry.slug}`}
+                            title="no outline workflow found — start one"
+                          >copy /outline</button>
                         )}
                         {(stage === 'Drafting' || stage === 'Review') && !bodyWritten && (
                           <button
