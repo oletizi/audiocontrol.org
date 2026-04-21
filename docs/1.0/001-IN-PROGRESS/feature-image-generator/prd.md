@@ -59,6 +59,14 @@ This feature adds AI-generated backgrounds (via DALL-E 3 and FLUX) and wraps the
 - Shared `journal.ts` helper for directory-backed append/read/update against `journal/history/`, `journal/pipeline/`, `journal/threads/`. Public APIs of `log.ts`, `workflow.ts`, and `threads.ts` stay stable so every consumer keeps working.
 - One-shot, idempotent migration script that fans out existing JSONL entries into per-file records, with a receipt noting counts.
 
+### In Scope (Extended — Phase 16)
+
+- Full redesign of the Feature Image Studio UI against the audiocontrol house voice: service-manual / flight-instrumentation aesthetic. Departure Mono display + IBM Plex Sans body + JetBrains Mono readouts; warm-ink near-black background + phosphor-amber primary + Roland-blue accent.
+- Information-architecture split: the current ~4000-line single-page tool at `/dev/feature-image-preview` breaks into linked routes — `/dev/studio` (gallery), `/dev/studio/focus/[id]` (focus canvas), `/dev/studio/generate`, `/dev/studio/templates`, `/dev/studio/help`. Old route redirects to the new gallery for muscle-memory continuity.
+- Shared `ProgressTape` primitive fixed to viewport bottom: numbered multi-stage reel-to-reel progress bar with live tabular elapsed + estimated-remaining readouts (driven by a localStorage EMA of prior runs), cancel affordance, and a compact idle state that shows the last operation's summary stamp. Every long-running operation (generate / recomposite / approve / apply) routes through it.
+- TARGET-site indicator in the header (AUDIOCONTROL / EDITORIALCONTROL) that switches a `--studio-target` accent variable amber ↔ chartreuse; chrome itself stays audiocontrol-branded so the operator never feels lost about which tool they're using.
+- Zero backend churn — same API endpoints, same journal storage, same skills, same bake pipeline. This is a UI-layer phase.
+
 ### Out of Scope
 
 - Changes to the existing `generate-og-images.ts` build-time script

@@ -1,0 +1,788 @@
+/*
+ * Studio Tokens — Feature Image Studio
+ *
+ * Extends src/sites/audiocontrol/styles/design-tokens.css with primitives
+ * specific to the dev-only Studio: stamped chips, annotated DIP-switch rows,
+ * paper-ruled backdrops, bezel panels, numbered sequences, registration
+ * marks, corner brackets, readouts.
+ *
+ * Aesthetic commitment: 1970s Roland service manual crossed with the
+ * Apollo Guidance Computer operator panel. Departure Mono display, IBM
+ * Plex Sans body, JetBrains Mono readouts with tabular figures. Hard
+ * rule-lines, not blur. Part-number annotations on everything. Inset
+ * cuts rather than drop shadows.
+ *
+ * Assumes design-tokens.css is loaded in the same cascade so it can
+ * reference --primary, --accent, --background, --foreground, etc.
+ */
+
+:root {
+  /* ── Studio-specific surfaces ──────────────────────────────────────── */
+  /* Slightly-elevated panel fill used by bezels and annotated rows.     */
+  --studio-surface-1: 30 14% 10%;
+  --studio-surface-2: 30 12% 13%;
+  --studio-surface-pressed: 30 18% 6%;
+
+  /* ── Target-site accent ──────────────────────────────────────────────
+   * Switches amber ↔ chartreuse based on the active target site. The
+   * chrome itself stays audiocontrol-amber; this variable paints only
+   * the TARGET readout, its LED, and a handful of target-aware cues
+   * (e.g., the "TARGET = EDITORIALCONTROL" stamp).
+   */
+  --studio-target: 35 95% 62%;          /* default = audiocontrol amber */
+  --studio-target-soft: 35 95% 62% / 0.18;
+  --studio-target-glow: 0 0 14px hsl(var(--studio-target) / 0.35),
+                        0 0 2px hsl(var(--studio-target) / 0.6);
+
+  /* ── Status semantic colors ──────────────────────────────────────────
+   * Retuned to warm palette. OK stays a green but shifted amber-warm.
+   * Approved gets the phosphor amber primary (with glow) rather than a
+   * third distinct green so the tool's "good outcome" reads consistently.
+   */
+  --studio-ok: 140 55% 58%;
+  --studio-warn: 32 92% 60%;
+  --studio-danger: 0 68% 62%;
+
+  /* ── Rhythm ──────────────────────────────────────────────────────────
+   * Service-manual pages live on an 8-line grid with a tight baseline.
+   * The Studio inherits the site's 1rem-base but compresses vertical
+   * rhythm in dense zones (DIP-switch rows, readouts, chip stacks) so
+   * the operator sees more state at a glance.
+   */
+  --studio-baseline: 0.5rem;
+  --studio-gap-tight: 0.375rem;
+  --studio-gap: 0.75rem;
+  --studio-gap-loose: 1.25rem;
+
+  /* Chrome dimensions */
+  --studio-header-h: 3.5rem;
+  --studio-tape-idle-h: 0.5rem;
+  --studio-tape-active-h: 4.5rem;
+}
+
+/* ── Target-site mode toggle ──────────────────────────────────────────
+ * Applied to document root or a high ancestor (StudioLayout). Flips the
+ * target accent to chartreuse while leaving the rest of the chrome alone.
+ */
+[data-studio-target="editorialcontrol"] {
+  --studio-target: 74 82% 58%;
+  --studio-target-soft: 74 82% 58% / 0.22;
+  --studio-target-glow: 0 0 14px hsl(var(--studio-target) / 0.35),
+                        0 0 2px hsl(var(--studio-target) / 0.6);
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * FOUNDATION UTILITIES
+ * ──────────────────────────────────────────────────────────────────── */
+
+/* Apply to <body> under StudioLayout. Locks the reading experience to
+ * the house voice and enables the atmosphere layers from design-tokens. */
+.studio-body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Service-manual workbench background: warm-ink with a soft amber vignette
+ * and an extremely faint paper-grain. The vignette pulls attention toward
+ * the central work area; the grain breaks up any lingering "flat dark UI"
+ * impression. */
+.studio-body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 50% 0%,
+      hsl(35 40% 11% / 0.9) 0%,
+      hsl(var(--background) / 0) 70%
+    ),
+    radial-gradient(
+      ellipse 140% 120% at 50% 120%,
+      hsl(30 14% 4%) 0%,
+      hsl(var(--background) / 0) 60%
+    );
+}
+
+.studio-body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.04;
+  background-image: radial-gradient(circle at 1px 1px, hsl(35 30% 70%) 1px, transparent 0);
+  background-size: 3px 3px;
+  mix-blend-mode: overlay;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * BEZEL — the top header and bottom tape frame
+ * ──────────────────────────────────────────────────────────────────── */
+
+/* A service-manual bezel is a slightly-raised panel with hairline rules
+ * top and bottom and an inset top edge suggesting machined metal. */
+.studio-bezel {
+  position: relative;
+  background:
+    linear-gradient(
+      180deg,
+      hsl(var(--studio-surface-1)) 0%,
+      hsl(var(--studio-surface-1)) 70%,
+      hsl(var(--studio-surface-pressed)) 100%
+    );
+  border-top: 1px solid hsl(35 15% 18%);
+  border-bottom: 1px solid hsl(var(--border));
+  box-shadow:
+    inset 0 1px 0 hsl(35 35% 22% / 0.35),
+    inset 0 -1px 0 hsl(0 0% 0% / 0.4),
+    0 2px 8px hsl(0 0% 0% / 0.25);
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * READOUT — tabular-figures mono block with labeled kicker
+ * ──────────────────────────────────────────────────────────────────── */
+
+/* A readout is a pocket of machine-legible information: a kicker in
+ * Departure Mono (uppercase, tracked), a value in JB Mono with tabular
+ * figures, and optionally a unit annotation. Reads as the printed label
+ * adjacent to a VU meter or a DIP-switch bank. */
+.studio-readout {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--studio-surface-pressed));
+  border-radius: 1px;
+}
+
+.studio-readout__kicker {
+  font-family: var(--font-display);
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  line-height: 1;
+}
+
+.studio-readout__value {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--foreground));
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+
+.studio-readout__value--phosphor {
+  color: hsl(var(--primary));
+  text-shadow: var(--phosphor-glow);
+}
+
+.studio-readout__unit {
+  font-family: var(--font-display);
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  padding-left: 0.25rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Readout rendered inline in a single row — KICKER value UNIT */
+.studio-readout--inline {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+}
+
+.studio-readout--inline .studio-readout__kicker {
+  letter-spacing: 0.2em;
+  font-size: 0.6rem;
+  padding-right: 0.25rem;
+  border-right: 1px solid hsl(var(--border));
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * STAMP — part-number / status chip
+ * ──────────────────────────────────────────────────────────────────── */
+
+/* A stamp reads as ink-stamped on a service-manual page. Hard hairline
+ * border with amber tick-marks at two diagonal corners. Caps-mono text,
+ * compact padding. The --approved / --generated / --rejected / --target
+ * variants tint the border + ticks for status.
+ */
+.studio-stamp {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid hsl(var(--border-hover));
+  background: hsl(var(--studio-surface-pressed));
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  border-radius: 1px;
+  white-space: nowrap;
+}
+
+.studio-stamp::before,
+.studio-stamp::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-style: solid;
+  border-color: hsl(var(--border-hover));
+  border-width: 0;
+}
+
+.studio-stamp::before {
+  top: -1px;
+  left: -1px;
+  border-top-width: 1px;
+  border-left-width: 1px;
+}
+
+.studio-stamp::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom-width: 1px;
+  border-right-width: 1px;
+}
+
+/* APPROVED — phosphor-amber ink stamp with a soft halo. Signals the
+ * canonical "this is the image" outcome. */
+.studio-stamp--approved {
+  color: hsl(var(--primary));
+  border-color: hsl(var(--primary) / 0.5);
+  background: hsl(var(--primary) / 0.06);
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.12);
+  text-shadow: var(--phosphor-glow);
+}
+
+.studio-stamp--approved::before,
+.studio-stamp--approved::after {
+  border-color: hsl(var(--primary));
+}
+
+/* GENERATED — neutral warm-cream stamp. An image exists but hasn't
+ * been blessed yet. */
+.studio-stamp--generated {
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border-hover));
+}
+
+/* REJECTED — a struck stamp with a diagonal strike across the text.
+ * Conveys "rejected, not lost" without recoloring the whole card red. */
+.studio-stamp--rejected {
+  color: hsl(var(--studio-danger));
+  border-color: hsl(var(--studio-danger) / 0.45);
+  background: hsl(var(--studio-danger) / 0.04);
+}
+
+.studio-stamp--rejected::before,
+.studio-stamp--rejected::after {
+  border-color: hsl(var(--studio-danger));
+}
+
+/* A diagonal stroke overlaid on the rejected stamp text via linear
+ * gradient so it reads as "struck through" without costing a pseudo. */
+.studio-stamp--rejected > * {
+  background: linear-gradient(
+    100deg,
+    transparent 44%,
+    hsl(var(--studio-danger) / 0.7) 48%,
+    hsl(var(--studio-danger) / 0.7) 52%,
+    transparent 56%
+  );
+  background-size: 100% 100%;
+  background-clip: border-box;
+  background-repeat: no-repeat;
+  padding: 0 0.125rem;
+}
+
+/* TARGET — uses the --studio-target variable so it flips amber ↔
+ * chartreuse based on which site is active. */
+.studio-stamp--target {
+  color: hsl(var(--studio-target));
+  border-color: hsl(var(--studio-target) / 0.55);
+  background: hsl(var(--studio-target-soft));
+  text-shadow: var(--studio-target-glow);
+}
+
+.studio-stamp--target::before,
+.studio-stamp--target::after {
+  border-color: hsl(var(--studio-target));
+}
+
+/* The small amber LED used inside stamps + readouts when a status is
+ * "live" — a power lamp, not a spinner. */
+.studio-stamp__led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor, 0 0 2px currentColor;
+  display: inline-block;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * ANNOTATED ROW — the DIP-switch panel parameter row
+ * ──────────────────────────────────────────────────────────────────── */
+
+/* PARAM label | VALUE | UNIT. Hairline between rows. Mono labels. Used
+ * for the focus-mode parameter panel and anywhere a list of "this is
+ * set to that" information needs to read as a printed specification. */
+.studio-spec {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.studio-spec__row {
+  display: grid;
+  grid-template-columns: minmax(6rem, auto) 1fr auto;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+}
+
+.studio-spec__row:last-child {
+  border-bottom: 0;
+}
+
+.studio-spec__label {
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.studio-spec__value {
+  color: hsl(var(--foreground));
+  justify-self: start;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studio-spec__value--phosphor {
+  color: hsl(var(--primary));
+  text-shadow: var(--phosphor-glow);
+}
+
+.studio-spec__unit {
+  font-family: var(--font-display);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  justify-self: end;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * NUMBERED SEQUENCE — CSS counters for stage lists, help steps, etc.
+ * ──────────────────────────────────────────────────────────────────── */
+
+.studio-seq {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: studio-seq;
+}
+
+.studio-seq > li {
+  counter-increment: studio-seq;
+  position: relative;
+  padding: 0.5rem 0 0.5rem 2.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.studio-seq > li:last-child {
+  border-bottom: 0;
+}
+
+.studio-seq > li::before {
+  content: counter(studio-seq, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: hsl(var(--primary));
+  text-shadow: var(--phosphor-glow);
+  width: 2rem;
+  padding-top: 0.0625rem;
+  border-right: 1px solid hsl(var(--border));
+  padding-right: 0.5rem;
+}
+
+/* Compact variant used in tight panels */
+.studio-seq--compact > li {
+  padding: 0.25rem 0 0.25rem 2.25rem;
+}
+
+.studio-seq--compact > li::before {
+  font-size: 0.6875rem;
+  top: 0.25rem;
+  width: 1.5rem;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * REGISTRATION MARK — tiny corner cross marks on technical drawings
+ * ──────────────────────────────────────────────────────────────────── */
+
+/* Four crosses at the corners of a panel, at the exact corner pixel,
+ * reading as fiducial marks on a printed spec sheet. Apply on any
+ * panel you want to feel like a printed card. */
+.studio-regmark {
+  position: relative;
+}
+
+.studio-regmark::before,
+.studio-regmark::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, hsl(var(--primary)) 50%, transparent 50%),
+    linear-gradient(to bottom, hsl(var(--primary)) 50%, transparent 50%);
+  background-repeat: no-repeat;
+  background-size: 100% 1px, 1px 100%;
+  background-position: center;
+  opacity: 0.45;
+}
+
+.studio-regmark::before {
+  top: -5px;
+  left: -5px;
+}
+
+.studio-regmark::after {
+  bottom: -5px;
+  right: -5px;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * CORNER BRACKETS — larger callout brackets at panel corners
+ * ──────────────────────────────────────────────────────────────────── */
+
+/* Apply a thick amber L-bracket at the top-left + bottom-right corners
+ * of a panel. Adds workbench-equipment feel to the primary focus area.
+ * Complements .dimension-bracket (which is TL + TR) with a diagonal
+ * variant more appropriate for image frames. */
+.studio-framed {
+  position: relative;
+}
+
+.studio-framed::before,
+.studio-framed::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-style: solid;
+  border-color: hsl(var(--primary) / 0.6);
+  border-width: 0;
+  pointer-events: none;
+}
+
+.studio-framed::before {
+  top: -1px;
+  left: -1px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+
+.studio-framed::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * PAPER-RULED BACKDROP — horizontal ruled lines, notebook paper feel
+ * ──────────────────────────────────────────────────────────────────── */
+
+/* Used behind the thread composer — the "write on the margin of the
+ * service manual" register. Very low-contrast ruling so text stays
+ * legible. */
+.studio-paper {
+  background-color: hsl(var(--studio-surface-1));
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent calc(1.5rem - 1px),
+    hsl(var(--border) / 0.5) calc(1.5rem - 1px),
+    hsl(var(--border) / 0.5) 1.5rem
+  );
+  border: 1px solid hsl(var(--border));
+  border-radius: 1px;
+  padding: 0.75rem;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * STUDIO BUTTON — primary interactive element, stamped affordance
+ * ──────────────────────────────────────────────────────────────────── */
+
+.studio-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: hsl(var(--studio-surface-2));
+  border: 1px solid hsl(var(--border-hover));
+  color: hsl(var(--foreground));
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  border-radius: 1px;
+  box-shadow:
+    inset 0 1px 0 hsl(35 25% 25% / 0.25),
+    inset 0 -1px 0 hsl(0 0% 0% / 0.3);
+}
+
+.studio-btn:hover {
+  border-color: hsl(var(--primary) / 0.6);
+  background: hsl(var(--studio-surface-2));
+  color: hsl(var(--primary));
+  text-shadow: var(--phosphor-glow);
+}
+
+.studio-btn:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+.studio-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.studio-btn--primary {
+  color: hsl(var(--primary));
+  border-color: hsl(var(--primary) / 0.55);
+  background:
+    linear-gradient(180deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--primary) / 0.04) 100%);
+}
+
+.studio-btn--primary:hover {
+  background:
+    linear-gradient(180deg, hsl(var(--primary) / 0.18) 0%, hsl(var(--primary) / 0.08) 100%);
+  border-color: hsl(var(--primary));
+  text-shadow: var(--phosphor-glow);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--primary) / 0.3),
+    0 0 14px hsl(var(--primary) / 0.2);
+}
+
+.studio-btn--danger {
+  color: hsl(var(--studio-danger));
+  border-color: hsl(var(--studio-danger) / 0.35);
+}
+
+.studio-btn--danger:hover {
+  border-color: hsl(var(--studio-danger) / 0.75);
+  color: hsl(var(--studio-danger));
+  text-shadow: 0 0 8px hsl(var(--studio-danger) / 0.4);
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * INPUT — form controls retuned to the studio aesthetic
+ * ──────────────────────────────────────────────────────────────────── */
+
+.studio-input,
+.studio-select,
+.studio-textarea {
+  width: 100%;
+  background: hsl(var(--studio-surface-pressed));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  padding: 0.4rem 0.625rem;
+  border-radius: 1px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.studio-input:focus,
+.studio-select:focus,
+.studio-textarea:focus {
+  border-color: hsl(var(--primary) / 0.7);
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.4);
+}
+
+.studio-input::placeholder,
+.studio-textarea::placeholder {
+  color: hsl(var(--muted-foreground) / 0.7);
+  font-style: italic;
+}
+
+.studio-select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, hsl(var(--muted-foreground)) 50%),
+    linear-gradient(135deg, hsl(var(--muted-foreground)) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 9px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.studio-textarea {
+  font-family: var(--font-body);
+  resize: vertical;
+  min-height: 6rem;
+}
+
+.studio-input--mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Label style used with inputs in forms and DIP-switch rows. */
+.studio-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.25rem;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * KICKER — the eyebrow label above a section title
+ * ──────────────────────────────────────────────────────────────────── */
+
+/* Stronger sibling of the site's .panel-label — reserved for the Studio
+ * header and primary section openers. Gets a leading bar to read as a
+ * "this begins here" mark. */
+.studio-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  text-shadow: var(--phosphor-glow);
+}
+
+.studio-kicker::before {
+  content: '';
+  width: 0.75rem;
+  height: 2px;
+  background: hsl(var(--primary));
+  box-shadow: 0 0 6px hsl(var(--primary) / 0.6);
+}
+
+.studio-kicker--muted {
+  color: hsl(var(--muted-foreground));
+  text-shadow: none;
+}
+
+.studio-kicker--muted::before {
+  background: hsl(var(--border-hover));
+  box-shadow: none;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * TAPE MOUNT — ProgressTape will land here in Commit 2
+ * ──────────────────────────────────────────────────────────────────── */
+
+/* Fixed bottom strip, default idle = 4px rule. ProgressTape component
+ * will expand + populate this. Defining the mount in the foundation
+ * keeps the chrome stable so later commits don't push content around. */
+.studio-tape-mount {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  height: var(--studio-tape-idle-h);
+  transition: height 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.studio-tape-mount > * {
+  pointer-events: auto;
+}
+
+.studio-tape-mount--active {
+  height: var(--studio-tape-active-h);
+}
+
+/* Idle fallback state — a thin amber rule so the mount always has a
+ * visible footprint. Replaced by the tape when active. */
+.studio-tape-mount::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background:
+    linear-gradient(
+      90deg,
+      hsl(var(--primary) / 0) 0%,
+      hsl(var(--primary) / 0.4) 50%,
+      hsl(var(--primary) / 0) 100%
+    );
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * REDUCED MOTION
+ * ──────────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-tape-mount,
+  .studio-btn,
+  .studio-input,
+  .studio-select,
+  .studio-textarea {
+    transition: none;
+  }
+}

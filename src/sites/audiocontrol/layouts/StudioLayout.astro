@@ -1,0 +1,377 @@
+---
+/*
+ * StudioLayout — chrome for the dev-only Feature Image Studio.
+ *
+ * Service-manual / flight-instrumentation workbench voice. Departure
+ * Mono display, IBM Plex Sans body, JetBrains Mono readouts. Warm-ink
+ * background with a soft amber vignette + faint paper grain.
+ *
+ * Provides the header bezel (wordmark, numbered top nav, TARGET
+ * readout), the grain + vignette atmosphere, and the bottom mount
+ * point for the ProgressTape component (Commit 2).
+ *
+ * Not SEO-indexed — this is a dev tool. Robots meta set to
+ * noindex,nofollow; no site metadata, no canonical, no JSON-LD.
+ */
+
+import '../styles/design-tokens.css';
+import '../styles/studio-tokens.css';
+import ProgressTape from '../components/studio/ProgressTape.astro';
+
+type Site = 'audiocontrol' | 'editorialcontrol';
+
+interface NavTab {
+  num: string;
+  label: string;
+  href: string;
+}
+
+interface Props {
+  /** Page title rendered in the browser tab. */
+  title?: string;
+  /** The site currently being targeted by generations/approvals. */
+  target?: Site;
+  /** Override the active nav tab. Normally inferred from URL. */
+  activeTab?: string;
+}
+
+const { title = 'Feature Image — Studio', target = 'audiocontrol', activeTab } = Astro.props;
+
+// Numbered tabs across the header bezel. Focus is intentionally absent —
+// it's a per-entry destination reached from a gallery card's Focus link,
+// not a top-level page. When the user is *on* a focus page, the Gallery
+// tab stays highlighted so the operator sees their anchor in the IA.
+const navTabs: NavTab[] = [
+  { num: '01', label: 'Gallery',   href: '/dev/studio' },
+  { num: '02', label: 'Generate',  href: '/dev/studio/generate' },
+  { num: '03', label: 'Templates', href: '/dev/studio/templates' },
+  { num: '04', label: 'Help',      href: '/dev/studio/help' },
+];
+
+const path = Astro.url.pathname;
+const resolvedActive = activeTab ?? (() => {
+  // Focus pages should read as "in Gallery's subtree" in the nav.
+  if (path.startsWith('/dev/studio/focus')) return 'Gallery';
+  // Exact match wins; otherwise prefix match from longest tab href.
+  const sorted = [...navTabs].sort((a, b) => b.href.length - a.href.length);
+  return sorted.find(t => path === t.href || path.startsWith(t.href + '/'))?.label
+      ?? navTabs[0].label;
+})();
+
+const targetLabel = target === 'audiocontrol' ? 'AUDIOCONTROL' : 'EDITORIALCONTROL';
+---
+
+<html lang="en" data-studio-target={target}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/fonts/departure-mono-regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+
+  <body class="studio-body">
+    <header class="studio-header studio-bezel" role="banner">
+      <div class="studio-header__wordmark">
+        <a href="/dev/studio" class="studio-wordmark" aria-label="Feature Image Studio home">
+          <span class="studio-wordmark__brand">FI</span>
+          <span class="studio-wordmark__sep" aria-hidden="true">⸱</span>
+          <span class="studio-wordmark__name">STUDIO</span>
+        </a>
+        <span class="studio-wordmark__rev" aria-label="Revision 16.0">REV 16.0</span>
+      </div>
+
+      <nav class="studio-nav" aria-label="Studio sections">
+        {navTabs.map((tab) => {
+          const isActive = tab.label === resolvedActive;
+          return (
+            <a
+              href={tab.href}
+              class:list={["studio-nav__tab", isActive && "studio-nav__tab--active"]}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              <span class="studio-nav__num">{tab.num}</span>
+              <span class="studio-nav__label">{tab.label}</span>
+            </a>
+          );
+        })}
+      </nav>
+
+      <div class="studio-header__readout">
+        <div class="studio-readout studio-readout--inline studio-target-readout">
+          <span class="studio-readout__kicker">Target</span>
+          <span class="studio-target-readout__led" aria-hidden="true"></span>
+          <span
+            class="studio-readout__value"
+            data-studio-target-label
+          >{targetLabel}</span>
+        </div>
+        <a
+          href="/dev/studio/help"
+          class="studio-help-toggle"
+          aria-label="Help"
+          title="Help (full service-manual document at /dev/studio/help)"
+        >?</a>
+      </div>
+    </header>
+
+    <main class="studio-main">
+      <slot />
+    </main>
+
+    <div
+      class="studio-tape-mount"
+      id="studio-tape-mount"
+      data-studio-tape
+      role="status"
+      aria-live="polite"
+      aria-label="Operation progress"
+    ></div>
+
+    <ProgressTape />
+
+    <script>
+      // Runtime target-switch API. Child pages (focus, generate) call
+      // window.studioSetTarget('audiocontrol'|'editorialcontrol') when
+      // the user flips the target. Centralizing here keeps the header
+      // in sync even when the target choice lives on another panel.
+      declare global {
+        interface Window {
+          studioSetTarget?: (target: 'audiocontrol' | 'editorialcontrol') => void;
+        }
+      }
+
+      window.studioSetTarget = (target) => {
+        document.documentElement.dataset.studioTarget = target;
+        document.querySelectorAll<HTMLElement>('[data-studio-target-label]')
+          .forEach((el) => {
+            el.textContent = target === 'audiocontrol' ? 'AUDIOCONTROL' : 'EDITORIALCONTROL';
+          });
+      };
+    </script>
+
+    <style is:global>
+      /* ── Header bezel ─────────────────────────────────────────── */
+      .studio-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        height: var(--studio-header-h);
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: stretch;
+        padding: 0 1.5rem;
+        gap: 2rem;
+      }
+
+      .studio-header__wordmark {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-right: 1.5rem;
+        border-right: 1px solid hsl(var(--border));
+      }
+
+      .studio-wordmark {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.35rem;
+        text-decoration: none;
+        font-family: var(--font-display);
+        letter-spacing: 0.08em;
+      }
+
+      .studio-wordmark__brand {
+        font-size: 1.15rem;
+        color: hsl(var(--primary));
+        text-shadow: var(--phosphor-glow);
+        letter-spacing: 0.12em;
+      }
+
+      .studio-wordmark__sep {
+        color: hsl(var(--muted-foreground));
+        font-size: 0.9rem;
+      }
+
+      .studio-wordmark__name {
+        font-size: 0.95rem;
+        color: hsl(var(--foreground));
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .studio-wordmark__rev {
+        font-family: var(--font-mono);
+        font-size: 0.625rem;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.12em;
+        color: hsl(var(--muted-foreground));
+        padding: 0.2rem 0.5rem;
+        border: 1px solid hsl(var(--border));
+        border-radius: 1px;
+        line-height: 1;
+      }
+
+      /* ── Top nav ──────────────────────────────────────────────── */
+      .studio-nav {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      .studio-nav::-webkit-scrollbar { display: none; }
+
+      .studio-nav__tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0 1rem;
+        height: 100%;
+        text-decoration: none;
+        color: hsl(var(--muted-foreground));
+        font-family: var(--font-display);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        border-right: 1px solid hsl(var(--border));
+        transition: color 0.12s, background 0.12s;
+        position: relative;
+      }
+
+      .studio-nav__tab:first-child {
+        border-left: 1px solid hsl(var(--border));
+      }
+
+      .studio-nav__num {
+        font-family: var(--font-mono);
+        font-size: 0.6875rem;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.08em;
+        color: hsl(var(--muted-foreground));
+        opacity: 0.75;
+      }
+
+      .studio-nav__label {
+        letter-spacing: 0.14em;
+      }
+
+      .studio-nav__tab:hover {
+        color: hsl(var(--foreground));
+        background: hsl(var(--studio-surface-2) / 0.5);
+      }
+
+      .studio-nav__tab:hover .studio-nav__num {
+        color: hsl(var(--accent));
+        opacity: 1;
+      }
+
+      .studio-nav__tab--active {
+        color: hsl(var(--primary));
+        text-shadow: var(--phosphor-glow);
+        background: hsl(var(--primary) / 0.06);
+      }
+
+      .studio-nav__tab--active .studio-nav__num {
+        color: hsl(var(--primary));
+        opacity: 1;
+      }
+
+      /* Amber underline marker — the "you are here" cursor. Sits flush
+       * on the bottom border of the bezel so it reads as a continuation
+       * of the tab's ink trail. */
+      .studio-nav__tab--active::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 2px;
+        background: hsl(var(--primary));
+        box-shadow: 0 0 10px hsl(var(--primary) / 0.8);
+      }
+
+      /* ── Header right — TARGET readout + help toggle ──────────── */
+      .studio-header__readout {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-left: 1.5rem;
+        border-left: 1px solid hsl(var(--border));
+      }
+
+      .studio-target-readout {
+        position: relative;
+        gap: 0.6rem !important;
+      }
+
+      .studio-target-readout .studio-readout__value {
+        font-family: var(--font-display);
+        font-size: 0.875rem;
+        letter-spacing: 0.12em;
+        color: hsl(var(--studio-target));
+        text-shadow: var(--studio-target-glow);
+        line-height: 1;
+      }
+
+      .studio-target-readout__led {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: hsl(var(--studio-target));
+        box-shadow:
+          0 0 8px hsl(var(--studio-target) / 0.75),
+          0 0 2px hsl(var(--studio-target));
+        animation: studio-target-pulse 2.4s ease-in-out infinite;
+      }
+
+      @keyframes studio-target-pulse {
+        0%, 100% { opacity: 0.6; }
+        50%      { opacity: 1; }
+      }
+
+      .studio-help-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        border: 1px solid hsl(var(--border-hover));
+        background: hsl(var(--studio-surface-pressed));
+        color: hsl(var(--muted-foreground));
+        text-decoration: none;
+        font-family: var(--font-display);
+        font-size: 0.85rem;
+        border-radius: 1px;
+        transition: color 0.12s, border-color 0.12s;
+      }
+
+      .studio-help-toggle:hover {
+        color: hsl(var(--primary));
+        border-color: hsl(var(--primary) / 0.6);
+        text-shadow: var(--phosphor-glow);
+      }
+
+      /* ── Main ─────────────────────────────────────────────────── */
+      .studio-main {
+        position: relative;
+        z-index: 1;
+        min-height: calc(100vh - var(--studio-header-h) - var(--studio-tape-idle-h));
+        padding-bottom: calc(var(--studio-tape-idle-h) + 1rem);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .studio-target-readout__led {
+          animation: none;
+        }
+      }
+    </style>
+  </body>
+</html>

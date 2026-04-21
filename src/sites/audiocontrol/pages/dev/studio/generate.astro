@@ -1,0 +1,528 @@
+---
+/*
+ * /dev/studio/generate — the generation specimen sheet.
+ *
+ * Ground-school layout: labeled fieldsets with annotated unit
+ * indicators, the prompt as the primary full-width field, template
+ * picker as a bank of thumbnail cards at the top. Submit runs
+ * /api/dev/feature-image/generate via the ProgressTape.
+ *
+ * Pre-fills from:
+ *   - Active workflow in localStorage (set by gallery's Activate)
+ *   - Query params (?prompt=&preset=&site=) from Copy-as-input flows
+ *
+ * Dev-only — returns 404 in prod.
+ */
+
+export const prerender = false;
+
+import StudioLayout from '../../../layouts/StudioLayout.astro';
+import { readTemplates, rankTemplates } from '../../../../../../scripts/feature-image/templates.js';
+import { readLog } from '../../../../../../scripts/feature-image/log.js';
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+
+// Server-side: seed the template bank with the fitness-ranked list so the
+// operator sees known-good options before any JS runs.
+const allTemplates = readTemplates().filter((t) => !t.archived);
+const ranked = rankTemplates(allTemplates, readLog()).slice(0, 12);
+---
+
+<StudioLayout title="FI · Studio · Generate" activeTab="Generate">
+  <form class="studio-gen" data-gen-form>
+    <header class="studio-gen__masthead">
+      <span class="studio-kicker">Specimen sheet · Bank 03</span>
+      <h1 class="studio-gen__title">Generate</h1>
+      <p class="studio-gen__lede">
+        Produce a raw image from a prompt or template. Output lands in
+        the journal and becomes visible on the gallery wall. Wire it to
+        a blog post via <strong>Approve</strong> + <code>/feature-image-apply</code>.
+      </p>
+    </header>
+
+    <hr class="rule-ticked" />
+
+    <!-- ── Template bank ────────────────────────────────────────── -->
+    <section class="studio-gen__section" aria-labelledby="studio-gen-tpl-head">
+      <header class="studio-gen__section-head">
+        <span class="studio-kicker">Bank A · Templates</span>
+        <h2 class="studio-gen__section-title" id="studio-gen-tpl-head">
+          Prompt library · fitness-ranked
+        </h2>
+        <p class="studio-gen__section-lede">
+          Click a template to stamp its prompt + preset into the form
+          below. <a href="/dev/studio/templates">Templates →</a> for the
+          full library with lineage.
+        </p>
+      </header>
+      <div class="studio-gen__templates" data-gen-templates>
+        {ranked.length === 0 ? (
+          <p class="studio-gen__empty">No templates in the library yet.</p>
+        ) : (
+          ranked.map((t) => {
+            const fitness = t.fitness;
+            const fitLabel = fitness.usageCount > 0
+              ? `★ ${fitness.averageRating.toFixed(1)} · n=${fitness.usageCount}`
+              : 'new';
+            const site = t.site ?? 'any';
+            return (
+              <button
+                type="button"
+                class="studio-gen__tpl"
+                data-tpl-slug={t.slug}
+                data-tpl-prompt={t.prompt}
+                data-tpl-preset={t.preset ?? ''}
+                data-tpl-provider={t.provider ?? ''}
+                data-tpl-site={site}
+              >
+                <header class="studio-gen__tpl-head">
+                  <span class="studio-gen__tpl-name">{t.name}</span>
+                  <span class="studio-gen__tpl-fit">{fitLabel}</span>
+                </header>
+                {t.description && <p class="studio-gen__tpl-desc">{t.description}</p>}
+                <footer class="studio-gen__tpl-foot">
+                  <span class="studio-readout studio-readout--inline">
+                    <span class="studio-readout__kicker">Slug</span>
+                    <span class="studio-readout__value">{t.slug}</span>
+                  </span>
+                  <span class="studio-readout studio-readout--inline">
+                    <span class="studio-readout__kicker">Site</span>
+                    <span class="studio-readout__value">{site}</span>
+                  </span>
+                  {t.preset && (
+                    <span class="studio-readout studio-readout--inline">
+                      <span class="studio-readout__kicker">Preset</span>
+                      <span class="studio-readout__value">{t.preset}</span>
+                    </span>
+                  )}
+                </footer>
+              </button>
+            );
+          })
+        )}
+      </div>
+    </section>
+
+    <hr class="rule-ticked" />
+
+    <!-- ── Prompt ──────────────────────────────────────────────── -->
+    <section class="studio-gen__section" aria-labelledby="studio-gen-prompt-head">
+      <header class="studio-gen__section-head">
+        <span class="studio-kicker">Bank B · Prompt</span>
+        <h2 class="studio-gen__section-title" id="studio-gen-prompt-head">
+          Instruction · primary field
+        </h2>
+      </header>
+      <div class="studio-gen__prompt-wrap">
+        <label class="studio-label" for="gen-prompt">Prompt</label>
+        <textarea
+          id="gen-prompt"
+          name="prompt"
+          class="studio-textarea studio-gen__prompt"
+          rows="6"
+          placeholder="Abstract oscilloscope waveform, phosphor amber on warm-ink background, no text, no words, no letters, no typography"
+          required
+          data-gen-field="prompt"
+        ></textarea>
+        <div class="studio-gen__hint">
+          End the prompt with <code>no text, no words, no letters, no
+          typography, no labels</code> — the overlay text lives on top
+          of the background; the AI must not compete with it.
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule-ticked" />
+
+    <!-- ── Configuration — DIP-switch style ────────────────────── -->
+    <section class="studio-gen__section" aria-labelledby="studio-gen-cfg-head">
+      <header class="studio-gen__section-head">
+        <span class="studio-kicker">Bank C · Configuration</span>
+        <h2 class="studio-gen__section-title" id="studio-gen-cfg-head">
+          Target · provider · filter chain
+        </h2>
+      </header>
+      <ul class="studio-spec studio-gen__config">
+        <li class="studio-spec__row">
+          <span class="studio-spec__label">Site</span>
+          <select class="studio-select" data-gen-field="site" name="site">
+            <option value="audiocontrol" selected>audiocontrol</option>
+            <option value="editorialcontrol">editorialcontrol</option>
+          </select>
+          <span class="studio-spec__unit">brand</span>
+        </li>
+        <li class="studio-spec__row">
+          <span class="studio-spec__label">Provider</span>
+          <select class="studio-select" data-gen-field="provider" name="provider">
+            <option value="flux" selected>flux</option>
+            <option value="dalle">dalle</option>
+            <option value="both">both</option>
+          </select>
+          <span class="studio-spec__unit">ai · source</span>
+        </li>
+        <li class="studio-spec__row">
+          <span class="studio-spec__label">Preset</span>
+          <select class="studio-select" data-gen-field="preset" name="preset">
+            <option value="">(none)</option>
+            <option value="subtle">subtle</option>
+            <option value="retro-crt" selected>retro-crt</option>
+            <option value="teal-amber">teal-amber</option>
+            <option value="heavy-crt">heavy-crt</option>
+          </select>
+          <span class="studio-spec__unit">bank · 1..5</span>
+        </li>
+        <li class="studio-spec__row">
+          <span class="studio-spec__label">Formats</span>
+          <input
+            type="text"
+            class="studio-input studio-input--mono"
+            data-gen-field="formats"
+            name="formats"
+            value="og"
+            placeholder="og,youtube,instagram"
+          />
+          <span class="studio-spec__unit">csv · variants</span>
+        </li>
+      </ul>
+    </section>
+
+    <hr class="rule-ticked" />
+
+    <!-- ── Overlay text ────────────────────────────────────────── -->
+    <section class="studio-gen__section" aria-labelledby="studio-gen-text-head">
+      <header class="studio-gen__section-head">
+        <span class="studio-kicker">Bank D · Overlay text</span>
+        <h2 class="studio-gen__section-title" id="studio-gen-text-head">
+          Title + subtitle
+        </h2>
+      </header>
+      <div class="studio-gen__overlay-grid">
+        <div>
+          <label class="studio-label" for="gen-title">Title</label>
+          <input
+            id="gen-title"
+            type="text"
+            class="studio-input"
+            data-gen-field="title"
+            name="title"
+            placeholder="Optional overlay title"
+          />
+        </div>
+        <div>
+          <label class="studio-label" for="gen-subtitle">Subtitle</label>
+          <input
+            id="gen-subtitle"
+            type="text"
+            class="studio-input"
+            data-gen-field="subtitle"
+            name="subtitle"
+            placeholder="Optional subtitle"
+          />
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule-ticked" />
+
+    <!-- ── Active workflow context (if any) ────────────────────── -->
+    <section class="studio-gen__section" data-gen-workflow-section hidden>
+      <header class="studio-gen__section-head">
+        <span class="studio-kicker studio-kicker--muted">Bank E · Active workflow</span>
+        <h2 class="studio-gen__section-title">Targeting a specific post</h2>
+      </header>
+      <div class="studio-gen__workflow" data-gen-workflow></div>
+    </section>
+
+    <div class="studio-gen__submit-row">
+      <button type="submit" class="studio-btn studio-btn--primary studio-gen__submit" data-gen-submit>
+        Generate →
+      </button>
+      <span class="studio-gen__submit-hint">
+        Output lands on the gallery wall at <code>/dev/studio</code>.
+      </span>
+    </div>
+  </form>
+
+  <script>
+    import '../../../components/studio/generate-client.ts';
+  </script>
+</StudioLayout>
+
+<style is:global>
+  .studio-gen {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 5rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .studio-gen__masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .studio-gen__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 3.25rem);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .studio-gen__lede {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+    max-width: 44rem;
+    margin: 0;
+  }
+
+  .studio-gen__lede code,
+  .studio-gen__hint code {
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.08);
+    padding: 0.05em 0.3em;
+    border-radius: 1px;
+  }
+
+  .studio-gen__section {
+    padding: 0.5rem 0 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Native [hidden] must win over flex display — the workflow section
+   * uses hidden as its default state until the client populates it. */
+  .studio-gen__section[hidden] { display: none; }
+
+  .studio-gen__section-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .studio-gen__section-title {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    line-height: 1.2;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .studio-gen__section-lede {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .studio-gen__section-lede a {
+    color: hsl(var(--primary));
+    text-decoration: none;
+    border-bottom: 1px solid hsl(var(--primary) / 0.4);
+  }
+
+  .studio-gen__section-lede a:hover {
+    border-bottom-color: hsl(var(--primary));
+    text-shadow: var(--phosphor-glow);
+  }
+
+  /* ── Template bank ────────────────────────────────────────── */
+  .studio-gen__templates {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 0.5rem;
+  }
+
+  .studio-gen__empty {
+    font-family: var(--font-body);
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .studio-gen__tpl {
+    text-align: left;
+    background: hsl(var(--studio-surface-1));
+    border: 1px solid hsl(var(--border));
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    border-radius: 1px;
+    color: hsl(var(--foreground));
+  }
+
+  .studio-gen__tpl:hover {
+    border-color: hsl(var(--primary) / 0.55);
+    box-shadow: 0 0 14px hsl(var(--primary) / 0.14);
+  }
+
+  .studio-gen__tpl[data-active="true"] {
+    border-color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.05);
+    box-shadow: 0 0 18px hsl(var(--primary) / 0.2);
+  }
+
+  .studio-gen__tpl-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .studio-gen__tpl-name {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    letter-spacing: 0.04em;
+    color: hsl(var(--foreground));
+  }
+
+  .studio-gen__tpl-fit {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    color: hsl(var(--primary));
+  }
+
+  .studio-gen__tpl-desc {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .studio-gen__tpl-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .studio-gen__tpl-foot .studio-readout {
+    padding: 0.1rem 0.4rem;
+  }
+
+  .studio-gen__tpl-foot .studio-readout__value {
+    font-size: 0.7rem;
+  }
+
+  /* ── Prompt + config ──────────────────────────────────────── */
+  .studio-gen__prompt-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .studio-gen__prompt {
+    font-family: var(--font-body);
+    line-height: 1.55;
+  }
+
+  .studio-gen__hint {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    color: hsl(var(--muted-foreground));
+    padding: 0.5rem 0.75rem;
+    border-left: 2px solid hsl(var(--primary) / 0.5);
+    background: hsl(var(--studio-surface-1));
+  }
+
+  .studio-gen__config .studio-spec__row {
+    grid-template-columns: 8rem minmax(0, 1fr) 8rem;
+  }
+
+  .studio-gen__overlay-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 640px) {
+    .studio-gen__overlay-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ── Active workflow context ──────────────────────────────── */
+  .studio-gen__workflow {
+    padding: 0.85rem;
+    border: 1px solid hsl(var(--primary) / 0.45);
+    background: hsl(var(--primary) / 0.05);
+    border-radius: 1px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .studio-gen__workflow-title {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    color: hsl(var(--foreground));
+    margin: 0;
+  }
+
+  .studio-gen__workflow-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .studio-gen__workflow-notes {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  /* ── Submit ───────────────────────────────────────────────── */
+  .studio-gen__submit-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .studio-gen__submit {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.85rem;
+  }
+
+  .studio-gen__submit-hint {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .studio-gen__submit-hint code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.08);
+    padding: 0.05em 0.3em;
+    border-radius: 1px;
+  }
+</style>

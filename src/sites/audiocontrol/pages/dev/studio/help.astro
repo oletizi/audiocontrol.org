@@ -1,0 +1,455 @@
+---
+/*
+ * /dev/studio/help — service-manual help document.
+ *
+ * Numbered workflow phases, skill index as a hanging-indent dl,
+ * gallery actions as a service-manual glossary, keyboard shortcuts
+ * as a printed table. Intended to be readable front-to-back like a
+ * manual, not scanned like a modal.
+ *
+ * Dev-only — returns 404 in prod.
+ */
+
+export const prerender = false;
+
+import StudioLayout from '../../../layouts/StudioLayout.astro';
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+---
+
+<StudioLayout title="FI · Studio · Help" activeTab="Help">
+  <article class="studio-help">
+    <header class="studio-help__masthead">
+      <span class="studio-kicker">Service manual · Rev 16.0</span>
+      <h1 class="studio-help__title">Feature Image Studio</h1>
+      <p class="studio-help__lede">
+        A workbench for generating, iterating on, and approving AI-generated
+        feature images for blog posts on either site — audiocontrol or
+        editorialcontrol. The Studio lives under audiocontrol's dev server
+        but targets either site; the brand palette, typography, and logo
+        switch per-site at bake time.
+      </p>
+      <p class="studio-help__lede studio-help__lede--muted">
+        Output lands in the journal under <code>journal/history/</code>.
+        Nothing is committed to git automatically; the operator reviews
+        and commits after <code>/feature-image-apply</code> wires images
+        into target posts.
+      </p>
+    </header>
+
+    <hr class="rule-ticked" />
+
+    <section class="studio-help__section">
+      <header class="studio-help__section-head">
+        <span class="studio-kicker">Section A</span>
+        <h2 class="studio-help__section-title">Workflow — five phases</h2>
+      </header>
+      <ol class="studio-seq studio-help__workflow">
+        <li>
+          <h3>Start</h3>
+          <p>
+            Open <a href="/dev/studio/generate">Generate</a> to produce a
+            raw image from a prompt or template, <em>or</em> invoke
+            <code>/feature-image-blog &lt;post-path&gt;</code> in Claude
+            Code so an async workflow gets enqueued against a specific
+            post. The Workflows tab on the gallery right edge shows
+            pending handoffs.
+          </p>
+        </li>
+        <li>
+          <h3>Activate</h3>
+          <p>
+            When you're targeting a specific post through a workflow,
+            click <strong>Activate</strong> on that workflow entry. The
+            active id persists to localStorage and scopes
+            <strong>Approve</strong> — approving an image with a workflow
+            active will submit that workflow's decision. Click
+            <strong>Deactivate</strong> to go back to freestanding work.
+          </p>
+        </li>
+        <li>
+          <h3>Iterate</h3>
+          <p>
+            Click <strong>Focus</strong> on any gallery card to enter the
+            focus canvas. Edit title / subtitle inline on the image,
+            tweak the DIP-switch panel on the right, hit <strong>Commit
+            → bake</strong> to produce a new entry, or send a
+            natural-language message in the thread composer to have
+            Claude iterate via <code>/feature-image-iterate</code>.
+          </p>
+        </li>
+        <li>
+          <h3>Approve</h3>
+          <p>
+            Click <strong>Approve</strong> on a card or in focus mode.
+            This bakes all three social formats (og, YouTube,
+            Instagram), marks the new canonical entry as approved, and —
+            if a workflow is active — also submits the workflow
+            decision. Progress ticks through the <strong>bottom
+            tape</strong> with live elapsed + ETA.
+          </p>
+        </li>
+        <li>
+          <h3>Apply</h3>
+          <p>
+            Run <code>/feature-image-apply</code> in Claude Code.
+            Approved entries (and decided workflows) get copied into
+            their target post's public dir and have their frontmatter
+            wired. The operator reviews the diff and commits manually —
+            the skill never commits.
+          </p>
+        </li>
+      </ol>
+    </section>
+
+    <hr class="rule-ticked" />
+
+    <section class="studio-help__section">
+      <header class="studio-help__section-head">
+        <span class="studio-kicker">Section B</span>
+        <h2 class="studio-help__section-title">Skill index</h2>
+      </header>
+      <dl class="studio-help__skills">
+        <dt><code>/feature-image-blog &lt;post-path&gt;</code></dt>
+        <dd>
+          Start a workflow for a blog post. Infers the target site from
+          the path or URL host. Recommends a template if tags match.
+          Enqueues a <code>feature-image-blog</code> workflow item.
+        </dd>
+
+        <dt><code>/feature-image-iterate</code></dt>
+        <dd>
+          Drain pending iterate thread messages. Reads the user's
+          feedback + current snapshot, invokes the generation pipeline
+          (generate, recomposite, or clarify), appends an assistant
+          message to the thread, marks the workflow applied.
+        </dd>
+
+        <dt><code>/feature-image-apply</code></dt>
+        <dd>
+          Route approved entries + decided workflows into their target
+          posts. Copies <code>feature-&#123;og,youtube,instagram,filtered,raw&#125;.png</code>
+          into each post's public dir, upserts <code>image</code> /
+          <code>socialImage</code> frontmatter, marks the log entry's
+          <code>appliedTo</code>.
+        </dd>
+
+        <dt><code>/feature-image-prompts</code></dt>
+        <dd>
+          Browse the prompt-template library by tag, fitness, or
+          lineage. See the parent / fork tree.
+        </dd>
+
+        <dt><code>/feature-image-help</code></dt>
+        <dd>
+          Report pipeline state: open workflows, decided workflows
+          awaiting apply, recent generation history.
+        </dd>
+      </dl>
+    </section>
+
+    <hr class="rule-ticked" />
+
+    <section class="studio-help__section">
+      <header class="studio-help__section-head">
+        <span class="studio-kicker">Section C</span>
+        <h2 class="studio-help__section-title">Gallery + focus actions</h2>
+      </header>
+      <dl class="studio-help__actions">
+        <dt>Focus →</dt>
+        <dd>Open the focus canvas for a history entry. Live-editable title / subtitle, DIP-switch panel, thread composer.</dd>
+
+        <dt>Approve</dt>
+        <dd>Bakes all three social formats with current state, marks canonical entry approved, submits workflow decision if active. Ticks through the progress tape.</dd>
+
+        <dt>Reject</dt>
+        <dd>Marks the entry rejected. No bake. Doesn't delete anything — rejection is visible state, not removal.</dd>
+
+        <dt>★ Rate</dt>
+        <dd>1–5 stars. Feeds the prompt-library fitness ranker so well-rated templates float to the top of suggestions.</dd>
+
+        <dt>Commit → bake</dt>
+        <dd>Bake the current focus-mode edits without approving — good for iterating on a single variant before committing to it.</dd>
+
+        <dt>Send</dt>
+        <dd>In the focus thread, sends a natural-language message to Claude and snapshots the current preview state. Claude picks up via <code>/feature-image-iterate</code>.</dd>
+
+        <dt>Copy as input</dt>
+        <dd>Copies this entry's prompt, preset, title, subtitle, and site to the clipboard for pasting into Generate.</dd>
+
+        <dt>Save as template</dt>
+        <dd>Adds this entry's prompt to the library under a new slug for reuse.</dd>
+
+        <dt>Archive / Restore</dt>
+        <dd>Soft-delete toggle. Archived entries stay in the journal (for lineage and fitness) but are hidden from the default gallery view.</dd>
+
+        <dt>Activate / Deactivate / Cancel</dt>
+        <dd>
+          In the Workflows tab: <strong>Activate</strong> scopes Approve
+          to this workflow, <strong>Deactivate</strong> returns to
+          freestanding, <strong>Cancel</strong> transitions the workflow
+          to the cancelled terminal state.
+        </dd>
+      </dl>
+    </section>
+
+    <hr class="rule-ticked" />
+
+    <section class="studio-help__section">
+      <header class="studio-help__section-head">
+        <span class="studio-kicker">Section D</span>
+        <h2 class="studio-help__section-title">Keyboard</h2>
+      </header>
+      <div class="studio-help__keys">
+        <div class="studio-help__key-row">
+          <kbd class="studio-help__kbd">ESC</kbd>
+          <span>Back to gallery from a focus page. Closes overlay help.</span>
+        </div>
+        <div class="studio-help__key-row">
+          <kbd class="studio-help__kbd">Cmd</kbd>
+          <span class="studio-help__kbd-plus">+</span>
+          <kbd class="studio-help__kbd">Enter</kbd>
+          <span>Send the thread message from the focus composer. (Ctrl+Enter on non-Mac.)</span>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule-ticked" />
+
+    <footer class="studio-help__footer">
+      <span class="studio-readout studio-readout--inline">
+        <span class="studio-readout__kicker">Part</span>
+        <span class="studio-readout__value">FI-STUDIO/REV-16.0/DOC-A</span>
+      </span>
+      <span class="studio-readout studio-readout--inline">
+        <span class="studio-readout__kicker">Reference</span>
+        <span class="studio-readout__value">docs/1.0/001-IN-PROGRESS/feature-image-generator/</span>
+      </span>
+    </footer>
+  </article>
+</StudioLayout>
+
+<style is:global>
+  .studio-help {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 5rem;
+  }
+
+  .studio-help__masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .studio-help__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 3.25rem);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .studio-help__lede {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: hsl(var(--foreground));
+    margin: 0;
+  }
+
+  .studio-help__lede--muted {
+    color: hsl(var(--muted-foreground));
+    font-size: 0.9rem;
+  }
+
+  .studio-help__lede code,
+  .studio-help__section code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.08);
+    padding: 0.05em 0.3em;
+    border-radius: 1px;
+  }
+
+  .studio-help__section {
+    padding: 1rem 0 1.5rem;
+  }
+
+  .studio-help__section-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .studio-help__section-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    line-height: 1.15;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  /* ── Workflow seq — amplify the numbered-sequence idiom ──────── */
+  .studio-help__workflow {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+  }
+
+  .studio-help__workflow > li {
+    padding: 0.85rem 0 1rem 3.25rem;
+  }
+
+  .studio-help__workflow > li::before {
+    top: 0.9rem;
+    width: 2.5rem;
+    font-size: 0.95rem;
+  }
+
+  .studio-help__workflow h3 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 0.25rem;
+    color: hsl(var(--primary));
+    text-shadow: var(--phosphor-glow);
+  }
+
+  .studio-help__workflow p {
+    margin: 0;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .studio-help__workflow strong {
+    color: hsl(var(--foreground));
+    font-weight: 500;
+  }
+
+  /* ── Skill index — hanging-indent dl ──────────────────────────── */
+  .studio-help__skills,
+  .studio-help__actions {
+    display: grid;
+    grid-template-columns: minmax(12rem, 18rem) 1fr;
+    gap: 0.5rem 1.5rem;
+    margin: 0;
+    align-items: start;
+  }
+
+  .studio-help__skills dt,
+  .studio-help__actions dt {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    color: hsl(var(--foreground));
+    padding: 0.5rem 0;
+    border-right: 1px solid hsl(var(--border));
+    padding-right: 1rem;
+  }
+
+  .studio-help__skills dt code {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    background: transparent;
+    color: hsl(var(--primary));
+  }
+
+  .studio-help__skills dd,
+  .studio-help__actions dd {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+    padding: 0.5rem 0;
+    margin: 0;
+  }
+
+  .studio-help__skills dd strong,
+  .studio-help__actions dd strong {
+    color: hsl(var(--foreground));
+    font-weight: 500;
+  }
+
+  @media (max-width: 720px) {
+    .studio-help__skills,
+    .studio-help__actions {
+      grid-template-columns: 1fr;
+      gap: 0.15rem 0;
+    }
+
+    .studio-help__skills dt,
+    .studio-help__actions dt {
+      border-right: 0;
+      border-bottom: 1px solid hsl(var(--border));
+      padding: 0.75rem 0 0.15rem;
+    }
+
+    .studio-help__skills dd,
+    .studio-help__actions dd {
+      padding: 0 0 0.5rem;
+    }
+  }
+
+  /* ── Keyboard table ───────────────────────────────────────────── */
+  .studio-help__keys {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .studio-help__key-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .studio-help__kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2rem;
+    padding: 0.25rem 0.5rem;
+    background: hsl(var(--studio-surface-pressed));
+    border: 1px solid hsl(var(--border-hover));
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    color: hsl(var(--foreground));
+    box-shadow:
+      inset 0 1px 0 hsl(35 25% 25% / 0.3),
+      0 1px 0 hsl(0 0% 0% / 0.4);
+    border-radius: 2px;
+  }
+
+  .studio-help__kbd-plus {
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+  }
+
+  .studio-help__footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .studio-help__footer .studio-readout {
+    flex: 1 1 auto;
+  }
+</style>
