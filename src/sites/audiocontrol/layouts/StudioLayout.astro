@@ -37,18 +37,21 @@ interface Props {
 
 const { title = 'Feature Image — Studio', target = 'audiocontrol', activeTab } = Astro.props;
 
-// Numbered tabs across the header bezel. Each is a service-manual page
-// reference: a two-digit decimal + a caps-mono label.
+// Numbered tabs across the header bezel. Focus is intentionally absent —
+// it's a per-entry destination reached from a gallery card's Focus link,
+// not a top-level page. When the user is *on* a focus page, the Gallery
+// tab stays highlighted so the operator sees their anchor in the IA.
 const navTabs: NavTab[] = [
   { num: '01', label: 'Gallery',   href: '/dev/studio' },
-  { num: '02', label: 'Focus',     href: '/dev/studio/focus' },
-  { num: '03', label: 'Generate',  href: '/dev/studio/generate' },
-  { num: '04', label: 'Templates', href: '/dev/studio/templates' },
-  { num: '05', label: 'Help',      href: '/dev/studio/help' },
+  { num: '02', label: 'Generate',  href: '/dev/studio/generate' },
+  { num: '03', label: 'Templates', href: '/dev/studio/templates' },
+  { num: '04', label: 'Help',      href: '/dev/studio/help' },
 ];
 
 const path = Astro.url.pathname;
 const resolvedActive = activeTab ?? (() => {
+  // Focus pages should read as "in Gallery's subtree" in the nav.
+  if (path.startsWith('/dev/studio/focus')) return 'Gallery';
   // Exact match wins; otherwise prefix match from longest tab href.
   const sorted = [...navTabs].sort((a, b) => b.href.length - a.href.length);
   return sorted.find(t => path === t.href || path.startsWith(t.href + '/'))?.label

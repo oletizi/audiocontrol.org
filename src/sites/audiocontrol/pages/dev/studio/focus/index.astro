@@ -1,0 +1,17 @@
+---
+/*
+ * /dev/studio/focus (no id) — redirects to the gallery.
+ *
+ * Focus is a per-entry destination; the bare URL doesn't have a
+ * meaningful landing. Catch stray navigations from typos or older
+ * bookmarks and drop the operator back on the gallery wall.
+ */
+
+export const prerender = false;
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+
+return Astro.redirect('/dev/studio', 302);
+---
