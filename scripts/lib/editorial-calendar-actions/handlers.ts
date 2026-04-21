@@ -151,7 +151,11 @@ export function handleDraftStart(rootDir: string, body: unknown): HandlerResult 
     scaffolded = scaffoldBlogPost(rootDir, parsed.site, entry, DRAFT_AUTHOR);
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    return err(409, message);
+    // "Blog post already exists at …" is a conflict; any other failure
+    // (missing parent dir, EACCES, disk full, …) is a server-side I/O error.
+    // Callers rely on 409 to distinguish idempotent retries from real faults.
+    const isExists = message.startsWith('Blog post already exists at ');
+    return err(isExists ? 409 : 500, message);
   }
 
   const updated = draftEntry(cal, parsed.slug);

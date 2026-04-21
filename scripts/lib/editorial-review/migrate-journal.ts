@@ -17,6 +17,12 @@
  * runs detect the receipt, re-verify counts, and exit without rewriting
  * anything. `--dry-run` prints what would happen and writes no files.
  *
+ * Re-migrating: the receipt is the short-circuit. If you need to
+ * re-run (e.g. the JSONL changed after a conflict resolution), delete
+ * `journal/editorial/MIGRATED.txt` first, and consider clearing
+ * `journal/editorial/{pipeline,history}/` so you don't silently
+ * shadow per-entry files that have diverged post-migration.
+ *
  * The legacy JSONL files are NOT deleted by this script. The user
  * removes them manually after verifying the migration ran clean.
  */

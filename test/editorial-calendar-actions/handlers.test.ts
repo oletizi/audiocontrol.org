@@ -181,6 +181,26 @@ describe('handleDraftStart', () => {
     });
     expect(result.status).toBe(409);
   });
+
+  it('does not mutate the calendar when scaffold fails', () => {
+    const calendarBefore = readFileSync(calendarPath(root, SITE), 'utf-8');
+    const blogDir = join(root, 'src', 'sites', SITE, 'pages', 'blog', 'test-post');
+    mkdirSync(blogDir, { recursive: true });
+    writeFileSync(join(blogDir, 'index.md'), 'pre-existing content', 'utf-8');
+
+    const result = handleDraftStart(root, {
+      site: SITE,
+      slug: 'test-post',
+    });
+    expect(result.status).toBe(409);
+
+    // Calendar on disk must be byte-identical — stage stays Planned.
+    const calendarAfter = readFileSync(calendarPath(root, SITE), 'utf-8');
+    expect(calendarAfter).toBe(calendarBefore);
+    const cal = parseCalendar(calendarAfter);
+    const entry = cal.entries.find((e) => e.slug === 'test-post');
+    expect(entry?.stage).toBe('Planned');
+  });
 });
 
 describe('handlePublish', () => {
