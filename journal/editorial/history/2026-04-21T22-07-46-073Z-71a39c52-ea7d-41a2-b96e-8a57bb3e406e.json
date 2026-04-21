@@ -1,0 +1,21 @@
+{
+  "id": "71a39c52-ea7d-41a2-b96e-8a57bb3e406e",
+  "timestamp": "2026-04-21T22:07:46.073Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-21T22:07:46.073Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "bebefd2d-9724-44f1-b5a0-ddc4dc879d98",
+      "version": 4,
+      "range": {
+        "start": 1056,
+        "end": 1089
+      },
+      "text": "Version control in an agent-assisted workflow is non-negotiable. One could argue that it's crucial for human-based workflows, too, but it's absolutely required when working with ai agents.",
+      "category": "other",
+      "id": "71a39c52-ea7d-41a2-b96e-8a57bb3e406e",
+      "createdAt": "2026-04-21T22:07:46.073Z"
+    }
+  }
+}

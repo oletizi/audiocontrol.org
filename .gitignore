@@ -40,6 +40,11 @@ public/images/generated/
 .playwright-mcp/
 redesign-*.png
 
+# Claude Code per-session lock — ephemeral {sessionId, pid, acquiredAt}.
+# Held while a session is active, released on shutdown. Per-session,
+# per-machine; committing it would churn every diff.
+.claude/scheduled_tasks.lock
+
 # (feature-image Phase 15 migration note: the generation history, workflow
 # pipeline, and thread messages used to live in .feature-image-history.jsonl,
 # .feature-image-pipeline.jsonl, and .feature-image-threads.jsonl at the

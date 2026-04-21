@@ -15,7 +15,7 @@
 import { existsSync } from 'fs';
 import {
   calendarPath,
-  draftEntry,
+  outlineEntry,
   findEntry,
   isSite,
   publishEntry,
@@ -117,9 +117,16 @@ function parsePublishBody(body: unknown): PublishRequest | HandlerResult {
 }
 
 /**
- * Planned → Drafting. Scaffolds the blog file and advances the calendar.
- * Returns 400/404/409 on the appropriate failure shapes; 200 with the
- * updated entry on success.
+ * Planned → Outlining. Scaffolds the blog file (frontmatter +
+ * `## Outline` placeholder) and advances the calendar into Outlining.
+ * The operator iterates the outline via the review UI before the
+ * agent drafts the body. Returns 400/404/409 on the appropriate
+ * failure shapes; 200 with the updated entry on success.
+ *
+ * Retains the `handleDraftStart` name for backwards compatibility
+ * with existing studio-button callers; the underlying transition
+ * changed in Phase 17c from `draftEntry` (Planned → Drafting) to
+ * `outlineEntry` (Planned → Outlining).
  */
 export function handleDraftStart(rootDir: string, body: unknown): HandlerResult {
   const parsed = parseDraftStartBody(body);
@@ -142,7 +149,7 @@ export function handleDraftStart(rootDir: string, body: unknown): HandlerResult 
   if (entry.stage !== 'Planned') {
     return err(
       409,
-      `entry "${parsed.slug}" is in stage "${entry.stage}" — must be Planned to scaffold a draft`,
+      `entry "${parsed.slug}" is in stage "${entry.stage}" — must be Planned to scaffold an outline`,
     );
   }
 
@@ -158,7 +165,7 @@ export function handleDraftStart(rootDir: string, body: unknown): HandlerResult 
     return err(isExists ? 409 : 500, message);
   }
 
-  const updated = draftEntry(cal, parsed.slug);
+  const updated = outlineEntry(cal, parsed.slug);
   writeCalendar(rootDir, parsed.site, cal);
 
   const response: DraftStartResponse = {

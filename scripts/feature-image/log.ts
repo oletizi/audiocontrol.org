@@ -43,7 +43,7 @@ export interface LogEntry {
   site?: 'audiocontrol' | 'editorialcontrol';
   /**
    * Target post this approved entry was applied to (source path like
-   * `src/sites/<site>/pages/blog/<slug>/index.md`). Set by
+   * `src/sites/<site>/content/blog/<slug>.md`). Set by
    * `/feature-image-apply` when the files are copied into the post.
    * Absence means the entry hasn't been applied yet (even if status=approved).
    */

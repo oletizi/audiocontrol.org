@@ -624,7 +624,7 @@ Then the UI:
   - [ ] Runs first-pass draft in the current session; appends workflow + v1
 - [ ] Dev route: `src/sites/<site>/pages/dev/editorial-review-shortform.astro` — list view of all open shortform workflows grouped by platform
 - [ ] Per-workflow UI is inline (not a separate route) — each row expands to show the current version, annotation field, edit textarea, and approve/iterate buttons. Matches the feature-image gallery pattern more than the longform review pattern.
-- [ ] `/editorial-iterate` branches on `contentKind` — shortform path uses a terser iteration prompt (the voice skill reference for short-form, not longform)
+- [x] `/editorial-iterate` branches on `contentKind` — shortform path uses a terser iteration prompt (the voice skill reference for short-form, not longform)
 - [ ] `/editorial-approve` for shortform writes to `DistributionRecord.shortform`, re-runs calendar round-trip test to confirm persistence, does not touch the filesystem outside the calendar MD
 
 #### Tests
@@ -884,3 +884,148 @@ No new user-invocable skills in this phase. `/editorial-review-help` and `/edito
 - [x] `npx vitest run` — 224 tests pass (2 pre-existing network-integration failures unrelated)
 - [x] Live verification: edit toggle, text-select → Mark → modal → submit → highlight on reload, dblclick → edit mode, site chip filter, per-site action routing all exercised via Playwright
 - [x] Net −1,644 lines of duplicated code removed
+
+### Phase 16: Pipeline drive-through — skill helpers, voice-skill consultation, body-state gate, first drafted dispatch, session archive
+
+**Deliverable:** 13 commits on `feature/editorial-calendar` atop the merged Phase 15. Walked the pipeline by-the-book for the first time, found and fixed every friction point as it surfaced, drafted the first dispatch end-to-end, and added the session-transcript archive so future LLM-analysis sessions have data to work against.
+
+**Motivation:** Phase 15 shipped a multi-site studio but had never been driven end-to-end from Ideas → Drafting by a human operator plus Claude. The test-drive surfaced a series of gaps — some procedural (one-liners instead of helpers), some structural (scaffold→draft step missing from the studio UI), some visual (dark-on-dark body text, Mark pencil positioning off by ~900px, host-site header occluding the review chrome). The thesis of the article we drafted during this phase ("You Don't Need a Better Prompt. You Need Selection Pressure.") is that evolution-by-selection is a daily-workflow posture — every friction point is an opportunity to fix the tool. This phase is that thesis made literal.
+
+#### 16a. Ideas, plans, and the first drafted dispatch
+
+- [x] Batch-added 7 new ideas, moved 5 from audiocontrol → editorialcontrol per operator classification rule ("general AI-agents / content-marketing → EC; developing the audiocontrol project → AC"). AC now has 4 Ideas + 10 Published; EC has 9 Ideas + 2 Published.
+- [x] Planned `evolution-by-artificial-selection-for-prompt-generation` on EC. Two strategic calls: (1) wide-net keywords over narrow "SEO heroes" until analytics data earns the narrowing; (2) consulted `editorialcontrol-voice` skill mid-planning to reframe the title from a topic-header to the site's signature two-sentence claim — "You Don't Need a Better Prompt. You Need Selection Pressure." Paired with `feature-image-automation-evolution-gallery-claude-code` (the applied half); cross-link decision pinned in both descriptions.
+- [x] Drafted the dispatch (~1,900 words). Uses the site's signature moves: thesis → two failure modes (the perfectionist, the collector) → third option; worked example with date-receipts on the feature-image library; "If you're still reading, here's the short version" numbered list; meta-move close that names the dispatch's own reframing by the voice skill.
+
+#### 16b. Skill-helper + voice-skill enshrinement
+
+- [x] `.claude/skills/editorial-draft-review/enqueue.ts` — reusable helper that reads the blog file, calls `createWorkflow`, reports fresh-vs-existing + any body-state warning. Replaces the earlier ad-hoc `npx tsx -e "..."` pattern. Also auto-syncs: when an existing workflow's current version differs from the file, the helper appends a new version instead of silently returning the stale one.
+- [x] `/editorial-plan`, `/editorial-draft`, `/editorial-draft-review` skills updated to MANDATE voice-skill consultation before any copy generation (title/dek framing at plan time, body drafting at draft time). `/editorial-draft` also grew a dual-mode flow (missing-scaffold vs placeholder-body) to support the studio's Scaffold button flow.
+- [x] Removed stale GitHub-issue language from `/editorial-draft` (dropped in Phase 14; skill doc was outdated).
+
+#### 16c. Studio + review-page fixes surfaced by the drive-through
+
+- [x] **Body-state detection.** `scripts/lib/editorial/body-state.ts` classifies a scaffolded post as `missing | placeholder | written`. Studio rows in Drafting/Review now branch on this: placeholder body → `draft body →` primary action; written body → `copy /review`. File dot colors match. Unit tests: 9 cases including the regression for scaffoldBlogPost's blank-line-between-frontmatter-and-H1 shape.
+- [x] **Stale v1 on review page.** Review page reads `currentVersion.markdown` from the journal, not disk. Workflow enqueued with placeholder v1 showed the placeholder long after the file had real prose. Enqueue helper now detects divergence and appends a new version.
+- [x] **Host site header occluded the review chrome.** Editorialcontrol's header is `position: sticky; top: 0; z-index: 100` — won the z-index fight vs. the review strip and margin sidebar. Hidden on longform review pages via `body:has([data-review-ui="longform"]) .header-wrapper { display: none }`.
+- [x] **Dark-on-dark body text.** `[data-review-ui]` sets `color: var(--er-ink)` — correct on cream studio/shortform pages, wrong on the dark BlogLayout-hosted longform page. `#draft-body` now gets an explicit `color: hsl(var(--foreground))` so prose cascades from the host token; tag-specific host rules (em/strong/a/code/h2/h3) keep their own colors.
+- [x] **Scaffold chrome in the body.** Voice-skill reference prescribed an in-body byline + rule + "In this dispatch" numbered ToC, but the shipped dispatches on the site don't follow that — BlogLayout handles byline + auto-ToC. Stripped the in-body chrome; draft now matches the shape of shipped dispatches. Noted: the voice-skill reference is out of date on this detail.
+- [x] **Click-in-margin to mark.** The natural operator gesture (select text → click margin area) now opens the Mark modal. `mousedown` on the marginalia sidebar preventDefaults so the selection survives; `click` opens the modal if a pending range is set, otherwise toasts the instruction.
+- [x] **Mark pencil visibility.** Bigger (opsz 36/wght 700), heavier shadow + cream halo, one-shot pulse animation on spawn, downward-pointing triangle tip anchoring it to the selection below.
+- [x] **Mark pencil positioning bug.** `top = window.scrollY + rect.top - 34` assumed document-absolute coordinates but `position: absolute` is offsetParent-relative. Result: pencil rendered ~900px below the selection — invisible to the operator since Phase 14. Fixed with `rect.top - offsetParent.top - offsetHeight - 14` and CSS `translate(-50%, 0)` for horizontal centering.
+
+#### 16d. Session-transcript archive
+
+- [x] Ported `tools/extract-session-content.ts` from `../audiocontrol/`. Scoped by default to this monorepo's Claude session dir (not every project on the laptop).
+- [x] Added focused `/extract-session-content` skill that just runs the extractor (no LLM analysis, no report). Larger pipeline (extract → encrypt → LLM → report) stays in the parent repo.
+- [x] Archived the 2 sessions leading into this phase's test-drive: 3,376 entries, ~2.9MB encrypted across `data/sessions/content/`.
+
+#### Verification
+
+- [x] `npm run build` clean on both sites.
+- [x] 232 tests pass (9 new `bodyState` tests + 2 pre-existing network-integration failures unrelated).
+- [x] Drove the full pipeline: `/editorial-add` → `/editorial-plan` → Scaffold button (studio) → `/editorial-draft` → `/editorial-draft-review` → review page rendering the drafted dispatch with all four sites of review UI working (Edit toggle, margin-click / pencil-click Mark, selection highlight, iterate/approve buttons).
+- [x] Session content extractor: 2 sessions encrypted, decrypt round-trip verified on one file.
+
+### Phase 17: Content collections + draft prod gate + outline stage
+
+**Deliverable:** Three reviewable commits that (a) migrate blog articles from file-based routing to Astro content collections, (b) add a `state: draft | published` frontmatter field that gates production rendering while keeping dev unchanged, and (c) introduce a new `Outlining` calendar stage with an outline-review sub-workflow, all applied recursively to the SSOT invariant established in Phase 16.
+
+**Motivation:** The Phase 16 drive-through surfaced two architectural gaps that only became visible once the pipeline was exercised end-to-end.
+
+1. **No outline phase.** The pipeline goes straight from a planned brief to a fully-drafted first version. Real editorial teams outline first; the operator reviews the shape before the agent invests in prose. Without this step, iteration burns tokens on structural problems that a 30-second outline review would have caught.
+2. **No draft/publish gate.** Any in-flight article in `src/sites/<site>/pages/blog/<slug>/` is visible on production the moment it's built. The SSOT invariant says disk IS the article — which means the article file exists from scaffold time forward, long before it's ready for the world.
+
+The user also raised a data-ownership question applying the SSOT invariant recursively: if the article file owns the article's content, should it also own the article's lifecycle state? The agreed answer: **split ownership by who writes most often.** Workflow state (churn-heavy, machine-owned) stays in the journal. A single `state: draft | published` field (rarely written, human-owned at publish time) moves to frontmatter as the production-render gate. Dek ownership passes from calendar to `index.md` frontmatter at scaffold time (calendar flushes once, then frontmatter is authoritative).
+
+File-based routing can't conditionally skip pages, so the gate requires content collections: `src/sites/<site>/content/blog/<slug>/index.md` plus a dynamic `[slug].astro` route whose `getStaticPaths` filters on `state` (in prod) or passes everything (in dev). This is the Astro-native shape blogs "should have had from the beginning."
+
+#### 17a. Content collections migration
+
+- [x] Add `src/sites/<site>/content.config.ts` (×2 sites) with a Zod schema for the blog collection. Schema mirrors current frontmatter (title, description, date, datePublished, dateModified, author, optional feature-image fields) plus `state: z.enum(['draft', 'published']).default('draft')`.
+- [x] Move every `src/sites/<site>/pages/blog/<slug>/index.md` → `src/sites/<site>/content/blog/<slug>/index.md`. Keep the directory shape so co-located images (`images/...`) resolve with their existing relative imports.
+- [x] Add `src/sites/<site>/pages/blog/[slug].astro` (×2 sites) — dynamic route. `getStaticPaths` returns all entries in the `blog` collection with `params.slug`. The component renders via `<Content />` from `entry.render()` wrapped in `BlogLayout`.
+- [x] Drop obsolete `layout:` frontmatter lines from every migrated article (Astro content collections don't use the frontmatter `layout` mechanism).
+- [x] Update `src/sites/<site>/pages/blog/index.astro` to use `getCollection('blog')` instead of `Astro.glob()` / `import.meta.glob()`.
+- [x] Backfill `state` in frontmatter for every existing article: merged/published posts get `state: published`; the in-flight `evolution-by-artificial-selection-for-prompt-generation` on editorialcontrol gets `state: draft`.
+- [x] Update every path reference in helper scripts and skills: `scripts/lib/editorial/scaffold.ts`, `scripts/lib/editorial/body-state.ts`, `scripts/lib/editorial-review/handlers.ts`, `.claude/skills/editorial-draft-review/enqueue.ts`, `.claude/skills/editorial-iterate/finalize.ts`, `.claude/skills/editorial-approve/apply.ts`, `.claude/skills/editorial-draft/SKILL.md`, `.claude/skills/editorial-draft-review/SKILL.md`, feature-image generator refs, sitemap/customPages config in `astro.config.mjs`.
+- [x] Update test fixtures in `test/editorial-review/*.test.ts` and `test/editorial/body-state.test.ts` to scaffold blog files under the new `content/blog/` path.
+- [x] Update `scaffoldBlogPost()` to write under `content/blog/` and include `state: 'draft'` in the frontmatter it generates.
+
+**Acceptance criteria — 17a:**
+
+- [x] `npm run build` succeeds on both sites with all existing articles rendering at their existing URLs.
+- [x] `npm test` passes (vitest suite adjusted for new paths).
+- [x] Feature image generation still locates source articles via the new content collection path.
+- [x] Dev server renders the in-flight draft at `/blog/evolution-by-artificial-selection-for-prompt-generation` on both sites.
+- [x] No URL change for any shipped article (the dynamic `[slug]` route preserves `/blog/<slug>/`).
+
+#### 17b. Draft prod gate
+
+- [x] `getStaticPaths` in `[slug].astro` filters by `state`:
+  ```ts
+  const entries = await getCollection('blog', ({ data }) =>
+    import.meta.env.PROD ? data.state === 'published' : true
+  );
+  ```
+- [x] Blog index page (`pages/blog/index.astro`) applies the same env-gated filter so drafts don't appear in the listing in prod.
+- [x] Sitemap config in `astro.config.mjs` — verify the `@astrojs/sitemap` integration only sees the built pages. Because `getStaticPaths` omits drafts in prod, they're auto-excluded from the sitemap.
+- [x] Feature-image OG generation for drafts still works in dev (needed for review UI previews) but prod build skips drafts naturally.
+
+**Acceptance criteria — 17b:**
+
+- [x] `npm run dev` renders both draft and published articles.
+- [x] `npm run build` produces zero HTML files for draft articles; curl against the built output for a draft slug returns a 404 (or no file).
+- [x] Blog index in built prod output excludes drafts; blog index in dev includes them.
+- [x] Sitemap in the prod build excludes draft slugs.
+- [x] Review UI at `/dev/editorial-review/<slug>` still works for draft articles (dev-only, unchanged).
+
+#### 17c. Outline stage + backfill
+
+- [x] Add `'Outlining'` to the `STAGES` array in `scripts/lib/editorial/types.ts`, inserted between `'Planned'` and `'Drafting'`. Update the markdown calendar parser/writer to round-trip the new stage's table.
+- [x] Extend the `contentKind` union on `DraftWorkflowItem` to include `'outline'` (join `'longform' | 'shortform'`). Update discriminant usage in handlers and skills.
+- [x] New skill `/editorial-outline` — loads the voice skill, reads the calendar brief, appends a `## Outline` body section to `index.md` under the scaffolded `# <title>` heading, transitions calendar stage to `Outlining`, enqueues an outline review workflow in `open` via `createWorkflow({ contentKind: 'outline' })`.
+- [x] New skill `/editorial-outline-approve` (helper: `.claude/skills/editorial-outline-approve/apply.ts`) — advances calendar stage `Outlining` → `Drafting` in one click. Does not write the draft; that's the job of `/editorial-draft`, which now preserves the approved outline in the body during drafting.
+- [x] `/editorial-iterate` branches on `workflow.contentKind`: for `'outline'`, finalize snapshots the updated outline section. For `'longform'`, behavior is unchanged.
+- [x] `/editorial-approve` refuses (or no-ops) for `contentKind: 'outline'` — outline approval is a one-click advance (17c), not the terminal write step.
+- [ ] Studio row display: new column or pill indicating contentKind so the operator can see at a glance which workflows are outline-vs-longform.
+- [x] Backfill: add a `## Outline` section to `evolution-by-artificial-selection-for-prompt-generation/index.md`, rewind calendar entry from `Drafting` → `Outlining`, create an outline review workflow in state `iterating`.
+
+**Acceptance criteria — 17c:**
+
+- [x] A Planned entry can be advanced to Outlining via `/editorial-outline <slug>`, produces a `## Outline` section on disk, and creates a workflow with `contentKind: 'outline'`.
+- [x] The operator can iterate on the outline via the existing review UI — margin notes, Save, Iterate all work end-to-end because contentKind branching is invisible to the UI layer.
+- [x] Approving the outline (via `/editorial-outline-approve`) advances the calendar to Drafting; disk is unchanged except for the calendar file.
+- [x] `/editorial-draft` run on an entry in Drafting with an existing `## Outline` section writes the article body but leaves the outline section intact (agent can consult it while drafting).
+- [x] The evolution dispatch shows up in the studio as an outline-in-iteration, with the rest of the pipeline state (current version, annotations) preserved.
+
+### Phase 17d: Review-UI and studio follow-ons surfaced by the drive-through
+
+**Deliverable:** Ten commits on `feature/editorial-calendar` addressing bugs, UX gaps, and architectural improvements surfaced by driving the evolution dispatch through the newly-shipped Outlining stage.
+
+**Motivation:** Phase 17c shipped the pipeline code but left several UX gaps that only became visible once a real operator used the new stage: no actions in the Outlining studio row, wrong clipboard commands, a deep-link that pointed at the wrong workflow, a quote-offset bug, margin notes disappearing after edits. Each one was a follow-on of Phase 17c; none were worth deferring to a separate phase.
+
+- [x] Studio renders actions for Outlining rows (review outline / iterate outline / approve outline buttons keyed to workflow state).
+- [x] `/dev/editorial-review/[slug]` accepts `?kind=outline` to select the outline workflow; studio's `workflowLink()` emits the param.
+- [x] Iterate and Approve buttons in the review UI emit contentKind-aware commands (`/editorial-iterate --kind outline`, `/editorial-outline-approve`).
+- [x] `extractQuote` aligned with `computeOffsetFromRange`'s walker coordinate space; margin-note quotes no longer drop leading/trailing chars on block-heavy markdown.
+- [x] Comment annotations grow an `anchor?: string` field capturing the quote text at creation time. On later versions, the client rebases comments via `indexOf(anchor)`: if unique in the current body, render as "from v{N}" with highlight at the new position; if missing/ambiguous, render as "from v{N} · unresolved" in the sidebar only.
+- [x] Resolve/re-open as a new `ResolveAnnotation` type (`type: 'resolve'`, `commentId`, `resolved`). Append-only; re-open is a second resolve with `resolved: false`. Live items grow a Resolve button; resolved items archive to a collapsible `Resolved (N) ▾` footer with a Re-open button.
+- [x] `/dev/` index pages per site listing all dev-only surfaces.
+- [x] `← studio` back-link in the review chrome; `← /dev` in the studio masthead. Scoped CSS to beat BlogLayout's prose.css link color.
+- [x] `bodyState` strips the `## Outline` section before classifying — a post with a filled-in outline and a placeholder body correctly reports `placeholder`, so the studio surfaces the `draft body →` action instead of `copy /review`.
+- [x] Full dispatch body drafted (v1) for `evolution-by-artificial-selection-for-prompt-generation`, ~2,000 words against editorialcontrol-voice + dispatch-longform reference.
+
+**Acceptance criteria — 17d:**
+
+- [x] Every new UI affordance built for outline workflows renders correctly for both longform and outline kinds — no regressions.
+- [x] Margin notes survive version bumps: either anchor-rebased (highlight + sidebar) or unresolved (sidebar-only, operator can resolve or re-anchor). Verified on the evolution dispatch across v1-v8.
+- [x] Resolve and Re-open both persist across page reload + version switches.
+- [x] `npm test` passes (248+ tests, 2 pre-existing network-integration failures unrelated).
+- [x] `npm run build` clean on both sites; drafts still excluded from prod.
+
+#### Open questions — 17
+
+- Should the outline section be stripped from the article on publish, preserved as a commented-out block, or kept as an authored section? (Proposed: **preserve inline as-authored** for the first pass. Operators who want it gone can strip manually; we can add an auto-strip later if it becomes a pattern.)
+- Does the outline workflow need its own list view in the studio, or does the existing unified list with a contentKind pill cover it? (Proposed: **unified list with pill** — avoids multiplying surfaces. Revisit if outline reviews get lost.)
+- Should there be an `Outline Approved` explicit sub-stage, or is the Outlining → Drafting transition sufficient signal? (Proposed: **just Drafting** — the outline is approved when the workflow moves to Drafting; a separate "outline approved" stage would be redundant with the calendar stage transition.)

@@ -18,19 +18,20 @@ Accepts `--site <slug>` (default: `audiocontrol`). Voice skill is chosen from si
 ## Usage
 
 ```
-/editorial-iterate <slug>
+/editorial-iterate <slug>                              # longform (default)
 /editorial-iterate --site editorialcontrol <slug>
+/editorial-iterate --kind outline <slug>               # iterate on an outline workflow
 ```
 
 ## Preconditions
 
-- A workflow exists for `(site, slug, contentKind='longform')` in state `iterating`. If the workflow is still in `in-review`, tell the operator to click Iterate in the review UI first (that transitions it to `iterating`). If it's in `open`, tell them to open the review page first. If in `approved`/`applied`/`cancelled`, tell them why this is a no-op.
+- A workflow exists for `(site, slug, contentKind)` where contentKind is `'longform'` (default) or `'outline'` (when the `--kind outline` flag is passed) and the workflow is in state `iterating`. If the workflow is still in `in-review`, tell the operator to click Iterate in the review UI first (that transitions it to `iterating`). If it's in `open`, tell them to open the review page first. If in `approved`/`applied`/`cancelled`, tell them why this is a no-op.
 
 ## Steps
 
 1. **Resolve site** via `assertSite()`. Resolve slug from the argument.
 
-2. **Fetch the workflow + versions** via `handleGetWorkflow(process.cwd(), { id: null, site, slug, contentKind: 'longform', platform: null, channel: null })` from `scripts/lib/editorial-review/handlers.ts`.
+2. **Fetch the workflow + versions** via `handleGetWorkflow(process.cwd(), { id: null, site, slug, contentKind: '<kind>', platform: null, channel: null })` from `scripts/lib/editorial-review/handlers.ts` (kind = `'longform'` by default, `'outline'` when `--kind outline` is passed).
    - 404 → report that no workflow exists; suggest `/editorial-draft-review <slug>`.
    - 200 → proceed.
 

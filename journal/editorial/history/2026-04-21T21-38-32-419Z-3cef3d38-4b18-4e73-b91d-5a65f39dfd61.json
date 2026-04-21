@@ -1,0 +1,21 @@
+{
+  "id": "3cef3d38-4b18-4e73-b91d-5a65f39dfd61",
+  "timestamp": "2026-04-21T21:38:32.419Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-21T21:38:32.419Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "bebefd2d-9724-44f1-b5a0-ddc4dc879d98",
+      "version": 2,
+      "range": {
+        "start": 167,
+        "end": 232
+      },
+      "text": "Why?",
+      "category": "other",
+      "id": "3cef3d38-4b18-4e73-b91d-5a65f39dfd61",
+      "createdAt": "2026-04-21T21:38:32.419Z"
+    }
+  }
+}

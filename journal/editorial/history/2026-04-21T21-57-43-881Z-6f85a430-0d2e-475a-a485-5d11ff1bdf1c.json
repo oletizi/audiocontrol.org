@@ -1,0 +1,21 @@
+{
+  "id": "6f85a430-0d2e-475a-a485-5d11ff1bdf1c",
+  "timestamp": "2026-04-21T21:57:43.881Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-21T21:57:43.881Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "bebefd2d-9724-44f1-b5a0-ddc4dc879d98",
+      "version": 3,
+      "range": {
+        "start": 1236,
+        "end": 1331
+      },
+      "text": "I don't even want to mention \"expense.\" That's not what people are worried about right now. We're in the middle of a giant shift in creative work. Cost optimization is not where anyone should be focused right now.",
+      "category": "other",
+      "id": "6f85a430-0d2e-475a-a485-5d11ff1bdf1c",
+      "createdAt": "2026-04-21T21:57:43.881Z"
+    }
+  }
+}

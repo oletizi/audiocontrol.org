@@ -8,7 +8,7 @@ export type DraftWorkflowState =
   | 'applied'
   | 'cancelled';
 
-export type ContentKind = 'longform' | 'shortform';
+export type ContentKind = 'longform' | 'shortform' | 'outline';
 
 export type OriginatedBy = 'agent' | 'operator';
 
@@ -51,6 +51,16 @@ export interface CommentAnnotation extends AnnotationBase {
   text: string;
   /** Optional category for Phase 12 aggregation. */
   category?: AnnotationCategory;
+  /**
+   * The displayed text the operator selected when they made the
+   * comment. Captured at creation time against the version's
+   * rendered body. Used on later versions to re-locate the anchor
+   * via `indexOf`: if the quote appears exactly once in the new
+   * version, the comment is rebased; otherwise it's shown as
+   * unresolved-from-v{N}. Optional so pre-rebase annotations still
+   * load; they render as unresolved.
+   */
+  anchor?: string;
 }
 
 export interface EditAnnotation extends AnnotationBase {
@@ -77,11 +87,33 @@ export interface RejectAnnotation extends AnnotationBase {
   reason?: string;
 }
 
+/**
+ * Marks a specific comment annotation as resolved — the operator
+ * acted on it (or decided the edit made it moot) and doesn't need
+ * to see it in the live sidebar anymore.
+ *
+ * Emitted as a separate record rather than mutating the comment,
+ * because the journal is append-only. Readers reconstruct a
+ * comment's resolved state by scanning for the most recent
+ * resolve annotation that points at the comment's id. An explicit
+ * `resolved: false` value re-opens the comment (toggles the state
+ * back to unresolved) — so resolution is fully reversible without
+ * deleting history.
+ */
+export interface ResolveAnnotation extends AnnotationBase {
+  type: 'resolve';
+  /** The comment's id this resolution refers to. */
+  commentId: string;
+  /** `true` to resolve, `false` to re-open. Default true. */
+  resolved: boolean;
+}
+
 export type DraftAnnotation =
   | CommentAnnotation
   | EditAnnotation
   | ApproveAnnotation
-  | RejectAnnotation;
+  | RejectAnnotation
+  | ResolveAnnotation;
 
 export interface DraftVersion {
   /** 1-based version number; v1 is the initial draft. */

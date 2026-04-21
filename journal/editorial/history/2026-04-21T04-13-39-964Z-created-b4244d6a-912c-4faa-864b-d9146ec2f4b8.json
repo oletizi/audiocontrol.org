@@ -1,0 +1,18 @@
+{
+  "id": "created-b4244d6a-912c-4faa-864b-d9146ec2f4b8",
+  "timestamp": "2026-04-21T04:13:39.964Z",
+  "entry": {
+    "kind": "workflow-created",
+    "at": "2026-04-21T04:13:39.964Z",
+    "workflow": {
+      "id": "b4244d6a-912c-4faa-864b-d9146ec2f4b8",
+      "site": "editorialcontrol",
+      "slug": "evolution-by-artificial-selection-for-prompt-generation",
+      "contentKind": "longform",
+      "state": "open",
+      "currentVersion": 1,
+      "createdAt": "2026-04-21T04:13:39.964Z",
+      "updatedAt": "2026-04-21T04:13:39.964Z"
+    }
+  }
+}

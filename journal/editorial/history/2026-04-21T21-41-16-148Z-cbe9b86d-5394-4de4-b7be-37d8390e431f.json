@@ -1,0 +1,21 @@
+{
+  "id": "cbe9b86d-5394-4de4-b7be-37d8390e431f",
+  "timestamp": "2026-04-21T21:41:16.148Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-21T21:41:16.148Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "bebefd2d-9724-44f1-b5a0-ddc4dc879d98",
+      "version": 2,
+      "range": {
+        "start": 261,
+        "end": 317
+      },
+      "text": "This is an artificial dilemma. There aren't just two problems. Another problem, for example, is genetic drift that's not subject to selection pressure... if you start a prompt from first principles every time, you never learn from the past.",
+      "category": "other",
+      "id": "cbe9b86d-5394-4de4-b7be-37d8390e431f",
+      "createdAt": "2026-04-21T21:41:16.148Z"
+    }
+  }
+}

@@ -29,6 +29,7 @@ interface DraftWorkflow {
   slug: string;
   state: string;
   currentVersion: number;
+  contentKind: 'longform' | 'shortform' | 'outline';
 }
 
 interface CommentAnnotation {
@@ -40,7 +41,33 @@ interface CommentAnnotation {
   text: string;
   category?: string;
   createdAt: string;
+  /** Quote text captured at comment time against the original version. */
+  anchor?: string;
 }
+
+interface ResolveAnnotation {
+  id: string;
+  type: 'resolve';
+  workflowId: string;
+  commentId: string;
+  resolved: boolean;
+  createdAt: string;
+}
+
+/**
+ * Classification applied to every comment annotation when the page
+ * renders. Determines how the comment shows up in the UI:
+ *   - `current`: anchor belongs to the version being viewed; render
+ *     body highlight + sidebar item like before.
+ *   - `rebased`: anchor appears exactly once in the current body
+ *     text; compute a new range against current text and render the
+ *     highlight + a "from v{N}" pill in the sidebar.
+ *   - `unresolved`: anchor is missing, absent from the current body,
+ *     or appears more than once (ambiguous). Sidebar-only; no body
+ *     highlight; labeled "from v{N} · unresolved" so the operator
+ *     sees the comment and can re-anchor manually if they want.
+ */
+type AnnotationStatus = 'current' | 'rebased' | 'unresolved';
 
 interface DraftState {
   workflow: DraftWorkflow;
@@ -151,33 +178,98 @@ export function initEditorialReview(): void {
     }
   }
 
+  /**
+   * Concatenate the raw text-node values of draftBody in the same
+   * order `computeOffsetFromRange` and `wrapRange` walk them.
+   *
+   * Don't use `draftBody.innerText` here — innerText collapses
+   * source whitespace (newlines and indentation between block
+   * elements) the way CSS renders it, but the stored ranges are
+   * indexed against the raw concatenation of text-node values. The
+   * two coordinate spaces differ by a few chars whenever the
+   * markdown renderer produces multi-char whitespace between blocks,
+   * which truncates the quote's leading characters.
+   */
+  function draftPlainText(): string {
+    const walker = document.createTreeWalker(draftBody, NodeFilter.SHOW_TEXT);
+    let text = '';
+    let node = walker.nextNode();
+    while (node) {
+      text += node.nodeValue ?? '';
+      node = walker.nextNode();
+    }
+    return text;
+  }
+
   function extractQuote(offsets: DraftRange): string {
-    const text = draftBody.innerText || '';
-    return text.slice(offsets.start, offsets.end);
+    return draftPlainText().slice(offsets.start, offsets.end);
   }
 
   // ---- Sidebar rendering ----
 
-  function addSidebarItem(annotation: CommentAnnotation): void {
+  function addSidebarItem(annotation: CommentAnnotation, status: AnnotationStatus): void {
     sidebarEmpty.hidden = true;
     const li = document.createElement('li');
-    li.className = 'er-marginalia-item';
+    li.className = `er-marginalia-item er-marginalia-item--${status}`;
     li.dataset.annotationId = annotation.id;
+    li.dataset.status = status;
+
     const cat = document.createElement('div');
     cat.className = 'cat';
-    cat.textContent = annotation.category || 'other';
+    // Prefix the status for non-current items so the sidebar makes
+    // it unambiguous where the comment came from.
+    if (status === 'rebased') {
+      cat.textContent = `from v${annotation.version} · ${annotation.category || 'other'}`;
+    } else if (status === 'unresolved') {
+      cat.textContent = `from v${annotation.version} · unresolved`;
+    } else {
+      cat.textContent = annotation.category || 'other';
+    }
+
     const quote = document.createElement('div');
     quote.className = 'quote';
-    quote.textContent = extractQuote(annotation.range);
+    // Rebased comments show the anchor text (displayed at the
+    // current, rebased position). Unresolved comments show the
+    // original anchor if we have one; legacy annotations without
+    // anchor say so explicitly rather than rendering a wrong slice.
+    if (status === 'unresolved') {
+      quote.textContent = annotation.anchor
+        ? annotation.anchor
+        : '(legacy comment — no anchor captured)';
+    } else {
+      quote.textContent = extractQuote(annotation.range);
+    }
+
     const text = document.createElement('p');
     text.className = 'note';
     text.textContent = annotation.text;
+
     li.appendChild(cat);
     li.appendChild(quote);
     li.appendChild(text);
-    li.addEventListener('mouseenter', () => setActiveHighlight(annotation.id, true));
-    li.addEventListener('mouseleave', () => setActiveHighlight(annotation.id, false));
-    li.addEventListener('click', () => scrollToHighlight(annotation.id));
+
+    // Every live item gets a Resolve affordance, including unresolved
+    // (anchor-missing) prior-version comments — resolving them is how
+    // the operator says "the edit already handled this."
+    const actions = document.createElement('div');
+    actions.className = 'er-marginalia-actions';
+    const resolveBtn = document.createElement('button');
+    resolveBtn.type = 'button';
+    resolveBtn.className = 'er-marginalia-action';
+    resolveBtn.textContent = 'Resolve';
+    resolveBtn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      void resolveComment(annotation, status);
+    });
+    actions.appendChild(resolveBtn);
+    li.appendChild(actions);
+
+    if (status !== 'unresolved') {
+      li.addEventListener('mouseenter', () => setActiveHighlight(annotation.id, true));
+      li.addEventListener('mouseleave', () => setActiveHighlight(annotation.id, false));
+      li.addEventListener('click', () => scrollToHighlight(annotation.id));
+    }
+
     sidebarList.appendChild(li);
     sidebarIndex.set(annotation.id, li);
   }
@@ -211,13 +303,29 @@ export function initEditorialReview(): void {
     const offsets = computeOffsetFromRange(range);
     if (!offsets) { addBtn.hidden = true; return; }
     const rect = range.getBoundingClientRect();
-    addBtn.style.top = `${window.scrollY + rect.top - 34}px`;
-    addBtn.style.left = `${window.scrollX + rect.left + rect.width / 2 - 50}px`;
+    // The pencil uses `position: absolute`, so `top/left` are relative
+    // to the nearest positioned ancestor (the .er-review-shell div).
+    // Subtract that ancestor's viewport position from the selection's
+    // viewport rect to get the correct offset. Horizontal centering is
+    // handled in CSS with `translateX(-50%)` so we don't need to know
+    // the pencil's rendered width here.
+    // Un-hide FIRST so offsetParent + offsetHeight are measurable.
     addBtn.hidden = false;
+    const parent = addBtn.offsetParent instanceof HTMLElement ? addBtn.offsetParent.getBoundingClientRect() : null;
+    if (!parent) { addBtn.hidden = true; return; }
+    // The pencil uses `position: absolute`, so `top/left` are relative
+    // to the nearest positioned ancestor (the .er-review-shell div).
+    // Subtract that ancestor's viewport position from the selection's
+    // viewport rect to get the correct offset. Horizontal centering
+    // is handled in CSS with `translateX(-50%)` so we don't need to
+    // know the pencil's rendered width here.
+    const PENCIL_GAP = 14; // breathing room (triangle tip + a few px)
+    addBtn.style.top = `${rect.top - parent.top - addBtn.offsetHeight - PENCIL_GAP}px`;
+    addBtn.style.left = `${rect.left - parent.left + rect.width / 2}px`;
     pendingRange = offsets;
   });
 
-  addBtn.addEventListener('click', () => {
+  function openMarkModal(): void {
     if (!pendingRange) return;
     modalQuote.textContent = extractQuote(pendingRange);
     textArea.value = '';
@@ -225,6 +333,33 @@ export function initEditorialReview(): void {
     modal.hidden = false;
     addBtn.hidden = true;
     textArea.focus();
+  }
+
+  addBtn.addEventListener('click', openMarkModal);
+
+  // Operator-friendly second entry: click anywhere in the margin-notes
+  // sidebar (but not on an existing note, which has its own scroll-to
+  // behavior) to open the Mark modal for the current selection. This
+  // honors the natural "I selected text → now I click the margin"
+  // instinct that the floating pencil alone doesn't satisfy.
+  const sidebar = q<HTMLElement>('[data-comments-sidebar]');
+  sidebar.addEventListener('mousedown', (ev) => {
+    const target = ev.target instanceof HTMLElement ? ev.target : null;
+    // Clicks on an existing note: let that handler run (scroll to highlight).
+    if (target?.closest('.er-marginalia-item')) return;
+    // Preserve the selection the browser is about to clear on mouseup.
+    // selectionchange already stashed `pendingRange`; just suppress the
+    // default mousedown so the selection survives into click.
+    ev.preventDefault();
+  });
+  sidebar.addEventListener('click', (ev) => {
+    const target = ev.target instanceof HTMLElement ? ev.target : null;
+    if (target?.closest('.er-marginalia-item')) return;
+    if (!pendingRange) {
+      showToast('Select text in the draft first, then click here to mark it.');
+      return;
+    }
+    openMarkModal();
   });
 
   // ---- Modal submission ----
@@ -239,6 +374,11 @@ export function initEditorialReview(): void {
     if (!pendingRange) { closeModal(); return; }
     const text = textArea.value.trim();
     if (!text) { showToast('Comment text is required', true); return; }
+    // Capture the selected text at comment time so later versions
+    // can try to re-locate the anchor by content. This is the
+    // difference between "margin notes vanish after an edit" and
+    // "margin notes survive edits, possibly with a re-anchor hint."
+    const anchor = extractQuote(pendingRange);
     const payload = {
       type: 'comment',
       workflowId,
@@ -246,6 +386,7 @@ export function initEditorialReview(): void {
       range: pendingRange,
       text,
       category: categorySel.value,
+      anchor,
     };
     try {
       const res = await fetch('/api/dev/editorial-review/annotate', {
@@ -256,7 +397,7 @@ export function initEditorialReview(): void {
       const body = await res.json();
       if (!res.ok) { showToast(`Annotate failed: ${body.error || res.status}`, true); return; }
       wrapRange(body.annotation.range, body.annotation.id);
-      addSidebarItem(body.annotation);
+      addSidebarItem(body.annotation, 'current');
       closeModal();
       showToast('Comment saved');
     } catch (e) {
@@ -266,22 +407,256 @@ export function initEditorialReview(): void {
 
   // ---- Load existing annotations ----
 
+  /**
+   * Try to re-locate a prior-version anchor in the current body.
+   * Returns a current-body range if the anchor appears exactly
+   * once, null otherwise. Missing anchors (legacy annotations)
+   * also return null — those fall through to "unresolved" in the
+   * caller.
+   */
+  function rebaseAnchor(anchor: string | undefined): DraftRange | null {
+    if (!anchor || anchor.length === 0) return null;
+    const text = draftPlainText();
+    const first = text.indexOf(anchor);
+    if (first < 0) return null;
+    const next = text.indexOf(anchor, first + 1);
+    if (next >= 0) return null; // ambiguous — refuse to guess.
+    return { start: first, end: first + anchor.length };
+  }
+
+  /**
+   * Walk the resolve annotations for this workflow and compute
+   * which comments are currently resolved. Resolves are append-only
+   * events; the latest event for a given commentId wins. This lets
+   * Resolve/Reopen both persist through the same journal shape
+   * without mutating past records.
+   */
+  function computeResolvedSet(all: ResolveAnnotation[]): Set<string> {
+    const byCreatedAt = [...all].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    const state = new Map<string, boolean>();
+    for (const r of byCreatedAt) state.set(r.commentId, r.resolved);
+    const resolved = new Set<string>();
+    for (const [commentId, isResolved] of state) {
+      if (isResolved) resolved.add(commentId);
+    }
+    return resolved;
+  }
+
+  /** Resolved comments kept in memory so the "Show resolved" toggle
+   * can render them without a re-fetch. */
+  const resolvedHistory: { ann: CommentAnnotation; status: AnnotationStatus }[] = [];
+
   async function loadAnnotations(): Promise<void> {
     try {
-      const url = `/api/dev/editorial-review/annotations?workflowId=${encodeURIComponent(workflowId)}&version=${versionNum}`;
+      // Omit `version` — the server returns every annotation for the
+      // workflow. The client decides per-annotation how to display
+      // it based on whether it belongs to the current version, can
+      // be rebased, or is unresolved.
+      const url = `/api/dev/editorial-review/annotations?workflowId=${encodeURIComponent(workflowId)}`;
       const res = await fetch(url);
       if (!res.ok) return;
       const body = await res.json();
-      const comments: CommentAnnotation[] = (body.annotations || []).filter(
-        (a: { type: string }) => a.type === 'comment',
-      );
+      const all: Array<CommentAnnotation | ResolveAnnotation> = body.annotations || [];
+      const comments = all.filter((a): a is CommentAnnotation => a.type === 'comment');
+      const resolves = all.filter((a): a is ResolveAnnotation => a.type === 'resolve');
+      const resolvedIds = computeResolvedSet(resolves);
+
+      // Stable render order: current-version first, then rebased
+      // (by original version desc), then unresolved (by original
+      // version desc). Keeps the natural reading focus on the
+      // version actually under review.
+      const current: CommentAnnotation[] = [];
+      const rebased: { ann: CommentAnnotation; range: DraftRange }[] = [];
+      const unanchored: CommentAnnotation[] = [];
       for (const a of comments) {
-        wrapRange(a.range, a.id);
-        addSidebarItem(a);
+        if (resolvedIds.has(a.id)) {
+          // Resolved — keep in history so the toggle can resurface
+          // them, but don't render in the live stream.
+          let status: AnnotationStatus = 'current';
+          if (a.version !== versionNum) {
+            status = rebaseAnchor(a.anchor) ? 'rebased' : 'unresolved';
+          }
+          resolvedHistory.push({ ann: a, status });
+          continue;
+        }
+        if (a.version === versionNum) {
+          current.push(a);
+          continue;
+        }
+        const rebasedRange = rebaseAnchor(a.anchor);
+        if (rebasedRange) rebased.push({ ann: a, range: rebasedRange });
+        else unanchored.push(a);
       }
+      rebased.sort((a, b) => b.ann.version - a.ann.version);
+      unanchored.sort((a, b) => b.version - a.version);
+
+      for (const a of current) {
+        wrapRange(a.range, a.id);
+        addSidebarItem(a, 'current');
+      }
+      for (const r of rebased) {
+        wrapRange(r.range, r.ann.id);
+        addSidebarItem(r.ann, 'rebased');
+      }
+      for (const a of unanchored) {
+        // No body highlight; sidebar-only.
+        addSidebarItem(a, 'unresolved');
+      }
+      updateResolvedFooter();
     } catch (e) {
       showToast(`Failed to load annotations: ${(e as Error).message}`, true);
     }
+  }
+
+  // ---- Resolve / re-open ----
+
+  async function postResolve(commentId: string, resolved: boolean): Promise<boolean> {
+    try {
+      const res = await fetch('/api/dev/editorial-review/annotate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ type: 'resolve', workflowId, commentId, resolved }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        showToast(`Resolve failed: ${body.error || res.status}`, true);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      showToast(`Network error: ${(e as Error).message}`, true);
+      return false;
+    }
+  }
+
+  async function resolveComment(annotation: CommentAnnotation, status: AnnotationStatus): Promise<void> {
+    const ok = await postResolve(annotation.id, true);
+    if (!ok) return;
+    // Remove highlight + sidebar item; stash in resolvedHistory.
+    removeHighlight(annotation.id);
+    const item = sidebarIndex.get(annotation.id);
+    if (item) item.remove();
+    sidebarIndex.delete(annotation.id);
+    resolvedHistory.push({ ann: annotation, status });
+    updateResolvedFooter();
+    maybeShowEmpty();
+    showToast('Marked resolved');
+  }
+
+  async function reopenComment(annotation: CommentAnnotation, status: AnnotationStatus): Promise<void> {
+    const ok = await postResolve(annotation.id, false);
+    if (!ok) return;
+    // Pop from history, render back into the live list.
+    const idx = resolvedHistory.findIndex(r => r.ann.id === annotation.id);
+    if (idx >= 0) resolvedHistory.splice(idx, 1);
+    if (status === 'rebased') {
+      const r = rebaseAnchor(annotation.anchor);
+      if (r) wrapRange(r, annotation.id);
+    } else if (status === 'current') {
+      wrapRange(annotation.range, annotation.id);
+    }
+    addSidebarItem(annotation, status);
+    updateResolvedFooter();
+    showToast('Re-opened');
+  }
+
+  function removeHighlight(annotationId: string): void {
+    draftBody
+      .querySelectorAll<HTMLElement>(`mark[data-annotation-id="${annotationId}"]`)
+      .forEach(m => {
+        const parent = m.parentNode;
+        if (!parent) return;
+        // Replace the mark with a plain text node so the draft body
+        // reads cleanly after resolve. Adjacent text nodes will be
+        // merged on the next re-render; fine for dev.
+        parent.replaceChild(document.createTextNode(m.textContent ?? ''), m);
+      });
+  }
+
+  function maybeShowEmpty(): void {
+    const anyLive = sidebarList.querySelector('.er-marginalia-item');
+    sidebarEmpty.hidden = !!anyLive;
+  }
+
+  /** The collapsible "Resolved" footer at the bottom of the sidebar. */
+  function updateResolvedFooter(): void {
+    let footer = sidebar.querySelector<HTMLElement>('[data-resolved-footer]');
+    if (resolvedHistory.length === 0) {
+      if (footer) footer.remove();
+      return;
+    }
+    if (!footer) {
+      footer = document.createElement('div');
+      footer.className = 'er-marginalia-resolved';
+      footer.dataset.resolvedFooter = '';
+      const header = document.createElement('button');
+      header.type = 'button';
+      header.className = 'er-marginalia-resolved-header';
+      header.dataset.resolvedToggle = '';
+      header.setAttribute('aria-expanded', 'false');
+      const list = document.createElement('ol');
+      list.className = 'er-marginalia-resolved-list';
+      list.dataset.resolvedList = '';
+      list.hidden = true;
+      footer.appendChild(header);
+      footer.appendChild(list);
+      sidebar.appendChild(footer);
+
+      header.addEventListener('click', () => {
+        const open = list.hidden;
+        list.hidden = !open;
+        header.setAttribute('aria-expanded', String(open));
+      });
+    }
+    const headerBtn = footer.querySelector<HTMLButtonElement>('[data-resolved-toggle]');
+    const list = footer.querySelector<HTMLElement>('[data-resolved-list]');
+    if (!headerBtn || !list) return;
+    headerBtn.textContent = `Resolved (${resolvedHistory.length}) ▾`;
+    list.innerHTML = '';
+    for (const { ann, status } of resolvedHistory) {
+      list.appendChild(renderResolvedItem(ann, status));
+    }
+  }
+
+  function renderResolvedItem(ann: CommentAnnotation, status: AnnotationStatus): HTMLElement {
+    const li = document.createElement('li');
+    li.className = 'er-marginalia-item er-marginalia-item--resolved';
+    li.dataset.annotationId = ann.id;
+
+    const cat = document.createElement('div');
+    cat.className = 'cat';
+    const origin = status === 'current' ? `v${ann.version}` : `from v${ann.version}`;
+    cat.textContent = `${origin} · ${ann.category || 'other'} · resolved`;
+
+    const quote = document.createElement('div');
+    quote.className = 'quote';
+    quote.textContent = ann.anchor
+      ? ann.anchor
+      : status === 'unresolved'
+        ? '(legacy — no anchor captured)'
+        : extractQuote(ann.range);
+
+    const text = document.createElement('p');
+    text.className = 'note';
+    text.textContent = ann.text;
+
+    const actions = document.createElement('div');
+    actions.className = 'er-marginalia-actions';
+    const reopenBtn = document.createElement('button');
+    reopenBtn.type = 'button';
+    reopenBtn.className = 'er-marginalia-action';
+    reopenBtn.textContent = 'Re-open';
+    reopenBtn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      void reopenComment(ann, status);
+    });
+    actions.appendChild(reopenBtn);
+
+    li.appendChild(cat);
+    li.appendChild(quote);
+    li.appendChild(text);
+    li.appendChild(actions);
+    return li;
   }
 
   // ---- Edit mode ----
@@ -408,14 +783,47 @@ export function initEditorialReview(): void {
   const iterateBtn = qn<HTMLButtonElement>('[data-action="iterate"]');
   const rejectBtn = qn<HTMLButtonElement>('[data-action="reject"]');
 
+  /**
+   * Copy the Claude Code command that the operator needs to run next
+   * to the clipboard. Studio clicks only transition the workflow state;
+   * the actual cognitive work (iterate, approve-and-write, etc.) lives
+   * in a skill that must be invoked by the operator. Without the
+   * clipboard copy + toast, the operator is left staring at a page
+   * that looks like it did something but didn't tell them what's next.
+   */
+  async function copyAndToast(command: string, hint: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(command);
+      showToast(`${hint}  (command copied — paste into Claude Code)`);
+    } catch {
+      showToast(`${hint}  Run: ${command}`, true);
+    }
+  }
+
   approveBtn?.addEventListener('click', async () => {
     approveBtn.disabled = true;
     const bridged = await ensureInReview();
     if (!bridged) { approveBtn.disabled = false; return; }
     await postApproveAnnotation();
     const ok = await postDecision('approved');
-    if (ok) window.location.reload();
-    else approveBtn.disabled = false;
+    if (!ok) { approveBtn.disabled = false; return; }
+    // Approve writes to disk + transitions to applied; both are done
+    // by /editorial-approve (longform/shortform) or
+    // /editorial-outline-approve (outline) in Claude Code, not by
+    // the studio click. Build the command that matches the workflow.
+    const site = state.workflow.site;
+    const slug = state.workflow.slug;
+    const kind = state.workflow.contentKind;
+    const approveCmd =
+      kind === 'outline'
+        ? `/editorial-outline-approve --site ${site} ${slug}`
+        : `/editorial-approve --site ${site} ${slug}`;
+    const approveHint =
+      kind === 'outline'
+        ? `Approved outline v${versionNum}. Next: /editorial-outline-approve advances the calendar Outlining → Drafting.`
+        : `Approved v${versionNum}. Next: /editorial-approve writes the file and marks the workflow applied.`;
+    await copyAndToast(approveCmd, approveHint);
+    setTimeout(() => window.location.reload(), 2400);
   });
 
   iterateBtn?.addEventListener('click', async () => {
@@ -423,14 +831,21 @@ export function initEditorialReview(): void {
     const bridged = await ensureInReview();
     if (!bridged) { iterateBtn.disabled = false; return; }
     const ok = await postDecision('iterating');
-    if (ok) {
-      showToast(
-        `Run /editorial-iterate ${state.workflow.slug} in Claude Code to draft v${versionNum + 1}`,
-      );
-      setTimeout(() => window.location.reload(), 1800);
-    } else {
-      iterateBtn.disabled = false;
-    }
+    if (!ok) { iterateBtn.disabled = false; return; }
+    const site = state.workflow.site;
+    const slug = state.workflow.slug;
+    const kind = state.workflow.contentKind;
+    // /editorial-iterate defaults to --kind longform; outline
+    // workflows need the flag so the helper picks the right workflow.
+    const iterateCmd =
+      kind === 'outline'
+        ? `/editorial-iterate --kind outline --site ${site} ${slug}`
+        : `/editorial-iterate --site ${site} ${slug}`;
+    await copyAndToast(
+      iterateCmd,
+      `Iterating on v${versionNum}. Next: ${iterateCmd} revises against your comments and appends v${versionNum + 1}.`,
+    );
+    setTimeout(() => window.location.reload(), 2400);
   });
 
   rejectBtn?.addEventListener('click', async () => {
@@ -438,8 +853,14 @@ export function initEditorialReview(): void {
     rejectBtn.disabled = true;
     if (reason) await postRejectAnnotation(reason);
     const ok = await postDecision('cancelled');
-    if (ok) window.location.reload();
-    else rejectBtn.disabled = false;
+    if (ok) {
+      // Reject is terminal; nothing for the operator to run in Claude
+      // Code. Just confirm and reload.
+      showToast('Workflow cancelled.');
+      setTimeout(() => window.location.reload(), 900);
+    } else {
+      rejectBtn.disabled = false;
+    }
   });
 
   // ---- Keyboard shortcuts ----

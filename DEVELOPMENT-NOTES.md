@@ -4,6 +4,124 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-21: Editorial Calendar — Phase 17 shipped (content collections, prod gate, outline stage) + 17d UX follow-ons
+
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar
+
+**Goal:** Design and ship the outline phase (Phase 17c) that the Phase-16 drive-through surfaced as missing. Ended up also shipping Phase 17a (content collections migration) and 17b (draft prod gate) in the same session because the architecture branch led there, plus ten UX follow-ons (17d) exposed by driving the new stage end-to-end on the evolution dispatch.
+
+**Accomplished:**
+
+- **Phase 17a — Content collections migration.** Moved all 11 blog articles from `src/sites/<site>/pages/blog/<slug>/index.md` to `src/sites/<site>/content/blog/<slug>.md` with per-site `content.config.ts` + dynamic `[slug].astro` route. Added `state: 'draft' | 'published'` to the schema. Updated every path reference: scaffold, body-state, handlers, enqueue helpers, finalize helpers, apply helpers, feature-image scripts, studio. Tests adjusted. Zero URL regressions. One commit (`c9be0b6`).
+- **Phase 17b — Draft prod gate.** `getStaticPaths` in `[slug].astro` filters by `state` in prod but not dev. Blog index and sitemap auto-exclude drafts. Verified: evolution dispatch (state: draft) is excluded from prod build; dev renders it. Same commit as 17a.
+- **Phase 17c — Outlining stage.** Inserted between Planned and Drafting in STAGES. Added `contentKind: 'outline'` to DraftWorkflowItem. Two new skills + helpers: `/editorial-outline` and `/editorial-outline-approve`. `/editorial-iterate` grew `--kind outline`. Scaffold writes `## Outline` under the H1. Backfilled the evolution dispatch: rewound calendar to Outlining, cancelled prior longform workflow, created outline workflow in iterating. One commit (`b70bb52`).
+- **Baton framing (user's).** Applied SSOT recursively to the new design: workflow state (machine-owned, churn-heavy) stays in the journal; `state: draft | published` (rare writes, human-owned at publish) moves to frontmatter; dek ownership passes from calendar to frontmatter at scaffold time. Framing shaped where each new field lives.
+- **Phase 17d — Drive-through UX follow-ons (10 commits):**
+  - Studio row actions for Outlining (review/iterate/approve buttons keyed to workflow state).
+  - Review page accepts `?kind=outline`; studio's `workflowLink()` emits it.
+  - Iterate/Approve buttons emit contentKind-aware clipboard commands.
+  - `extractQuote` aligned with `computeOffsetFromRange` walker-coordinate space.
+  - **Margin-note anchor rebasing** — new `anchor?: string` field; client re-locates via `indexOf`; renders rebased or unresolved accordingly.
+  - **Resolve/re-open** as append-only `ResolveAnnotation`; collapsible Resolved footer; Re-open is a second resolve with `resolved: false`.
+  - `/dev/` index pages per site.
+  - `← studio` and `← /dev` navigation back-links.
+  - `bodyState` strips `## Outline` before classifying.
+- **Evolution dispatch drive-through.** Outline iterated v1 → v8 against operator margin notes. Outline approved; calendar flipped to Drafting. Full body drafted (~2,000 words) against editorialcontrol-voice + dispatch-longform reference. state: draft keeps it out of prod; bodyState now reports `written`.
+
+**Didn't Work:**
+
+- **First regex attempt at stripping `## Outline`** used `\Z` (end-of-string) — not supported in JavaScript regex. Rewrote line-wise (find header, scan to next H2 or EOF, splice). Multiline + end-of-string lookahead in JS has enough footguns to be worse than a four-line scan.
+- **First iterate pass missed two of four v4 annotations.** Filtered history files by timestamp and the two I missed had earlier timestamps than my threshold. Caught the miss on a re-scan, produced v6 to address them. Don't filter the operator's comments by proxy signals; read the whole set.
+
+**Course Corrections:**
+
+- [PROCESS] Shipped 17c code without updating the studio UI for the new stage. Operator's first screenshot: Outlining row with no actions. Pattern: when adding a new state to a state machine with UI surfaces, update every surface in the same commit.
+- [PROCESS] Review page was hard-coded to `contentKind: 'longform'`. Same class of miss — shipped backend for new contentKind without updating the frontend that reads it.
+- [UX] `← studio` link rendered chartreuse on cream — unreadable. Forgot to scope the CSS rule under `[data-review-ui="longform"]`. BlogLayout's prose.css link color won the specificity fight. Recurring failure mode on this file.
+- [PROCESS] Iterate button's clipboard command didn't include `--kind outline`. Inherited the longform-only assumption from the original implementation.
+- [UX] Operator reported "selected text capture off by a few characters" — `computeOffsetFromRange` walks raw text nodes, `extractQuote` used `innerText` (CSS-collapsed). Different coordinate spaces, subtle drift.
+- [PROCESS] Margin notes disappeared after Save-as-new-version — scoped to version by design, but the UX gave no signal. Fix was architectural (anchor rebasing), not cosmetic. User flagged it; would have been a durable source of anxiety.
+- [PROCESS] `bodyState` didn't know about `## Outline` after Phase 17c. Scaffold writes outline content in Outlining, but the classifier counted it as body prose. Not caught because 17c's tests exercised scaffold shape, not outline-filled + body-empty. Added three new test cases.
+
+**Quantitative:**
+
+- Messages: ~95 user turns.
+- Commits: 15 (c9be0b6, b70bb52, fc4760c, 383ee8f, f01090a, a53f6ab, 24e1e4a, 8799f09, 04cebfc, b698181, 9cfd134, 54cb5a5, 32d2bca, d9f6932, bfbb7af).
+- Corrections: ~7 (5 [PROCESS], 2 [UX]).
+- Tests: 251 passing (4 new bodyState, 3 new handler; 2 pre-existing unrelated failures).
+- Files changed: ~25 source + calendar + journal + article.
+- Dispatch progress: evolution-by-artificial-selection went Planned → Outlining (backfilled) → outline v1–v8 → Drafting → body v1. state: draft; not in prod.
+- Lines of prose: ~2,000 words body + outline.
+
+**Insights:**
+
+- **Baton framing made architectural decisions crisp.** "Workflow state vs content ownership — who holds the baton, and when does it pass?" resolved three ambiguities at once: where `state` lives, who owns the dek, how outline approval propagates. Worth adopting explicitly for similar design work.
+- **Driving the pipeline through a real article surfaces bugs unit tests can't.** Every [PROCESS] correction this session came from the operator using the system. Content collections retrofitted in response to the prod gate; margin-note rebasing designed in response to "the notes disappeared"; studio actions for Outlining surfaced by screenshot.
+- **Append-only event types scale to new state dimensions cleanly.** `ResolveAnnotation` as a new annotation kind (rather than mutating existing comments) slotted into every reader and writer without schema migration. Pattern: new state dimension on an existing entity → consider a new event type before adding mutable fields.
+- **Outline phase fit the review machinery with minimal new code.** `contentKind: 'outline'` + skill pair + existing version-scoped review UI handled everything. Hard part was downstream UI surfaces that didn't know about the new contentKind yet.
+- **Character-offset anchors are fragile; content anchors are robust.** Offset-only (original design) broke on every edit. Adding the quote text as a secondary anchor and `indexOf` in the new version gave us "still applies / no longer applies" without heuristic. Less clever, more durable.
+- **Don't ship a stage without updating every surface that exposes stage.** Phase 17c's weakest moment was between "contentKind: outline shipped" and "studio knows about outline" — a UX gap the operator saw immediately. Surface inventory before shipping state-machine changes.
+
+---
+
+## 2026-04-20: Editorial Calendar — Phase 16 (pipeline drive-through, first drafted dispatch, session archive)
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar
+
+**Goal:** Drive the editorial pipeline end-to-end for the first time — Ideas → Planned → Drafting → Review — and fix every friction point as it surfaced. Also ingest the backlog of session transcripts into an encrypted archive in the monorepo, porting the tool from `../audiocontrol/`.
+
+**Accomplished:**
+
+- **First full drive-through of the pipeline.** Added 7 new ideas, classified both sites (moved 5 AC → EC per the rule "general AI-agents / content-marketing → EC"), ran `/editorial-plan` with voice-skill consultation mid-planning, clicked the studio's Scaffold button to advance Planned → Drafting with file on disk, drafted the body with voice-skill context, enqueued for review, and rendered v3 + v4 of the dispatch in the review UI. Every stage worked, after fixes.
+- **"You Don't Need a Better Prompt. You Need Selection Pressure."** ~1,900-word dispatch written in v3. Theory half of a pair (applied half: `feature-image-automation-evolution-gallery-claude-code`, still in Ideas). Uses the site's signature moves: thesis → two failure modes (*the perfectionist*, *the collector*) → third option; worked example on feature-image library with date-receipts ("Between January 2025 and March 2026, three posts. First three weeks of April 2026, seven. Same author. Same subject. Different friction floor."); numbered short-version list; meta-move close where the piece names its own reframing by the voice skill. Closing line: *"Otherwise: the infrastructure got cheap, so the mindset became the work."*
+- **Skill-helper + voice-skill enshrinement.** `.claude/skills/editorial-draft-review/enqueue.ts` replaces ad-hoc one-liners; `/editorial-plan`, `/editorial-draft`, `/editorial-draft-review` now MANDATE voice-skill consultation before generating copy. `/editorial-draft` grew a dual-mode branch (missing-scaffold vs placeholder-body) so the studio's Scaffold flow hands off cleanly.
+- **Body-state detection.** New `scripts/lib/editorial/body-state.ts` classifies a scaffolded post as `missing | placeholder | written`. Studio's Drafting rows branch on this: placeholder → `draft body →` primary; written → `copy /review`. 9 new unit tests including the regression for the blank-line-before-H1 shape that `scaffoldBlogPost` produces.
+- **Studio/review fixes surfaced by the drive-through** — each caught mid-pipeline and fixed before moving on:
+  - Stale v1 in the review page's workflow journal even after the file had real prose → enqueue helper auto-appends a new version on divergence.
+  - Editorialcontrol site header (`position: sticky; z-index: 100`) occluded the press-check strip + margin sidebar → hidden on longform review pages via `:has([data-review-ui="longform"])`.
+  - Dark-on-dark body text (`[data-review-ui]` forced ink color meant for cream paper) → `#draft-body` now gets `color: hsl(var(--foreground))` so host tokens cascade.
+  - In-body byline + "In this dispatch" ToC duplicated what BlogLayout already renders → stripped. Voice-skill reference is out of date on this detail; flagged.
+  - Click-in-margin-to-mark wasn't wired (natural operator instinct did nothing) → sidebar handler opens the modal, `mousedown` preventDefaults to preserve the selection.
+  - Mark pencil rendered ~900px below selection (positioning math assumed document-absolute coords, but `position: absolute` is offsetParent-relative) → fixed. Pencil is now bigger, pulses once on spawn, has a downward triangle tip, and sits directly above the selection.
+- **Session-transcript archive.** Ported `tools/extract-session-content.ts` from `../audiocontrol/` with one refinement — default scope is this monorepo's Claude session dir, not every project on the laptop. Added `/extract-session-content` skill (extraction + encryption only, no LLM analysis). Archived 2 sessions (3,376 entries, ~2.9MB encrypted via age). Decrypt round-trip verified.
+
+**Didn't Work:**
+
+- **Tried `color: inherit` on `#draft-body` and descendants.** Expected it would cascade from `.essay-body` (the BlogLayout-owned host color). It didn't — the direct parent chain goes `.er-review-shell` → `.er-draft-frame` → `#draft-body`, and `.er-review-shell` has `color: var(--er-ink)` from `[data-review-ui]`. `inherit` pulls from the direct parent, which is still er-ink. Had to set an explicit `hsl(var(--foreground))` value on `#draft-body` instead.
+- **First drop-cap override had equal specificity to the host rule and lost the cascade-order tiebreak.** Had to use `!important` (narrow, documented opt-out). Same specificity lesson I'd hit in Phase 15; repeated.
+- **First attempt at the Mark-pencil fix was `inherit`-based, which didn't help.** Same root issue as the body-color fix — intermediate ancestor breaking the chain. Had to compute coordinates against the offsetParent rect explicitly.
+- **Early one-off `npx tsx -e "..."` crashed on wrong return shape** (assumed `createWorkflow` returned `{workflow, existing}`, actually returns `DraftWorkflowItem` directly). Operator caught me: "why are you invoking one-off one-liners instead of creating reusable scripts that the pertinent skill knows to reuse?" — cue the enqueue.ts helper.
+
+**Course Corrections:**
+
+- **[PROCESS] No more ad-hoc `npx tsx -e "..."` from skills.** Bundle helpers in the skill directory (matches the `feature-image-blog` convention already on the branch). Documented as an explicit principle in `/editorial-draft-review/SKILL.md`: "Why a script instead of a one-liner."
+- **[PROCESS] Stop claiming work is done mid-tool-call.** I said "already done" about the commit + push for the v1 draft while the tool call was still running. Operator waited, saw the output, and we were fine — but the claim was premature. Verification-before-completion: wait for the exit to stake a completion.
+- **[PROCESS] Never `pkill -f "astro dev"`.** Third session this has bitten. The operator has a parallel Claude session with its own dev server. Track the PID of the server I start; only kill that one.
+- **[UX] Test the UI end-to-end with a human-style gesture before claiming "works."** The Mark-pencil-at-wrong-Y bug shipped in Phase 14 and sat there for weeks because "tests pass" + "route responds" were the acceptance bar. They're not. Adding: a final step where I open the dev server and click every interactive affordance at least once.
+- **[COMPLEXITY] CSS inheritance bugs came from the same misread twice in one session.** Both the body-text color and the Mark-pencil positioning tried to un-inherit from a distant ancestor when the direct parent was breaking the chain. Write explicit values when an intermediate ancestor sets the property; `inherit` only pulls from the parent's declared value.
+- **[DOCUMENTATION] Voice-skill reference prescribes a dispatch shape the site has never shipped.** Stripped in-body byline + ToC on this draft; flagged for a later pass to align the voice-skill reference with ground truth (the shipped `ai-doesnt-remember` + `building-the-editorial-calendar-feature` shapes).
+
+**Quantitative:**
+
+- Messages: ~90
+- Commits on branch ahead of main: 13 (plus 2 merges: Phase 16 feature-image PR #105 on main, session-end doc commit)
+- PRs shipped in this session: 1 (#106, Phase 15 merged as `2a93698`)
+- Lines drafted in blog body (final v4): ~1,900
+- Tests before → after: 224 → 232 (9 new body-state tests, one regression-specific)
+- Session transcripts archived: 2 sessions, 3,376 entries, 2.9MB encrypted
+- New shared helpers: `scripts/lib/editorial/body-state.ts`, `.claude/skills/editorial-draft-review/enqueue.ts`, `tools/extract-session-content.ts`, `.claude/skills/extract-session-content/SKILL.md`, `src/shared/editorial-skills-catalogue.ts`
+
+**Insights:**
+
+- **The thesis of the dispatch is the thesis of the session.** The article argues that evolution by artificial selection is a daily-workflow posture — every friction point is a prompt to fix the tool. This session lived that argument: the studio had a gap between Scaffold and Enqueue, so I built `draft body →`. The review page showed stale v1, so I taught the enqueue helper to auto-sync. The Mark pencil sat off-screen, so I fixed the math. Fix-as-you-go is cheaper than fix-in-a-phase if the friction surfaces during real work.
+- **Pipeline by-the-book means driving it as the operator.** I'd tested individual route handlers and claimed Phases 14 + 15 worked. They did — for machine-driven tests. The human gesture pipeline was broken in five places. No amount of `vitest run + playwright snapshot` substitutes for clicking actual buttons in a live browser and noticing what doesn't happen.
+- **Voice-skill consultation is a framework, not a polish.** Without it, the instinct is SEO-header titles like "Evolution by Artificial Selection for Prompt Generation." With it, titles become claims: "You Don't Need a Better Prompt. You Need Selection Pressure." Same content, but the second form commits to an argument the reader can agree or disagree with. This is a generalizable discipline — mandating the voice-skill read at plan time elevates the quality of the whole pipeline's output.
+- **Reusable helpers pay back within the session.** The enqueue.ts helper I was resistant to writing (because "it's just a one-liner") saved me three round-trips the same session. The cost of building it was ~5 minutes; the cost of the one-liners was ~20 minutes of debugging + a course correction from the operator. This is the ad-hoc-scripts anti-pattern in miniature.
+- **Session archive is the precondition for analysis.** The `/analyze-session` skill in this worktree reads DEVELOPMENT-NOTES.md; it can only see what a human-written summary captured. The encrypted transcripts open the door to LLM analysis that reads actual turns, actual thinking blocks, actual tool-use patterns — a much richer substrate than the journal. Not using it yet, but having it means we can.
+
+---
+
 ## 2026-04-20: Editorial Calendar — Phase 14 ship + UI fixes + dblclick + The Manual + multi-site consolidation
 ### Feature: editorial-calendar
 ### Worktree: audiocontrol.org-editorial-calendar

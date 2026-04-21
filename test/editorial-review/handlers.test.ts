@@ -19,6 +19,12 @@ let workflowId: string;
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'editorial-review-handlers-'));
+  // handleCreateVersion now enforces the single-source-of-truth
+  // invariant and writes new version markdown to the blog file
+  // on disk before snapshotting. Tests must scaffold the file.
+  const blogDir = join(root, 'src', 'sites', 'editorialcontrol', 'content', 'blog');
+  mkdirSync(blogDir, { recursive: true });
+  writeFileSync(join(blogDir, 'test-post.md'), 'hello world', 'utf-8');
   const w = createWorkflow(root, {
     site: 'editorialcontrol',
     slug: 'test-post',
@@ -97,6 +103,91 @@ describe('handleAnnotate', () => {
       version: 1,
       range: { start: 'nope' },
       text: 'x',
+    });
+    expect(result.status).toBe(400);
+  });
+
+  it('records and round-trips the anchor field on a comment', () => {
+    const anchor = 'hello world';
+    const result = handleAnnotate(root, {
+      type: 'comment',
+      workflowId,
+      version: 1,
+      range: { start: 0, end: 11 },
+      text: 'look at this phrase',
+      category: 'voice-drift',
+      anchor,
+    });
+    expect(result.status).toBe(200);
+    const list = handleListAnnotations(root, { workflowId, version: '1' });
+    const ann = (list.body as { annotations: Array<{ anchor?: string }> }).annotations[0];
+    expect(ann.anchor).toBe(anchor);
+  });
+
+  it('accepts a comment without anchor (legacy) and stores it without one', () => {
+    const result = handleAnnotate(root, {
+      type: 'comment',
+      workflowId,
+      version: 1,
+      range: { start: 0, end: 5 },
+      text: 'no anchor captured',
+    });
+    expect(result.status).toBe(200);
+    const list = handleListAnnotations(root, { workflowId, version: '1' });
+    const ann = (list.body as { annotations: Array<{ anchor?: string }> }).annotations[0];
+    expect(ann.anchor).toBeUndefined();
+  });
+
+  it('records a resolve for a prior comment', () => {
+    const created = handleAnnotate(root, {
+      type: 'comment',
+      workflowId,
+      version: 1,
+      range: { start: 0, end: 5 },
+      text: 'to be resolved',
+    });
+    const commentId = (created.body as { annotation: { id: string } }).annotation.id;
+    const resolved = handleAnnotate(root, {
+      type: 'resolve',
+      workflowId,
+      commentId,
+    });
+    expect(resolved.status).toBe(200);
+    const list = handleListAnnotations(root, { workflowId, version: null });
+    const annotations = (list.body as {
+      annotations: Array<{ type: string; commentId?: string; resolved?: boolean }>;
+    }).annotations;
+    const resolves = annotations.filter(a => a.type === 'resolve');
+    expect(resolves).toHaveLength(1);
+    expect(resolves[0].commentId).toBe(commentId);
+    expect(resolves[0].resolved).toBe(true);
+  });
+
+  it('records a reopen (resolve with resolved:false) for re-opening', () => {
+    const created = handleAnnotate(root, {
+      type: 'comment',
+      workflowId,
+      version: 1,
+      range: { start: 0, end: 5 },
+      text: 'reopen me',
+    });
+    const commentId = (created.body as { annotation: { id: string } }).annotation.id;
+    handleAnnotate(root, { type: 'resolve', workflowId, commentId });
+    const reopened = handleAnnotate(root, {
+      type: 'resolve',
+      workflowId,
+      commentId,
+      resolved: false,
+    });
+    expect(reopened.status).toBe(200);
+    const body = reopened.body as { annotation: { resolved: boolean } };
+    expect(body.annotation.resolved).toBe(false);
+  });
+
+  it('returns 400 for resolve without commentId', () => {
+    const result = handleAnnotate(root, {
+      type: 'resolve',
+      workflowId,
     });
     expect(result.status).toBe(400);
   });
@@ -288,9 +379,9 @@ describe('handleDecision', () => {
 
 describe('handleStartLongform', () => {
   function seedBlogFile(site: string, slug: string, content: string): string {
-    const dir = join(root, 'src', 'sites', site, 'pages', 'blog', slug);
+    const dir = join(root, 'src', 'sites', site, 'content', 'blog');
     mkdirSync(dir, { recursive: true });
-    const path = join(dir, 'index.md');
+    const path = join(dir, `${slug}.md`);
     writeFileSync(path, content, 'utf-8');
     return path;
   }

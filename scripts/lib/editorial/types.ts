@@ -53,6 +53,7 @@ export function assertSite(value: string | undefined | null): Site {
 export const STAGES = [
   'Ideas',
   'Planned',
+  'Outlining',
   'Drafting',
   'Review',
   'Published',
@@ -62,7 +63,7 @@ export type Stage = (typeof STAGES)[number];
 
 /** What kind of content a calendar entry represents.
  *
- * - `blog`    — content lives in this repo under `src/sites/<site>/pages/blog/<slug>/`
+ * - `blog`    — content lives in this repo under `src/sites/<site>/content/blog/<slug>.md`
  * - `youtube` — video hosted on YouTube; `contentUrl` is the video URL
  * - `tool`    — standalone tool or app on audiocontrol.org (e.g. an editor page);
  *               `contentUrl` is the canonical page URL

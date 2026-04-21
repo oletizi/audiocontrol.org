@@ -1,0 +1,179 @@
+---
+export const prerender = false;
+
+import Layout from '../../layouts/Layout.astro';
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+
+interface DevLink {
+  href: string;
+  title: string;
+  blurb: string;
+}
+
+interface DevSection {
+  heading: string;
+  links: DevLink[];
+}
+
+const sections: DevSection[] = [
+  {
+    heading: 'Editorial pipeline',
+    links: [
+      {
+        href: '/dev/editorial-studio',
+        title: 'Editorial studio',
+        blurb: 'Unified dashboard: calendar stages, active review workflows, per-row actions.',
+      },
+      {
+        href: '/dev/editorial-review-shortform',
+        title: 'Shortform review',
+        blurb: 'List of shortform (social copy) workflows in flight.',
+      },
+      {
+        href: '/dev/editorial-help',
+        title: 'Editorial help',
+        blurb: 'Skill catalogue + workflow overview. Start here if the pipeline feels opaque.',
+      },
+    ],
+  },
+];
+---
+
+<Layout title="Dev — editorialcontrol.org" description="Local development surfaces.">
+  <section class="dev-nav">
+    <header class="dev-header">
+      <p class="kicker">Dev</p>
+      <h1 class="dev-title">Development surfaces.</h1>
+      <p class="dev-lede">
+        Dev-only tools for building and reviewing content on this site. All routes
+        404 in production.
+      </p>
+      <hr class="rule-accent" />
+    </header>
+
+    {sections.map((section) => (
+      <article class="dev-section">
+        <h2 class="dev-section-title">{section.heading}</h2>
+        <ul class="dev-link-list">
+          {section.links.map((link) => (
+            <li class="dev-link">
+              <a href={link.href} class="dev-link-anchor">
+                <span class="dev-link-title">{link.title}</span>
+                <span class="dev-link-href">{link.href}</span>
+                <span class="dev-link-blurb">{link.blurb}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </article>
+    ))}
+  </section>
+</Layout>
+
+<style>
+  .dev-nav {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  .dev-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .kicker {
+    font-family: var(--font-display, serif);
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 0.6rem 0;
+  }
+
+  .dev-title {
+    font-family: var(--font-display, serif);
+    font-size: clamp(1.75rem, 3.4vw, 2.4rem);
+    font-weight: 400;
+    line-height: 1.2;
+    margin: 0 0 0.75rem 0;
+  }
+
+  .dev-lede {
+    color: hsl(var(--muted-foreground));
+    line-height: 1.55;
+    max-width: 42rem;
+    margin: 0 0 1.75rem 0;
+  }
+
+  .rule-accent {
+    border: 0;
+    border-top: 1px solid hsl(var(--border));
+    margin: 0;
+  }
+
+  .dev-section + .dev-section {
+    margin-top: 2.5rem;
+  }
+
+  .dev-section-title {
+    font-family: var(--font-display, serif);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 1rem 0;
+  }
+
+  .dev-link-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .dev-link-anchor {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    row-gap: 0.35rem;
+    column-gap: 1rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+  }
+
+  .dev-link-anchor:hover {
+    border-color: hsl(var(--primary) / 0.5);
+    background: hsl(var(--card-hover, var(--card)));
+    transform: translateY(-1px);
+  }
+
+  .dev-link-title {
+    font-family: var(--font-body, sans-serif);
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+  }
+
+  .dev-link-href {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.78rem;
+    color: hsl(var(--muted-foreground));
+    align-self: center;
+    white-space: nowrap;
+  }
+
+  .dev-link-blurb {
+    grid-column: 1 / -1;
+    font-size: 0.9rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.5;
+  }
+</style>

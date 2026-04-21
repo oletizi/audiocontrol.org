@@ -108,10 +108,10 @@ function parseFrontmatter(postPath: string): Frontmatter {
 }
 
 function deriveSiteAndSlug(postPath: string): { site: Site; slug: string } {
-  const m = postPath.match(/^src\/sites\/(audiocontrol|editorialcontrol)\/pages\/blog\/([^/]+)\/index\.md$/);
+  const m = postPath.match(/^src\/sites\/(audiocontrol|editorialcontrol)\/content\/blog\/([^/]+)\.md$/);
   if (!m) {
     throw new Error(
-      `post path doesn't match src/sites/<site>/pages/blog/<slug>/index.md: ${postPath}`,
+      `post path doesn't match src/sites/<site>/content/blog/<slug>.md: ${postPath}`,
     );
   }
   return { site: m[1] as Site, slug: m[2] };

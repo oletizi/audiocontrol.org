@@ -1,0 +1,21 @@
+{
+  "id": "ee152d39-51d4-4f28-b8ab-745523e8f467",
+  "timestamp": "2026-04-21T22:02:47.121Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-21T22:02:47.121Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "bebefd2d-9724-44f1-b5a0-ddc4dc879d98",
+      "version": 3,
+      "range": {
+        "start": 4184,
+        "end": 4201
+      },
+      "text": "A skimmer is going to need this section wAAAY at the top. We need a TL;DR that doesn't navel gaze or assume tons of prior knowledge or require extensive reading in",
+      "category": "other",
+      "id": "ee152d39-51d4-4f28-b8ab-745523e8f467",
+      "createdAt": "2026-04-21T22:02:47.121Z"
+    }
+  }
+}

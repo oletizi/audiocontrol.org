@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import type { DraftAnnotation, DraftWorkflowState } from './types.js';
 import { SITES, type Site } from '../editorial/types.js';
@@ -54,6 +54,7 @@ export function handleAnnotate(rootDir: string, body: unknown): HandlerResult {
         range: d.range,
         text: d.text,
         category: d.category,
+        ...(typeof d.anchor === 'string' ? { anchor: d.anchor } : {}),
       });
       appendAnnotation(rootDir, annotation);
       return ok({ annotation });
@@ -83,6 +84,22 @@ export function handleAnnotate(rootDir: string, body: unknown): HandlerResult {
         version: d.version,
         ...(draft.type === 'reject' && 'reason' in d ? { reason: d.reason } : {}),
       } as AnnotationDraft);
+      appendAnnotation(rootDir, annotation);
+      return ok({ annotation });
+    }
+    case 'resolve': {
+      const d = draft as Partial<Extract<AnnotationDraft, { type: 'resolve' }>>;
+      if (typeof d.commentId !== 'string' || d.commentId.length === 0) {
+        return err(400, 'resolve.commentId is required');
+      }
+      // Accept `resolved` either way; default to true (resolve).
+      const resolved = typeof d.resolved === 'boolean' ? d.resolved : true;
+      const annotation = mintAnnotation({
+        type: 'resolve',
+        workflowId: draft.workflowId,
+        commentId: d.commentId,
+        resolved,
+      });
       appendAnnotation(rootDir, annotation);
       return ok({ annotation });
     }
@@ -152,7 +169,7 @@ export function handleGetWorkflow(
   if (!query.site || !query.slug) {
     return err(400, 'either id or (site & slug) query params are required');
   }
-  const contentKind = (query.contentKind ?? 'longform') as 'longform' | 'shortform';
+  const contentKind = (query.contentKind ?? 'longform') as 'longform' | 'shortform' | 'outline';
   const match = readWorkflows(rootDir).find(
     w =>
       w.site === (query.site as Site) &&
@@ -198,6 +215,35 @@ export function handleCreateVersion(rootDir: string, body: unknown): HandlerResu
   }
 
   const diff = lineDiff(before.markdown, d.afterMarkdown);
+
+  // Single-source-of-truth invariant: the markdown file on disk IS the
+  // article. The journal stores versioned snapshots for history; disk
+  // is canonical. Every path that creates a new version must write
+  // disk first, then snapshot to the journal. For longform, that's
+  // the content-collection file at `src/sites/<site>/content/blog/<slug>.md`.
+  // For shortform there is no separate file — the workflow's
+  // currentVersion markdown IS the working copy. See
+  // `/editorial-approve` for the apply step.
+  if (workflow.contentKind === 'longform' || workflow.contentKind === 'outline') {
+    const blogFile = join(
+      rootDir,
+      'src',
+      'sites',
+      workflow.site,
+      'content',
+      'blog',
+      `${workflow.slug}.md`,
+    );
+    if (!existsSync(blogFile)) {
+      return err(
+        500,
+        `cannot save: blog file missing at ${blogFile}. ` +
+        `Scaffold the post with /editorial-outline or /editorial-draft before saving edits.`,
+      );
+    }
+    writeFileSync(blogFile, d.afterMarkdown, 'utf-8');
+  }
+
   const version = appendVersion(rootDir, d.workflowId, d.afterMarkdown, 'operator');
   const annotation = mintAnnotation({
     type: 'edit',
@@ -219,7 +265,7 @@ interface StartLongformBody {
  * Blog-post slugs are restricted to the URL-safe kebab-case shape
  * also used by `/editorial-add` / `/editorial-plan`. This rejects
  * path-traversal attempts (`../foo`, `foo/bar`) and other characters
- * that would escape the expected `src/sites/<site>/pages/blog/<slug>/`
+ * that would escape the expected `src/sites/<site>/content/blog/<slug>.md`
  * scope.
  */
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
@@ -242,7 +288,7 @@ export function handleStartLongform(rootDir: string, body: unknown): HandlerResu
     return err(400, `invalid slug: ${b.slug}. Must match ${SLUG_RE}`);
   }
 
-  const path = join(rootDir, 'src', 'sites', b.site, 'pages', 'blog', b.slug, 'index.md');
+  const path = join(rootDir, 'src', 'sites', b.site, 'content', 'blog', `${b.slug}.md`);
   if (!existsSync(path)) {
     return err(404, `blog draft not found at ${path}`);
   }

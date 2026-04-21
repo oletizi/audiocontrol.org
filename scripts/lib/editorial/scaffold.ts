@@ -1,15 +1,24 @@
 /**
  * Blog post scaffolding for the editorial calendar.
  *
- * Creates the blog post directory structure and index.md with frontmatter
- * matching existing blog conventions (see workflow-playbooks.md).
+ * Creates the blog post markdown under the site's Astro content
+ * collection at src/sites/<site>/content/blog/<slug>.md. Posts are
+ * scaffolded with state: draft — the production build gate filters
+ * drafts out, so an in-flight article is invisible on prod until an
+ * operator flips state to published.
  */
 
+import { dirname } from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import type { CalendarEntry, Site } from './types.js';
 
-function blogDir(site: Site): string {
-  return `src/sites/${site}/pages/blog`;
+export function blogContentDir(site: Site): string {
+  return `src/sites/${site}/content/blog`;
+}
+
+/** Path (relative to project root) of the markdown file for a given slug. */
+export function blogContentPath(site: Site, slug: string): string {
+  return `${blogContentDir(site)}/${slug}.md`;
 }
 
 /** Format a date as "Month YYYY" for the `date` frontmatter field. */
@@ -24,19 +33,18 @@ function today(): string {
 }
 
 export interface ScaffoldResult {
-  /** Absolute path to the created index.md */
+  /** Absolute path to the created markdown file */
   filePath: string;
   /** Path relative to project root */
   relativePath: string;
 }
 
 /**
- * Create a blog post directory and index.md from a calendar entry.
+ * Create the content-collection markdown for a calendar entry.
  *
- * Follows the existing convention:
- * - Directory: src/sites/<site>/pages/blog/<slug>/
- * - File: src/sites/<site>/pages/blog/<slug>/index.md
- * - Frontmatter: layout, title, description, date, datePublished, dateModified, author
+ * - File: src/sites/<site>/content/blog/<slug>.md
+ * - Frontmatter: title, description, date, datePublished, dateModified,
+ *   author, state: draft
  */
 export function scaffoldBlogPost(
   rootDir: string,
@@ -44,36 +52,36 @@ export function scaffoldBlogPost(
   entry: CalendarEntry,
   author: string,
 ): ScaffoldResult {
-  const baseDir = blogDir(site);
-  const dir = `${rootDir}/${baseDir}/${entry.slug}`;
-  const filePath = `${dir}/index.md`;
-  const relativePath = `${baseDir}/${entry.slug}/index.md`;
+  const relativePath = blogContentPath(site, entry.slug);
+  const filePath = `${rootDir}/${relativePath}`;
 
   if (existsSync(filePath)) {
-    throw new Error(
-      `Blog post already exists at ${relativePath}`,
-    );
+    throw new Error(`Blog post already exists at ${relativePath}`);
   }
 
   const dateStr = today();
   const frontmatter = [
     '---',
-    'layout: ../../../layouts/BlogLayout.astro',
     `title: "${entry.title.replace(/"/g, '\\"')}"`,
     `description: "${entry.description.replace(/"/g, '\\"')}"`,
     `date: "${formatDateHuman(dateStr)}"`,
     `datePublished: "${dateStr}"`,
     `dateModified: "${dateStr}"`,
     `author: "${author}"`,
+    'state: draft',
     '---',
     '',
     `# ${entry.title}`,
+    '',
+    '## Outline',
+    '',
+    '<!-- Outline the shape of the article here before drafting the body. -->',
     '',
     '<!-- Write your post here -->',
     '',
   ].join('\n');
 
-  mkdirSync(dir, { recursive: true });
+  mkdirSync(dirname(filePath), { recursive: true });
   writeFileSync(filePath, frontmatter, 'utf-8');
 
   return { filePath, relativePath };

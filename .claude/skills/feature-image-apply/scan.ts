@@ -79,19 +79,19 @@ function extractTitleFromMd(path: string): string | null {
 
 function listPostsForSite(site: Site): PostMatch[] {
   const root = repoRoot();
-  const blogDir = join(root, 'src', 'sites', site, 'pages', 'blog');
+  const blogDir = join(root, 'src', 'sites', site, 'content', 'blog');
   if (!existsSync(blogDir)) return [];
   const posts: PostMatch[] = [];
   for (const entry of readdirSync(blogDir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    const indexMd = join(blogDir, entry.name, 'index.md');
-    if (!existsSync(indexMd)) continue;
+    if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+    const indexMd = join(blogDir, entry.name);
+    const slug = entry.name.replace(/\.md$/, '');
     const title = extractTitleFromMd(indexMd);
     if (title === null) continue;
     posts.push({
-      postPath: `src/sites/${site}/pages/blog/${entry.name}/index.md`,
+      postPath: `src/sites/${site}/content/blog/${entry.name}`,
       site,
-      slug: entry.name,
+      slug,
       title,
     });
   }

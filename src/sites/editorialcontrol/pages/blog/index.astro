@@ -1,23 +1,15 @@
 ---
+import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 
-interface BlogPostFrontmatter {
-  title: string;
-  description: string;
-  date: string;
-  datePublished: string;
-  dateModified?: string;
-  author?: string;
-  tags?: string[];
-  layout: string;
-}
+const entries = await getCollection('blog', ({ data }) =>
+  import.meta.env.PROD ? data.state === 'published' : true,
+);
 
-const postModules = import.meta.glob<{ frontmatter: BlogPostFrontmatter }>('./**/index.md', { eager: true });
-
-const blogPosts = Object.entries(postModules)
-  .map(([filepath, mod]) => ({
-    frontmatter: mod.frontmatter,
-    slug: filepath.replace(/^\.\//, '').replace(/\/index\.md$/, ''),
+const blogPosts = entries
+  .map((entry) => ({
+    frontmatter: entry.data,
+    slug: entry.id,
   }))
   .sort((a, b) => {
     const dateA = new Date(a.frontmatter.datePublished);

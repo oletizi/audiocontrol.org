@@ -6,7 +6,7 @@
  * machine is caught here even if the unit tests drift.
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mkdtempSync, rmSync } from 'fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import {
@@ -24,6 +24,15 @@ import {
 
 let root: string;
 
+// Scaffold a real blog file under the test root so handleCreateVersion's
+// single-source-of-truth invariant (write-to-disk-then-snapshot) is
+// satisfied for each fixture workflow.
+function seedBlogFile(root: string, site: string, slug: string, md: string): void {
+  const dir = join(root, 'src', 'sites', site, 'content', 'blog');
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, `${slug}.md`), md, 'utf-8');
+}
+
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'editorial-review-lifecycle-'));
 });
@@ -34,6 +43,7 @@ afterEach(() => {
 
 describe('editorial-review full lifecycle', () => {
   it('walks a draft from open → in-review → iterating → in-review → approved → applied', () => {
+    seedBlogFile(root, 'editorialcontrol', 'test-dispatch', '# Test\n\nFirst paragraph.');
     // 1. Agent drafts v1
     const created = createWorkflow(root, {
       site: 'editorialcontrol',
@@ -143,6 +153,7 @@ describe('editorial-review full lifecycle', () => {
   });
 
   it('handleGetWorkflow returns the full version history for the UI', () => {
+    seedBlogFile(root, 'editorialcontrol', 'p', 'v1 markdown');
     const w = createWorkflow(root, {
       site: 'editorialcontrol',
       slug: 'p',

@@ -1,0 +1,22 @@
+{
+  "id": "b5ddb1b4-3656-46c9-8404-4ebc5941947d",
+  "timestamp": "2026-04-21T23:07:02.297Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-21T23:07:02.297Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "bebefd2d-9724-44f1-b5a0-ddc4dc879d98",
+      "version": 7,
+      "range": {
+        "start": 5055,
+        "end": 5078
+      },
+      "text": "Here's the cost-focused argument creeping in again. The issues at this point are budget--they are opportunity cost. The world has already changed. Working at the pace of the status quo ante is now unacceptable. This is a way to survive the transition.",
+      "category": "other",
+      "anchor": " on a small-team budget",
+      "id": "b5ddb1b4-3656-46c9-8404-4ebc5941947d",
+      "createdAt": "2026-04-21T23:07:02.297Z"
+    }
+  }
+}
