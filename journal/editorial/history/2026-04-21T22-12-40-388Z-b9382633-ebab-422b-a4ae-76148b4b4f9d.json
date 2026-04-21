@@ -1,0 +1,21 @@
+{
+  "id": "b9382633-ebab-422b-a4ae-76148b4b4f9d",
+  "timestamp": "2026-04-21T22:12:40.388Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-21T22:12:40.388Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "bebefd2d-9724-44f1-b5a0-ddc4dc879d98",
+      "version": 4,
+      "range": {
+        "start": 4331,
+        "end": 4355
+      },
+      "text": "The point here is not that images are the easy case--it's that building a *fun to use* prompt evolution system *inside* your workflow engine (claude code does both) is not very hard--you just have to know to ask the agent to build it for you. \n\nOf course, if you aren't using a coding agent *as your workflow agent*, it can't help you build the tools to make this advice possible, let alone easy.",
+      "category": "other",
+      "id": "b9382633-ebab-422b-a4ae-76148b4b4f9d",
+      "createdAt": "2026-04-21T22:12:40.388Z"
+    }
+  }
+}

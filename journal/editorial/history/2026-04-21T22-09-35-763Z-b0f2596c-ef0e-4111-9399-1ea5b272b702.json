@@ -1,0 +1,21 @@
+{
+  "id": "b0f2596c-ef0e-4111-9399-1ea5b272b702",
+  "timestamp": "2026-04-21T22:09:35.763Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-21T22:09:35.763Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "bebefd2d-9724-44f1-b5a0-ddc4dc879d98",
+      "version": 4,
+      "range": {
+        "start": 2973,
+        "end": 2976
+      },
+      "text": "\"a suitable range\"--ten may or may not seem insane, depending on the proclivities of the reader. Two is better than one; ten may lead to decision paralysis",
+      "category": "other",
+      "id": "b0f2596c-ef0e-4111-9399-1ea5b272b702",
+      "createdAt": "2026-04-21T22:09:35.763Z"
+    }
+  }
+}

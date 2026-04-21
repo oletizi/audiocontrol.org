@@ -152,9 +152,31 @@ export function initEditorialReview(): void {
     }
   }
 
+  /**
+   * Concatenate the raw text-node values of draftBody in the same
+   * order `computeOffsetFromRange` and `wrapRange` walk them.
+   *
+   * Don't use `draftBody.innerText` here — innerText collapses
+   * source whitespace (newlines and indentation between block
+   * elements) the way CSS renders it, but the stored ranges are
+   * indexed against the raw concatenation of text-node values. The
+   * two coordinate spaces differ by a few chars whenever the
+   * markdown renderer produces multi-char whitespace between blocks,
+   * which truncates the quote's leading characters.
+   */
+  function draftPlainText(): string {
+    const walker = document.createTreeWalker(draftBody, NodeFilter.SHOW_TEXT);
+    let text = '';
+    let node = walker.nextNode();
+    while (node) {
+      text += node.nodeValue ?? '';
+      node = walker.nextNode();
+    }
+    return text;
+  }
+
   function extractQuote(offsets: DraftRange): string {
-    const text = draftBody.innerText || '';
-    return text.slice(offsets.start, offsets.end);
+    return draftPlainText().slice(offsets.start, offsets.end);
   }
 
   // ---- Sidebar rendering ----
