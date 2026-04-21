@@ -11,6 +11,7 @@ import {
   type DraftWorkflowItem,
 } from '../../../../../scripts/lib/editorial-review/index.js';
 import { readCalendar } from '../../../../../scripts/lib/editorial/calendar.js';
+import { bodyState, type BodyState } from '../../../../../scripts/lib/editorial/body-state.js';
 import {
   PLATFORMS,
   SITES,
@@ -101,13 +102,17 @@ function longformWorkflow(site: Site, slug: string): DraftWorkflowItem | undefin
   return activeWorkflowsBySitedSlug.get(covKey(site, slug))?.find(w => w.contentKind === 'longform');
 }
 
-function entryHasFile(site: Site, entry: CalendarEntry): boolean {
-  if (!hasRepoContent(effectiveContentType(entry))) return false;
+function entryBodyState(site: Site, entry: CalendarEntry): BodyState {
+  if (!hasRepoContent(effectiveContentType(entry))) return 'missing';
   const path = join(
     process.cwd(),
     'src', 'sites', site, 'pages', 'blog', entry.slug, 'index.md',
   );
-  return existsSync(path);
+  return bodyState(path);
+}
+
+function entryHasFile(site: Site, entry: CalendarEntry): boolean {
+  return entryBodyState(site, entry) !== 'missing';
 }
 
 // Group entries by stage (preserve stage order). Each entry keeps its site tag.
@@ -249,7 +254,9 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
               ) : (
                 stageEntries.map(({ site, entry }, i) => {
                   const kind = effectiveContentType(entry);
-                  const hasFile = entryHasFile(site, entry);
+                  const body = entryBodyState(site, entry);
+                  const hasFile = body !== 'missing';
+                  const bodyWritten = body === 'written';
                   const wf = longformWorkflow(site, entry.slug);
                   const search = [
                     entry.slug,
@@ -293,8 +300,12 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                       <span class="er-calendar-status">
                         {hasRepoContent(kind) && (
                           <span
-                            class={`er-file-dot er-file-${hasFile ? 'yes' : 'no'}`}
-                            title={hasFile ? 'blog file present' : 'no blog file'}
+                            class={`er-file-dot er-file-${body}`}
+                            title={
+                              body === 'missing' ? 'no blog file'
+                              : body === 'placeholder' ? 'scaffold present, body is the placeholder'
+                              : 'body written'
+                            }
                           >●</span>
                         )}
                         {wf && (
@@ -326,9 +337,18 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                             class="er-btn er-btn-small er-copy-btn"
                             type="button"
                             data-copy={`/editorial-draft --site ${site} ${entry.slug}`}
+                            title="the scaffold file exists — /editorial-draft will draft body content"
                           >copy /draft</button>
                         )}
-                        {(stage === 'Drafting' || stage === 'Review') && !wf && (
+                        {(stage === 'Drafting' || stage === 'Review') && !bodyWritten && (
+                          <button
+                            class="er-btn er-btn-small er-btn-primary er-copy-btn"
+                            type="button"
+                            data-copy={`/editorial-draft --site ${site} ${entry.slug}`}
+                            title="body is still the placeholder — draft it in Claude Code"
+                          >draft body →</button>
+                        )}
+                        {(stage === 'Drafting' || stage === 'Review') && bodyWritten && !wf && (
                           <button
                             class="er-btn er-btn-small er-copy-btn"
                             type="button"

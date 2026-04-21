@@ -64,6 +64,10 @@
   font-size: 0.7rem;
   line-height: 1;
 }
+.er-file-written     { color: var(--er-stamp-green); }
+.er-file-placeholder { color: var(--er-highlight); }
+.er-file-missing     { color: var(--er-faded-2); }
+/* Back-compat shims in case any old class names linger */
 .er-file-yes { color: var(--er-stamp-green); }
 .er-file-no  { color: var(--er-faded-2); }
 

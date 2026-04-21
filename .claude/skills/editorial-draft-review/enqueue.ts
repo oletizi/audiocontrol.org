@@ -21,7 +21,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
 import { createWorkflow } from '../../../scripts/lib/editorial-review/index.js';
-import { assertSite, type Site } from '../../../scripts/lib/editorial/index.js';
+import { assertSite, bodyState, type Site } from '../../../scripts/lib/editorial/index.js';
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 
@@ -90,6 +90,7 @@ function main(): void {
   }
 
   const initialMarkdown = readFileSync(file, 'utf8');
+  const body = bodyState(file);
 
   // createWorkflow is idempotent: if a non-terminal workflow already
   // matches (site, slug, contentKind='longform'), the existing one is
@@ -114,10 +115,16 @@ function main(): void {
     `  slug    ${workflow.slug}`,
     `  state   ${workflow.state}`,
     `  version ${workflow.currentVersion}`,
-    '',
-    `Review at: ${url}`,
-    `Start the dev server if needed: npm run dev:editorialcontrol`,
   ];
+  if (body === 'placeholder') {
+    lines.push('');
+    lines.push('⚠  body is still the scaffold placeholder.');
+    lines.push(`   Run /editorial-draft --site ${args.site} ${args.slug} to draft it.`);
+    lines.push('   Reviewing a placeholder v1 is allowed but not useful.');
+  }
+  lines.push('');
+  lines.push(`Review at: ${url}`);
+  lines.push(`Start the dev server if needed: npm run dev:editorialcontrol`);
   process.stdout.write(lines.join('\n') + '\n');
 }
 

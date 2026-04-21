@@ -44,14 +44,31 @@ The user provides the slug of a Planned entry:
 
 ### If the entry has repo content (contentType is `blog`)
 
-5. **Check for existing post**: Verify
-   `src/sites/<site>/pages/blog/<slug>/index.md` does not already
-   exist. If it exists: report error and stop.
+5. **Check body state.** Call
+   `bodyState(path)` from `scripts/lib/editorial/body-state.ts` where
+   `path` = `src/sites/<site>/pages/blog/<slug>/index.md`. Three
+   possible states drive three modes:
 
-6. **Scaffold the post**: Call `scaffoldBlogPost(process.cwd(), site,
-   entry, 'Orion Letizi')` from `scripts/lib/editorial/scaffold.ts`.
-   That helper creates the directory and writes `index.md` with the
-   correct frontmatter pulled from the calendar entry:
+   - **`missing`**: file does not exist. Run the full scaffold-and-
+     optionally-draft flow (steps 6–7 below).
+   - **`placeholder`**: file exists but body is only the scaffold
+     placeholder (`<!-- Write your post here -->`). Skip scaffolding
+     — the studio or a prior `/editorial-draft` call already did it.
+     Jump to step 7 (draft the body). This is the **new mode** that
+     supports the studio's Scaffold-button flow: click scaffold in
+     the UI → entry advances to Drafting with an empty body → run
+     `/editorial-draft` to fill the body without redoing the
+     scaffold.
+   - **`written`**: file exists and body has real prose. Report the
+     current state and stop; this skill is not the right place to
+     edit already-written prose (use `/editorial-iterate` after
+     enqueueing for review).
+
+6. **Scaffold the post** (only when body state was `missing`): Call
+   `scaffoldBlogPost(process.cwd(), site, entry, 'Orion Letizi')`
+   from `scripts/lib/editorial/scaffold.ts`. That helper creates
+   the directory and writes `index.md` with the correct frontmatter
+   pulled from the calendar entry:
 
    ```yaml
    ---
@@ -68,11 +85,18 @@ The user provides the slug of a Planned entry:
    Then adds an `# <title>` heading and a
    `<!-- Write your post here -->` placeholder for the body.
 
-7. **Offer to produce an initial body draft.** After scaffolding,
-   ask the operator: *"want an initial v1 body draft now, or is the
-   scaffolded file the hand-off point?"*
+7. **Draft the body** (for `missing` or `placeholder` states).
 
-   If the operator asks for a draft: **LOAD THE VOICE SKILL FIRST
+   If body state was `missing` (step 6 just scaffolded it), ask the
+   operator first: *"want an initial v1 body draft now, or is the
+   scaffolded file the hand-off point?"* — some operators prefer to
+   write the body by hand.
+
+   If body state was `placeholder` (studio scaffolded earlier, or
+   the operator came back to finish), skip the question — they
+   clearly re-invoked `/editorial-draft` to fill the body.
+
+   Either way, if drafting is wanted: **LOAD THE VOICE SKILL FIRST
    (MANDATORY).** Before writing a single sentence of body copy,
    read the site's voice skill and its longform reference with the
    Read tool:
@@ -89,8 +113,9 @@ The user provides the slug of a Planned entry:
    Edit tool to replace the `<!-- Write your post here -->`
    placeholder.
 
-   If the operator wants to write the body themselves, skip this
-   step — the scaffolded file is the hand-off.
+   If the operator wants to write the body themselves (only
+   possible when body state was `missing`), skip this step — the
+   scaffolded file is the hand-off.
 
 ### Else (contentType is `youtube` or `tool`)
 
