@@ -90,7 +90,7 @@ function stateLabel(state?: string): string {
       socialImage: fm.socialImage,
     }}
   >
-    <div data-review-ui="longform">
+    <div data-review-ui="longform" class="er-review-shell">
       <div class="er-draft-frame">
         <div id="draft-body" data-draft-body set:html={renderedHtml}></div>
         <div class="er-edit-mode" data-edit-toolbar hidden>
@@ -102,12 +102,7 @@ function stateLabel(state?: string): string {
           </div>
         </div>
       </div>
-    </div>
-  </BlogLayout>
-)}
 
-{!errorMessage && (
-  <div data-review-ui="longform">
     <div class="er-strip">
       <span class="er-strip-galley">Galley <em>№ {currentVersion?.version}</em></span>
       <span class="er-strip-slug">{workflow?.site} / {workflow?.slug}</span>
@@ -127,6 +122,7 @@ function stateLabel(state?: string): string {
         <span class={`er-stamp er-stamp-big er-stamp-${workflow?.state}`} data-state-label>
           {stateLabel(workflow?.state)}
         </span>
+        <span class="er-strip-hint" aria-hidden="true">select text to mark · <kbd>?</kbd> for shortcuts</span>
       </span>
       <span class="er-strip-right">
         <button class="er-btn er-btn-small" data-action="toggle-edit" type="button">Edit</button>
@@ -220,5 +216,6 @@ function stateLabel(state?: string): string {
     <script>
       import '../../../../../shared/editorial-review-client.ts';
     </script>
-  </div>
+    </div>
+  </BlogLayout>
 )}

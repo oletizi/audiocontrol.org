@@ -299,6 +299,10 @@ export function initEditorialReview(): void {
     toggleBtn.textContent = 'View';
     editing = true;
     updateSaveState();
+    // Scroll the textarea into view — BlogLayout header and feature
+    // image otherwise keep it below the fold on first click.
+    draftEdit.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    draftEdit.focus({ preventScroll: true });
   }
 
   function exitEdit(): void {
