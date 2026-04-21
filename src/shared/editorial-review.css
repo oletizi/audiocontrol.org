@@ -700,21 +700,27 @@ body:has([data-review-ui="longform"]) .site-footer {
   padding: 0 var(--er-space-1);
 }
 
-.er-strip-back {
+/* Scoped under [data-review-ui="longform"] so it beats BlogLayout's
+ * prose.css link color, which is a bright accent calibrated for the
+ * host site's dark theme — unreadable on the press-check cream
+ * chrome the review strip sits on. */
+[data-review-ui="longform"] .er-strip .er-strip-back {
   font-family: var(--er-font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--er-faded);
+  color: var(--er-ink-soft);
   text-decoration: none;
   padding: 0.2rem 0.55rem;
   border: 1px solid var(--er-border-soft, rgba(0, 0, 0, 0.15));
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
   align-self: center;
+  background: transparent;
 }
-.er-strip-back:hover {
+[data-review-ui="longform"] .er-strip .er-strip-back:hover {
   color: var(--er-red-pencil, var(--er-red-soft));
   border-color: var(--er-red-pencil, var(--er-red-soft));
+  text-decoration: none;
 }
 
 .er-strip-galley {
