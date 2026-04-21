@@ -1,12 +1,17 @@
 ---
 /*
- * /dev/studio — placeholder landing for Phase 16 Commit 1.
+ * /dev/studio — the Feature Image Studio gallery wall.
  *
- * Purpose: verify the StudioLayout chrome + studio-tokens.css primitives
- * render as intended. Real gallery UI lands in Commit 3. Until then this
- * page doubles as a visual spec sheet showing every primitive in use.
+ * Timeline-ordered history: day blocks rule-separated, cards in reverse-
+ * chronological order within each day. Stamped status chips, annotated
+ * action rows (Focus / Approve / Reject), inline star rating, and a
+ * show/hide toggle for archived entries.
  *
- * Dev-only — returns 404 in production builds.
+ * Cross-route workflow activation happens on the right-edge tab sticker.
+ * The active workflow (if any) is stored in localStorage so Generate,
+ * Focus, and Approve across all studio routes share the same context.
+ *
+ * Dev-only — returns 404 in prod.
  */
 
 export const prerender = false;
@@ -18,208 +23,100 @@ if (import.meta.env.PROD) {
 }
 ---
 
-<StudioLayout title="FI · Studio · Foundation placeholder">
-  <section class="studio-landing">
-    <div class="studio-landing__masthead">
-      <span class="studio-kicker">Foundation · Commit 1 of 6</span>
-      <h1 class="studio-landing__title">
-        Feature Image <span class="phosphor">Studio</span>
-      </h1>
-      <p class="studio-landing__lede">
-        The workbench is being rebuilt. The chrome you see above is the
-        new aesthetic foundation: warm-ink bezels, numbered part-number
-        tabs, and a target readout pulsing in the live accent colour.
-        Routes below come online over the next five commits.
-      </p>
-    </div>
+<StudioLayout title="FI · Studio · Gallery" activeTab="Gallery">
+  <section class="studio-gallery">
+    <header class="studio-gallery__head">
+      <span class="studio-kicker">Journal · audiocontrol + editorialcontrol</span>
+      <h1 class="studio-gallery__title">History</h1>
+      <div class="studio-gallery__meta">
+        <span class="studio-readout studio-readout--inline">
+          <span class="studio-readout__kicker">Entries</span>
+          <span class="studio-readout__value" data-entries-count>—</span>
+        </span>
+        <span class="studio-readout studio-readout--inline">
+          <span class="studio-readout__kicker">Archived</span>
+          <span class="studio-readout__value" data-archived-count>—</span>
+        </span>
+        <button
+          type="button"
+          class="studio-btn studio-gallery__archive-toggle"
+          data-archived-toggle
+          aria-pressed="false"
+        >
+          <span data-archived-toggle-label>Show archived</span>
+        </button>
+      </div>
+    </header>
 
     <hr class="rule-ticked" />
 
-    <div class="studio-landing__grid">
-      <article class="studio-landing__panel studio-regmark">
-        <header class="studio-landing__panel-head">
-          <span class="studio-kicker studio-kicker--muted">Sheet 01</span>
-          <h2 class="studio-landing__panel-title">Status stamps</h2>
-        </header>
-        <div class="studio-landing__stamp-row">
-          <span class="studio-stamp studio-stamp--approved">
-            <span class="studio-stamp__led" aria-hidden="true"></span>
-            <span>Approved</span>
-          </span>
-          <span class="studio-stamp studio-stamp--generated">
-            <span>Generated</span>
-          </span>
-          <span class="studio-stamp studio-stamp--rejected">
-            <span>Rejected</span>
-          </span>
-          <span class="studio-stamp studio-stamp--target">
-            <span class="studio-stamp__led" aria-hidden="true"></span>
-            <span>Target</span>
-          </span>
-        </div>
-      </article>
-
-      <article class="studio-landing__panel studio-regmark">
-        <header class="studio-landing__panel-head">
-          <span class="studio-kicker studio-kicker--muted">Sheet 02</span>
-          <h2 class="studio-landing__panel-title">DIP-switch rows</h2>
-        </header>
-        <ul class="studio-spec">
-          <li class="studio-spec__row">
-            <span class="studio-spec__label">Format</span>
-            <span class="studio-spec__value studio-spec__value--phosphor">og · 1200×630</span>
-            <span class="studio-spec__unit">px</span>
-          </li>
-          <li class="studio-spec__row">
-            <span class="studio-spec__label">Preset</span>
-            <span class="studio-spec__value">retro-crt</span>
-            <span class="studio-spec__unit">bank 3</span>
-          </li>
-          <li class="studio-spec__row">
-            <span class="studio-spec__label">Position</span>
-            <span class="studio-spec__value">left-two-thirds</span>
-            <span class="studio-spec__unit">anchor</span>
-          </li>
-          <li class="studio-spec__row">
-            <span class="studio-spec__label">Duration</span>
-            <span class="studio-spec__value">4 846</span>
-            <span class="studio-spec__unit">ms</span>
-          </li>
-        </ul>
-      </article>
-
-      <article class="studio-landing__panel studio-regmark">
-        <header class="studio-landing__panel-head">
-          <span class="studio-kicker studio-kicker--muted">Sheet 03</span>
-          <h2 class="studio-landing__panel-title">Numbered sequence</h2>
-        </header>
-        <ol class="studio-seq">
-          <li>Foundation — tokens + layout chrome.</li>
-          <li>Progress tape primitive.</li>
-          <li>Gallery route with stamped status chips.</li>
-          <li>Focus canvas with DIP-switch panel.</li>
-          <li>Generate / templates / help.</li>
-          <li>Cutover — redirect old route, delete the 4000-line file.</li>
-        </ol>
-      </article>
-
-      <article class="studio-landing__panel studio-regmark">
-        <header class="studio-landing__panel-head">
-          <span class="studio-kicker studio-kicker--muted">Sheet 04</span>
-          <h2 class="studio-landing__panel-title">Readouts</h2>
-        </header>
-        <div class="studio-landing__readout-row">
-          <div class="studio-readout">
-            <span class="studio-readout__kicker">Elapsed</span>
-            <span class="studio-readout__value studio-readout__value--phosphor">0:04</span>
-          </div>
-          <div class="studio-readout">
-            <span class="studio-readout__kicker">ETA</span>
-            <span class="studio-readout__value">~0:06</span>
-          </div>
-          <div class="studio-readout">
-            <span class="studio-readout__kicker">Stage</span>
-            <span class="studio-readout__value">02/03</span>
-          </div>
-          <div class="studio-readout studio-readout--inline">
-            <span class="studio-readout__kicker">Journal</span>
-            <span class="studio-readout__value">journal/history/ · 12 entries</span>
-          </div>
-        </div>
-      </article>
-
-      <article class="studio-landing__panel studio-landing__panel--framed studio-framed">
-        <header class="studio-landing__panel-head">
-          <span class="studio-kicker studio-kicker--muted">Sheet 05</span>
-          <h2 class="studio-landing__panel-title">Corner-bracketed frame</h2>
-        </header>
-        <p class="studio-landing__placeholder">
-          Image hero will live in this kind of frame in Commit 4.
-          Amber corner brackets read as lab-bench equipment; registration
-          marks on the other panels read as printed proof-sheets.
-        </p>
-      </article>
-
-      <article class="studio-landing__panel">
-        <header class="studio-landing__panel-head">
-          <span class="studio-kicker studio-kicker--muted">Sheet 06</span>
-          <h2 class="studio-landing__panel-title">Paper-ruled backdrop</h2>
-        </header>
-        <div class="studio-paper studio-landing__paper">
-          <p>This is the register for the thread composer. Operator
-          comments sit on the ruled lines like margin notes in a
-          service manual.</p>
-          <p>Horizontal rules run at 1.5 rem — rhythm matches the
-          body font's baseline.</p>
-        </div>
-      </article>
-
-      <article class="studio-landing__panel studio-regmark">
-        <header class="studio-landing__panel-head">
-          <span class="studio-kicker studio-kicker--muted">Sheet 07</span>
-          <h2 class="studio-landing__panel-title">Buttons + inputs</h2>
-        </header>
-        <div class="studio-landing__form">
-          <label class="studio-label" for="demo-input">Prompt</label>
-          <textarea
-            id="demo-input"
-            class="studio-textarea"
-            rows="3"
-            placeholder="Abstract oscilloscope waveform, phosphor amber on warm-ink background, no text, no words, no letters, no typography"
-          ></textarea>
-          <div class="studio-landing__btn-row">
-            <button type="button" class="studio-btn studio-btn--primary">Generate</button>
-            <button type="button" class="studio-btn">Recomposite</button>
-            <button type="button" class="studio-btn studio-btn--danger">Reject</button>
-            <button type="button" class="studio-btn" disabled>Disabled</button>
-          </div>
-        </div>
-      </article>
-
-      <article class="studio-landing__panel studio-landing__panel--note">
-        <header class="studio-landing__panel-head">
-          <span class="studio-kicker">Next up</span>
-          <h2 class="studio-landing__panel-title">Progress tape</h2>
-        </header>
-        <p class="studio-landing__placeholder">
-          Commit 2 installs the bottom reel-to-reel progress tape. Every
-          long-running operation — generate, recomposite, approve,
-          apply — will route through it. Until then the bottom rule you
-          see is the idle mount point.
-        </p>
-      </article>
+    <div
+      class="studio-gallery__timeline"
+      id="studio-gallery-timeline"
+      data-timeline
+      aria-busy="true"
+    >
+      <div class="studio-gallery__loading">
+        <span class="studio-kicker studio-kicker--muted">Loading journal…</span>
+      </div>
     </div>
-
-    <footer class="studio-landing__footer">
-      <span class="studio-readout studio-readout--inline">
-        <span class="studio-readout__kicker">Part</span>
-        <span class="studio-readout__value">FI-STUDIO/REV-16.0/COMMIT-01</span>
-      </span>
-      <span class="studio-readout studio-readout--inline">
-        <span class="studio-readout__kicker">Status</span>
-        <span class="studio-readout__value studio-readout__value--phosphor">Foundation online</span>
-      </span>
-    </footer>
   </section>
+
+  <aside class="studio-wf-tab" data-wf-tab aria-label="Workflows">
+    <button
+      type="button"
+      class="studio-wf-tab__handle"
+      data-wf-toggle
+      aria-expanded="false"
+      aria-controls="studio-wf-panel"
+    >
+      <span class="studio-wf-tab__num">02</span>
+      <span class="studio-wf-tab__label">Workflows</span>
+      <span class="studio-wf-tab__badge" data-wf-badge hidden>0</span>
+    </button>
+    <div
+      class="studio-wf-tab__panel"
+      id="studio-wf-panel"
+      data-wf-panel
+      hidden
+    >
+      <header class="studio-wf-tab__head">
+        <span class="studio-kicker">Workflows</span>
+        <h2 class="studio-wf-tab__title">Async handoffs</h2>
+        <p class="studio-wf-tab__lede">
+          Claude enqueues a workflow via <code>/feature-image-blog</code> or
+          <code>/feature-image-iterate</code>. Activate one to scope Approve.
+        </p>
+      </header>
+      <div class="studio-wf-tab__list" data-wf-list>
+        <p class="studio-wf-tab__empty">No pending workflows.</p>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    import '../../../components/studio/gallery-client.ts';
+  </script>
 </StudioLayout>
 
 <style is:global>
-  .studio-landing {
+  /* ── Page scaffold ────────────────────────────────────────────── */
+  .studio-gallery {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 2.5rem 1.5rem 3rem;
+    padding: 2.5rem 1.5rem 5rem;
   }
 
-  .studio-landing__masthead {
+  .studio-gallery__head {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    padding: 1.5rem 0;
+    margin-bottom: 0.5rem;
   }
 
-  .studio-landing__title {
+  .studio-gallery__title {
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 5vw, 3.75rem);
+    font-size: clamp(2.25rem, 4.5vw, 3rem);
     font-weight: 400;
     letter-spacing: 0.02em;
     line-height: 1;
@@ -227,112 +124,548 @@ if (import.meta.env.PROD) {
     color: hsl(var(--foreground));
   }
 
-  .studio-landing__lede {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    line-height: 1.55;
+  .studio-gallery__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .studio-gallery__archive-toggle[aria-pressed="true"] {
+    border-color: hsl(var(--primary) / 0.6);
+    color: hsl(var(--primary));
+  }
+
+  .studio-gallery__loading {
+    padding: 2rem 0;
+    text-align: center;
+  }
+
+  /* ── Day blocks ───────────────────────────────────────────────── */
+  .studio-day + .studio-day {
+    margin-top: 2.5rem;
+  }
+
+  .studio-day__head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .studio-day__rule {
+    flex: 1 1 auto;
+    height: 1px;
+    background: hsl(var(--border));
+    position: relative;
+  }
+
+  .studio-day__rule::before,
+  .studio-day__rule::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    width: 1px;
+    height: 9px;
+    background: hsl(var(--border-hover));
+  }
+
+  .studio-day__rule::before { left: 0; }
+  .studio-day__rule::after  { right: 0; }
+
+  .studio-day__num {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.1em;
     color: hsl(var(--muted-foreground));
-    max-width: 42rem;
-    margin: 0;
   }
 
-  .studio-landing__grid {
+  .studio-day__entries {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* ── Card ─────────────────────────────────────────────────────── */
+  .studio-card {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
-  }
-
-  .studio-landing__panel {
-    padding: 1.25rem 1.25rem 1.5rem;
+    grid-template-columns: minmax(200px, 260px) 1fr;
+    gap: 1.25rem;
+    padding: 1rem;
     background: hsl(var(--studio-surface-1));
     border: 1px solid hsl(var(--border));
     border-radius: 1px;
+    position: relative;
+    transition: border-color 0.18s, box-shadow 0.18s;
   }
 
-  .studio-landing__panel--framed {
+  .studio-card:hover {
+    border-color: hsl(var(--border-hover));
+    box-shadow: 0 4px 18px hsl(0 0% 0% / 0.35);
+  }
+
+  .studio-card[data-archived="true"] {
+    opacity: 0.55;
+  }
+
+  .studio-card[data-archived="true"] .studio-card__thumb img {
+    filter: grayscale(0.4);
+  }
+
+  .studio-card__thumb {
+    position: relative;
+    aspect-ratio: 1200 / 630;
     background: hsl(var(--studio-surface-pressed));
-    min-height: 8rem;
+    border: 1px solid hsl(var(--border));
+    overflow: hidden;
   }
 
-  .studio-landing__panel--note {
-    background:
-      linear-gradient(180deg, hsl(var(--primary) / 0.04) 0%, hsl(var(--studio-surface-1)) 100%);
-    border-color: hsl(var(--primary) / 0.3);
+  .studio-card__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
-  .studio-landing__panel-head {
+  .studio-card__thumb-empty {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+  }
+
+  .studio-card__target {
+    position: absolute;
+    left: 0.5rem;
+    top: 0.5rem;
+  }
+
+  /* Card-local target color — uses --card-target set inline per card so
+   * the stamp reflects that entry's target site, not the page-level
+   * --studio-target (which only drives the header readout). */
+  .studio-card[data-card-target] .studio-card__target {
+    color: hsl(var(--card-target));
+    border-color: hsl(var(--card-target) / 0.55);
+    background: hsl(var(--card-target) / 0.12);
+    text-shadow: 0 0 14px hsl(var(--card-target) / 0.4), 0 0 2px hsl(var(--card-target) / 0.6);
+  }
+
+  .studio-card[data-card-target] .studio-card__target::before,
+  .studio-card[data-card-target] .studio-card__target::after {
+    border-color: hsl(var(--card-target));
+  }
+
+  .studio-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .studio-card__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .studio-card__title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: hsl(var(--foreground));
+    margin: 0;
+    line-height: 1.2;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  .studio-card__title--empty {
+    font-style: italic;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .studio-card__timestamp {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+  }
+
+  .studio-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .studio-card__meta .studio-readout {
+    padding: 0.15rem 0.5rem;
+  }
+
+  .studio-card__meta .studio-readout__value {
+    font-size: 0.75rem;
+  }
+
+  .studio-card__prompt {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .studio-card__footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .studio-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .studio-card__status-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .studio-card__rating {
+    display: inline-flex;
+    gap: 0.125rem;
+  }
+
+  .studio-card__rating button {
+    background: transparent;
+    border: 0;
+    padding: 0.125rem 0.1rem;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    line-height: 1;
+    color: hsl(var(--border-hover));
+    transition: color 0.12s;
+  }
+
+  .studio-card__rating button.on {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 6px hsl(var(--primary) / 0.4);
+  }
+
+  .studio-card__rating button:hover {
+    color: hsl(var(--primary));
+  }
+
+  .studio-card__overflow {
+    position: relative;
+  }
+
+  .studio-card__overflow-btn {
+    background: transparent;
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--muted-foreground));
+    padding: 0.25rem 0.625rem;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    cursor: pointer;
+    line-height: 1;
+    border-radius: 1px;
+  }
+
+  .studio-card__overflow-btn:hover {
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border-hover));
+  }
+
+  .studio-card__overflow-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.25rem);
+    min-width: 12rem;
+    background: hsl(var(--studio-surface-2));
+    border: 1px solid hsl(var(--border-hover));
+    box-shadow: 0 8px 22px hsl(0 0% 0% / 0.5);
+    padding: 0.25rem;
+    z-index: 4;
+    display: none;
+  }
+
+  .studio-card__overflow[data-open="true"] .studio-card__overflow-menu {
+    display: block;
+  }
+
+  .studio-card__overflow-menu button {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    padding: 0.375rem 0.625rem;
+    color: hsl(var(--foreground));
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    border-radius: 1px;
+  }
+
+  .studio-card__overflow-menu button:hover {
+    background: hsl(var(--primary) / 0.08);
+    color: hsl(var(--primary));
+  }
+
+  .studio-card__overflow-menu button.studio-card__overflow-danger:hover {
+    background: hsl(var(--studio-danger) / 0.1);
+    color: hsl(var(--studio-danger));
+  }
+
+  /* ── Gallery empty state ──────────────────────────────────────── */
+  .studio-gallery__empty {
+    padding: 3rem 0;
+    text-align: center;
+  }
+
+  .studio-gallery__empty p {
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-body);
+    margin: 0.5rem 0;
+  }
+
+  /* ── Workflow tab sticker (right edge) ────────────────────────── */
+  .studio-wf-tab {
+    position: fixed;
+    right: 0;
+    top: calc(var(--studio-header-h) + 1.5rem);
+    z-index: 15;
+    display: flex;
+    align-items: flex-start;
+    pointer-events: none;
+  }
+
+  .studio-wf-tab > * {
+    pointer-events: auto;
+  }
+
+  .studio-wf-tab__handle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0.4rem;
+    background: hsl(var(--studio-surface-1));
+    border: 1px solid hsl(var(--border));
+    border-right: 0;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    position: relative;
+  }
+
+  .studio-wf-tab__handle:hover {
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border-hover));
+    background: hsl(var(--studio-surface-2));
+  }
+
+  .studio-wf-tab[data-has-active="true"] .studio-wf-tab__handle {
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary) / 0.6);
+    text-shadow: var(--phosphor-glow);
+  }
+
+  .studio-wf-tab__num {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.08em;
+    writing-mode: horizontal-tb;
+    transform: rotate(180deg);
+  }
+
+  .studio-wf-tab__label {
+    letter-spacing: 0.18em;
+  }
+
+  .studio-wf-tab__badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: horizontal-tb;
+    transform: rotate(180deg);
+    background: hsl(var(--primary));
+    color: hsl(var(--background));
+    border-radius: 50%;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+  }
+
+  .studio-wf-tab__panel {
+    width: 22rem;
+    max-width: calc(100vw - 3rem);
+    max-height: calc(100vh - var(--studio-header-h) - 3rem);
+    overflow-y: auto;
+    background: hsl(var(--studio-surface-1));
+    border: 1px solid hsl(var(--border-hover));
+    padding: 1.25rem;
+    box-shadow: -8px 0 24px hsl(0 0% 0% / 0.4);
+    border-radius: 1px;
+  }
+
+  .studio-wf-tab[data-open="false"] .studio-wf-tab__panel {
+    display: none;
+  }
+
+  .studio-wf-tab__head {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
     margin-bottom: 1rem;
   }
 
-  .studio-landing__panel-title {
+  .studio-wf-tab__title {
     font-family: var(--font-display);
     font-size: 1rem;
-    font-weight: 400;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: hsl(var(--foreground));
+    letter-spacing: 0.04em;
     margin: 0;
+    color: hsl(var(--foreground));
   }
 
-  .studio-landing__stamp-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .studio-landing__readout-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .studio-landing__placeholder {
+  .studio-wf-tab__lede {
     font-family: var(--font-body);
-    font-size: 0.875rem;
-    line-height: 1.55;
+    font-size: 0.8rem;
+    line-height: 1.4;
     color: hsl(var(--muted-foreground));
     margin: 0;
   }
 
-  .studio-landing__paper {
-    font-family: var(--font-body);
-    font-size: 0.875rem;
-    color: hsl(var(--foreground));
-    min-height: 5rem;
+  .studio-wf-tab__lede code {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.08);
+    padding: 0.05rem 0.3rem;
+    border-radius: 1px;
   }
 
-  .studio-landing__paper p {
-    margin: 0 0 0.5rem;
-    line-height: 1.5rem;
+  .studio-wf-tab__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
-  .studio-landing__form {
+  .studio-wf-tab__empty {
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    margin: 0;
+  }
+
+  .studio-wf-item {
+    border: 1px solid hsl(var(--border));
+    padding: 0.75rem;
+    background: hsl(var(--studio-surface-pressed));
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  .studio-landing__btn-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
+  .studio-wf-item[data-active="true"] {
+    border-color: hsl(var(--primary) / 0.6);
+    box-shadow: 0 0 14px hsl(var(--primary) / 0.15);
   }
 
-  .studio-landing__footer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 2.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid hsl(var(--border));
+  .studio-wf-item__title {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    line-height: 1.3;
+    color: hsl(var(--foreground));
+    margin: 0;
   }
 
-  .studio-landing__footer .studio-readout {
-    flex: 1 1 auto;
+  .studio-wf-item__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .studio-wf-item__meta .studio-readout {
+    padding: 0.1rem 0.4rem;
+  }
+
+  .studio-wf-item__meta .studio-readout__value {
+    font-size: 0.7rem;
+  }
+
+  .studio-wf-item__path {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground));
+    word-break: break-all;
+    line-height: 1.35;
+  }
+
+  .studio-wf-item__actions {
+    display: flex;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+  }
+
+  .studio-wf-item__actions .studio-btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.65rem;
+  }
+
+  /* ── Reduced motion ───────────────────────────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    .studio-card,
+    .studio-wf-tab__handle {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .studio-card {
+      grid-template-columns: 1fr;
+    }
+
+    .studio-wf-tab {
+      top: auto;
+      bottom: calc(var(--studio-tape-idle-h) + 1rem);
+      right: 0;
+    }
   }
 </style>
