@@ -8,7 +8,9 @@ if (import.meta.env.PROD) {
   return new Response('Not Found', { status: 404 });
 }
 
-const SITE = 'editorialcontrol';
+// Cross-site manual: this page no longer belongs to a specific site.
+// It runs on the editorialcontrol dev server (the sole host for dev
+// routes), but the workflow it describes applies to every site.
 
 // Skill catalogue. Source of truth for the specimen grid below.
 // `kind` drives the corner stamp:
@@ -227,7 +229,7 @@ const issueDate = `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullY
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Compositor’s Manual — Editorial Calendar — {SITE} — dev</title>
+  <title>The Compositor’s Manual — Editorial Calendar — dev</title>
 </head>
 <body data-review-ui="manual">
   <a class="eh-back" href="/dev/editorial-studio">back to the studio</a>
@@ -247,7 +249,7 @@ const issueDate = `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullY
         Everything you need to move a thought from notebook to published dispatch without asking a colleague. The editorial calendar, the review pipelines, the skills that drive them, and the desk where you watch the whole thing happen.
       </p>
       <p class="eh-imprint">
-        <strong>Site</strong><span>{SITE}.org</span>
+        <strong>Sites</strong><span>audiocontrol.org · editorialcontrol.org</span>
         <span class="sep">§</span>
         <strong>Issued</strong><span>{issueDate}</span>
         <span class="sep">§</span>
@@ -464,7 +466,7 @@ const issueDate = `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullY
         <div class="eh-walkthrough-step">
           <div>
             <h4>Scaffold the draft <span class="op">studio or terminal</span></h4>
-            <p>Click the <code>{'scaffold →'}</code> button on the row, or run <code>{'/editorial-draft <slug>'}</code>. The file <code>{`src/sites/${SITE}/pages/blog/<slug>/index.md`}</code> appears with frontmatter filled in, and the entry moves to <em>Drafting</em>.</p>
+            <p>Click the <code>{'scaffold →'}</code> button on the row, or run <code>{'/editorial-draft --site <site> <slug>'}</code>. The file <code>{`src/sites/<site>/pages/blog/<slug>/index.md`}</code> appears with frontmatter filled in, and the entry moves to <em>Drafting</em>.</p>
           </div>
         </div>
         <div class="eh-walkthrough-step">
@@ -596,8 +598,8 @@ const issueDate = `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullY
         <div class="eh-ref-block">
           <h4>First-run tripwires</h4>
           <dl>
-            <dt>404 on /dev/*</dt><dd>these routes are dev-only. Run <code>npm run dev:{SITE}</code>, not <code>preview</code>.</dd>
-            <dt>no galley to review</dt><dd>start one with <code>{`/editorial-draft-review --site ${SITE} <slug>`}</code>.</dd>
+            <dt>404 on /dev/*</dt><dd>the dev routes only live on editorialcontrol. Run <code>npm run dev:editorialcontrol</code>, not <code>preview</code>. Audiocontrol's dev server has no editorial studio.</dd>
+            <dt>no galley to review</dt><dd>start one with <code>{'/editorial-draft-review --site <site> <slug>'}</code>.</dd>
             <dt>iterate doesn’t trigger</dt><dd>the agent has to run <code>/editorial-iterate</code>. The browser button just marks the workflow; Claude does the writing.</dd>
           </dl>
         </div>

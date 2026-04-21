@@ -1,26 +1,25 @@
 /**
  * Client-side behavior for the /dev/editorial-studio route.
  *
- * Loaded via a non-inline <script> tag in the Astro page; Astro/Vite
- * bundles and dedupes between the two sites. The site value is read
- * from `document.body.dataset.site`, which the page wires up in a
- * small inline script before this module runs.
+ * Loaded via a non-inline <script> tag in the Astro page. Each row and
+ * action button carries its own `data-site` attribute, so the studio
+ * can act on workflows from any site without a page-wide site marker.
  *
  * Responsibilities:
  *  - Toast for transient messages
  *  - Copy-to-clipboard buttons for Claude Code commands
- *  - Scaffold-draft button → POST /api/dev/editorial-calendar/draft
- *  - Mark-published button → POST /api/dev/editorial-calendar/publish
- *  - Text search + stage-chip filtering
+ *  - Scaffold-draft button → POST /api/dev/editorial-calendar/draft (site from button)
+ *  - Mark-published button → POST /api/dev/editorial-calendar/publish (site from button)
+ *  - Text search + stage/site-chip filtering
  *  - Keyboard shortcuts (1-5 jump to stage columns)
  *  - Idle-polling via full-page reload
  */
 
-function currentSite(): string {
-  const site = document.body.dataset.site;
+function siteFromButton(btn: HTMLButtonElement): string {
+  const site = btn.dataset.site;
   if (!site) {
     throw new Error(
-      'editorial-studio: document.body.dataset.site missing — the page must run the inline site-marker script before this module.',
+      `editorial-studio: button is missing data-site (slug=${btn.dataset.slug ?? '?'}). Every row action must carry its site explicitly.`,
     );
   }
   return site;
@@ -85,7 +84,7 @@ function initScaffoldButtons(): void {
       btn.textContent = 'scaffolding…';
       try {
         const result = await postJson('/api/dev/editorial-calendar/draft', {
-          site: currentSite(),
+          site: siteFromButton(btn),
           slug,
         });
         if (!result.ok) {
@@ -125,7 +124,7 @@ function initPublishButtons(): void {
       btn.textContent = 'publishing…';
       try {
         const result = await postJson('/api/dev/editorial-calendar/publish', {
-          site: currentSite(),
+          site: siteFromButton(btn),
           slug,
         });
         if (!result.ok) {
@@ -149,19 +148,30 @@ function initPublishButtons(): void {
 function initFilter(): void {
   const searchInput = document.querySelector<HTMLInputElement>('[data-filter-input]');
   const stageChips = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-stage-chip]'));
+  const siteChips = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-site-chip]'));
   const allCalRows = Array.from(document.querySelectorAll<HTMLElement>('.er-calendar-row'));
   const stageSections = Array.from(document.querySelectorAll<HTMLElement>('[data-stage-section]'));
+  // Shortform coverage rows carry their own `data-site` and deserve the
+  // same site filter. They're not inside a stage section so they stay
+  // visible regardless of the stage chip.
+  const sfRows = Array.from(document.querySelectorAll<HTMLElement>('.er-sf-matrix tbody tr[data-site]'));
   let activeStage = 'all';
+  let activeSite = 'all';
   let searchQuery = '';
+
+  function matchesRow(row: HTMLElement): boolean {
+    const searchBlob = row.dataset.search ?? '';
+    const matchSearch = !searchQuery || searchBlob.includes(searchQuery);
+    const matchSite = activeSite === 'all' || row.dataset.site === activeSite;
+    return matchSearch && matchSite;
+  }
 
   function applyFilter(): void {
     const stageCounts = new Map<string, number>();
     for (const row of allCalRows) {
       const stage = row.dataset.stage ?? '';
-      const searchBlob = row.dataset.search ?? '';
-      const matchSearch = !searchQuery || searchBlob.includes(searchQuery);
       const matchStage = activeStage === 'all' || stage === activeStage;
-      const visible = matchSearch && matchStage;
+      const visible = matchesRow(row) && matchStage;
       row.hidden = !visible;
       if (visible) stageCounts.set(stage, (stageCounts.get(stage) ?? 0) + 1);
     }
@@ -172,6 +182,9 @@ function initFilter(): void {
       const sectionVisible = (stageCounts.get(stage) ?? 0) > 0;
       const originallyEmpty = !allCalRows.some(r => r.dataset.stage === stage);
       sec.hidden = !sectionVisible && !originallyEmpty;
+    }
+    for (const row of sfRows) {
+      row.hidden = activeSite !== 'all' && row.dataset.site !== activeSite;
     }
   }
 
@@ -189,7 +202,14 @@ function initFilter(): void {
       applyFilter();
     });
   }
-  return;
+  for (const chip of siteChips) {
+    chip.addEventListener('click', () => {
+      siteChips.forEach(c => c.setAttribute('aria-pressed', 'false'));
+      chip.setAttribute('aria-pressed', 'true');
+      activeSite = chip.dataset.siteChip ?? 'all';
+      applyFilter();
+    });
+  }
 }
 
 function initKeyboardShortcuts(): void {

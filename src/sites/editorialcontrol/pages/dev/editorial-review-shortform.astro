@@ -8,16 +8,20 @@ import {
   type DraftVersion,
   type DraftWorkflowItem,
 } from '../../../../../scripts/lib/editorial-review/index.js';
+import { SITES, type Site } from '../../../../../scripts/lib/editorial/index.js';
 
 if (import.meta.env.PROD) {
   return new Response('Not Found', { status: 404 });
 }
 
-const SITE = 'editorialcontrol';
-
-const open = listOpen(process.cwd(), SITE).filter(
-  (w) => w.contentKind === 'shortform',
-);
+// Cross-site: pull every site's open shortform workflows. Each card
+// carries its workflow's site, so the sidebar/client can filter.
+const open: DraftWorkflowItem[] = [];
+for (const site of SITES) {
+  for (const w of listOpen(process.cwd(), site)) {
+    if (w.contentKind === 'shortform') open.push(w);
+  }
+}
 
 type Card = {
   workflow: DraftWorkflowItem;
@@ -51,12 +55,12 @@ const orderedPlatforms = [
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Short form — {SITE} — dev</title>
+  <title>Short form — all sites — dev</title>
 </head>
 <body data-review-ui="shortform">
   <header class="er-masthead">
     <div class="er-masthead-kicker">
-      {SITE}.org · short form
+      Both sites · short form
     </div>
     <h1 class="er-masthead-title">
       The <em>compositor</em>'s desk
@@ -75,7 +79,7 @@ const orderedPlatforms = [
     {cards.length === 0 ? (
       <div class="er-empty" style="margin-top: var(--er-space-5);">
         No short-form galleys on the desk.<br />
-        Start one with <code>/editorial-shortform-draft --site {SITE} &lt;slug&gt; &lt;platform&gt;</code>
+        Start one with <code>/editorial-shortform-draft --site &lt;site&gt; &lt;slug&gt; &lt;platform&gt;</code>
       </div>
     ) : (
       orderedPlatforms.map(platform => {
@@ -94,9 +98,13 @@ const orderedPlatforms = [
                 data-workflow-id={workflow.id}
                 data-before-version={workflow.currentVersion}
                 data-state={workflow.state}
+                data-site={workflow.site}
               >
                 <span class="er-galley-accent"></span>
                 <header class="er-galley-head">
+                  <span class={`er-row-site er-row-site--${workflow.site}`} title={`${workflow.site}.org`}>
+                    {workflow.site === 'audiocontrol' ? 'AC' : 'EC'}
+                  </span>
                   <h3>{workflow.slug}</h3>
                   {workflow.channel && <span class="channel">{workflow.channel}</span>}
                   <span class={`er-stamp er-stamp-${workflow.state}`}>{workflow.state.replace('-', ' ')}</span>

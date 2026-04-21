@@ -845,6 +845,25 @@ body:has([data-review-ui="longform"] .er-strip) { padding-top: 3.2rem; }
   position: relative;
 }
 
+/* Per-row site badge. Two letters (AC / EC) so the operator can scan a
+ * mixed-site list without reading slugs. Colour differs per site so the
+ * signal is pre-linguistic. Shared across studio, shortform, longform. */
+.er-row-site {
+  display: inline-block;
+  font-family: var(--er-font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  margin-right: 0.45rem;
+  vertical-align: 1px;
+  line-height: 1;
+  font-weight: 500;
+}
+.er-row-site--audiocontrol    { color: var(--er-proof-blue); }
+.er-row-site--editorialcontrol { color: var(--er-red-pencil); }
+
 /* When the operator flips to edit mode the client toggles `.hidden` on
  * #draft-body. Without this rule it stays visible and the textarea
  * renders below a 5000+ px tall hidden-in-name-only element. */
