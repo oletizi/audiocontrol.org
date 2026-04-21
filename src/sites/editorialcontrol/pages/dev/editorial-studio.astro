@@ -12,10 +12,12 @@ import {
 } from '../../../../../scripts/lib/editorial-review/index.js';
 import { readCalendar } from '../../../../../scripts/lib/editorial/calendar.js';
 import {
+  PLATFORMS,
   STAGES,
   effectiveContentType,
   hasRepoContent,
   type CalendarEntry,
+  type Platform,
   type Stage,
 } from '../../../../../scripts/lib/editorial/types.js';
 
@@ -44,14 +46,17 @@ try {
 
 // Shortform coverage matrix: which Published entries have shortform copy
 // on each platform. Used by the "Short form" panel below Published.
-const PLATFORMS_ORDER = ['reddit', 'linkedin', 'youtube', 'instagram'] as const;
-type ShortformPlatform = (typeof PLATFORMS_ORDER)[number];
-const shortformCoverage = new Map<string, Set<ShortformPlatform>>();
+// Display order; source of truth for platform membership is `PLATFORMS`.
+const PLATFORMS_ORDER = ['reddit', 'linkedin', 'youtube', 'instagram'] as const satisfies readonly Platform[];
+function isPlatform(value: string): value is Platform {
+  return (PLATFORMS as readonly string[]).includes(value);
+}
+const shortformCoverage = new Map<string, Set<Platform>>();
 for (const d of distributions) {
   if (!d.shortform) continue;
-  if (!(PLATFORMS_ORDER as readonly string[]).includes(d.platform)) continue;
-  const set = shortformCoverage.get(d.slug) ?? new Set();
-  set.add(d.platform as ShortformPlatform);
+  if (!isPlatform(d.platform)) continue;
+  const set = shortformCoverage.get(d.slug) ?? new Set<Platform>();
+  set.add(d.platform);
   shortformCoverage.set(d.slug, set);
 }
 // Sort published entries by datePublished descending for the matrix.

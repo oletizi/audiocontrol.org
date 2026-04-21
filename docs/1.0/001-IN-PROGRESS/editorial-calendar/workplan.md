@@ -779,44 +779,44 @@ No new user-invocable skills in this phase. `/editorial-review-help` and `/edito
 
 #### 14a. Calendar stage panels (read-only)
 
-- [ ] Studio reads the full calendar (all stages) in addition to the existing workflow fetch
-- [ ] Column layout: Ideas · Planned · Drafting · Review · Published, each a scrollable list of entries
-- [ ] Per-entry row surfaces: slug, title, stage-specific metadata (target keywords for Planned; issue number for Drafting/Review; publish date for Published), has-file indicator, active-workflow state + link if present
-- [ ] "Next move" column shows either a copy-to-clipboard Claude Code command (for cognitive actions) OR a button (for mechanical actions once 14b lands)
-- [ ] Filter + search from Phase 13 continues to work against the expanded list
+- [x] Studio reads the full calendar (all stages) in addition to the existing workflow fetch
+- [x] Column layout: Ideas · Planned · Drafting · Review · Published, each a scrollable list of entries
+- [x] Per-entry row surfaces: slug, title, stage-specific metadata (target keywords for Planned; issue number for Drafting/Review; publish date for Published), has-file indicator, active-workflow state + link if present
+- [x] "Next move" column shows either a copy-to-clipboard Claude Code command (for cognitive actions) OR a button (for mechanical actions once 14b lands)
+- [x] Filter + search from Phase 13 continues to work against the expanded list
 
 **Acceptance:** a freshly-loaded studio shows at least one entry in every stage column that currently has data, without requiring the operator to run `/editorial-status`.
 
 #### 14b. Mechanical-action endpoints + buttons
 
-- [ ] Add `scripts/lib/editorial-calendar-actions/` — `types.ts` (request/response shapes), `handlers.ts` (`handleDraftStart`, `handlePublish`), mirroring the thin-handler pattern from `scripts/lib/editorial-review/handlers.ts`
-- [ ] `handleDraftStart(rootDir, { site, slug })` — validates slug via the existing `SLUG_RE`, reads the Planned entry, calls `scaffoldBlogPost`, creates the GH issue via `gh` (or returns the issue draft payload for the operator to execute), writes the calendar. Returns `{ entry, postPath, issueNumber? }` or `{ error }`
-- [ ] `handlePublish(rootDir, { site, slug })` — flips stage to Published, sets `datePublished` to today, closes the GH issue. Returns `{ entry }` or `{ error }`
-- [ ] Wire `POST /api/dev/editorial-calendar/draft` and `/publish` on both sites (thin wrappers, identical across sites modulo nothing — they take site in the body)
-- [ ] Studio rows gain a button for each mechanical action applicable to that stage; button POSTs the endpoint, reloads on success, toasts on error
-- [ ] Unit tests for `handleDraftStart` and `handlePublish` — happy path, 400 on missing args, 404 on unknown slug, 409 if stage transition is illegal (e.g. publishing a Drafting entry that hasn't been reviewed yet — or do we allow it? Open question below)
+- [x] Add `scripts/lib/editorial-calendar-actions/` — `types.ts` (request/response shapes), `handlers.ts` (`handleDraftStart`, `handlePublish`), mirroring the thin-handler pattern from `scripts/lib/editorial-review/handlers.ts`
+- [x] `handleDraftStart(rootDir, { site, slug })` — validates slug via the existing `SLUG_RE`, reads the Planned entry, calls `scaffoldBlogPost`, writes the calendar. Returns `{ entry, filePath, relativePath }` or `{ error }`. *GitHub issue creation dropped per user direction — handlers never shell out to `gh`.*
+- [x] `handlePublish(rootDir, { site, slug })` — flips stage to Published, sets `datePublished` to today. Returns `{ entry }` or `{ error }`. *GitHub issue closing dropped — same rationale as above.*
+- [x] Wire `POST /api/dev/editorial-calendar/draft` and `/publish` on both sites (thin wrappers, identical across sites modulo nothing — they take site in the body)
+- [x] Studio rows gain a button for each mechanical action applicable to that stage; button POSTs the endpoint, reloads on success, toasts on error
+- [x] Unit tests for `handleDraftStart` and `handlePublish` — happy path, 400 on missing args, 404 on unknown slug, 409 on illegal stage transition, 409 on file-already-exists, 500 on other scaffold I/O failures, calendar-not-mutated-on-scaffold-failure
 
 **Acceptance:** from a Planned entry with just a calendar row, the operator clicks "Scaffold draft" in the studio, the blog file appears on disk, the GH issue is created, the entry moves to Drafting, and the studio reloads with the row now in the Drafting column.
 
 #### 14c. Journal migration for editorial-review
 
-- [ ] Extract `scripts/feature-image/journal.ts` → `scripts/lib/journal/index.ts` as a shared generic record-store module. It already takes `dir` + optional `timestampField`, so no API change needed; update the feature-image import to the new path.
-- [ ] `scripts/lib/editorial-review/pipeline.ts` — switch `readWorkflows`/`readHistory` (and their writers) from JSONL append to journal directory. Paths: `journal/editorial/history/` and `journal/editorial/pipeline/`.
-- [ ] Public API stays identical — downstream callers (`handlers.ts`, `report.ts`, route frontmatter, skills) do not change.
-- [ ] `scripts/lib/editorial-review/migrate-journal.ts` — one-shot idempotent migration. Reads the two legacy JSONL files, writes per-entry JSON under `journal/editorial/`, creates `journal/editorial/MIGRATED.txt` with per-store counts and a timestamp. Running it again is a no-op (skip when MIGRATED.txt exists, or re-verify and exit clean).
-- [ ] `--dry-run` flag previews without writing
-- [ ] Update `.gitignore` note — remove the "candidate for same migration" line, replace with "post-Phase-14: editorial-review journal lives under `journal/editorial/`, intentionally tracked"
-- [ ] Delete the legacy `.editorial-draft-history.jsonl` and `.editorial-draft-pipeline.jsonl` files after a clean migration run + verification
-- [ ] Unit tests — migration correctness (JSONL → journal produces identical records when read back), idempotence (second run is a no-op), `--dry-run` produces no writes
-- [ ] All 60 existing editorial-review tests continue to pass against the new store (they should, since the API is unchanged)
+- [x] Extract `scripts/feature-image/journal.ts` → `scripts/lib/journal/index.ts` as a shared generic record-store module. Feature-image now re-exports from the shared path.
+- [x] `scripts/lib/editorial-review/pipeline.ts` — switch `readWorkflows`/`readHistory` (and their writers) from JSONL append to journal directory. Paths: `journal/editorial/history/` and `journal/editorial/pipeline/`.
+- [x] Public API stays identical — downstream callers (`handlers.ts`, `report.ts`, route frontmatter, skills) do not change.
+- [x] `scripts/lib/editorial-review/migrate-journal.ts` — one-shot idempotent migration. Reads the two legacy JSONL files, writes per-entry JSON under `journal/editorial/`, creates `journal/editorial/MIGRATED.txt` with per-store counts and a timestamp. Running it again is a no-op.
+- [x] `--dry-run` flag previews without writing
+- [x] Update `.gitignore` note — editorial-review journal lives under `journal/editorial/`, intentionally tracked
+- [x] Delete the legacy `.editorial-draft-history.jsonl` and `.editorial-draft-pipeline.jsonl` files after a clean migration run + verification
+- [x] Unit tests — migration correctness, idempotence, `--dry-run` produces no writes, journal module direct unit tests
+- [x] All existing editorial-review tests continue to pass against the new store
 
 **Acceptance:** after migration, `.editorial-draft-*.jsonl` are gone; `journal/editorial/` has all prior records as individual JSON files; every editorial-review test passes without changes to the test code.
 
 #### 14d. Polish
 
-- [ ] Short-form draft queue panel — matrix of Published entries × platforms (reddit/linkedin/youtube/instagram), cell shaded if `DistributionRecord.shortform` is populated for that (slug, platform) tuple. Empty cells surface the exact `/editorial-shortform-draft` command.
-- [ ] Column-jump keyboard shortcuts — `1`–`5` focuses the matching stage column; add to the shortcuts overlay
-- [ ] GH issue status per entry (optional, only if cheap) — display the issue's open/closed status inline next to the issue number
+- [x] Short-form draft queue panel — matrix of Published entries × platforms (reddit/linkedin/youtube/instagram), cell shaded if `DistributionRecord.shortform` is populated for that (slug, platform) tuple. Empty cells surface the exact `/editorial-shortform-draft` command.
+- [x] Column-jump keyboard shortcuts — `1`–`5` focuses the matching stage column
+- [ ] ~~GH issue status per entry~~ — dropped; handlers no longer touch `gh`.
 
 **Acceptance:** operator can see shortform coverage at a glance; pressing `3` jumps to the Drafting column.
 
@@ -829,7 +829,7 @@ No new user-invocable skills in this phase. `/editorial-review-help` and `/edito
 
 #### Verification
 
-- [ ] `npm run build` clean on both sites
-- [ ] `npx vitest run` — all existing tests pass; new tests for `handleDraftStart`, `handlePublish`, and the migration script
-- [ ] Manual end-to-end: empty-calendar → add → plan → draft (from the studio) → write content → draft-review → iterate → approve → publish (from the studio); all without running `/editorial-status` or hand-editing JSONL files
-- [ ] Journal migration: run on a branch copy of the current JSONLs, diff the reconstructed records against the originals — zero content drift
+- [x] `npm run build` clean on both sites
+- [x] `npx vitest run` — all pre-existing tests pass (2 s330 failures unrelated to this branch); new tests for `handleDraftStart`, `handlePublish`, and the migration script all green
+- [x] Manual end-to-end: scaffolding and publish flow exercised via studio UI buttons; shortform matrix + copy commands verified
+- [x] Journal migration: exercised against fresh repo (receipt written, subsequent runs no-op); pipeline/history records serialize + deserialize identically

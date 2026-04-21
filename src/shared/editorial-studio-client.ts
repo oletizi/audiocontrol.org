@@ -17,7 +17,13 @@
  */
 
 function currentSite(): string {
-  return document.body.dataset.site ?? 'audiocontrol';
+  const site = document.body.dataset.site;
+  if (!site) {
+    throw new Error(
+      'editorial-studio: document.body.dataset.site missing — the page must run the inline site-marker script before this module.',
+    );
+  }
+  return site;
 }
 
 function showToast(msg: string, isError = false): void {
