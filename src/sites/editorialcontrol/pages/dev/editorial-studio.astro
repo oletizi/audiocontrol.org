@@ -163,6 +163,9 @@ function workflowLink(w: DraftWorkflowItem): string {
   if (w.contentKind === 'shortform') {
     return `/dev/editorial-review-shortform?focus=${w.id}#workflow-${w.id}`;
   }
+  if (w.contentKind === 'outline') {
+    return `/dev/editorial-review/${w.slug}?site=${w.site}&kind=outline`;
+  }
   return `/dev/editorial-review/${w.slug}?site=${w.site}`;
 }
 

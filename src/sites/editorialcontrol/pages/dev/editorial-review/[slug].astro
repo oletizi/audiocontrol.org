@@ -28,11 +28,17 @@ const versionParam = Astro.url.searchParams.get('v');
 const rawSite = Astro.url.searchParams.get('site');
 const site = rawSite && isSite(rawSite) ? rawSite : 'editorialcontrol';
 
+// `?kind=outline` lets the studio deep-link to the outline workflow
+// for an entry while Drafting/Review entries deep-link to the
+// longform workflow. Defaults to `longform` for backward compat.
+const rawKind = Astro.url.searchParams.get('kind');
+const contentKind: 'longform' | 'outline' = rawKind === 'outline' ? 'outline' : 'longform';
+
 const fetched = handleGetWorkflow(process.cwd(), {
   id: null,
   site,
   slug: slug ?? null,
-  contentKind: 'longform',
+  contentKind,
   platform: null,
   channel: null,
 });
@@ -96,7 +102,7 @@ function stateLabel(state?: string): string {
       <p><strong>Slug:</strong> <code>{slug}</code></p>
       <p>{errorMessage}</p>
       <p>Start one with:</p>
-      <p><code>/editorial-draft-review --site {site} {slug}</code></p>
+      <p><code>{contentKind === 'outline' ? `/editorial-outline --site ${site} ${slug}` : `/editorial-draft-review --site ${site} ${slug}`}</code></p>
       <p style="margin-top: 2rem;"><a href="/dev/editorial-studio">← back to the studio</a></p>
     </div>
   </div>
@@ -134,7 +140,7 @@ function stateLabel(state?: string): string {
           {versions.map(v => {
             const isActive = v.version === currentVersion?.version;
             return (
-              <a href={`?v=${v.version}`} class={isActive ? 'active' : ''}>
+              <a href={`?site=${site}${contentKind === 'outline' ? '&kind=outline' : ''}&v=${v.version}`} class={isActive ? 'active' : ''}>
                 v{v.version}
               </a>
             );

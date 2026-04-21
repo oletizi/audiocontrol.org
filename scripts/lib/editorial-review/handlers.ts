@@ -152,7 +152,7 @@ export function handleGetWorkflow(
   if (!query.site || !query.slug) {
     return err(400, 'either id or (site & slug) query params are required');
   }
-  const contentKind = (query.contentKind ?? 'longform') as 'longform' | 'shortform';
+  const contentKind = (query.contentKind ?? 'longform') as 'longform' | 'shortform' | 'outline';
   const match = readWorkflows(rootDir).find(
     w =>
       w.site === (query.site as Site) &&
