@@ -765,6 +765,29 @@ body:has([data-review-ui="longform"]) .site-footer {
   border-color: var(--er-red-pencil);
   border-radius: 2px;
 }
+/* Higher-specificity override for the longform route. BlogLayout
+ * (both sites) has `.essay-body :global(a) { color: ...primary }` +
+ * a decorative chartreuse border-bottom. Specificity (0,1,1) ties
+ * with `.er-strip-versions a` and the cascade tiebreak goes to the
+ * host rule, which turns the strip's v1..vN links chartreuse on
+ * cream — unreadable. Scoping the review rule under
+ * `[data-review-ui="longform"]` takes specificity to (0,2,1) and
+ * the press-check ink tokens win. Same fix pattern as the draft-
+ * body color bug in earlier phase. */
+[data-review-ui="longform"] .er-strip .er-strip-versions a {
+  color: var(--er-ink-soft);
+  border-bottom: 0;
+  text-decoration: none;
+}
+[data-review-ui="longform"] .er-strip .er-strip-versions a:hover {
+  color: var(--er-ink);
+  border-bottom: 0;
+}
+[data-review-ui="longform"] .er-strip .er-strip-versions a.active {
+  color: var(--er-red-pencil);
+  border: 1px solid var(--er-red-pencil);
+  border-radius: 2px;
+}
 
 /* Margin notes (marginalia sidebar) */
 .er-marginalia {
