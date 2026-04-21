@@ -4,6 +4,66 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-20: Feature Image Generator — Phase 15 Journal Records shipped + Phase 16 Studio Redesign shipped
+### Feature: feature-image-generator
+### Worktree: audiocontrol.org-feature-image-generator
+
+**Goal:** Ship Phase 15 (replace monolithic JSONL logs with per-entry JSON files so cross-branch merges stop colliding on runtime data), then scope + build the full Phase 16 Studio redesign because the feature-image UI had accreted 15 phases of feature debt on a palette and typography stack that had no relationship to audiocontrol's brand.
+
+**Accomplished:**
+
+- **Phase 15 shipped — PR [#100](https://github.com/oletizi/audiocontrol.org/pull/100) squash-merged** (`fb12641` on main). Three store rewrites and a one-shot migration:
+  - `scripts/feature-image/journal.ts` — shared directory-backed record store. `readJournal / appendJournal / updateJournal / deleteJournal` with `<normalized-ISO-ts>-<id>.json` filename convention. Filesystem sort order equals chronological order.
+  - `scripts/feature-image/migrate-journal.ts` — one-shot idempotent migration. Fans out all three JSONL files into per-entry JSON under `journal/history/`, `journal/pipeline/`, `journal/threads/`. 26 records migrated (12 history + 7 pipeline + 7 thread). Writes `MIGRATED.txt` receipt.
+  - `log.ts`, `workflow.ts`, `threads.ts` rewritten to delegate to `journal.ts`. Public signatures unchanged — every consumer (recomposite, generate, log-PATCH endpoint, templates fitness, gallery refresh, iterate/apply drain helpers) kept working with zero call-site edits.
+  - Legacy JSONL files deleted in the same commit as the reader switch so there was no ambiguous window where both sources existed.
+  - Code-review pass by `code-reviewer` agent found three minor nits (dead code after return, stale jsdoc, thinking-out-loud comment); all fixed before merge.
+
+- **Phase 16 scoped via `/feature-extend`** (issue [#103](https://github.com/oletizi/audiocontrol.org/issues/103)). Plan doc at `docs/1.0/001-IN-PROGRESS/feature-image-generator/studio-redesign-plan.md` committed as the authoritative scope.
+
+- **Design review executed via `/frontend-design:frontend-design` skill** against the existing `/dev/feature-image-preview` page. Screenshot audit + CSS read; 10 concrete failures catalogued (generic dev-tool palette, no Departure Mono, no atmosphere, accidental semantic color, motion-only-for-function, symmetric predictable layout, etc.). Three tiers proposed (Refresh / Refresh++ / Redesign); user picked Redesign.
+
+- **Phase 16 built in 6 commits over the remainder of the session:**
+  - **Commit 1** (`a1a6615`) — `studio-tokens.css` (studio-specific primitives: stamped chips, DIP-switch rows, numbered CSS-counter sequences, pocket readouts, corner brackets, registration marks, paper-ruled backdrop, tape mount), `StudioLayout.astro` (header bezel with FI·STUDIO wordmark + REV 16.0 chip, numbered nav tabs 01–05, TARGET readout with amber↔chartreuse LED via runtime `window.studioSetTarget()`), `/dev/studio/index.astro` placeholder.
+  - **Commit 2** (`96bac22`) — `ProgressTape.astro` primitive. Fixed-bottom reel-to-reel, numbered stage markers (○ pending / ● active pulse / ✓ complete / ✗ failed), amber progress fill, pulsing playhead, live elapsed + EMA-driven ETA, cancel affordance, 5s summary stamp on completion (8s on failure). `window.studioTape` imperative API. Operation-keyed EMA persisted to localStorage. Demo harness at `/dev/studio/proto/progress` with 5 scenarios.
+  - **Commit 3** (`8d03729`) — Gallery route. Timeline-ordered history wall (rule-separated day blocks), corner target stamps (amber for audiocontrol, chartreuse for editorialcontrol via card-local `--card-target` custom property), stamped status chips, inline ★ rating, ⋯ overflow menu (archive/copy/save-template), show/hide archived toggle, right-edge vertical Workflow tab sticker with activate/deactivate/cancel. Approve flow wired through 5-stage ProgressTape.
+  - **Commit 4** (`3cf8b38`) — Focus route. Image hero LEFT with letterbox corner brackets + 01/02/03 format tabs, DIP-switch panel RIGHT with 11 annotated spec rows (PARAM / VALUE / UNIT — ASPECT / BRAND / BANK / COLOR / GLOW / EDGE / CRT / FILM / ANCHOR / Y-AXIS / PANEL), paper-ruled thread composer BELOW. Live data-attr mutation on preview (zero round-trip), per-entry draft persistence, brand-var swap on site change, commit + approve via ProgressTape, thread POST creates a `feature-image-iterate` workflow atomically.
+  - **Fix** (`0e4fd64`) — removed Focus from top nav after the user pointed out clicking "02 Focus" 404'd (Focus is a per-entry destination, not a nav tab).
+  - **Commit 5** (`a639ed7`) — Generate (specimen-sheet form with banked sections A–E, fitness-ranked template picker, active-workflow pre-fill, URL-param pre-fill for Copy-as-input) + Templates (filterable grid + sticky detail pane with fitness readouts + lineage graph + fork/archive actions) + Help (service-manual document with 4 sections, numbered workflow phases with phosphor-amber counters, hanging-indent dl for skills + actions, pressed-metal kbd elements).
+  - **Commit 6** (`0743bbb`) — cutover. `/dev/feature-image-preview` replaced with 18-line redirect stub. 4096 lines of legacy page retired. README + workplan marked Phase 16 Complete.
+
+- **Collision audit** against the sibling `audiocontrol.org-editorial-calendar` worktree. No URL collisions (studio routes are `/dev/studio/*`, editorial-review lives at `/dev/editorial-*`). Two legitimate diffs to resolve at merge: my `scripts/feature-image/journal.ts` vs sibling's extracted `scripts/lib/journal/index.ts` (take sibling — cleaner factoring for editorial-review reuse, my call sites still work); my redirect stub vs sibling's 4096-line legacy page (take mine). All six `/api/dev/feature-image/*` endpoints identical.
+
+**Didn't Work:**
+
+- **Nav tab for Focus was a 404.** Focus is a per-entry destination — the dynamic route `/dev/studio/focus/[id]` requires an id, and the bare URL had no meaningful landing. Removed the tab + added a redirect stub at `/dev/studio/focus` → gallery.
+- **Dev-server port contention between worktrees.** The sibling worktree's dev server and mine both tried to grab 4321; one landed on the IPv4 wildcard address and the other on `localhost:4321` IPv6, so both bound "successfully" but only one served requests. Had to explicitly force `npm run dev -- --port 4322` to keep the studio server off the sibling's path.
+- **One Astro build failure when a `.ts` client module was placed under `pages/dev/studio/`.** Astro treated it as a route and tried to pre-render it, which blew up on `document is not defined`. Fix: move client modules to `src/sites/audiocontrol/components/studio/` (outside the pages tree) and import them from the Astro page's `<script>` block.
+- **`[hidden]` attribute didn't hide a flex-direction section.** The generate page's active-workflow section used `hidden` as the default state, but the section's `display: flex` CSS rule overrode the implicit `display: none` from `[hidden]`. Added an explicit `.studio-gen__section[hidden] { display: none; }` override.
+
+**Course Corrections:**
+
+- [UX] `/dev/studio/focus` nav item produced a 404. Operator clicked "02 Focus" in the top nav and hit a crashed dynamic route. Root cause: I'd added Focus as a tab even though focus is a per-entry destination with no meaningful landing. Fix: removed it from the nav, added a redirect stub. Worth remembering — any route that needs a URL parameter shouldn't be a top-level nav item.
+- [PROCESS] Dev-server port management. Multiple worktrees on the same Astro config default to the same port; `npm run dev` doesn't guarantee you'll land on a free port when another process is listening on overlapping address families. Always pass `--port <N>` explicitly when a sibling worktree is running.
+- [COMPLEXITY] The hard budget of "< 2500 lines across 5-8 files" for the Studio redesign was overshot — total is ~6300 lines across 10 files. The budget was loosely framed: routes + their client modules + primitives (tokens, layout, progress tape, og-preview integration) all count. I should have scoped the budget against only route files (those stay under budget at ~2500 lines) and written the primitives as a separate line item. Not revisiting for this ship, but worth calibrating next time.
+
+**Quantitative:**
+
+- Messages: ~80 user messages across the two subphases
+- Commits this session: 15 new commits (7 Phase 15 + 1 merge + 1 scoping + 6 Phase 16 + 1 nav fix)
+- PRs merged: 1 (#100 journal records)
+- Issues closed: 1 (#99 Phase 15); opened 1 (#103 Phase 16)
+- Phase 16 not yet PR'd — will open next session via `/feature-ship`
+
+**Insights:**
+
+- **A design system for a dev tool earns its keep.** Extracting `studio-tokens.css` as a thin layer on top of the site's existing `design-tokens.css` meant the five new routes could share primitives (stamped chips, DIP-switch rows, pocket readouts, corner brackets) instead of each route reinventing its own visual language. Commit 1 took 90 minutes; commits 3–5 together took ~7 hours because the tokens they built on were already resolved.
+- **Fixed-position progress UI is a much stronger primitive than a drawer.** The old Approve flow used a right-side drawer that sometimes got missed entirely; the new ProgressTape sits at the bottom of the viewport and is always visible when an operation is active. Operators stop asking "did it work?" because the tape answers continuously. The EMA-driven ETA converges to the real run duration within 3–4 runs of the same operation and becomes the most useful piece of feedback on the whole page.
+- **Routing a per-entry destination through a top nav is a UX smell.** Every route that requires a URL parameter should be reached from a contextual affordance (a card's action button, a search result, etc.) — not from a top-level nav. The nav is for global destinations. Removing Focus from the nav clarified the IA: Focus is "what I'm editing right now", not "a place I visit."
+- **A worktree collision audit is cheap insurance before opening a PR.** Ten minutes of `diff -q` between parallel worktrees revealed one legitimate refactor (journal lib extraction) that I needed to absorb on merge, and one expected cutover (the 4096-line legacy page). Would have been a nasty merge surprise without the audit; easy to resolve with the heads-up.
+
+---
+
 ## 2026-04-20: Feature Image Generator — Overlay Position & Align + Blog-Skill Helpers + Phase 15 Scoping
 ### Feature: feature-image-generator
 ### Worktree: audiocontrol.org-feature-image-generator
