@@ -677,6 +677,20 @@ body[data-review-ui="shortform"] {
  * the chrome wrapper. */
 body:has([data-review-ui="longform"] .er-strip) { padding-top: 3.2rem; }
 
+/* Suppress the host site's sticky header + footer on longform review
+ * pages. The review chrome (press-check strip, margin-notes sidebar)
+ * owns the top-of-viewport slot; the site nav competes for it (it's
+ * `position: sticky; top: 0; z-index: 100` on editorialcontrol), wins
+ * on z-index, and occludes the strip + the fixed marginalia as the
+ * operator scrolls. On a dev review page the site nav is noise
+ * anyway — the operator is reviewing a draft, not browsing the
+ * publication. `:has()` scopes this to pages that actually mount the
+ * review chrome, so the published blog pages are untouched. */
+body:has([data-review-ui="longform"]) .header-wrapper,
+body:has([data-review-ui="longform"]) .site-footer {
+  display: none !important;
+}
+
 [data-review-ui="longform"] .er-strip::before {
   /* registration marks on the left edge */
   content: '+';

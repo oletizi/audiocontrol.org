@@ -20,7 +20,11 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
-import { createWorkflow } from '../../../scripts/lib/editorial-review/index.js';
+import {
+  appendVersion,
+  createWorkflow,
+  readVersions,
+} from '../../../scripts/lib/editorial-review/index.js';
 import { assertSite, bodyState, type Site } from '../../../scripts/lib/editorial/index.js';
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
@@ -97,7 +101,7 @@ function main(): void {
   // returned. Capture a timestamp BEFORE the call and treat any
   // workflow whose createdAt is at-or-after that moment as fresh.
   const before = Date.now();
-  const workflow = createWorkflow(rootDir, {
+  let workflow = createWorkflow(rootDir, {
     site: args.site,
     slug: args.slug,
     contentKind: 'longform',
@@ -106,10 +110,36 @@ function main(): void {
   });
   const fresh = Date.parse(workflow.createdAt) >= before;
 
+  // If an existing workflow was matched (not freshly created) and its
+  // current version's markdown doesn't match what's on disk now, the
+  // file has moved on since the last enqueue (typical case: scaffold
+  // → enqueue → /editorial-draft wrote the body). Append a new
+  // version so the review UI reflects the current file instead of
+  // the stale placeholder. This is what turns the review page from
+  // "show v1 with placeholder" into "show v2 with real prose."
+  let appended: 'none' | 'resync' = 'none';
+  if (!fresh) {
+    const versions = readVersions(rootDir, workflow.id);
+    const current = versions.find((v) => v.version === workflow.currentVersion);
+    if (current && current.markdown !== initialMarkdown) {
+      appendVersion(rootDir, workflow.id, initialMarkdown, 'agent');
+      appended = 'resync';
+      const reRead = readVersions(rootDir, workflow.id);
+      const latest = reRead[reRead.length - 1];
+      if (latest) {
+        workflow = { ...workflow, currentVersion: latest.version, updatedAt: latest.createdAt };
+      }
+    }
+  }
+
   const url = `http://localhost:4321/dev/editorial-review/${args.slug}?site=${args.site}`;
 
   const lines = [
-    fresh ? 'Enqueued new review workflow.' : 'Existing review workflow matched; nothing created.',
+    fresh
+      ? 'Enqueued new review workflow.'
+      : appended === 'resync'
+      ? 'Existing workflow matched; file diverged from last version — appended a new version.'
+      : 'Existing review workflow matched; nothing created.',
     `  id      ${workflow.id}`,
     `  site    ${workflow.site}`,
     `  slug    ${workflow.slug}`,
