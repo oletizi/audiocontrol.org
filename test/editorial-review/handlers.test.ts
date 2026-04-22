@@ -284,6 +284,33 @@ describe('handleGetWorkflow', () => {
     });
     expect(result.status).toBe(400);
   });
+
+  it('prefers active workflows over terminal when multiple match (site, slug, kind)', () => {
+    // Cancel the original workflow, then create a fresh one.
+    handleAnnotate(root, { type: 'comment', workflowId, version: 1, range: { start: 0, end: 5 }, text: 'x' });
+    // Drive the original to cancelled.
+    handleDecision(root, { workflowId, to: 'cancelled' });
+    // Create a second longform workflow for the same (site, slug).
+    // createWorkflow from pipeline.js is already imported at the top.
+    const fresh = createWorkflow(root, {
+      site: 'editorialcontrol',
+      slug: 'test-post',
+      contentKind: 'longform',
+      initialMarkdown: 'hello world',
+    });
+    const result = handleGetWorkflow(root, {
+      id: null,
+      site: 'editorialcontrol',
+      slug: 'test-post',
+      contentKind: 'longform',
+      platform: null,
+      channel: null,
+    });
+    expect(result.status).toBe(200);
+    const body = result.body as { workflow: { id: string; state: string } };
+    expect(body.workflow.id).toBe(fresh.id);
+    expect(body.workflow.state).toBe('open');
+  });
 });
 
 describe('handleCreateVersion', () => {

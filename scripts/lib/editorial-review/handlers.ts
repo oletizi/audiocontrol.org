@@ -170,7 +170,7 @@ export function handleGetWorkflow(
     return err(400, 'either id or (site & slug) query params are required');
   }
   const contentKind = (query.contentKind ?? 'longform') as 'longform' | 'shortform' | 'outline';
-  const match = readWorkflows(rootDir).find(
+  const candidates = readWorkflows(rootDir).filter(
     w =>
       w.site === (query.site as Site) &&
       w.slug === query.slug &&
@@ -178,9 +178,22 @@ export function handleGetWorkflow(
       (w.platform ?? null) === (query.platform ?? null) &&
       (w.channel ?? null) === (query.channel ?? null),
   );
-  if (!match) {
+  if (candidates.length === 0) {
     return err(404, `no workflow for ${query.site}/${query.slug} (${contentKind})`);
   }
+  // When multiple workflows match — most commonly because an earlier
+  // longform was cancelled and a fresh one was enqueued — prefer
+  // active over terminal, and within each tier prefer the most
+  // recently created. Previous behavior picked journal read-order,
+  // which reliably landed the operator on the stale cancelled
+  // workflow for the evolution dispatch.
+  const isTerminal = (s: DraftWorkflowState) => s === 'applied' || s === 'cancelled';
+  const match = [...candidates].sort((a, b) => {
+    const aTerm = isTerminal(a.state) ? 1 : 0;
+    const bTerm = isTerminal(b.state) ? 1 : 0;
+    if (aTerm !== bTerm) return aTerm - bTerm;
+    return b.createdAt.localeCompare(a.createdAt);
+  })[0];
   return ok({ workflow: match, versions: readVersions(rootDir, match.id) });
 }
 
