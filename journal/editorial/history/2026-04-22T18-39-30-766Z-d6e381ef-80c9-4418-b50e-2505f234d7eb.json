@@ -1,0 +1,22 @@
+{
+  "id": "d6e381ef-80c9-4418-b50e-2505f234d7eb",
+  "timestamp": "2026-04-22T18:39:30.766Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-22T18:39:30.766Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "version": 1,
+      "range": {
+        "start": 8055,
+        "end": 8081
+      },
+      "text": "What does \"AI-assisted output quality\" mean?",
+      "category": "other",
+      "anchor": "AI-assisted output quality",
+      "id": "d6e381ef-80c9-4418-b50e-2505f234d7eb",
+      "createdAt": "2026-04-22T18:39:30.766Z"
+    }
+  }
+}

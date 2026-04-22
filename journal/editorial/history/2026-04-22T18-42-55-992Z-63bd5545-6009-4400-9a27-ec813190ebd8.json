@@ -1,0 +1,22 @@
+{
+  "id": "63bd5545-6009-4400-9a27-ec813190ebd8",
+  "timestamp": "2026-04-22T18:42:55.992Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-22T18:42:55.992Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "version": 1,
+      "range": {
+        "start": 8099,
+        "end": 8168
+      },
+      "text": "This instinct isn't *wrong*, per se. It's just that, with the insane power of a coding agent at your disposal, you're leaving so much on the table by stopping there.",
+      "category": "other",
+      "anchor": "The instinct that produces — write a better prompt — is the wrong one",
+      "id": "63bd5545-6009-4400-9a27-ec813190ebd8",
+      "createdAt": "2026-04-22T18:42:55.992Z"
+    }
+  }
+}
