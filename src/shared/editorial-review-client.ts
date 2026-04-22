@@ -738,8 +738,22 @@ export function initEditorialReview(): void {
     });
   }
 
+  // Outline stashed at enterEdit time so we can rejoin it on save.
+  // The editor view shows body only — the outline is a reference
+  // surface in the drawer, not editable content.
+  let stashedOutline = '';
+
   async function enterEdit(): Promise<void> {
-    draftEdit.value = state.currentVersion.markdown;
+    // Load both splitOutline AND joinOutline up front so the onChange
+    // handler can rebuild the full document synchronously on every
+    // keystroke — no race with a pending dynamic import.
+    const outlineMod = await import('./outline-split.ts');
+    joinOutlineFn = outlineMod.joinOutline;
+    const sourceMarkdown = state.currentVersion.markdown;
+    const split = outlineMod.splitOutline(sourceMarkdown);
+    stashedOutline = split.outline;
+
+    draftEdit.value = sourceMarkdown;
     editToolbar.hidden = false;
     draftBody.classList.add('hidden');
     toggleBtn.textContent = 'View';
@@ -751,11 +765,17 @@ export function initEditorialReview(): void {
     editSourceHost.innerHTML = '';
     editorHandle = mountEditor({
       host: editSourceHost,
-      doc: state.currentVersion.markdown,
-      onChange: (md) => {
-        draftEdit.value = md;
+      // Feed the editor only the body — outline stays stowed.
+      doc: split.body,
+      onChange: (bodyMd) => {
+        // Backing textarea holds the FULL document (outline rejoined)
+        // so the save pipeline doesn't need to know anything about
+        // the split.
+        draftEdit.value = stashedOutline
+          ? joinOutlineIfPossible(stashedOutline, bodyMd)
+          : bodyMd;
         updateSaveState();
-        if (editPanes.dataset.view !== 'source') schedulePreview(md);
+        if (editPanes.dataset.view !== 'source') schedulePreview(draftEdit.value);
       },
       onSave: () => { saveVersionBtn.click(); },
       onCancel: () => {
@@ -772,10 +792,87 @@ export function initEditorialReview(): void {
     // Default view is split — shows what the source will look like
     // as you type. Operators who want focus switch to Source or Preview.
     setEditView('split');
+    // Reveal the outline drawer affordances iff there's an outline
+    // in this document. Pre-load the drawer body so the flip is fast.
+    await setupOutlineDrawer(stashedOutline);
     editToolbar.scrollIntoView({ behavior: 'smooth', block: 'start' });
     editorHandle.focus();
     schedulePreview(state.currentVersion.markdown);
   }
+
+  /** Thin wrapper around outline-split's joinOutline so the onChange
+   * closure doesn't need to await the module every keystroke. The
+   * module is loaded eagerly at enterEdit time; once loaded, join
+   * is synchronous. */
+  let joinOutlineFn: ((outline: string, body: string) => string) | null = null;
+  function joinOutlineIfPossible(outline: string, body: string): string {
+    if (!joinOutlineFn) return body; // fallback: editor body replaces whole doc until module loads
+    return joinOutlineFn(outline, body);
+  }
+
+  /** Populate the outline drawer with rendered HTML and wire its
+   * tab / close affordances. No-op (tab stays hidden) when the
+   * current source has no outline section. */
+  async function setupOutlineDrawer(outlineMd: string): Promise<void> {
+    const tab = document.querySelector<HTMLButtonElement>('[data-outline-tab]');
+    const drawer = document.querySelector<HTMLElement>('[data-outline-drawer]');
+    const body = document.querySelector<HTMLElement>('[data-outline-drawer-body]');
+    const btn = document.querySelector<HTMLButtonElement>('[data-action="outline-drawer"]');
+    if (!tab || !drawer || !body || !btn) return;
+
+    if (!outlineMd) {
+      tab.hidden = true;
+      drawer.hidden = true;
+      btn.hidden = true;
+      return;
+    }
+
+    tab.hidden = false;
+    btn.hidden = false;
+    // Render the outline markdown to HTML for the drawer.
+    const { renderMarkdownToHtml } = await import(
+      '../../scripts/lib/editorial-review/render.js'
+    );
+    body.innerHTML = await renderMarkdownToHtml(outlineMd);
+  }
+
+  function openOutlineDrawer(): void {
+    const drawer = document.querySelector<HTMLElement>('[data-outline-drawer]');
+    const tab = document.querySelector<HTMLButtonElement>('[data-outline-tab]');
+    const btn = document.querySelector<HTMLButtonElement>('[data-action="outline-drawer"]');
+    if (!drawer) return;
+    drawer.hidden = false;
+    drawer.classList.add('er-outline-drawer--open');
+    if (tab) tab.classList.add('er-outline-tab--stowed');
+    btn?.setAttribute('aria-pressed', 'true');
+  }
+
+  function closeOutlineDrawer(): void {
+    const drawer = document.querySelector<HTMLElement>('[data-outline-drawer]');
+    const tab = document.querySelector<HTMLButtonElement>('[data-outline-tab]');
+    const btn = document.querySelector<HTMLButtonElement>('[data-action="outline-drawer"]');
+    if (!drawer) return;
+    drawer.classList.remove('er-outline-drawer--open');
+    if (tab) tab.classList.remove('er-outline-tab--stowed');
+    btn?.setAttribute('aria-pressed', 'false');
+    // Leave the drawer hidden after the slide-out animation.
+    setTimeout(() => { drawer.hidden = true; }, 260);
+  }
+
+  function toggleOutlineDrawer(): void {
+    const drawer = document.querySelector<HTMLElement>('[data-outline-drawer]');
+    if (!drawer) return;
+    if (drawer.classList.contains('er-outline-drawer--open')) closeOutlineDrawer();
+    else openOutlineDrawer();
+  }
+
+  // Wire the drawer's affordances.
+  document.querySelector<HTMLButtonElement>('[data-outline-tab]')
+    ?.addEventListener('click', openOutlineDrawer);
+  document.querySelector<HTMLButtonElement>('[data-outline-close]')
+    ?.addEventListener('click', closeOutlineDrawer);
+  document.querySelector<HTMLButtonElement>('[data-action="outline-drawer"]')
+    ?.addEventListener('click', toggleOutlineDrawer);
 
   function exitEdit(): void {
     // Exit focus mode first so the chrome comes back before we hide it.
@@ -784,10 +881,17 @@ export function initEditorialReview(): void {
       const fb = document.querySelector<HTMLButtonElement>('[data-action="focus-mode"]');
       fb?.setAttribute('aria-pressed', 'false');
     }
+    // Close the outline drawer if it's open.
+    closeOutlineDrawer();
+    const tab = document.querySelector<HTMLButtonElement>('[data-outline-tab]');
+    const btn = document.querySelector<HTMLButtonElement>('[data-action="outline-drawer"]');
+    if (tab) tab.hidden = true;
+    if (btn) btn.hidden = true;
     editToolbar.hidden = true;
     draftBody.classList.remove('hidden');
     toggleBtn.textContent = 'Edit';
     editing = false;
+    stashedOutline = '';
     if (editorHandle) {
       editorHandle.destroy();
       editorHandle = null;
@@ -1152,6 +1256,13 @@ export function initEditorialReview(): void {
     if (ev.key === 'Escape') {
       if (shortcutsOverlay && !shortcutsOverlay.hidden) { showShortcuts(false); return; }
       if (!composer.hidden) { closeComposer(); return; }
+      // Outline drawer takes Esc before focus mode — if both are
+      // open, peeling the drawer first feels natural.
+      const drawer = document.querySelector('[data-outline-drawer]');
+      if (drawer?.classList.contains('er-outline-drawer--open')) {
+        closeOutlineDrawer();
+        return;
+      }
       if (focusMode) { exitFocus(); return; }
     }
     // Shift+F toggles focus mode from anywhere on the page (as long
@@ -1161,6 +1272,11 @@ export function initEditorialReview(): void {
       ev.preventDefault();
       if (!editing) return;
       if (focusMode) exitFocus(); else enterFocus();
+      return;
+    }
+    if (ev.key === 'o' && editing) {
+      ev.preventDefault();
+      toggleOutlineDrawer();
       return;
     }
     if (ev.key === 'e') { ev.preventDefault(); toggleBtn.click(); return; }
