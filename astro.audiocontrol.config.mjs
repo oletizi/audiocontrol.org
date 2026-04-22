@@ -5,6 +5,8 @@ import netlify from '@astrojs/netlify';
 
 import sitemap from '@astrojs/sitemap';
 
+import remarkStripOutline from './scripts/lib/editorial/remark-strip-outline.mjs';
+
 // Last modified dates for sitemap
 const lastModified = {
   '/': '2026-02-09',
@@ -47,6 +49,13 @@ export default defineConfig({
       },
     }),
   ],
+  // Strip the operator-facing `## Outline` section from the public
+  // render. The editorial-review surface has its own unified pipeline
+  // and stays unaffected; the outline stays visible where it's used
+  // for annotate-and-iterate work, and disappears from /blog/<slug>/.
+  markdown: {
+    remarkPlugins: [remarkStripOutline],
+  },
   vite: {
     server: {
       allowedHosts: ['orion-m4'],

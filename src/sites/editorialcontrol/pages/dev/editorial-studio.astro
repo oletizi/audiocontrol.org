@@ -169,6 +169,24 @@ function workflowLink(w: DraftWorkflowItem): string {
   return `/dev/editorial-review/${w.slug}?site=${w.site}`;
 }
 
+/**
+ * Dev-preview URL for a scaffolded blog article. The studio is
+ * served from editorialcontrol's dev server, so same-origin links
+ * only work for editorialcontrol articles — audiocontrol has its
+ * own dev server (auto-assigned port when both run in parallel),
+ * which we can't reliably predict. Return null for cross-site
+ * rows; the caller falls back to plain text.
+ *
+ * In dev, drafts render via the content-collection `[slug].astro`
+ * route regardless of `state: draft | published` (17b filters only
+ * in prod). So a drafted article is readable at its final URL
+ * before approval.
+ */
+function blogPreviewLink(site: Site, slug: string): string | null {
+  if (site === 'editorialcontrol') return `/blog/${slug}/`;
+  return null;
+}
+
 // Short, mono site label shown on each row and card.
 function siteLabel(site: Site): string {
   return site === 'audiocontrol' ? 'AC' : 'EC';
@@ -293,7 +311,14 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                         <span class={`er-row-site er-row-site--${site}`} title={`${site}.org`}>{siteLabel(site)}</span>
                         <span class="er-row-slug">
                           {wf ? (
-                            <a href={workflowLink(wf)}>{entry.slug}</a>
+                            <a href={workflowLink(wf)} title="open the review surface">{entry.slug}</a>
+                          ) : hasFile ? (
+                            (() => {
+                              const preview = blogPreviewLink(site, entry.slug);
+                              return preview ? (
+                                <a href={preview} title="read the drafted article in dev">{entry.slug}</a>
+                              ) : entry.slug;
+                            })()
                           ) : entry.slug}
                         </span>
                         <span class="er-calendar-title">{entry.title}</span>
@@ -349,11 +374,11 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                         )}
                         {stage === 'Planned' && hasFile && (
                           <button
-                            class="er-btn er-btn-small er-copy-btn"
+                            class="er-btn er-btn-small er-btn-primary er-copy-btn"
                             type="button"
                             data-copy={`/editorial-outline --site ${site} ${entry.slug}`}
-                            title="scaffold file exists — /editorial-outline will sketch the outline"
-                          >copy /outline</button>
+                            title="scaffold file exists — copy to sketch the outline in Claude Code"
+                          >outline →</button>
                         )}
                         {stage === 'Outlining' && wf && wf.state === 'iterating' && (
                           <button
@@ -380,11 +405,11 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                         )}
                         {stage === 'Outlining' && !wf && (
                           <button
-                            class="er-btn er-btn-small er-copy-btn"
+                            class="er-btn er-btn-small er-btn-primary er-copy-btn"
                             type="button"
                             data-copy={`/editorial-outline --site ${site} ${entry.slug}`}
-                            title="no outline workflow found — start one"
-                          >copy /outline</button>
+                            title="no outline workflow found — copy to (re)start one"
+                          >outline →</button>
                         )}
                         {(stage === 'Drafting' || stage === 'Review') && !bodyWritten && (
                           <button
@@ -396,10 +421,13 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                         )}
                         {(stage === 'Drafting' || stage === 'Review') && bodyWritten && !wf && (
                           <button
-                            class="er-btn er-btn-small er-copy-btn"
+                            class="er-btn er-btn-small er-btn-primary"
                             type="button"
-                            data-copy={`/editorial-draft-review --site ${site} ${entry.slug}`}
-                          >copy /review</button>
+                            data-action="enqueue-review"
+                            data-site={site}
+                            data-slug={entry.slug}
+                            title="body is drafted — create a longform review workflow and jump to the margin-note surface"
+                          >review →</button>
                         )}
                         {(stage === 'Drafting' || stage === 'Review') && (
                           <button
