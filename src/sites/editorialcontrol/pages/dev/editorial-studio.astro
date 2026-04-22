@@ -349,11 +349,11 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                         )}
                         {stage === 'Planned' && hasFile && (
                           <button
-                            class="er-btn er-btn-small er-copy-btn"
+                            class="er-btn er-btn-small er-btn-primary er-copy-btn"
                             type="button"
                             data-copy={`/editorial-outline --site ${site} ${entry.slug}`}
-                            title="scaffold file exists — /editorial-outline will sketch the outline"
-                          >copy /outline</button>
+                            title="scaffold file exists — copy to sketch the outline in Claude Code"
+                          >outline →</button>
                         )}
                         {stage === 'Outlining' && wf && wf.state === 'iterating' && (
                           <button
@@ -380,11 +380,11 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                         )}
                         {stage === 'Outlining' && !wf && (
                           <button
-                            class="er-btn er-btn-small er-copy-btn"
+                            class="er-btn er-btn-small er-btn-primary er-copy-btn"
                             type="button"
                             data-copy={`/editorial-outline --site ${site} ${entry.slug}`}
-                            title="no outline workflow found — start one"
-                          >copy /outline</button>
+                            title="no outline workflow found — copy to (re)start one"
+                          >outline →</button>
                         )}
                         {(stage === 'Drafting' || stage === 'Review') && !bodyWritten && (
                           <button
@@ -396,10 +396,11 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                         )}
                         {(stage === 'Drafting' || stage === 'Review') && bodyWritten && !wf && (
                           <button
-                            class="er-btn er-btn-small er-copy-btn"
+                            class="er-btn er-btn-small er-btn-primary er-copy-btn"
                             type="button"
                             data-copy={`/editorial-draft-review --site ${site} ${entry.slug}`}
-                          >copy /review</button>
+                            title="body is drafted — copy this command to enqueue a longform review workflow in Claude Code"
+                          >enqueue review →</button>
                         )}
                         {(stage === 'Drafting' || stage === 'Review') && (
                           <button
