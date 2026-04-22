@@ -105,13 +105,30 @@ function main(): void {
   const annotations = readAnnotations(rootDir, workflow.id);
   const resolved = resolvedCommentIds(annotations);
   const current = workflow.currentVersion;
-  const currentComments = annotations
+  // "Pending" means unresolved — regardless of which version the
+  // comment was originally attached to. Prior-version comments that
+  // rebased onto text still present in the current body are every bit
+  // as much the operator's revision brief as freshly-minted comments
+  // on the current version. The earlier current-only filter was
+  // wrong: it silently dropped carried-forward concerns that the
+  // anchor rebasing mechanism explicitly exists to preserve.
+  const pending = annotations
     .filter(isComment)
-    .filter((c) => c.version === current && !resolved.has(c.id))
-    .sort((a, b) => a.range.start - b.range.start);
-  const priorComments = annotations
-    .filter(isComment)
-    .filter((c) => c.version !== current && !resolved.has(c.id));
+    .filter((c) => !resolved.has(c.id))
+    .sort((a, b) => {
+      // Current-version comments first (those have authoritative
+      // offsets and natural reading order); then prior-version
+      // comments in descending version order so the freshest
+      // carried-forward concerns come next.
+      if (a.version !== b.version) {
+        if (a.version === current) return -1;
+        if (b.version === current) return 1;
+        return b.version - a.version;
+      }
+      return a.range.start - b.range.start;
+    });
+  const currentCount = pending.filter((c) => c.version === current).length;
+  const priorCount = pending.length - currentCount;
 
   const lines: string[] = [];
   lines.push(`Workflow ${workflow.id.slice(0, 8)} · ${workflow.contentKind} · state=${workflow.state} · v${current}`);
@@ -128,18 +145,23 @@ function main(): void {
     process.exit(3);
   }
   lines.push(
-    `Pending comments on v${current}: ${currentComments.length}` +
-    (priorComments.length ? ` (+${priorComments.length} unresolved on prior versions)` : ''),
+    `Unresolved comments: ${pending.length}` +
+    (pending.length > 0
+      ? ` (${currentCount} on v${current}` +
+        (priorCount > 0 ? `, ${priorCount} carried forward from prior versions` : '') +
+        `)`
+      : ''),
   );
-  if (currentComments.length === 0) {
+  if (pending.length === 0) {
     lines.push('');
-    lines.push('No comments to address. Iterate was likely clicked without marks, or all marks are resolved.');
+    lines.push('No unresolved comments. Iterate was likely clicked without marks, or all marks are resolved.');
     process.stdout.write(lines.join('\n') + '\n');
     process.exit(4);
   }
   lines.push('');
-  for (const [idx, c] of currentComments.entries()) {
-    lines.push(`${idx + 1}. [${c.range.start}-${c.range.end}] id=${c.id.slice(0, 8)}` +
+  for (const [idx, c] of pending.entries()) {
+    const origin = c.version === current ? `v${current}` : `from v${c.version}`;
+    lines.push(`${idx + 1}. [${c.range.start}-${c.range.end}] id=${c.id.slice(0, 8)} · ${origin}` +
       (c.category ? ` · ${c.category}` : ''));
     const anchor = c.anchor ?? '(no anchor captured)';
     lines.push(`   anchor: ${JSON.stringify(anchor.length > 160 ? anchor.slice(0, 160) + '…' : anchor)}`);

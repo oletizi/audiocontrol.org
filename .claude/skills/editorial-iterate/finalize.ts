@@ -222,6 +222,24 @@ function main(): void {
     });
     appendAnnotation(rootDir, annotation);
     dispositionCount[entry.disposition]++;
+    // An 'addressed' disposition is the agent's claim that the
+    // comment no longer needs operator attention on this version.
+    // Auto-resolve: the resolve annotation clears it from the live
+    // sidebar (it moves to the Resolved section with the 'addressed
+    // in vN' stamp intact). If the operator disagrees, they can
+    // re-open — resolve annotations are reversible by design.
+    // 'deferred' and 'wontfix' stay unresolved because both keep the
+    // operator in the loop: deferred means we carried it forward,
+    // wontfix means we rejected it and the operator should know.
+    if (entry.disposition === 'addressed') {
+      const resolveAnnotation = mintAnnotation({
+        type: 'resolve',
+        workflowId: workflow.id,
+        commentId,
+        resolved: true,
+      });
+      appendAnnotation(rootDir, resolveAnnotation);
+    }
   }
 
   transitionState(rootDir, workflow.id, 'in-review');

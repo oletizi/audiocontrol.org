@@ -1,0 +1,22 @@
+{
+  "id": "090ccc49-a3c3-4341-8023-8c692ecb0472",
+  "timestamp": "2026-04-22T21:08:06.332Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-22T21:08:06.332Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "version": 8,
+      "range": {
+        "start": 1225,
+        "end": 1229
+      },
+      "text": "Trap might be too pejorative",
+      "category": "other",
+      "anchor": "trap",
+      "id": "090ccc49-a3c3-4341-8023-8c692ecb0472",
+      "createdAt": "2026-04-22T21:08:06.332Z"
+    }
+  }
+}
