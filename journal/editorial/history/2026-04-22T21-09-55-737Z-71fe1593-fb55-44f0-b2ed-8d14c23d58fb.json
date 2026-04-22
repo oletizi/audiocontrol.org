@@ -1,0 +1,18 @@
+{
+  "id": "71fe1593-fb55-44f0-b2ed-8d14c23d58fb",
+  "timestamp": "2026-04-22T21:09:55.737Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-22T21:09:55.737Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "commentId": "090ccc49-a3c3-4341-8023-8c692ecb0472",
+      "version": 9,
+      "disposition": "addressed",
+      "reason": "Renamed §01 'The prompt-tuning trap' → 'The champion-prompt instinct'. Neutral-descriptive; matches the body's 'the instinct the quality problem produces' framing without the pejorative shade.",
+      "id": "71fe1593-fb55-44f0-b2ed-8d14c23d58fb",
+      "createdAt": "2026-04-22T21:09:55.737Z"
+    }
+  }
+}
