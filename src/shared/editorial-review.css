@@ -1149,31 +1149,87 @@ body:has([data-review-ui="longform"]) .site-footer {
   100% { box-shadow: 0 6px 14px rgba(184,54,42,0.4), 0 0 0 3px rgba(245,241,232,0.18); }
 }
 
-/* Edit-mode shell */
+/* Edit-mode shell — CodeMirror 6 source editor plus a live preview
+ * pane, toggled via Source / Split / Preview. The mounted CM instance
+ * is themed in the editor module (editorial-review-editor.ts); this
+ * block wires the layout chrome around it. */
+
 .er-edit-mode {
   background: var(--er-paper-2);
   border-top: var(--er-rule-med);
   padding: var(--er-space-3);
   margin-top: var(--er-space-3);
-}
-.er-edit-mode textarea {
-  width: 100%;
-  min-height: 32rem;
-  font-family: var(--er-font-mono);
-  font-size: 0.85rem;
-  line-height: 1.6;
-  padding: var(--er-space-2);
-  background: var(--er-paper);
-  border: var(--er-rule-thin);
-  color: var(--er-ink);
-  /* Clears the fixed-position strip when scrollIntoView places the
-   * textarea at the top of the viewport. */
   scroll-margin-top: 5rem;
-  resize: vertical;
-  border-radius: 2px;
 }
+
+/* When the edit mode is active, widen BlogLayout's host column
+ * AND collapse its reserved TOC slot so the source/preview panes
+ * can use the full width. BlogLayout uses
+ *   .essay-body-wrap { grid-template-columns: 1fr 14rem }
+ * to reserve space for a TOC on the right. In edit mode we don't
+ * need the TOC column; flattening it frees up 17rem. Also widen
+ * .essay (66rem cap) and .essay-body (34rem cap). Specificity via
+ * :has() + body beats the component-scoped Astro rules without
+ * reaching into BlogLayout internals. 19rem reserved for the
+ * fixed margin rail. */
+body:has(.er-edit-mode:not([hidden])) .essay,
+body:has(.er-edit-mode:not([hidden])) .essay-body {
+  max-width: calc(100vw - 19rem);
+  /* Left-align in edit mode so the content doesn't center under the
+   * fixed margin rail (18rem wide) on the right. The .essay's
+   * `margin: 0 auto` would otherwise split the viewport-minus-rail
+   * remainder on both sides, pulling the preview pane under the rail. */
+  margin-left: 0;
+  margin-right: auto;
+}
+body:has(.er-edit-mode:not([hidden])) .essay-body-wrap {
+  grid-template-columns: 1fr !important;
+}
+body:has(.er-edit-mode:not([hidden])) .toc {
+  display: none;
+}
+
+.er-edit-chrome {
+  display: flex;
+  gap: var(--er-space-2);
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: var(--er-space-2);
+  padding-bottom: var(--er-space-2);
+  border-bottom: 1px dashed var(--er-faded-2);
+}
+
+/* Source / Split / Preview tabs. Three-way pill; the active state
+ * gets filled ink. */
+.er-edit-modes {
+  display: inline-flex;
+  gap: 0;
+  border: 1px solid var(--er-faded-2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.er-edit-mode-btn {
+  font-family: var(--er-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.7rem;
+  border: 0;
+  border-right: 1px solid var(--er-faded-2);
+  background: transparent;
+  color: var(--er-faded);
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease;
+}
+.er-edit-mode-btn:last-child { border-right: 0; }
+.er-edit-mode-btn:hover { color: var(--er-ink); }
+.er-edit-mode-btn[aria-pressed="true"] {
+  background: var(--er-ink);
+  color: var(--er-paper);
+}
+
 .er-edit-actions {
-  margin-top: var(--er-space-2);
   display: flex;
   gap: var(--er-space-1);
   align-items: center;
@@ -1181,9 +1237,121 @@ body:has([data-review-ui="longform"]) .site-footer {
 }
 .er-edit-hint {
   font-family: var(--er-font-mono);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--er-faded);
   margin-left: var(--er-space-1);
+}
+
+/* Split container. `data-view` drives whether each child pane is
+ * visible; split shows both at 1fr/1fr, source/preview show one.
+ * Height is fixed at a generous reading depth so scroll happens
+ * inside each pane, not the page. */
+.er-edit-panes {
+  display: grid;
+  gap: var(--er-space-2);
+  height: 70vh;
+  min-height: 30rem;
+  border: var(--er-rule-thin);
+  background: var(--er-paper);
+  overflow: hidden;
+}
+.er-edit-panes[data-view="source"]  { grid-template-columns: 1fr 0; }
+.er-edit-panes[data-view="preview"] { grid-template-columns: 0 1fr; }
+.er-edit-panes[data-view="split"]   { grid-template-columns: 1fr 1fr; }
+.er-edit-panes[data-view="source"]  .er-edit-preview { display: none; }
+.er-edit-panes[data-view="preview"] .er-edit-source  { display: none; }
+
+.er-edit-source {
+  overflow: hidden;
+  height: 100%;
+  border-right: 1px dashed var(--er-faded-2);
+}
+.er-edit-panes[data-view="source"] .er-edit-source  { border-right: 0; }
+.er-edit-panes[data-view="preview"] .er-edit-source { border-right: 0; }
+
+/* Let the CodeMirror instance fill its host. */
+.er-edit-source .cm-editor { height: 100%; }
+.er-edit-source .cm-editor.cm-focused { outline: none; }
+
+/* Preview pane. Read-only rendered HTML that mirrors the published
+ * layout as close as we can match it without re-importing the full
+ * BlogLayout typography. */
+.er-edit-preview {
+  overflow: auto;
+  padding: var(--er-space-3) var(--er-space-4);
+  font-family: var(--er-font-body);
+  line-height: 1.65;
+  color: var(--er-ink);
+  background: var(--er-paper);
+}
+.er-edit-preview h1,
+.er-edit-preview h2,
+.er-edit-preview h3,
+.er-edit-preview h4 {
+  font-family: var(--er-font-display);
+  color: var(--er-ink);
+  letter-spacing: -0.01em;
+  margin: 1.6em 0 0.4em;
+  line-height: 1.2;
+}
+.er-edit-preview h1 { font-size: 2rem;   font-weight: 700; }
+.er-edit-preview h2 { font-size: 1.4rem; font-weight: 600; }
+.er-edit-preview h3 { font-size: 1.15rem; font-weight: 600; }
+.er-edit-preview h4 { font-size: 1rem;   font-weight: 600; }
+.er-edit-preview p  { margin: 0 0 1em; }
+.er-edit-preview ul, .er-edit-preview ol { padding-left: 1.5em; margin: 0 0 1em; }
+.er-edit-preview li { margin-bottom: 0.35em; }
+.er-edit-preview blockquote {
+  border-left: 3px solid var(--er-red-soft);
+  padding: 0.2em 1em;
+  margin: 0 0 1em;
+  color: var(--er-ink-soft);
+  font-style: italic;
+}
+.er-edit-preview code {
+  font-family: var(--er-font-mono);
+  font-size: 0.85em;
+  background: var(--er-paper-2);
+  padding: 0.1em 0.35em;
+  border-radius: 2px;
+  color: var(--er-ink-soft);
+}
+.er-edit-preview pre {
+  background: var(--er-paper-2);
+  padding: var(--er-space-2);
+  overflow-x: auto;
+  border: 1px solid var(--er-faded-2);
+  border-radius: 2px;
+  font-family: var(--er-font-mono);
+  font-size: 0.85em;
+  margin: 0 0 1em;
+}
+.er-edit-preview hr {
+  border: 0;
+  border-top: 1px solid var(--er-faded-2);
+  margin: 2em 0;
+}
+.er-edit-preview a {
+  color: var(--er-proof-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.er-edit-preview-error {
+  font-family: var(--er-font-mono);
+  font-size: 0.85rem;
+  color: var(--er-red-pencil);
+  padding: var(--er-space-2);
+}
+
+/* Phone: stack Split vertically. */
+@media (max-width: 900px) {
+  .er-edit-panes[data-view="split"] {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  .er-edit-source { border-right: 0; border-bottom: 1px dashed var(--er-faded-2); }
 }
 
 /* ---------- Margin-note composer ----------

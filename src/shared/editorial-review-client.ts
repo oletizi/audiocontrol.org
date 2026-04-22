@@ -690,28 +690,96 @@ export function initEditorialReview(): void {
   const toggleBtn = q<HTMLButtonElement>('[data-action="toggle-edit"]');
   const cancelEditBtn = q<HTMLButtonElement>('[data-action="cancel-edit"]');
   const saveVersionBtn = q<HTMLButtonElement>('[data-action="save-version"]');
+  const editSourceHost = q<HTMLElement>('[data-edit-source]');
+  const editPreviewHost = q<HTMLElement>('[data-edit-preview]');
+  const editPanes = q<HTMLElement>('[data-edit-panes]');
+  const editModeBtns = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('[data-edit-view]'),
+  );
   let editing = false;
+  let editorHandle: import('./editorial-review-editor').EditorHandle | null = null;
+  let previewDebounce: number | null = null;
 
-  function enterEdit(): void {
+  /** Debounced render of the current source into the preview pane. */
+  function schedulePreview(md: string): void {
+    if (previewDebounce !== null) window.clearTimeout(previewDebounce);
+    previewDebounce = window.setTimeout(async () => {
+      try {
+        const { renderMarkdownToHtml, parseDraftFrontmatter } = await import(
+          '../../scripts/lib/editorial-review/render.js'
+        );
+        const parsed = parseDraftFrontmatter(md);
+        const html = await renderMarkdownToHtml(parsed.body);
+        editPreviewHost.innerHTML = html;
+      } catch (e) {
+        editPreviewHost.innerHTML = `<p class="er-edit-preview-error">Preview failed: ${(e as Error).message}</p>`;
+      }
+    }, 120);
+  }
+
+  /** Flip the three-way Source / Split / Preview toggle. */
+  function setEditView(view: 'source' | 'split' | 'preview'): void {
+    editPanes.dataset.view = view;
+    for (const btn of editModeBtns) {
+      btn.setAttribute('aria-pressed', String(btn.dataset.editView === view));
+    }
+    // If the split / preview pane just became visible with stale
+    // content, refresh it synchronously so the operator never sees
+    // an empty pane.
+    if (view !== 'source' && editorHandle) {
+      schedulePreview(editorHandle.getValue());
+    }
+  }
+
+  for (const btn of editModeBtns) {
+    btn.addEventListener('click', () => {
+      const v = btn.dataset.editView as 'source' | 'split' | 'preview';
+      setEditView(v);
+    });
+  }
+
+  async function enterEdit(): Promise<void> {
     draftEdit.value = state.currentVersion.markdown;
-    draftEdit.hidden = false;
     editToolbar.hidden = false;
     draftBody.classList.add('hidden');
     toggleBtn.textContent = 'View';
     editing = true;
+    // Lazy-import the editor module so the CodeMirror bundle only
+    // loads when the operator actually enters edit mode.
+    const { mountEditor } = await import('./editorial-review-editor.ts');
+    if (editorHandle) editorHandle.destroy();
+    editSourceHost.innerHTML = '';
+    editorHandle = mountEditor({
+      host: editSourceHost,
+      doc: state.currentVersion.markdown,
+      onChange: (md) => {
+        draftEdit.value = md;
+        updateSaveState();
+        if (editPanes.dataset.view !== 'source') schedulePreview(md);
+      },
+      onSave: () => { saveVersionBtn.click(); },
+      onCancel: () => { cancelEditBtn.click(); },
+    });
     updateSaveState();
-    // Scroll the textarea into view — BlogLayout header and feature
-    // image otherwise keep it below the fold on first click.
-    draftEdit.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    draftEdit.focus({ preventScroll: true });
+    // Default view is split — shows what the source will look like
+    // as you type. Operators who want focus switch to Source or Preview.
+    setEditView('split');
+    editToolbar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    editorHandle.focus();
+    schedulePreview(state.currentVersion.markdown);
   }
 
   function exitEdit(): void {
-    draftEdit.hidden = true;
     editToolbar.hidden = true;
     draftBody.classList.remove('hidden');
     toggleBtn.textContent = 'Edit';
     editing = false;
+    if (editorHandle) {
+      editorHandle.destroy();
+      editorHandle = null;
+    }
+    editSourceHost.innerHTML = '';
+    editPreviewHost.innerHTML = '';
   }
 
   function updateSaveState(): void {
@@ -720,9 +788,11 @@ export function initEditorialReview(): void {
     editHint.textContent = changed ? 'Modified' : 'No changes';
   }
 
-  toggleBtn.addEventListener('click', () => { if (editing) { exitEdit(); } else { enterEdit(); } });
+  toggleBtn.addEventListener('click', () => {
+    if (editing) exitEdit();
+    else void enterEdit();
+  });
   cancelEditBtn.addEventListener('click', exitEdit);
-  draftEdit.addEventListener('input', updateSaveState);
 
   // Double-click anywhere in the rendered draft enters edit mode. This
   // mirrors the comment gesture (select → Mark) with its own shape so
@@ -734,9 +804,9 @@ export function initEditorialReview(): void {
     const target = ev.target;
     if (target instanceof HTMLElement && target.closest('mark.draft-comment-highlight')) return;
     // Clear the double-click text selection the browser made on the way in
-    // — otherwise the Mark button reappears alongside the textarea.
+    // — otherwise the Mark button reappears alongside the editor.
     window.getSelection()?.removeAllRanges();
-    enterEdit();
+    void enterEdit();
   });
 
   saveVersionBtn.addEventListener('click', async () => {
