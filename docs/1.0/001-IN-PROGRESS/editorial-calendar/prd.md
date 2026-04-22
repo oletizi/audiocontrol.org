@@ -148,6 +148,24 @@ Structured markdown file with tables per stage. Each entry includes: title, slug
 - Voice skills (`audiocontrol-voice`, `editorialcontrol-voice`) — required by `/editorial-iterate` and `/editorial-shortform-draft` (Phases 10–11) for voice-consistent drafting and revision
 - `scripts/feature-image/journal.ts` (from feature-image-generator Phase 15) — extracted to `scripts/lib/journal/` in Phase 14 and shared with editorial-review's per-entry record store
 
+## Future Enhancements
+
+- **Visual markdown editor (TipTap / ProseMirror) as an opt-in mode.**
+  The current edit surface on the editorial-review page uses a
+  CodeMirror 6 source editor with a live preview pane and
+  Source / Split / Preview toggles — the modern source-editor
+  shape shipped by Typora, Obsidian, Bear, iA Writer, Ghost.
+  The natural next step is a *Visual* mode that edits the rendered
+  article directly (TipTap on top of `prosemirror-markdown`),
+  keeping markdown as the source of truth with serialization on
+  save. Tradeoffs: markdown round-trip is imperfect for HTML
+  comments, some list shapes, and raw HTML, so the Source mode
+  must remain available as the lossless fallback. Estimated scope:
+  ~1 day of careful implementation; ~200 KB of additional client
+  bundle weight (TipTap + extensions). Not in the critical path;
+  revisit when the operator signals they want proof-style editing
+  on the rendered article.
+
 ## Open Questions
 
 - Exact markdown table format vs structured list entries — tables are more scannable, lists allow more metadata per entry
