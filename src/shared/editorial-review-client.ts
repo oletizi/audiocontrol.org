@@ -796,12 +796,25 @@ export function initEditorialReview(): void {
     editPreviewHost.innerHTML = '';
   }
 
+  /** Single source of truth for the edit-state hint. Updates the
+   * toolbar span AND the focus-mode corner indicator so the two
+   * never disagree — previously editHint was set directly at
+   * save-flow boundaries and the focus-mode label fell out of sync. */
+  function setHint(text: string): void {
+    editHint.textContent = text;
+    if (focusSaveHint) focusSaveHint.textContent = text;
+  }
+
   function updateSaveState(): void {
     const changed = draftEdit.value !== state.currentVersion.markdown;
     saveVersionBtn.disabled = !changed;
-    editHint.textContent = changed ? 'Modified' : 'No changes';
-    // Mirror the hint into the focus-mode corner affordance.
-    if (focusSaveHint) focusSaveHint.textContent = changed ? 'Modified' : 'No changes';
+    // Also disable the floating focus-mode Save button so it reads
+    // as inert when there's nothing to save.
+    const focusSaveBtn = document.querySelector<HTMLButtonElement>(
+      '[data-focus-save] [data-action="save-version"]',
+    );
+    if (focusSaveBtn) focusSaveBtn.disabled = !changed;
+    setHint(changed ? 'Modified' : 'No changes');
   }
 
   /** True if the backing draft-edit textarea has unsaved changes
@@ -898,10 +911,14 @@ export function initEditorialReview(): void {
     void enterEdit();
   });
 
-  saveVersionBtn.addEventListener('click', async () => {
+  /** Single save handler, shared by every `[data-action="save-version"]`
+   * button (toolbar + focus-mode floating). Guards against double
+   * submission, updates both hint surfaces, and keeps beforeunload
+   * from interrupting the successful post-save navigation. */
+  async function performSave(): Promise<void> {
     if (saveVersionBtn.disabled) return;
     saveVersionBtn.disabled = true;
-    editHint.textContent = 'Saving...';
+    setHint('Saving…');
     try {
       const res = await fetch('/api/dev/editorial-review/version', {
         method: 'POST',
@@ -914,11 +931,15 @@ export function initEditorialReview(): void {
       });
       const body = await res.json();
       if (!res.ok) {
-        showToast(`Save failed: ${body.error || res.status}`, true);
-        updateSaveState();
+        const msg = `Save failed: ${body.error || res.status}`;
+        showToast(msg, true);
+        setHint('Save failed');
+        // Leave the save button enabled so the operator can retry.
+        saveVersionBtn.disabled = false;
         return;
       }
       showToast(`Saved v${body.version.version}`);
+      setHint(`Saved v${body.version.version}`);
       // Mark this session as saved so beforeunload doesn't interrupt
       // the navigation into the new version. The backing textarea
       // still holds the just-saved content; zeroing `editing` makes
@@ -926,10 +947,21 @@ export function initEditorialReview(): void {
       editing = false;
       window.location.href = `?v=${body.version.version}`;
     } catch (e) {
-      showToast(`Network error: ${(e as Error).message}`, true);
-      updateSaveState();
+      const msg = `Network error: ${(e as Error).message}`;
+      showToast(msg, true);
+      setHint('Save failed');
+      saveVersionBtn.disabled = false;
     }
-  });
+  }
+
+  // Wire EVERY [data-action="save-version"] button to the same save
+  // handler — toolbar, focus-mode floating, whatever else surfaces
+  // the action. Previously only the toolbar button (captured via
+  // querySelector) had the listener, so the focus-mode Save did
+  // nothing. querySelectorAll fixes that.
+  document.querySelectorAll<HTMLButtonElement>('[data-action="save-version"]').forEach(
+    (btn) => btn.addEventListener('click', () => { void performSave(); }),
+  );
 
   // ---- Decision buttons (Approve / Iterate / Reject) ----
 
