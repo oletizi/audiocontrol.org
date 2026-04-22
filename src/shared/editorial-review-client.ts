@@ -839,7 +839,19 @@ export function initEditorialReview(): void {
   // surface in the drawer, not editable content.
   let stashedOutline = '';
 
-  async function enterEdit(): Promise<void> {
+  /**
+   * Options for `enterEdit`. `cursorHint` is a short plain-text
+   * snippet captured from the rendered body at the operator's
+   * click position. When present, enterEdit tries to locate the
+   * snippet in the source markdown and place the cursor there —
+   * so double-clicking a word in the rendered prose lands the
+   * editor's cursor at that word, not at position 0.
+   */
+  interface EnterEditOptions {
+    cursorHint?: string;
+  }
+
+  async function enterEdit(opts: EnterEditOptions = {}): Promise<void> {
     // Load both splitOutline AND joinOutline up front so the onChange
     // handler can rebuild the full document synchronously on every
     // keystroke — no race with a pending dynamic import.
@@ -895,6 +907,37 @@ export function initEditorialReview(): void {
     editToolbar.scrollIntoView({ behavior: 'smooth', block: 'start' });
     editorHandle.focus();
     schedulePreview(state.currentVersion.markdown);
+
+    // Land the cursor near where the operator was reading. The hint
+    // is a plain-text snippet from the rendered body; markdown source
+    // carries extra syntax (headings, emphasis markers, inline code,
+    // links) that mostly doesn't interrupt the textual content but
+    // can break a verbatim indexOf. Try the full snippet first —
+    // most prose hits. If it doesn't uniquely match, fall back to
+    // the raw double-clicked word (~3+ chars of plain text, very
+    // likely intact in source); if that's still ambiguous, don't
+    // jump. Silent failure is correct here — position 0 is a safe
+    // default.
+    const hint = opts.cursorHint;
+    if (hint) {
+      const locate = (needle: string): number => {
+        if (!needle || needle.length < 3) return -1;
+        const first = split.body.indexOf(needle);
+        if (first < 0) return -1;
+        const second = split.body.indexOf(needle, first + 1);
+        return second < 0 ? first : -1;
+      };
+      let pos = locate(hint);
+      if (pos < 0) {
+        // Fall back to the last word in the hint — that's the
+        // word closest to the click in our expansion scheme.
+        const words = hint.split(/\s+/).filter((w) => w.length >= 4);
+        for (let i = words.length - 1; i >= 0 && pos < 0; i--) {
+          pos = locate(words[i]);
+        }
+      }
+      if (pos >= 0) editorHandle.setCursor(pos);
+    }
   }
 
   /** Thin wrapper around outline-split's joinOutline so the onChange
@@ -1087,11 +1130,58 @@ export function initEditorialReview(): void {
     if (editing) return;
     const target = ev.target;
     if (target instanceof HTMLElement && target.closest('mark.draft-comment-highlight')) return;
+    // Capture the click location BEFORE we clear the browser's auto-
+    // selection. Double-click selects the word under the cursor, so
+    // we use that word (plus a small context window) as the locator
+    // snippet. enterEdit does the indexOf into the source and places
+    // the cursor there — saves the operator the context-switch hunt.
+    const cursorHint = captureDblclickHint();
     // Clear the double-click text selection the browser made on the way in
     // — otherwise the Mark button reappears alongside the editor.
     window.getSelection()?.removeAllRanges();
-    void enterEdit();
+    void enterEdit({ cursorHint });
   });
+
+  /**
+   * Pull a plain-text locator snippet from the current selection
+   * (created by the browser's double-click word-select). We want
+   * enough surrounding context that the snippet is likely unique
+   * in the document but not so much that any nearby edit will
+   * invalidate it. Strategy: the selected word plus a few chars
+   * of context on each side, trimmed to word boundaries.
+   *
+   * Returns undefined when no usable selection exists — enterEdit
+   * treats that as "no hint" and lands at position 0 as before.
+   */
+  function captureDblclickHint(): string | undefined {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return undefined;
+    const range = sel.getRangeAt(0);
+    const offsets = computeOffsetFromRange(range);
+    if (!offsets) return undefined;
+    const text = draftPlainText();
+    // Expand outward to ~60 chars total, BUT never cross a newline.
+    // In rendered plain text a `\n` marks a paragraph boundary; in
+    // markdown source the same boundary is `\n\n` (plus any heading
+    // prefix or emphasis markers surrounding the next paragraph),
+    // so a snippet that crosses the break won't match in source via
+    // indexOf. Staying within a single rendered paragraph keeps the
+    // snippet intact across the render → source mapping.
+    const CONTEXT = 30;
+    let start = Math.max(0, offsets.start - CONTEXT);
+    let end = Math.min(text.length, offsets.end + CONTEXT);
+    // Pull back if we crossed a newline.
+    const prevNl = text.lastIndexOf('\n', offsets.start);
+    const nextNl = text.indexOf('\n', offsets.end);
+    if (prevNl >= 0 && prevNl >= start) start = prevNl + 1;
+    if (nextNl >= 0 && nextNl < end) end = nextNl;
+    // Snap to whitespace boundaries so the snippet doesn't begin
+    // or end mid-word.
+    while (start > 0 && !/\s/.test(text[start - 1] || '') && text[start - 1] !== '\n') start--;
+    while (end < text.length && !/\s/.test(text[end] || '') && text[end] !== '\n') end++;
+    const snippet = text.slice(start, end).trim();
+    return snippet.length >= 3 ? snippet : undefined;
+  }
 
   /** Single save handler, shared by every `[data-action="save-version"]`
    * button (toolbar + focus-mode floating). Guards against double

@@ -31,6 +31,13 @@ export interface EditorHandle {
   setValue: (md: string) => void;
   focus: () => void;
   destroy: () => void;
+  /**
+   * Place the cursor at the given document offset and scroll it
+   * into view. Used by the review surface to jump the editor to
+   * the spot the operator double-clicked in the rendered prose,
+   * instead of landing at position 0.
+   */
+  setCursor: (pos: number) => void;
 }
 
 export interface MountOptions {
@@ -183,5 +190,12 @@ export function mountEditor(opts: MountOptions): EditorHandle {
     },
     focus: () => view.focus(),
     destroy: () => view.destroy(),
+    setCursor: (pos: number) => {
+      const clamped = Math.max(0, Math.min(pos, view.state.doc.length));
+      view.dispatch({
+        selection: { anchor: clamped },
+        scrollIntoView: true,
+      });
+    },
   };
 }
