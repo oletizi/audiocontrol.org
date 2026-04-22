@@ -1,0 +1,18 @@
+{
+  "id": "657485a9-6c28-4aa1-a682-b26066f7e03f",
+  "timestamp": "2026-04-22T20:47:51.868Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-22T20:47:51.868Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "commentId": "02521eca-61af-425b-8cd1-a5c3aa2f90e4",
+      "version": 5,
+      "disposition": "addressed",
+      "reason": "Retired 'shifting subject matter' in body. TL;DR item 1 now names the moving world (new models, platform rules, failure modes); §01 perfectionist paragraph replaces 'subject matter shifts half a degree' with three concrete receipts.",
+      "id": "657485a9-6c28-4aa1-a682-b26066f7e03f",
+      "createdAt": "2026-04-22T20:47:51.868Z"
+    }
+  }
+}

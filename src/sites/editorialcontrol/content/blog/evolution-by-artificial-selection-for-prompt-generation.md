@@ -57,8 +57,8 @@ In this dispatch
 
 ## 00 TL;DR
 
-1. **Tuning one champion prompt isn't the best you can do.** A single prompt can't track a shifting subject matter. A population can.
-2. **Keep the population, and capture any fitness signal.** Even a thumbs column on a journal row. Perfect fitness is the enemy of any fitness.
+1. **Tuning one champion prompt isn't the best you can do.** A single prompt can't track a world that keeps moving — new models, new platform rules, new failure modes every month. A population can.
+2. **Keep the population, and capture any fitness signal.** Even a thumbs up/down column on a journal row can serve as a fitness signal. Perfect fitness is the enemy of any fitness.
 3. **Prune.** Selection requires deletion. A population that never loses variants isn't a population — it's a landfill.
 4. **The workflow has to make this the easy path.** If selection-driven prompting takes willpower, it won't happen. Variation, fitness, and retention need to live on the same gradient as the work.
 5. **Version control is non-negotiable** — *especially* with agents in the loop. It's useful for human-only workflows. It's mandatory once an agent is the one editing files.
@@ -73,7 +73,7 @@ Everyone has noticed that prompt quality matters. That part isn't controversial.
 
 What's less obvious: the instinct the quality problem produces — *write a better prompt* — is the wrong instinct. Two recurring shapes follow from it.
 
-**The perfectionist.** Engineer the one right prompt, in a document, on paper, off to the side. Tune, revise, second-guess, rewrite. Ship the champion. Then next week the subject matter shifts half a degree and the champion is suddenly wrong for the new territory. Go back to the document. The loop never stops because the world is a high-variance search space and the champion is a single point in it.
+**The perfectionist.** Engineer the one right prompt, in a document, on paper, off to the side. Tune, revise, second-guess, rewrite. Ship the champion. Then a model release drops the cost of long-context reasoning, or the platform changes a rule about what counts as spam, or an image generator's failure modes are different from last month's, and the champion is suddenly wrong for the new territory. Go back to the document. The loop never stops because the world is a high-variance search space and the champion is a single point in it.
 
 **The collector.** Hoard prompts. A Notion page, a markdown file, a folder of `.txt` files named after the post they were used for. Nothing ever gets pruned. The library grows because pruning feels like throwing work away. Finding the right prompt six months later means reading most of the library, because there's no ordering and no signal for which ones worked.
 
