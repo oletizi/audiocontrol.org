@@ -145,6 +145,49 @@ function initPublishButtons(): void {
   });
 }
 
+/**
+ * Enqueue a longform review workflow for a Drafting-stage entry
+ * whose body is written but has no active workflow. Calls the
+ * existing /api/dev/editorial-review/start-longform endpoint
+ * (idempotent — returns the in-flight workflow if one already
+ * matches). On success, navigates to the review surface for the
+ * workflow so the operator lands on the margin-note UI.
+ */
+function initEnqueueReviewButtons(): void {
+  document.querySelectorAll<HTMLButtonElement>('[data-action="enqueue-review"]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const slug = btn.dataset.slug;
+      if (!slug) return;
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.textContent = 'enqueuing…';
+      try {
+        const result = await postJson('/api/dev/editorial-review/start-longform', {
+          site: siteFromButton(btn),
+          slug,
+        });
+        if (!result.ok) {
+          showToast(bodyError(result.body, `Enqueue failed: ${result.status}`), true);
+          btn.disabled = false;
+          btn.textContent = originalText;
+          return;
+        }
+        // Navigate straight to the review surface — that's the whole
+        // point of the button. The start-longform handler is
+        // idempotent, so the review page will show whichever workflow
+        // is active (freshly-created or pre-existing).
+        const site = siteFromButton(btn);
+        window.location.href = `/dev/editorial-review/${slug}?site=${site}`;
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        showToast(`Network error: ${message}`, true);
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    });
+  });
+}
+
 function initFilter(): void {
   const searchInput = document.querySelector<HTMLInputElement>('[data-filter-input]');
   const stageChips = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-stage-chip]'));
@@ -251,6 +294,7 @@ function init(): void {
   initCopyButtons();
   initScaffoldButtons();
   initPublishButtons();
+  initEnqueueReviewButtons();
   initFilter();
   initKeyboardShortcuts();
   initPolling();

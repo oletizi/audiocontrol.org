@@ -421,11 +421,13 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                         )}
                         {(stage === 'Drafting' || stage === 'Review') && bodyWritten && !wf && (
                           <button
-                            class="er-btn er-btn-small er-btn-primary er-copy-btn"
+                            class="er-btn er-btn-small er-btn-primary"
                             type="button"
-                            data-copy={`/editorial-draft-review --site ${site} ${entry.slug}`}
-                            title="body is drafted — copy this command to enqueue a longform review workflow in Claude Code"
-                          >enqueue review →</button>
+                            data-action="enqueue-review"
+                            data-site={site}
+                            data-slug={entry.slug}
+                            title="body is drafted — create a longform review workflow and jump to the margin-note surface"
+                          >review →</button>
                         )}
                         {(stage === 'Drafting' || stage === 'Review') && (
                           <button
