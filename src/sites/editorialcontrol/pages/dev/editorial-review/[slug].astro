@@ -186,18 +186,18 @@ function stateLabel(state?: string): string {
     <aside class="er-marginalia" data-comments-sidebar aria-label="Margin notes">
       <p class="er-marginalia-head">Margin notes</p>
       <p class="er-marginalia-empty" data-sidebar-empty>Select text in the draft, then either click the floating <em>Mark</em> pencil above your selection — or click anywhere here in the margin to open the note.</p>
-      <ol class="er-marginalia-list" data-sidebar-list></ol>
-    </aside>
 
-    <button class="er-pencil-btn" data-add-comment-btn hidden type="button">Mark</button>
-
-    <div class="er-modal" data-comment-modal hidden role="dialog" aria-modal="true" aria-label="Add comment">
-      <div class="er-modal-backdrop" data-modal-backdrop></div>
-      <div class="er-modal-panel">
-        <p class="er-modal-header">New margin note</p>
-        <blockquote class="er-modal-quote" data-modal-quote></blockquote>
-        <label class="er-modal-label" for="comment-category">Mark as</label>
-        <select id="comment-category" data-comment-category>
+      <!--
+        In-margin composer. Lives inside the margin rail itself so
+        leaving a mark never pulls focus off the draft. Hidden until
+        the operator starts a new mark; populates with the selected
+        quote; submits in place and promotes into the list below.
+      -->
+      <section class="er-marginalia-composer" data-comment-composer hidden aria-label="New margin note">
+        <p class="er-marginalia-composer-head">New mark</p>
+        <div class="er-marginalia-composer-quote" data-composer-quote></div>
+        <label class="er-marginalia-composer-label" for="comment-category">Mark as</label>
+        <select id="comment-category" class="er-marginalia-composer-select" data-comment-category>
           <option value="other" selected>other</option>
           <option value="voice-drift">voice-drift</option>
           <option value="missing-receipt">missing-receipt</option>
@@ -206,14 +206,27 @@ function stateLabel(state?: string): string {
           <option value="fake-authority">fake-authority</option>
           <option value="structural">structural</option>
         </select>
-        <label class="er-modal-label" for="comment-text">Note</label>
-        <textarea id="comment-text" data-comment-text rows="4" placeholder="What needs attention here?"></textarea>
-        <div class="er-modal-actions">
-          <button type="button" class="er-btn" data-action="cancel-comment">Cancel</button>
-          <button type="button" class="er-btn er-btn-primary" data-action="submit-comment">Leave mark</button>
+        <label class="er-marginalia-composer-label" for="comment-text">Note</label>
+        <textarea
+          id="comment-text"
+          class="er-marginalia-composer-textarea"
+          data-comment-text
+          rows="4"
+          placeholder="What needs attention here?"
+        ></textarea>
+        <div class="er-marginalia-composer-actions">
+          <button type="button" class="er-btn er-btn-small" data-action="cancel-comment">Cancel</button>
+          <button type="button" class="er-btn er-btn-small er-btn-primary" data-action="submit-comment">Leave mark</button>
         </div>
-      </div>
-    </div>
+        <p class="er-marginalia-composer-hint">
+          <kbd>⌘</kbd><kbd>↵</kbd> save · <kbd>esc</kbd> cancel
+        </p>
+      </section>
+
+      <ol class="er-marginalia-list" data-sidebar-list></ol>
+    </aside>
+
+    <button class="er-pencil-btn" data-add-comment-btn hidden type="button">Mark</button>
 
     <div class="er-toast" data-toast hidden></div>
 
