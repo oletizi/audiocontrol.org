@@ -804,11 +804,43 @@ export function initEditorialReview(): void {
     if (focusSaveHint) focusSaveHint.textContent = changed ? 'Modified' : 'No changes';
   }
 
-  toggleBtn.addEventListener('click', () => {
-    if (editing) exitEdit();
-    else void enterEdit();
+  /** True if the backing draft-edit textarea has unsaved changes
+   * relative to the current version's markdown. */
+  function hasUnsavedChanges(): boolean {
+    return editing && draftEdit.value !== state.currentVersion.markdown;
+  }
+
+  /** Native confirm prompt before discarding unsaved edits. Returns
+   * true if the operator chose to discard (safe to exitEdit). */
+  function confirmDiscard(reason: string): boolean {
+    if (!hasUnsavedChanges()) return true;
+    return confirm(
+      `You have unsaved changes. ${reason}\n\nUnsaved edits will be lost. Continue?`,
+    );
+  }
+
+  /** Warn before tab close / page reload if edits are pending. The
+   * standard beforeunload dance: set returnValue to any non-empty
+   * string and the browser prompts. Modern browsers ignore the
+   * message text; they show their own generic warning. */
+  window.addEventListener('beforeunload', (ev) => {
+    if (!hasUnsavedChanges()) return;
+    ev.preventDefault();
+    ev.returnValue = '';
   });
-  cancelEditBtn.addEventListener('click', exitEdit);
+
+  toggleBtn.addEventListener('click', () => {
+    if (editing) {
+      if (!confirmDiscard('Exiting the editor will discard them.')) return;
+      exitEdit();
+    } else {
+      void enterEdit();
+    }
+  });
+  cancelEditBtn.addEventListener('click', () => {
+    if (!confirmDiscard('Cancel will discard them.')) return;
+    exitEdit();
+  });
 
   // ---- Focus mode ----
   //
@@ -887,6 +919,11 @@ export function initEditorialReview(): void {
         return;
       }
       showToast(`Saved v${body.version.version}`);
+      // Mark this session as saved so beforeunload doesn't interrupt
+      // the navigation into the new version. The backing textarea
+      // still holds the just-saved content; zeroing `editing` makes
+      // hasUnsavedChanges() return false.
+      editing = false;
       window.location.href = `?v=${body.version.version}`;
     } catch (e) {
       showToast(`Network error: ${(e as Error).message}`, true);
