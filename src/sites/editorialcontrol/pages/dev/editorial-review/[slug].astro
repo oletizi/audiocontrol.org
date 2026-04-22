@@ -130,6 +130,7 @@ function stateLabel(state?: string): string {
               <button class="er-edit-mode-btn" data-edit-view="preview" type="button" aria-pressed="false">Preview</button>
             </div>
             <div class="er-edit-actions">
+              <button class="er-btn er-btn-small" data-action="focus-mode" type="button" title="Distraction-free mode (Shift+F)" aria-pressed="false">Focus ⛶</button>
               <button class="er-btn er-btn-primary" data-action="save-version" type="button">Save as new version</button>
               <button class="er-btn" data-action="cancel-edit" type="button">Cancel</button>
               <span class="er-edit-hint" data-edit-hint></span>
@@ -146,6 +147,19 @@ function stateLabel(state?: string): string {
                CodeMirror instance syncs its value into this element on
                every change. -->
           <textarea id="draft-edit" data-draft-edit hidden></textarea>
+
+          <!-- Focus-mode floating affordances. Visible only when
+               body.er-focus-mode is set; invisible and non-interactive
+               otherwise. Hover-over-edge reveal + a soft resting
+               state so a first-time focus-mode operator sees what's
+               available without the chrome shouting. -->
+          <div class="er-focus-exit" data-focus-exit aria-hidden="true">
+            <button type="button" data-action="exit-focus" title="Exit focus (Esc)">← exit focus</button>
+          </div>
+          <div class="er-focus-save" data-focus-save aria-hidden="true">
+            <button type="button" class="er-btn er-btn-small er-btn-primary" data-action="save-version">Save</button>
+            <span class="er-focus-save-hint" data-focus-save-hint></span>
+          </div>
         </div>
       </div>
 

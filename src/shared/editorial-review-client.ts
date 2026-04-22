@@ -758,7 +758,15 @@ export function initEditorialReview(): void {
         if (editPanes.dataset.view !== 'source') schedulePreview(md);
       },
       onSave: () => { saveVersionBtn.click(); },
-      onCancel: () => { cancelEditBtn.click(); },
+      onCancel: () => {
+        // In focus mode, Esc peels focus off but leaves the edit
+        // session alive. In regular edit mode, Esc cancels the edit.
+        if (document.body.classList.contains('er-focus-mode')) {
+          exitFocus();
+        } else {
+          cancelEditBtn.click();
+        }
+      },
     });
     updateSaveState();
     // Default view is split — shows what the source will look like
@@ -770,6 +778,12 @@ export function initEditorialReview(): void {
   }
 
   function exitEdit(): void {
+    // Exit focus mode first so the chrome comes back before we hide it.
+    if (document.body.classList.contains('er-focus-mode')) {
+      document.body.classList.remove('er-focus-mode');
+      const fb = document.querySelector<HTMLButtonElement>('[data-action="focus-mode"]');
+      fb?.setAttribute('aria-pressed', 'false');
+    }
     editToolbar.hidden = true;
     draftBody.classList.remove('hidden');
     toggleBtn.textContent = 'Edit';
@@ -786,6 +800,8 @@ export function initEditorialReview(): void {
     const changed = draftEdit.value !== state.currentVersion.markdown;
     saveVersionBtn.disabled = !changed;
     editHint.textContent = changed ? 'Modified' : 'No changes';
+    // Mirror the hint into the focus-mode corner affordance.
+    if (focusSaveHint) focusSaveHint.textContent = changed ? 'Modified' : 'No changes';
   }
 
   toggleBtn.addEventListener('click', () => {
@@ -793,6 +809,47 @@ export function initEditorialReview(): void {
     else void enterEdit();
   });
   cancelEditBtn.addEventListener('click', exitEdit);
+
+  // ---- Focus mode ----
+  //
+  // Full-viewport, single-column, chrome-free editor. The press-check
+  // metaphor is "the galley under the lamp" — everything except the
+  // page being edited recedes. Exit on Esc, Shift+F, or the floating
+  // affordance in the top-left corner.
+
+  const focusBtn = document.querySelector<HTMLButtonElement>('[data-action="focus-mode"]');
+  const exitFocusBtn = document.querySelector<HTMLButtonElement>('[data-action="exit-focus"]');
+  const focusSaveHint = document.querySelector<HTMLElement>('[data-focus-save-hint]');
+  let focusMode = false;
+
+  function enterFocus(): void {
+    if (!editing) return;
+    document.body.classList.add('er-focus-mode');
+    focusBtn?.setAttribute('aria-pressed', 'true');
+    focusMode = true;
+    // Force source-only; split/preview don't make sense in focus.
+    setEditView('source');
+    // Sync the save hint into the corner indicator.
+    syncFocusSave();
+    editorHandle?.focus();
+  }
+
+  function exitFocus(): void {
+    document.body.classList.remove('er-focus-mode');
+    focusBtn?.setAttribute('aria-pressed', 'false');
+    focusMode = false;
+  }
+
+  function syncFocusSave(): void {
+    if (!focusSaveHint) return;
+    focusSaveHint.textContent = editHint.textContent ?? '';
+  }
+
+  focusBtn?.addEventListener('click', () => {
+    if (focusMode) exitFocus();
+    else enterFocus();
+  });
+  exitFocusBtn?.addEventListener('click', exitFocus);
 
   // Double-click anywhere in the rendered draft enters edit mode. This
   // mirrors the comment gesture (select → Mark) with its own shape so
@@ -1002,9 +1059,15 @@ export function initEditorialReview(): void {
     );
     if (typing) {
       if (ev.key === 'Escape') {
+        // In focus mode, Esc exits focus first — the editor itself
+        // stays open. Regular edit mode's Esc still blurs + dismisses
+        // the composer if that's what the operator was typing in.
+        if (focusMode) {
+          ev.preventDefault();
+          exitFocus();
+          return;
+        }
         target.blur();
-        // If the operator was typing inside the margin-note composer,
-        // also dismiss it. Same gesture, same expectation.
         if (!composer.hidden) closeComposer();
       }
       return;
@@ -1020,6 +1083,16 @@ export function initEditorialReview(): void {
     if (ev.key === 'Escape') {
       if (shortcutsOverlay && !shortcutsOverlay.hidden) { showShortcuts(false); return; }
       if (!composer.hidden) { closeComposer(); return; }
+      if (focusMode) { exitFocus(); return; }
+    }
+    // Shift+F toggles focus mode from anywhere on the page (as long
+    // as the operator isn't typing, which the `typing` branch above
+    // already handled).
+    if (ev.shiftKey && ev.key === 'F') {
+      ev.preventDefault();
+      if (!editing) return;
+      if (focusMode) exitFocus(); else enterFocus();
+      return;
     }
     if (ev.key === 'e') { ev.preventDefault(); toggleBtn.click(); return; }
     if (ev.key === 'a') { ev.preventDefault(); approveBtn?.click(); return; }

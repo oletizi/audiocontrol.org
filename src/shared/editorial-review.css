@@ -1354,6 +1354,149 @@ body:has(.er-edit-mode:not([hidden])) .toc {
   .er-edit-source { border-right: 0; border-bottom: 1px dashed var(--er-faded-2); }
 }
 
+/* ---------- Focus mode ----------
+ *
+ * "The galley under the lamp." Full viewport, cream paper, single
+ * editor column, generous typography, all other chrome receded.
+ * Entered via the Focus button in the edit toolbar, Shift+F, or
+ * double-click-on-prose if the composer isn't open. Exits via Esc
+ * or the floating affordance in the top-left corner.
+ *
+ * The affordances (er-focus-exit, er-focus-save) live in the DOM
+ * always but are display:none outside focus mode, so they're
+ * invisible to screen readers and layout when not in use. */
+
+.er-focus-exit,
+.er-focus-save {
+  display: none;
+}
+
+body.er-focus-mode {
+  overflow: hidden; /* kill page scroll; the editor pane scrolls */
+}
+
+/* Hide everything that isn't the editor. */
+body.er-focus-mode .er-strip,
+body.er-focus-mode [data-comments-sidebar],
+body.er-focus-mode .er-pencil-btn,
+body.er-focus-mode .er-poll-indicator,
+body.er-focus-mode .er-toast,
+body.er-focus-mode .header-wrapper,
+body.er-focus-mode .site-footer,
+body.er-focus-mode .essay-header,
+body.er-focus-mode .essay-hero-image,
+body.er-focus-mode .er-edit-chrome {
+  display: none !important;
+}
+
+/* The edit-mode container becomes a full-viewport canvas. */
+body.er-focus-mode .er-edit-mode {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--er-paper);
+  /* Soft paper grain, stronger than the normal chrome, matching the
+   * "galley pulled out onto a bare tabletop" framing. */
+  background-image:
+    url("data:image/svg+xml;utf8,<svg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='1 1 1 1 0, 1 1 1 1 0, 1 1 1 1 0, 0 0 0 0.07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+body.er-focus-mode .er-edit-panes {
+  border: 0;
+  background: transparent;
+  height: 100vh;
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: clamp(3rem, 8vh, 6rem) var(--er-space-3);
+  grid-template-columns: 1fr !important;
+  box-sizing: border-box;
+}
+
+body.er-focus-mode .er-edit-source {
+  border: 0;
+  height: 100%;
+  background: transparent;
+}
+
+/* Loosen the editor typography for comfortable long-form writing.
+ * CodeMirror scoped overrides — these only apply inside the
+ * focus-mode body class, so the non-focus edit still renders at
+ * its standard size. */
+body.er-focus-mode .cm-editor {
+  font-size: 1.125rem;
+  line-height: 1.75;
+  background: transparent;
+}
+body.er-focus-mode .cm-scroller {
+  padding: 0;
+}
+body.er-focus-mode .cm-content {
+  padding: 0;
+  max-width: 38rem;
+  margin: 0 auto;
+}
+body.er-focus-mode .cm-gutters {
+  display: none; /* line numbers are noise in focus mode */
+}
+
+/* Floating affordances: exit pill (top-left) and save pill (bottom-
+ * right). Resting state is very faded, rising toward legible when
+ * the mouse approaches their corner. No hover-only reveal — the
+ * resting affordance is present enough to spot but quiet enough to
+ * read through. */
+body.er-focus-mode .er-focus-exit,
+body.er-focus-mode .er-focus-save {
+  display: block;
+  position: fixed;
+  z-index: 210;
+  font-family: var(--er-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.35;
+  transition: opacity 200ms ease;
+  pointer-events: auto;
+}
+body.er-focus-mode .er-focus-exit:hover,
+body.er-focus-mode .er-focus-save:hover,
+body.er-focus-mode .er-focus-exit:focus-within,
+body.er-focus-mode .er-focus-save:focus-within {
+  opacity: 1;
+}
+
+body.er-focus-mode .er-focus-exit {
+  top: var(--er-space-3);
+  left: var(--er-space-3);
+}
+body.er-focus-mode .er-focus-exit button {
+  font: inherit;
+  background: transparent;
+  color: var(--er-faded);
+  border: 1px solid var(--er-faded-2);
+  padding: 0.3rem 0.7rem;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+body.er-focus-mode .er-focus-exit button:hover {
+  color: var(--er-red-pencil);
+  border-color: var(--er-red-pencil);
+}
+
+body.er-focus-mode .er-focus-save {
+  top: var(--er-space-3);
+  right: var(--er-space-3);
+  display: flex !important;
+  gap: var(--er-space-1);
+  align-items: center;
+}
+body.er-focus-mode .er-focus-save-hint {
+  color: var(--er-faded);
+}
+
 /* ---------- Margin-note composer ----------
  *
  * In-situ replacement for the old comment modal. Lives inside the
