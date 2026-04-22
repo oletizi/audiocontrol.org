@@ -1277,21 +1277,35 @@ body:has(.er-edit-mode:not([hidden])) .toc {
 
 /* Preview pane. Read-only rendered HTML that mirrors the published
  * layout as close as we can match it without re-importing the full
- * BlogLayout typography. */
+ * BlogLayout typography.
+ *
+ * !important on color values — same BlogLayout cascade collision
+ * that bit the outline drawer and margin-note composer: the preview
+ * lives inside .essay-body, so BlogLayout's Astro-scoped
+ * .essay-body :global(h2) / :global(strong) / :global(em) rules
+ * cascade into these elements with equal specificity and win on
+ * source order, painting cream-on-cream. */
 .er-edit-preview {
   overflow: auto;
   padding: var(--er-space-3) var(--er-space-4);
   font-family: var(--er-font-body);
   line-height: 1.65;
-  color: var(--er-ink);
+  color: var(--er-ink) !important;
   background: var(--er-paper);
+}
+.er-edit-preview,
+.er-edit-preview p,
+.er-edit-preview li,
+.er-edit-preview ul,
+.er-edit-preview ol {
+  color: var(--er-ink) !important;
 }
 .er-edit-preview h1,
 .er-edit-preview h2,
 .er-edit-preview h3,
 .er-edit-preview h4 {
   font-family: var(--er-font-display);
-  color: var(--er-ink);
+  color: var(--er-ink) !important;
   letter-spacing: -0.01em;
   margin: 1.6em 0 0.4em;
   line-height: 1.2;
@@ -1303,12 +1317,22 @@ body:has(.er-edit-mode:not([hidden])) .toc {
 .er-edit-preview p  { margin: 0 0 1em; }
 .er-edit-preview ul, .er-edit-preview ol { padding-left: 1.5em; margin: 0 0 1em; }
 .er-edit-preview li { margin-bottom: 0.35em; }
+.er-edit-preview strong {
+  color: var(--er-ink) !important;
+  font-weight: 700;
+}
+.er-edit-preview em,
+.er-edit-preview i {
+  color: var(--er-ink-soft) !important;
+  font-style: italic;
+}
 .er-edit-preview blockquote {
   border-left: 3px solid var(--er-red-soft);
   padding: 0.2em 1em;
   margin: 0 0 1em;
-  color: var(--er-ink-soft);
+  color: var(--er-ink-soft) !important;
   font-style: italic;
+  background: transparent;
 }
 .er-edit-preview code {
   font-family: var(--er-font-mono);
@@ -1316,7 +1340,7 @@ body:has(.er-edit-mode:not([hidden])) .toc {
   background: var(--er-paper-2);
   padding: 0.1em 0.35em;
   border-radius: 2px;
-  color: var(--er-ink-soft);
+  color: var(--er-ink-soft) !important;
 }
 .er-edit-preview pre {
   background: var(--er-paper-2);
@@ -1334,7 +1358,7 @@ body:has(.er-edit-mode:not([hidden])) .toc {
   margin: 2em 0;
 }
 .er-edit-preview a {
-  color: var(--er-proof-blue);
+  color: var(--er-proof-blue) !important;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
