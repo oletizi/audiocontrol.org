@@ -792,9 +792,10 @@ export function initEditorialReview(): void {
     // Default view is split — shows what the source will look like
     // as you type. Operators who want focus switch to Source or Preview.
     setEditView('split');
-    // Reveal the outline drawer affordances iff there's an outline
-    // in this document. Pre-load the drawer body so the flip is fast.
-    await setupOutlineDrawer(stashedOutline);
+    // The outline drawer is rendered server-side on page load and
+    // lives as a sibling of the edit mode (not inside it), so it's
+    // already available. Nothing to do here — the operator can open
+    // it via the bookmark tab, the Outline ↗ button, or the O key.
     editToolbar.scrollIntoView({ behavior: 'smooth', block: 'start' });
     editorHandle.focus();
     schedulePreview(state.currentVersion.markdown);
@@ -810,30 +811,12 @@ export function initEditorialReview(): void {
     return joinOutlineFn(outline, body);
   }
 
-  /** Populate the outline drawer with rendered HTML and wire its
-   * tab / close affordances. No-op (tab stays hidden) when the
-   * current source has no outline section. */
-  async function setupOutlineDrawer(outlineMd: string): Promise<void> {
+  /** True iff the drawer exists in the DOM AND the tab is present
+   * (the Astro page hides the tab when the current version has no
+   * outline section). Used to gate the O keyboard shortcut. */
+  function outlineDrawerAvailable(): boolean {
     const tab = document.querySelector<HTMLButtonElement>('[data-outline-tab]');
-    const drawer = document.querySelector<HTMLElement>('[data-outline-drawer]');
-    const body = document.querySelector<HTMLElement>('[data-outline-drawer-body]');
-    const btn = document.querySelector<HTMLButtonElement>('[data-action="outline-drawer"]');
-    if (!tab || !drawer || !body || !btn) return;
-
-    if (!outlineMd) {
-      tab.hidden = true;
-      drawer.hidden = true;
-      btn.hidden = true;
-      return;
-    }
-
-    tab.hidden = false;
-    btn.hidden = false;
-    // Render the outline markdown to HTML for the drawer.
-    const { renderMarkdownToHtml } = await import(
-      '../../scripts/lib/editorial-review/render.js'
-    );
-    body.innerHTML = await renderMarkdownToHtml(outlineMd);
+    return !!tab && !tab.hidden;
   }
 
   function openOutlineDrawer(): void {
@@ -881,12 +864,11 @@ export function initEditorialReview(): void {
       const fb = document.querySelector<HTMLButtonElement>('[data-action="focus-mode"]');
       fb?.setAttribute('aria-pressed', 'false');
     }
-    // Close the outline drawer if it's open.
-    closeOutlineDrawer();
-    const tab = document.querySelector<HTMLButtonElement>('[data-outline-tab]');
-    const btn = document.querySelector<HTMLButtonElement>('[data-action="outline-drawer"]');
-    if (tab) tab.hidden = true;
-    if (btn) btn.hidden = true;
+    // Close the outline drawer if it's open. The tab stays
+    // visible outside edit mode too — the drawer is a review-
+    // surface affordance, not an edit-only one. The in-chrome
+    // "Outline ↗" button is tied to the edit chrome so it
+    // naturally disappears with editToolbar.hidden = true above.
     editToolbar.hidden = true;
     draftBody.classList.remove('hidden');
     toggleBtn.textContent = 'Edit';
@@ -1274,7 +1256,7 @@ export function initEditorialReview(): void {
       if (focusMode) exitFocus(); else enterFocus();
       return;
     }
-    if (ev.key === 'o' && editing) {
+    if (ev.key === 'o' && outlineDrawerAvailable()) {
       ev.preventDefault();
       toggleOutlineDrawer();
       return;

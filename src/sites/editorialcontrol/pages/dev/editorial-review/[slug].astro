@@ -47,6 +47,7 @@ let workflow: DraftWorkflowItem | null = null;
 let versions: DraftVersion[] = [];
 let currentVersion: DraftVersion | null = null;
 let renderedHtml = '';
+let outlineHtml = '';
 let fm: Record<string, string> = {};
 let errorMessage: string | null = null;
 
@@ -73,9 +74,19 @@ if (fetched.status === 200 && isSuccessBody(fetched.body)) {
 
   if (currentVersion) {
     const render = await import('../../../../../../scripts/lib/editorial-review/render.js');
+    const { splitOutline } = await import('../../../../../shared/outline-split.js');
     const parsed = render.parseDraftFrontmatter(currentVersion.markdown);
     fm = parsed.frontmatter;
-    renderedHtml = await render.renderMarkdownToHtml(parsed.body);
+    // Split the ## Outline section OUT of the body markdown before
+    // rendering. The main review surface shows prose only; the
+    // outline is available via the stowable drawer (same pattern
+    // as the editor's outline drawer — reference material, not
+    // part of the reading view).
+    const split = splitOutline(parsed.body);
+    renderedHtml = await render.renderMarkdownToHtml(split.body);
+    if (split.outline) {
+      outlineHtml = await render.renderMarkdownToHtml(split.outline);
+    }
   }
 } else {
   errorMessage = errorFromBody(fetched.body);
@@ -130,7 +141,7 @@ function stateLabel(state?: string): string {
               <button class="er-edit-mode-btn" data-edit-view="preview" type="button" aria-pressed="false">Preview</button>
             </div>
             <div class="er-edit-actions">
-              <button class="er-btn er-btn-small" data-action="outline-drawer" type="button" title="Show the outline for reference (O)" aria-pressed="false" hidden>Outline ↗</button>
+              <button class="er-btn er-btn-small" data-action="outline-drawer" type="button" title="Show the outline for reference (O)" aria-pressed="false" hidden={!outlineHtml}>Outline ↗</button>
               <button class="er-btn er-btn-small" data-action="focus-mode" type="button" title="Distraction-free mode (Shift+F)" aria-pressed="false">Focus ⛶</button>
               <button class="er-btn er-btn-primary" data-action="save-version" type="button">Save as new version</button>
               <button class="er-btn" data-action="cancel-edit" type="button">Cancel</button>
@@ -161,32 +172,6 @@ function stateLabel(state?: string): string {
             <button type="button" class="er-btn er-btn-small er-btn-primary" data-action="save-version">Save</button>
             <span class="er-focus-save-hint" data-focus-save-hint></span>
           </div>
-
-          <!--
-            Outline drawer. A press-check-desk briefing sheet: the
-            outline ## section lives in the source on disk but not
-            in the editor view. Operator flips this drawer out from
-            the left edge to refer to the intended structure, flips
-            it back to keep writing.
-            - Bookmark tab (er-outline-tab) is the persistent
-              affordance on the viewport's left edge.
-            - Drawer (er-outline-drawer) slides in on toggle.
-            - Content is rendered read-only.
-            Hidden entirely when the source has no ## Outline section.
-          -->
-          <button class="er-outline-tab" data-outline-tab type="button" aria-label="Show outline" hidden>
-            <span class="er-outline-tab-label">Outline</span>
-          </button>
-          <aside class="er-outline-drawer" data-outline-drawer aria-label="Outline reference" hidden>
-            <header class="er-outline-drawer-head">
-              <span class="er-outline-drawer-kicker">Briefing sheet</span>
-              <button type="button" class="er-outline-drawer-close" data-outline-close aria-label="Close outline (O or Esc)">×</button>
-            </header>
-            <div class="er-outline-drawer-body" data-outline-drawer-body></div>
-            <footer class="er-outline-drawer-foot">
-              <span>Read-only · edit via <code>/editorial-iterate --kind outline</code></span>
-            </footer>
-          </aside>
         </div>
       </div>
 
@@ -282,6 +267,30 @@ function stateLabel(state?: string): string {
     </aside>
 
     <button class="er-pencil-btn" data-add-comment-btn hidden type="button">Mark</button>
+
+    <!--
+      Outline drawer. Briefing sheet for the ## Outline section.
+      Pre-populated server-side from the current version's outline
+      markdown — no client-side render needed on page load. The
+      drawer is a sibling of the draft body and the edit mode so
+      it stays accessible in both review and edit contexts.
+      Tab + trigger button both hidden if the current version has
+      no outline section. Content is read-only; to edit the
+      outline, operator runs /editorial-iterate --kind outline.
+    -->
+    <button class="er-outline-tab" data-outline-tab type="button" aria-label="Show outline" hidden={!outlineHtml}>
+      <span class="er-outline-tab-label">Outline</span>
+    </button>
+    <aside class="er-outline-drawer" data-outline-drawer aria-label="Outline reference" hidden>
+      <header class="er-outline-drawer-head">
+        <span class="er-outline-drawer-kicker">Briefing sheet</span>
+        <button type="button" class="er-outline-drawer-close" data-outline-close aria-label="Close outline (O or Esc)">×</button>
+      </header>
+      <div class="er-outline-drawer-body" data-outline-drawer-body set:html={outlineHtml}></div>
+      <footer class="er-outline-drawer-foot">
+        <span>Read-only · edit via <code>/editorial-iterate --kind outline</code></span>
+      </footer>
+    </aside>
 
     <div class="er-toast" data-toast hidden></div>
 
