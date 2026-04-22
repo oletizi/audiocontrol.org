@@ -1595,6 +1595,12 @@ body.er-focus-mode .er-focus-save-hint {
   color: var(--er-red-pencil);
 }
 
+/* Drawer body typography. Every rule carries the parent
+ * .er-outline-drawer-body class so the selector specificity beats
+ * BlogLayout's .essay-body :global(tag) { color: hsl(var(--foreground)) }
+ * rules, which otherwise paint dark-theme foreground colors (a
+ * cream tint) onto our cream paper — invisible text. */
+
 .er-outline-drawer-body {
   flex: 1;
   overflow-y: auto;
@@ -1604,13 +1610,40 @@ body.er-focus-mode .er-focus-save-hint {
   line-height: 1.6;
   color: var(--er-ink);
 }
+/* !important on color declarations — BlogLayout's Astro-scoped
+ * .essay-body :global(h2) / :global(strong) rules compute to the
+ * same specificity as ours but win on source order. Using
+ * !important on the color value alone is the least-invasive
+ * escape. Same pattern used in er-strip-back and
+ * er-marginalia-composer-quote for the same BlogLayout collision. */
+.er-outline-drawer-body,
+.er-outline-drawer-body p,
+.er-outline-drawer-body li,
+.er-outline-drawer-body ul,
+.er-outline-drawer-body ol {
+  color: var(--er-ink) !important;
+}
+.er-outline-drawer-body h1,
+.er-outline-drawer-body h2,
+.er-outline-drawer-body h3,
+.er-outline-drawer-body h4 {
+  color: var(--er-ink) !important;
+}
 .er-outline-drawer-body h2 {
   font-family: var(--er-font-display);
   font-size: 1.3rem;
   font-weight: 500;
   font-style: italic;
   margin: 0 0 var(--er-space-2);
-  color: var(--er-ink);
+}
+.er-outline-drawer-body h3 {
+  font-family: var(--er-font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.2rem 0 0.5rem;
+}
+.er-outline-drawer-body p {
+  margin: 0 0 0.85em;
 }
 .er-outline-drawer-body ul,
 .er-outline-drawer-body ol {
@@ -1624,11 +1657,26 @@ body.er-focus-mode .er-focus-save-hint {
   margin-bottom: 0.25em;
 }
 .er-outline-drawer-body strong {
-  color: var(--er-ink);
-  font-weight: 600;
+  color: var(--er-ink) !important;
+  font-weight: 700;
 }
-.er-outline-drawer-body em {
+.er-outline-drawer-body em,
+.er-outline-drawer-body i {
+  color: var(--er-ink-soft) !important;
+  font-style: italic;
+}
+.er-outline-drawer-body a {
+  color: var(--er-proof-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.er-outline-drawer-body blockquote {
+  border-left: 2px solid var(--er-red-soft);
+  padding: 0.2em 1em;
+  margin: 0 0 1em;
   color: var(--er-ink-soft);
+  font-style: italic;
+  background: transparent;
 }
 .er-outline-drawer-body code {
   font-family: var(--er-font-mono);
@@ -1636,6 +1684,12 @@ body.er-focus-mode .er-focus-save-hint {
   background: var(--er-paper-2);
   padding: 0.1em 0.3em;
   border-radius: 2px;
+  color: var(--er-ink-soft);
+}
+.er-outline-drawer-body hr {
+  border: 0;
+  border-top: 1px dashed var(--er-faded-2);
+  margin: 1.5em 0;
 }
 
 .er-outline-drawer-foot {
