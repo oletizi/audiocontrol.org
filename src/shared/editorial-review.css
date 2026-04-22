@@ -900,6 +900,30 @@ body:has([data-review-ui="longform"]) .site-footer {
   color: var(--er-ink);
 }
 
+/* BlogLayout renders the title + dek in .essay-header, outside
+ * #draft-body. Margin notes only attach to selections inside
+ * #draft-body — so the operator couldn't annotate the title or
+ * description. Suppress BlogLayout's header on the review surface
+ * and inject the dek into #draft-body (the title H1 is already
+ * there via the "repeat the title" scaffold convention). This
+ * makes both title and description natively commentable. */
+body:has([data-review-ui="longform"]) .essay-header {
+  display: none;
+}
+
+/* In-body dek, injected after the H1. Matches the dispatch
+ * voice's dek typography (Fraunces italic, soft ink on cream). */
+[data-review-ui="longform"] #draft-body .er-dispatch-dek {
+  font-family: var(--font-display, var(--er-font-display));
+  font-style: italic;
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: hsl(var(--foreground)) !important;
+  margin: 0 0 2.25rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid hsl(var(--border, 0 0% 70%));
+}
+
 /* Prior-version comments that survived rebasing. Subtle left-rail
  * treatment so they read as "carried forward" rather than pristine. */
 .er-marginalia-item--rebased .cat {

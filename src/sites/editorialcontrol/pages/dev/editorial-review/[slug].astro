@@ -83,7 +83,34 @@ if (fetched.status === 200 && isSuccessBody(fetched.body)) {
     // as the editor's outline drawer — reference material, not
     // part of the reading view).
     const split = splitOutline(parsed.body);
-    renderedHtml = await render.renderMarkdownToHtml(split.body);
+    const bodyHtml = await render.renderMarkdownToHtml(split.body);
+    // Inject the description (from frontmatter) as a dek paragraph
+    // into #draft-body so it participates in the margin-note system
+    // alongside the body. The title is already in the body as an
+    // H1 (the scaffold's "repeat the title" convention), so it's
+    // already commentable. BlogLayout's .essay-header (which
+    // renders both title and description in the page chrome
+    // outside #draft-body) is hidden via CSS on the review surface
+    // so the operator sees no duplication.
+    const escapeHtml = (s: string): string =>
+      s.replace(/&/g, '&amp;')
+       .replace(/</g, '&lt;')
+       .replace(/>/g, '&gt;')
+       .replace(/"/g, '&quot;');
+    // Inject after the first H1 so it reads like a proper dek in
+    // the article flow: title → dek → body. The naive approach of
+    // prepending would put the dek *above* the H1, which reads
+    // wrong visually and structurally.
+    const dekHtml = fm.description
+      ? `<p class="er-dispatch-dek">${escapeHtml(fm.description)}</p>`
+      : '';
+    // The first closing </h1> is the body H1 (the repeated title).
+    // Insert the dek immediately after it.
+    const h1Close = bodyHtml.indexOf('</h1>');
+    renderedHtml =
+      dekHtml && h1Close >= 0
+        ? bodyHtml.slice(0, h1Close + 5) + dekHtml + bodyHtml.slice(h1Close + 5)
+        : dekHtml + bodyHtml;
     if (split.outline) {
       outlineHtml = await render.renderMarkdownToHtml(split.outline);
     }
