@@ -103,6 +103,26 @@ export function handleAnnotate(rootDir: string, body: unknown): HandlerResult {
       appendAnnotation(rootDir, annotation);
       return ok({ annotation });
     }
+    case 'address': {
+      const d = draft as Partial<Extract<AnnotationDraft, { type: 'address' }>>;
+      if (typeof d.commentId !== 'string' || d.commentId.length === 0) {
+        return err(400, 'address.commentId is required');
+      }
+      if (typeof d.version !== 'number') return err(400, 'address.version is required');
+      if (d.disposition !== 'addressed' && d.disposition !== 'deferred' && d.disposition !== 'wontfix') {
+        return err(400, "address.disposition must be 'addressed' | 'deferred' | 'wontfix'");
+      }
+      const annotation = mintAnnotation({
+        type: 'address',
+        workflowId: draft.workflowId,
+        commentId: d.commentId,
+        version: d.version,
+        disposition: d.disposition,
+        ...(typeof d.reason === 'string' ? { reason: d.reason } : {}),
+      });
+      appendAnnotation(rootDir, annotation);
+      return ok({ annotation });
+    }
     default:
       return err(400, `unknown annotation type: ${String(draft.type)}`);
   }

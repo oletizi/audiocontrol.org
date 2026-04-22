@@ -900,6 +900,112 @@ body:has([data-review-ui="longform"]) .site-footer {
   color: var(--er-ink);
 }
 
+/* ---- Per-iteration disposition stamp --------------------------------- *
+ *
+ * Agent-written "addressed / deferred / wontfix" marker for each
+ * comment. Sits between the quote and the note. Visually modeled on
+ * a copy-editor's margin proof-mark: a colored glyph keyed to the
+ * disposition (◆ addressed, ◇ deferred, ✕ wontfix), a thin monospaced
+ * label, and an optional reason line in italic small type.
+ *
+ * Layout is a subgrid so the glyph column aligns across all stamps
+ * in the sidebar — reads as a proof-column when three in a row.
+ */
+.er-marginalia-stamp {
+  display: grid;
+  grid-template-columns: 0.9rem 1fr;
+  column-gap: 0.45rem;
+  align-items: baseline;
+  margin: 0 0 0.4rem;
+  padding: 0.25rem 0.5rem 0.3rem;
+  background: var(--er-paper-2);
+  border-left: 2px solid currentColor;
+  font-family: var(--er-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.25;
+  color: var(--er-faded);
+}
+.er-marginalia-stamp-mark {
+  font-family: var(--er-font-display);
+  font-size: 0.78rem;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  color: currentColor;
+  align-self: center;
+}
+.er-marginalia-stamp-label {
+  font-weight: 600;
+  color: currentColor;
+}
+.er-marginalia-stamp-reason {
+  grid-column: 2;
+  display: block;
+  margin-top: 0.2rem;
+  font-family: var(--er-font-display);
+  font-style: italic;
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  line-height: 1.35;
+  text-transform: none;
+  color: var(--er-ink-soft);
+}
+
+/* Addressed — chartreuse/amber accent. The "done" color in this
+ * palette; matches the highlight swatch used for selection glow. */
+.er-marginalia-stamp--addressed {
+  color: #8B6914; /* deeper amber, readable on paper-2 */
+  background: var(--er-highlight-soft);
+}
+
+/* Deferred — graphite. Neutral by design: "we saw it, we carried it
+ * forward, no judgment." */
+.er-marginalia-stamp--deferred {
+  color: var(--er-ink-soft);
+  background: var(--er-paper-2);
+}
+
+/* Won't fix — red-pencil. Rare, final. Signals a rejection the
+ * operator may want to re-comment on. */
+.er-marginalia-stamp--wontfix {
+  color: var(--er-red-pencil);
+  background: var(--er-paper-2);
+  border-left-style: double;
+  border-left-width: 3px;
+}
+
+/* On resolved-history items, fade the stamp slightly so it reads as
+ * historical rather than active. */
+.er-marginalia-item--resolved .er-marginalia-stamp {
+  opacity: 0.75;
+}
+
+/* BlogLayout renders the title + dek in .essay-header, outside
+ * #draft-body. Margin notes only attach to selections inside
+ * #draft-body — so the operator couldn't annotate the title or
+ * description. Suppress BlogLayout's header on the review surface
+ * and inject the dek into #draft-body (the title H1 is already
+ * there via the "repeat the title" scaffold convention). This
+ * makes both title and description natively commentable. */
+body:has([data-review-ui="longform"]) .essay-header {
+  display: none;
+}
+
+/* In-body dek, injected after the H1. Matches the dispatch
+ * voice's dek typography (Fraunces italic, soft ink on cream). */
+[data-review-ui="longform"] #draft-body .er-dispatch-dek {
+  font-family: var(--font-display, var(--er-font-display));
+  font-style: italic;
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: hsl(var(--foreground)) !important;
+  margin: 0 0 2.25rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid hsl(var(--border, 0 0% 70%));
+}
+
 /* Prior-version comments that survived rebasing. Subtle left-rail
  * treatment so they read as "carried forward" rather than pristine. */
 .er-marginalia-item--rebased .cat {
@@ -1277,21 +1383,35 @@ body:has(.er-edit-mode:not([hidden])) .toc {
 
 /* Preview pane. Read-only rendered HTML that mirrors the published
  * layout as close as we can match it without re-importing the full
- * BlogLayout typography. */
+ * BlogLayout typography.
+ *
+ * !important on color values — same BlogLayout cascade collision
+ * that bit the outline drawer and margin-note composer: the preview
+ * lives inside .essay-body, so BlogLayout's Astro-scoped
+ * .essay-body :global(h2) / :global(strong) / :global(em) rules
+ * cascade into these elements with equal specificity and win on
+ * source order, painting cream-on-cream. */
 .er-edit-preview {
   overflow: auto;
   padding: var(--er-space-3) var(--er-space-4);
   font-family: var(--er-font-body);
   line-height: 1.65;
-  color: var(--er-ink);
+  color: var(--er-ink) !important;
   background: var(--er-paper);
+}
+.er-edit-preview,
+.er-edit-preview p,
+.er-edit-preview li,
+.er-edit-preview ul,
+.er-edit-preview ol {
+  color: var(--er-ink) !important;
 }
 .er-edit-preview h1,
 .er-edit-preview h2,
 .er-edit-preview h3,
 .er-edit-preview h4 {
   font-family: var(--er-font-display);
-  color: var(--er-ink);
+  color: var(--er-ink) !important;
   letter-spacing: -0.01em;
   margin: 1.6em 0 0.4em;
   line-height: 1.2;
@@ -1303,12 +1423,22 @@ body:has(.er-edit-mode:not([hidden])) .toc {
 .er-edit-preview p  { margin: 0 0 1em; }
 .er-edit-preview ul, .er-edit-preview ol { padding-left: 1.5em; margin: 0 0 1em; }
 .er-edit-preview li { margin-bottom: 0.35em; }
+.er-edit-preview strong {
+  color: var(--er-ink) !important;
+  font-weight: 700;
+}
+.er-edit-preview em,
+.er-edit-preview i {
+  color: var(--er-ink-soft) !important;
+  font-style: italic;
+}
 .er-edit-preview blockquote {
   border-left: 3px solid var(--er-red-soft);
   padding: 0.2em 1em;
   margin: 0 0 1em;
-  color: var(--er-ink-soft);
+  color: var(--er-ink-soft) !important;
   font-style: italic;
+  background: transparent;
 }
 .er-edit-preview code {
   font-family: var(--er-font-mono);
@@ -1316,7 +1446,7 @@ body:has(.er-edit-mode:not([hidden])) .toc {
   background: var(--er-paper-2);
   padding: 0.1em 0.35em;
   border-radius: 2px;
-  color: var(--er-ink-soft);
+  color: var(--er-ink-soft) !important;
 }
 .er-edit-preview pre {
   background: var(--er-paper-2);
@@ -1334,7 +1464,7 @@ body:has(.er-edit-mode:not([hidden])) .toc {
   margin: 2em 0;
 }
 .er-edit-preview a {
-  color: var(--er-proof-blue);
+  color: var(--er-proof-blue) !important;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -1352,6 +1482,367 @@ body:has(.er-edit-mode:not([hidden])) .toc {
     grid-template-rows: 1fr 1fr;
   }
   .er-edit-source { border-right: 0; border-bottom: 1px dashed var(--er-faded-2); }
+}
+
+/* ---------- Focus mode ----------
+ *
+ * "The galley under the lamp." Full viewport, cream paper, single
+ * editor column, generous typography, all other chrome receded.
+ * Entered via the Focus button in the edit toolbar, Shift+F, or
+ * double-click-on-prose if the composer isn't open. Exits via Esc
+ * or the floating affordance in the top-left corner.
+ *
+ * The affordances (er-focus-exit, er-focus-save) live in the DOM
+ * always but are display:none outside focus mode, so they're
+ * invisible to screen readers and layout when not in use. */
+
+.er-focus-exit,
+.er-focus-save {
+  display: none;
+}
+
+body.er-focus-mode {
+  overflow: hidden; /* kill page scroll; the editor pane scrolls */
+}
+
+/* Hide everything that isn't the editor. */
+body.er-focus-mode .er-strip,
+body.er-focus-mode [data-comments-sidebar],
+body.er-focus-mode .er-pencil-btn,
+body.er-focus-mode .er-poll-indicator,
+body.er-focus-mode .er-toast,
+body.er-focus-mode .header-wrapper,
+body.er-focus-mode .site-footer,
+body.er-focus-mode .essay-header,
+body.er-focus-mode .essay-hero-image,
+body.er-focus-mode .er-edit-chrome {
+  display: none !important;
+}
+
+/* The edit-mode container becomes a full-viewport canvas. */
+body.er-focus-mode .er-edit-mode {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--er-paper);
+  /* Soft paper grain, stronger than the normal chrome, matching the
+   * "galley pulled out onto a bare tabletop" framing. */
+  background-image:
+    url("data:image/svg+xml;utf8,<svg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='1 1 1 1 0, 1 1 1 1 0, 1 1 1 1 0, 0 0 0 0.07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+body.er-focus-mode .er-edit-panes {
+  border: 0;
+  background: transparent;
+  height: 100vh;
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: clamp(3rem, 8vh, 6rem) var(--er-space-3);
+  grid-template-columns: 1fr !important;
+  box-sizing: border-box;
+}
+
+body.er-focus-mode .er-edit-source {
+  border: 0;
+  height: 100%;
+  background: transparent;
+}
+
+/* Loosen the editor typography for comfortable long-form writing.
+ * CodeMirror scoped overrides — these only apply inside the
+ * focus-mode body class, so the non-focus edit still renders at
+ * its standard size. */
+body.er-focus-mode .cm-editor {
+  font-size: 1.125rem;
+  line-height: 1.75;
+  background: transparent;
+}
+body.er-focus-mode .cm-scroller {
+  padding: 0;
+}
+body.er-focus-mode .cm-content {
+  padding: 0;
+  max-width: 38rem;
+  margin: 0 auto;
+}
+body.er-focus-mode .cm-gutters {
+  display: none; /* line numbers are noise in focus mode */
+}
+
+/* Floating affordances: exit pill (top-left) and save pill (bottom-
+ * right). Resting state is very faded, rising toward legible when
+ * the mouse approaches their corner. No hover-only reveal — the
+ * resting affordance is present enough to spot but quiet enough to
+ * read through. */
+body.er-focus-mode .er-focus-exit,
+body.er-focus-mode .er-focus-save {
+  display: block;
+  position: fixed;
+  z-index: 210;
+  font-family: var(--er-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.35;
+  transition: opacity 200ms ease;
+  pointer-events: auto;
+}
+body.er-focus-mode .er-focus-exit:hover,
+body.er-focus-mode .er-focus-save:hover,
+body.er-focus-mode .er-focus-exit:focus-within,
+body.er-focus-mode .er-focus-save:focus-within {
+  opacity: 1;
+}
+
+body.er-focus-mode .er-focus-exit {
+  top: var(--er-space-3);
+  left: var(--er-space-3);
+}
+body.er-focus-mode .er-focus-exit button {
+  font: inherit;
+  background: transparent;
+  color: var(--er-faded);
+  border: 1px solid var(--er-faded-2);
+  padding: 0.3rem 0.7rem;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+body.er-focus-mode .er-focus-exit button:hover {
+  color: var(--er-red-pencil);
+  border-color: var(--er-red-pencil);
+}
+
+body.er-focus-mode .er-focus-save {
+  top: var(--er-space-3);
+  right: var(--er-space-3);
+  display: flex !important;
+  gap: var(--er-space-1);
+  align-items: center;
+}
+body.er-focus-mode .er-focus-save-hint {
+  color: var(--er-faded);
+}
+
+/* ---------- Outline drawer ----------
+ *
+ * Press-check briefing sheet. The outline lives in the source on
+ * disk (SSOT) but is split out of the editor view on mount — it's
+ * reference material during body editing, not editing material.
+ * A bookmark tab pins to the left edge of the viewport while
+ * editing; clicking it (or pressing O) slides the drawer out.
+ *
+ * Rendered read-only. To edit the outline, the operator flips the
+ * calendar back to Outlining and runs /editorial-iterate --kind
+ * outline. Guarded by the footer note inside the drawer. */
+
+.er-outline-tab {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  z-index: 205;
+  background: var(--er-paper);
+  border: 1px solid var(--er-red-pencil);
+  border-left: 0;
+  border-radius: 0 3px 3px 0;
+  padding: var(--er-space-2) 0.45rem;
+  cursor: pointer;
+  font-family: var(--er-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--er-red-pencil);
+  transition: background 150ms ease, padding-left 200ms ease, opacity 200ms ease;
+  box-shadow: 2px 0 6px rgba(26, 22, 20, 0.08);
+}
+.er-outline-tab:hover {
+  background: var(--er-paper-2);
+  padding-left: 0.7rem;
+}
+.er-outline-tab-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  display: inline-block;
+}
+/* When the drawer is open, the tab stows (fades out). */
+.er-outline-tab--stowed {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.er-outline-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 26rem;
+  max-width: 92vw;
+  z-index: 206;
+  background: var(--er-paper);
+  background-image:
+    url("data:image/svg+xml;utf8,<svg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='1 1 1 1 0, 1 1 1 1 0, 1 1 1 1 0, 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  border-right: 1px solid var(--er-red-pencil);
+  box-shadow: 4px 0 16px rgba(26, 22, 20, 0.12);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-101%);
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.er-outline-drawer--open {
+  transform: translateX(0);
+}
+
+.er-outline-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--er-space-3);
+  border-bottom: 1px solid var(--er-faded-2);
+}
+.er-outline-drawer-kicker {
+  font-family: var(--er-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--er-red-pencil);
+}
+.er-outline-drawer-close {
+  font-family: var(--er-font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  background: transparent;
+  border: 0;
+  color: var(--er-faded);
+  cursor: pointer;
+  padding: 0 0.35rem;
+  transition: color 120ms ease;
+}
+.er-outline-drawer-close:hover {
+  color: var(--er-red-pencil);
+}
+
+/* Drawer body typography. Every rule carries the parent
+ * .er-outline-drawer-body class so the selector specificity beats
+ * BlogLayout's .essay-body :global(tag) { color: hsl(var(--foreground)) }
+ * rules, which otherwise paint dark-theme foreground colors (a
+ * cream tint) onto our cream paper — invisible text. */
+
+.er-outline-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--er-space-3) var(--er-space-4);
+  font-family: var(--er-font-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--er-ink);
+}
+/* !important on color declarations — BlogLayout's Astro-scoped
+ * .essay-body :global(h2) / :global(strong) rules compute to the
+ * same specificity as ours but win on source order. Using
+ * !important on the color value alone is the least-invasive
+ * escape. Same pattern used in er-strip-back and
+ * er-marginalia-composer-quote for the same BlogLayout collision. */
+.er-outline-drawer-body,
+.er-outline-drawer-body p,
+.er-outline-drawer-body li,
+.er-outline-drawer-body ul,
+.er-outline-drawer-body ol {
+  color: var(--er-ink) !important;
+}
+.er-outline-drawer-body h1,
+.er-outline-drawer-body h2,
+.er-outline-drawer-body h3,
+.er-outline-drawer-body h4 {
+  color: var(--er-ink) !important;
+}
+.er-outline-drawer-body h2 {
+  font-family: var(--er-font-display);
+  font-size: 1.3rem;
+  font-weight: 500;
+  font-style: italic;
+  margin: 0 0 var(--er-space-2);
+}
+.er-outline-drawer-body h3 {
+  font-family: var(--er-font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.2rem 0 0.5rem;
+}
+.er-outline-drawer-body p {
+  margin: 0 0 0.85em;
+}
+.er-outline-drawer-body ul,
+.er-outline-drawer-body ol {
+  padding-left: 1.25em;
+  margin: 0 0 1em;
+}
+.er-outline-drawer-body li {
+  margin-bottom: 0.5em;
+}
+.er-outline-drawer-body li li {
+  margin-bottom: 0.25em;
+}
+.er-outline-drawer-body strong {
+  color: var(--er-ink) !important;
+  font-weight: 700;
+}
+.er-outline-drawer-body em,
+.er-outline-drawer-body i {
+  color: var(--er-ink-soft) !important;
+  font-style: italic;
+}
+.er-outline-drawer-body a {
+  color: var(--er-proof-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.er-outline-drawer-body blockquote {
+  border-left: 2px solid var(--er-red-soft);
+  padding: 0.2em 1em;
+  margin: 0 0 1em;
+  color: var(--er-ink-soft);
+  font-style: italic;
+  background: transparent;
+}
+.er-outline-drawer-body code {
+  font-family: var(--er-font-mono);
+  font-size: 0.85em;
+  background: var(--er-paper-2);
+  padding: 0.1em 0.3em;
+  border-radius: 2px;
+  color: var(--er-ink-soft);
+}
+.er-outline-drawer-body hr {
+  border: 0;
+  border-top: 1px dashed var(--er-faded-2);
+  margin: 1.5em 0;
+}
+
+.er-outline-drawer-foot {
+  padding: var(--er-space-2) var(--er-space-3);
+  border-top: 1px dashed var(--er-faded-2);
+  font-family: var(--er-font-mono);
+  font-size: 0.68rem;
+  color: var(--er-faded);
+}
+.er-outline-drawer-foot code {
+  font-size: 0.85em;
+  color: var(--er-ink-soft);
+  background: transparent;
+  padding: 0;
+}
+
+/* In focus mode, the drawer still works — it slides over the
+ * fullscreen canvas. The tab, however, hides since focus-mode is
+ * an intentional "no chrome" state; the Outline button in the
+ * edit chrome is also hidden. Operator uses the O keyboard
+ * shortcut or clicks the stowed tab by mousing to the edge. */
+body.er-focus-mode .er-outline-tab {
+  display: none;
 }
 
 /* ---------- Margin-note composer ----------

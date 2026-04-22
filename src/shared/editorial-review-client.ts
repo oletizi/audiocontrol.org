@@ -55,6 +55,23 @@ interface ResolveAnnotation {
 }
 
 /**
+ * Agent-written per-iteration disposition. The sidebar reads the
+ * most recent address annotation per comment and stamps it with
+ * "Addressed in v{N}" / "Deferred in v{N}" / "Won't fix (v{N})"
+ * so the operator can see which comments the latest iterate touched.
+ */
+interface AddressAnnotation {
+  id: string;
+  type: 'address';
+  workflowId: string;
+  commentId: string;
+  version: number;
+  disposition: 'addressed' | 'deferred' | 'wontfix';
+  reason?: string;
+  createdAt: string;
+}
+
+/**
  * Classification applied to every comment annotation when the page
  * renders. Determines how the comment shows up in the UI:
  *   - `current`: anchor belongs to the version being viewed; render
@@ -228,16 +245,17 @@ export function initEditorialReview(): void {
 
     const quote = document.createElement('div');
     quote.className = 'quote';
-    // Rebased comments show the anchor text (displayed at the
-    // current, rebased position). Unresolved comments show the
-    // original anchor if we have one; legacy annotations without
-    // anchor say so explicitly rather than rendering a wrong slice.
-    if (status === 'unresolved') {
-      quote.textContent = annotation.anchor
-        ? annotation.anchor
-        : '(legacy comment — no anchor captured)';
-    } else {
+    // The stored anchor IS the selected text captured at mark time —
+    // authoritative regardless of status. Offsets into the text
+    // stream are a locator, not the source of truth; they drift with
+    // any edit. Only fall back to the range-slice for legacy
+    // annotations that predate anchor capture.
+    if (annotation.anchor) {
+      quote.textContent = annotation.anchor;
+    } else if (status === 'current') {
       quote.textContent = extractQuote(annotation.range);
+    } else {
+      quote.textContent = '(legacy comment — no anchor captured)';
     }
 
     const text = document.createElement('p');
@@ -246,6 +264,12 @@ export function initEditorialReview(): void {
 
     li.appendChild(cat);
     li.appendChild(quote);
+    // Agent's per-iteration stamp, if any. Sits between the quote
+    // and the note — visually close to the comment body so the
+    // operator can read "[addressed in v4]" alongside the comment
+    // itself rather than as a detached metadata chip.
+    const stamp = buildAddressStamp(annotation.id);
+    if (stamp) li.appendChild(stamp);
     li.appendChild(text);
 
     // Every live item gets a Resolve affordance, including unresolved
@@ -472,6 +496,21 @@ export function initEditorialReview(): void {
    * can render them without a re-fetch. */
   const resolvedHistory: { ann: CommentAnnotation; status: AnnotationStatus }[] = [];
 
+  /**
+   * Most recent address annotation per commentId. Populated on
+   * `loadAnnotations` and consulted by `addSidebarItem` /
+   * `renderResolvedItem` to decorate each comment with its
+   * per-version disposition badge. Latest-wins by `createdAt`.
+   */
+  const addressByCommentId = new Map<string, AddressAnnotation>();
+
+  function computeLatestAddresses(all: AddressAnnotation[]): Map<string, AddressAnnotation> {
+    const byCreatedAt = [...all].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    const map = new Map<string, AddressAnnotation>();
+    for (const a of byCreatedAt) map.set(a.commentId, a);
+    return map;
+  }
+
   async function loadAnnotations(): Promise<void> {
     try {
       // Omit `version` — the server returns every annotation for the
@@ -482,10 +521,17 @@ export function initEditorialReview(): void {
       const res = await fetch(url);
       if (!res.ok) return;
       const body = await res.json();
-      const all: Array<CommentAnnotation | ResolveAnnotation> = body.annotations || [];
+      const all: Array<CommentAnnotation | ResolveAnnotation | AddressAnnotation> =
+        body.annotations || [];
       const comments = all.filter((a): a is CommentAnnotation => a.type === 'comment');
       const resolves = all.filter((a): a is ResolveAnnotation => a.type === 'resolve');
+      const addresses = all.filter((a): a is AddressAnnotation => a.type === 'address');
       const resolvedIds = computeResolvedSet(resolves);
+      // Latest-wins address map, consulted by render helpers below.
+      addressByCommentId.clear();
+      for (const [id, ann] of computeLatestAddresses(addresses)) {
+        addressByCommentId.set(id, ann);
+      }
 
       // Stable render order: current-version first, then rebased
       // (by original version desc), then unresolved (by original
@@ -666,6 +712,8 @@ export function initEditorialReview(): void {
     text.className = 'note';
     text.textContent = ann.text;
 
+    const stamp = buildAddressStamp(ann.id);
+
     const actions = document.createElement('div');
     actions.className = 'er-marginalia-actions';
     const reopenBtn = document.createElement('button');
@@ -680,9 +728,57 @@ export function initEditorialReview(): void {
 
     li.appendChild(cat);
     li.appendChild(quote);
+    if (stamp) li.appendChild(stamp);
     li.appendChild(text);
     li.appendChild(actions);
     return li;
+  }
+
+  /**
+   * Render a copy-editor-style stamp for a comment: "[addressed in v4]"
+   * / "[deferred in v4]" / "[won't fix · v4]". Returns null if no
+   * address annotation has been written for this comment yet. The
+   * stamp includes an optional reason line (the agent's one-sentence
+   * explanation) on hover / below the label so the operator can read
+   * why something was deferred or rejected.
+   */
+  function buildAddressStamp(commentId: string): HTMLElement | null {
+    const addr = addressByCommentId.get(commentId);
+    if (!addr) return null;
+    const stamp = document.createElement('div');
+    stamp.className = `er-marginalia-stamp er-marginalia-stamp--${addr.disposition}`;
+    stamp.dataset.disposition = addr.disposition;
+
+    // Glyph keyed to disposition: filled diamond echoes the
+    // editorialcontrol tagline ◆, so "addressed" feels native;
+    // hollow ◇ for "deferred" reads as "still open"; ✕ for
+    // "won't fix" is final.
+    const mark = document.createElement('span');
+    mark.className = 'er-marginalia-stamp-mark';
+    mark.setAttribute('aria-hidden', 'true');
+    mark.textContent =
+      addr.disposition === 'addressed' ? '◆' :
+      addr.disposition === 'deferred' ? '◇' :
+      '✕';
+
+    const label = document.createElement('span');
+    label.className = 'er-marginalia-stamp-label';
+    label.textContent =
+      addr.disposition === 'addressed' ? `addressed in v${addr.version}` :
+      addr.disposition === 'deferred' ? `deferred in v${addr.version}` :
+      `won't fix · v${addr.version}`;
+
+    stamp.appendChild(mark);
+    stamp.appendChild(label);
+
+    if (addr.reason) {
+      const reason = document.createElement('span');
+      reason.className = 'er-marginalia-stamp-reason';
+      reason.textContent = addr.reason;
+      stamp.appendChild(reason);
+    }
+
+    return stamp;
   }
 
   // ---- Edit mode ----
@@ -738,8 +834,22 @@ export function initEditorialReview(): void {
     });
   }
 
+  // Outline stashed at enterEdit time so we can rejoin it on save.
+  // The editor view shows body only — the outline is a reference
+  // surface in the drawer, not editable content.
+  let stashedOutline = '';
+
   async function enterEdit(): Promise<void> {
-    draftEdit.value = state.currentVersion.markdown;
+    // Load both splitOutline AND joinOutline up front so the onChange
+    // handler can rebuild the full document synchronously on every
+    // keystroke — no race with a pending dynamic import.
+    const outlineMod = await import('./outline-split.ts');
+    joinOutlineFn = outlineMod.joinOutline;
+    const sourceMarkdown = state.currentVersion.markdown;
+    const split = outlineMod.splitOutline(sourceMarkdown);
+    stashedOutline = split.outline;
+
+    draftEdit.value = sourceMarkdown;
     editToolbar.hidden = false;
     draftBody.classList.add('hidden');
     toggleBtn.textContent = 'View';
@@ -751,29 +861,115 @@ export function initEditorialReview(): void {
     editSourceHost.innerHTML = '';
     editorHandle = mountEditor({
       host: editSourceHost,
-      doc: state.currentVersion.markdown,
-      onChange: (md) => {
-        draftEdit.value = md;
+      // Feed the editor only the body — outline stays stowed.
+      doc: split.body,
+      onChange: (bodyMd) => {
+        // Backing textarea holds the FULL document (outline rejoined)
+        // so the save pipeline doesn't need to know anything about
+        // the split.
+        draftEdit.value = stashedOutline
+          ? joinOutlineIfPossible(stashedOutline, bodyMd)
+          : bodyMd;
         updateSaveState();
-        if (editPanes.dataset.view !== 'source') schedulePreview(md);
+        if (editPanes.dataset.view !== 'source') schedulePreview(draftEdit.value);
       },
       onSave: () => { saveVersionBtn.click(); },
-      onCancel: () => { cancelEditBtn.click(); },
+      onCancel: () => {
+        // In focus mode, Esc peels focus off but leaves the edit
+        // session alive. In regular edit mode, Esc cancels the edit.
+        if (document.body.classList.contains('er-focus-mode')) {
+          exitFocus();
+        } else {
+          cancelEditBtn.click();
+        }
+      },
     });
     updateSaveState();
     // Default view is split — shows what the source will look like
     // as you type. Operators who want focus switch to Source or Preview.
     setEditView('split');
+    // The outline drawer is rendered server-side on page load and
+    // lives as a sibling of the edit mode (not inside it), so it's
+    // already available. Nothing to do here — the operator can open
+    // it via the bookmark tab, the Outline ↗ button, or the O key.
     editToolbar.scrollIntoView({ behavior: 'smooth', block: 'start' });
     editorHandle.focus();
     schedulePreview(state.currentVersion.markdown);
   }
 
+  /** Thin wrapper around outline-split's joinOutline so the onChange
+   * closure doesn't need to await the module every keystroke. The
+   * module is loaded eagerly at enterEdit time; once loaded, join
+   * is synchronous. */
+  let joinOutlineFn: ((outline: string, body: string) => string) | null = null;
+  function joinOutlineIfPossible(outline: string, body: string): string {
+    if (!joinOutlineFn) return body; // fallback: editor body replaces whole doc until module loads
+    return joinOutlineFn(outline, body);
+  }
+
+  /** True iff the drawer exists in the DOM AND the tab is present
+   * (the Astro page hides the tab when the current version has no
+   * outline section). Used to gate the O keyboard shortcut. */
+  function outlineDrawerAvailable(): boolean {
+    const tab = document.querySelector<HTMLButtonElement>('[data-outline-tab]');
+    return !!tab && !tab.hidden;
+  }
+
+  function openOutlineDrawer(): void {
+    const drawer = document.querySelector<HTMLElement>('[data-outline-drawer]');
+    const tab = document.querySelector<HTMLButtonElement>('[data-outline-tab]');
+    const btn = document.querySelector<HTMLButtonElement>('[data-action="outline-drawer"]');
+    if (!drawer) return;
+    drawer.hidden = false;
+    drawer.classList.add('er-outline-drawer--open');
+    if (tab) tab.classList.add('er-outline-tab--stowed');
+    btn?.setAttribute('aria-pressed', 'true');
+  }
+
+  function closeOutlineDrawer(): void {
+    const drawer = document.querySelector<HTMLElement>('[data-outline-drawer]');
+    const tab = document.querySelector<HTMLButtonElement>('[data-outline-tab]');
+    const btn = document.querySelector<HTMLButtonElement>('[data-action="outline-drawer"]');
+    if (!drawer) return;
+    drawer.classList.remove('er-outline-drawer--open');
+    if (tab) tab.classList.remove('er-outline-tab--stowed');
+    btn?.setAttribute('aria-pressed', 'false');
+    // Leave the drawer hidden after the slide-out animation.
+    setTimeout(() => { drawer.hidden = true; }, 260);
+  }
+
+  function toggleOutlineDrawer(): void {
+    const drawer = document.querySelector<HTMLElement>('[data-outline-drawer]');
+    if (!drawer) return;
+    if (drawer.classList.contains('er-outline-drawer--open')) closeOutlineDrawer();
+    else openOutlineDrawer();
+  }
+
+  // Wire the drawer's affordances.
+  document.querySelector<HTMLButtonElement>('[data-outline-tab]')
+    ?.addEventListener('click', openOutlineDrawer);
+  document.querySelector<HTMLButtonElement>('[data-outline-close]')
+    ?.addEventListener('click', closeOutlineDrawer);
+  document.querySelector<HTMLButtonElement>('[data-action="outline-drawer"]')
+    ?.addEventListener('click', toggleOutlineDrawer);
+
   function exitEdit(): void {
+    // Exit focus mode first so the chrome comes back before we hide it.
+    if (document.body.classList.contains('er-focus-mode')) {
+      document.body.classList.remove('er-focus-mode');
+      const fb = document.querySelector<HTMLButtonElement>('[data-action="focus-mode"]');
+      fb?.setAttribute('aria-pressed', 'false');
+    }
+    // Close the outline drawer if it's open. The tab stays
+    // visible outside edit mode too — the drawer is a review-
+    // surface affordance, not an edit-only one. The in-chrome
+    // "Outline ↗" button is tied to the edit chrome so it
+    // naturally disappears with editToolbar.hidden = true above.
     editToolbar.hidden = true;
     draftBody.classList.remove('hidden');
     toggleBtn.textContent = 'Edit';
     editing = false;
+    stashedOutline = '';
     if (editorHandle) {
       editorHandle.destroy();
       editorHandle = null;
@@ -782,17 +978,105 @@ export function initEditorialReview(): void {
     editPreviewHost.innerHTML = '';
   }
 
+  /** Single source of truth for the edit-state hint. Updates the
+   * toolbar span AND the focus-mode corner indicator so the two
+   * never disagree — previously editHint was set directly at
+   * save-flow boundaries and the focus-mode label fell out of sync. */
+  function setHint(text: string): void {
+    editHint.textContent = text;
+    if (focusSaveHint) focusSaveHint.textContent = text;
+  }
+
   function updateSaveState(): void {
     const changed = draftEdit.value !== state.currentVersion.markdown;
     saveVersionBtn.disabled = !changed;
-    editHint.textContent = changed ? 'Modified' : 'No changes';
+    // Also disable the floating focus-mode Save button so it reads
+    // as inert when there's nothing to save.
+    const focusSaveBtn = document.querySelector<HTMLButtonElement>(
+      '[data-focus-save] [data-action="save-version"]',
+    );
+    if (focusSaveBtn) focusSaveBtn.disabled = !changed;
+    setHint(changed ? 'Modified' : 'No changes');
   }
 
-  toggleBtn.addEventListener('click', () => {
-    if (editing) exitEdit();
-    else void enterEdit();
+  /** True if the backing draft-edit textarea has unsaved changes
+   * relative to the current version's markdown. */
+  function hasUnsavedChanges(): boolean {
+    return editing && draftEdit.value !== state.currentVersion.markdown;
+  }
+
+  /** Native confirm prompt before discarding unsaved edits. Returns
+   * true if the operator chose to discard (safe to exitEdit). */
+  function confirmDiscard(reason: string): boolean {
+    if (!hasUnsavedChanges()) return true;
+    return confirm(
+      `You have unsaved changes. ${reason}\n\nUnsaved edits will be lost. Continue?`,
+    );
+  }
+
+  /** Warn before tab close / page reload if edits are pending. The
+   * standard beforeunload dance: set returnValue to any non-empty
+   * string and the browser prompts. Modern browsers ignore the
+   * message text; they show their own generic warning. */
+  window.addEventListener('beforeunload', (ev) => {
+    if (!hasUnsavedChanges()) return;
+    ev.preventDefault();
+    ev.returnValue = '';
   });
-  cancelEditBtn.addEventListener('click', exitEdit);
+
+  toggleBtn.addEventListener('click', () => {
+    if (editing) {
+      if (!confirmDiscard('Exiting the editor will discard them.')) return;
+      exitEdit();
+    } else {
+      void enterEdit();
+    }
+  });
+  cancelEditBtn.addEventListener('click', () => {
+    if (!confirmDiscard('Cancel will discard them.')) return;
+    exitEdit();
+  });
+
+  // ---- Focus mode ----
+  //
+  // Full-viewport, single-column, chrome-free editor. The press-check
+  // metaphor is "the galley under the lamp" — everything except the
+  // page being edited recedes. Exit on Esc, Shift+F, or the floating
+  // affordance in the top-left corner.
+
+  const focusBtn = document.querySelector<HTMLButtonElement>('[data-action="focus-mode"]');
+  const exitFocusBtn = document.querySelector<HTMLButtonElement>('[data-action="exit-focus"]');
+  const focusSaveHint = document.querySelector<HTMLElement>('[data-focus-save-hint]');
+  let focusMode = false;
+
+  function enterFocus(): void {
+    if (!editing) return;
+    document.body.classList.add('er-focus-mode');
+    focusBtn?.setAttribute('aria-pressed', 'true');
+    focusMode = true;
+    // Force source-only; split/preview don't make sense in focus.
+    setEditView('source');
+    // Sync the save hint into the corner indicator.
+    syncFocusSave();
+    editorHandle?.focus();
+  }
+
+  function exitFocus(): void {
+    document.body.classList.remove('er-focus-mode');
+    focusBtn?.setAttribute('aria-pressed', 'false');
+    focusMode = false;
+  }
+
+  function syncFocusSave(): void {
+    if (!focusSaveHint) return;
+    focusSaveHint.textContent = editHint.textContent ?? '';
+  }
+
+  focusBtn?.addEventListener('click', () => {
+    if (focusMode) exitFocus();
+    else enterFocus();
+  });
+  exitFocusBtn?.addEventListener('click', exitFocus);
 
   // Double-click anywhere in the rendered draft enters edit mode. This
   // mirrors the comment gesture (select → Mark) with its own shape so
@@ -809,10 +1093,14 @@ export function initEditorialReview(): void {
     void enterEdit();
   });
 
-  saveVersionBtn.addEventListener('click', async () => {
+  /** Single save handler, shared by every `[data-action="save-version"]`
+   * button (toolbar + focus-mode floating). Guards against double
+   * submission, updates both hint surfaces, and keeps beforeunload
+   * from interrupting the successful post-save navigation. */
+  async function performSave(): Promise<void> {
     if (saveVersionBtn.disabled) return;
     saveVersionBtn.disabled = true;
-    editHint.textContent = 'Saving...';
+    setHint('Saving…');
     try {
       const res = await fetch('/api/dev/editorial-review/version', {
         method: 'POST',
@@ -825,17 +1113,37 @@ export function initEditorialReview(): void {
       });
       const body = await res.json();
       if (!res.ok) {
-        showToast(`Save failed: ${body.error || res.status}`, true);
-        updateSaveState();
+        const msg = `Save failed: ${body.error || res.status}`;
+        showToast(msg, true);
+        setHint('Save failed');
+        // Leave the save button enabled so the operator can retry.
+        saveVersionBtn.disabled = false;
         return;
       }
       showToast(`Saved v${body.version.version}`);
+      setHint(`Saved v${body.version.version}`);
+      // Mark this session as saved so beforeunload doesn't interrupt
+      // the navigation into the new version. The backing textarea
+      // still holds the just-saved content; zeroing `editing` makes
+      // hasUnsavedChanges() return false.
+      editing = false;
       window.location.href = `?v=${body.version.version}`;
     } catch (e) {
-      showToast(`Network error: ${(e as Error).message}`, true);
-      updateSaveState();
+      const msg = `Network error: ${(e as Error).message}`;
+      showToast(msg, true);
+      setHint('Save failed');
+      saveVersionBtn.disabled = false;
     }
-  });
+  }
+
+  // Wire EVERY [data-action="save-version"] button to the same save
+  // handler — toolbar, focus-mode floating, whatever else surfaces
+  // the action. Previously only the toolbar button (captured via
+  // querySelector) had the listener, so the focus-mode Save did
+  // nothing. querySelectorAll fixes that.
+  document.querySelectorAll<HTMLButtonElement>('[data-action="save-version"]').forEach(
+    (btn) => btn.addEventListener('click', () => { void performSave(); }),
+  );
 
   // ---- Decision buttons (Approve / Iterate / Reject) ----
 
@@ -1002,9 +1310,15 @@ export function initEditorialReview(): void {
     );
     if (typing) {
       if (ev.key === 'Escape') {
+        // In focus mode, Esc exits focus first — the editor itself
+        // stays open. Regular edit mode's Esc still blurs + dismisses
+        // the composer if that's what the operator was typing in.
+        if (focusMode) {
+          ev.preventDefault();
+          exitFocus();
+          return;
+        }
         target.blur();
-        // If the operator was typing inside the margin-note composer,
-        // also dismiss it. Same gesture, same expectation.
         if (!composer.hidden) closeComposer();
       }
       return;
@@ -1020,6 +1334,28 @@ export function initEditorialReview(): void {
     if (ev.key === 'Escape') {
       if (shortcutsOverlay && !shortcutsOverlay.hidden) { showShortcuts(false); return; }
       if (!composer.hidden) { closeComposer(); return; }
+      // Outline drawer takes Esc before focus mode — if both are
+      // open, peeling the drawer first feels natural.
+      const drawer = document.querySelector('[data-outline-drawer]');
+      if (drawer?.classList.contains('er-outline-drawer--open')) {
+        closeOutlineDrawer();
+        return;
+      }
+      if (focusMode) { exitFocus(); return; }
+    }
+    // Shift+F toggles focus mode from anywhere on the page (as long
+    // as the operator isn't typing, which the `typing` branch above
+    // already handled).
+    if (ev.shiftKey && ev.key === 'F') {
+      ev.preventDefault();
+      if (!editing) return;
+      if (focusMode) exitFocus(); else enterFocus();
+      return;
+    }
+    if (ev.key === 'o' && outlineDrawerAvailable()) {
+      ev.preventDefault();
+      toggleOutlineDrawer();
+      return;
     }
     if (ev.key === 'e') { ev.preventDefault(); toggleBtn.click(); return; }
     if (ev.key === 'a') { ev.preventDefault(); approveBtn?.click(); return; }

@@ -1,0 +1,22 @@
+{
+  "id": "02521eca-61af-425b-8cd1-a5c3aa2f90e4",
+  "timestamp": "2026-04-22T19:43:20.213Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-22T19:43:20.213Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "version": 2,
+      "range": {
+        "start": 8807,
+        "end": 8830
+      },
+      "text": "Can we be a little less opaque about what we mean here by \"shifting subject matter?\"",
+      "category": "other",
+      "anchor": "shifting subject matter",
+      "id": "02521eca-61af-425b-8cd1-a5c3aa2f90e4",
+      "createdAt": "2026-04-22T19:43:20.213Z"
+    }
+  }
+}

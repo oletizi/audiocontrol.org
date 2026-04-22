@@ -47,6 +47,7 @@ let workflow: DraftWorkflowItem | null = null;
 let versions: DraftVersion[] = [];
 let currentVersion: DraftVersion | null = null;
 let renderedHtml = '';
+let outlineHtml = '';
 let fm: Record<string, string> = {};
 let errorMessage: string | null = null;
 
@@ -73,9 +74,46 @@ if (fetched.status === 200 && isSuccessBody(fetched.body)) {
 
   if (currentVersion) {
     const render = await import('../../../../../../scripts/lib/editorial-review/render.js');
+    const { splitOutline } = await import('../../../../../shared/outline-split.js');
     const parsed = render.parseDraftFrontmatter(currentVersion.markdown);
     fm = parsed.frontmatter;
-    renderedHtml = await render.renderMarkdownToHtml(parsed.body);
+    // Split the ## Outline section OUT of the body markdown before
+    // rendering. The main review surface shows prose only; the
+    // outline is available via the stowable drawer (same pattern
+    // as the editor's outline drawer — reference material, not
+    // part of the reading view).
+    const split = splitOutline(parsed.body);
+    const bodyHtml = await render.renderMarkdownToHtml(split.body);
+    // Inject the description (from frontmatter) as a dek paragraph
+    // into #draft-body so it participates in the margin-note system
+    // alongside the body. The title is already in the body as an
+    // H1 (the scaffold's "repeat the title" convention), so it's
+    // already commentable. BlogLayout's .essay-header (which
+    // renders both title and description in the page chrome
+    // outside #draft-body) is hidden via CSS on the review surface
+    // so the operator sees no duplication.
+    const escapeHtml = (s: string): string =>
+      s.replace(/&/g, '&amp;')
+       .replace(/</g, '&lt;')
+       .replace(/>/g, '&gt;')
+       .replace(/"/g, '&quot;');
+    // Inject after the first H1 so it reads like a proper dek in
+    // the article flow: title → dek → body. The naive approach of
+    // prepending would put the dek *above* the H1, which reads
+    // wrong visually and structurally.
+    const dekHtml = fm.description
+      ? `<p class="er-dispatch-dek">${escapeHtml(fm.description)}</p>`
+      : '';
+    // The first closing </h1> is the body H1 (the repeated title).
+    // Insert the dek immediately after it.
+    const h1Close = bodyHtml.indexOf('</h1>');
+    renderedHtml =
+      dekHtml && h1Close >= 0
+        ? bodyHtml.slice(0, h1Close + 5) + dekHtml + bodyHtml.slice(h1Close + 5)
+        : dekHtml + bodyHtml;
+    if (split.outline) {
+      outlineHtml = await render.renderMarkdownToHtml(split.outline);
+    }
   }
 } else {
   errorMessage = errorFromBody(fetched.body);
@@ -130,6 +168,8 @@ function stateLabel(state?: string): string {
               <button class="er-edit-mode-btn" data-edit-view="preview" type="button" aria-pressed="false">Preview</button>
             </div>
             <div class="er-edit-actions">
+              <button class="er-btn er-btn-small" data-action="outline-drawer" type="button" title="Show the outline for reference (O)" aria-pressed="false" hidden={!outlineHtml}>Outline ↗</button>
+              <button class="er-btn er-btn-small" data-action="focus-mode" type="button" title="Distraction-free mode (Shift+F)" aria-pressed="false">Focus ⛶</button>
               <button class="er-btn er-btn-primary" data-action="save-version" type="button">Save as new version</button>
               <button class="er-btn" data-action="cancel-edit" type="button">Cancel</button>
               <span class="er-edit-hint" data-edit-hint></span>
@@ -146,6 +186,19 @@ function stateLabel(state?: string): string {
                CodeMirror instance syncs its value into this element on
                every change. -->
           <textarea id="draft-edit" data-draft-edit hidden></textarea>
+
+          <!-- Focus-mode floating affordances. Visible only when
+               body.er-focus-mode is set; invisible and non-interactive
+               otherwise. Hover-over-edge reveal + a soft resting
+               state so a first-time focus-mode operator sees what's
+               available without the chrome shouting. -->
+          <div class="er-focus-exit" data-focus-exit aria-hidden="true">
+            <button type="button" data-action="exit-focus" title="Exit focus (Esc)">← exit focus</button>
+          </div>
+          <div class="er-focus-save" data-focus-save aria-hidden="true">
+            <button type="button" class="er-btn er-btn-small er-btn-primary" data-action="save-version">Save</button>
+            <span class="er-focus-save-hint" data-focus-save-hint></span>
+          </div>
         </div>
       </div>
 
@@ -241,6 +294,30 @@ function stateLabel(state?: string): string {
     </aside>
 
     <button class="er-pencil-btn" data-add-comment-btn hidden type="button">Mark</button>
+
+    <!--
+      Outline drawer. Briefing sheet for the ## Outline section.
+      Pre-populated server-side from the current version's outline
+      markdown — no client-side render needed on page load. The
+      drawer is a sibling of the draft body and the edit mode so
+      it stays accessible in both review and edit contexts.
+      Tab + trigger button both hidden if the current version has
+      no outline section. Content is read-only; to edit the
+      outline, operator runs /editorial-iterate --kind outline.
+    -->
+    <button class="er-outline-tab" data-outline-tab type="button" aria-label="Show outline" hidden={!outlineHtml}>
+      <span class="er-outline-tab-label">Outline</span>
+    </button>
+    <aside class="er-outline-drawer" data-outline-drawer aria-label="Outline reference" hidden>
+      <header class="er-outline-drawer-head">
+        <span class="er-outline-drawer-kicker">Briefing sheet</span>
+        <button type="button" class="er-outline-drawer-close" data-outline-close aria-label="Close outline (O or Esc)">×</button>
+      </header>
+      <div class="er-outline-drawer-body" data-outline-drawer-body set:html={outlineHtml}></div>
+      <footer class="er-outline-drawer-foot">
+        <span>Read-only · edit via <code>/editorial-iterate --kind outline</code></span>
+      </footer>
+    </aside>
 
     <div class="er-toast" data-toast hidden></div>
 

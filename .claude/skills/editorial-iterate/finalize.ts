@@ -30,8 +30,10 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import {
+  appendAnnotation,
   appendVersion,
   handleGetWorkflow,
+  mintAnnotation,
   readVersions,
   transitionState,
   type DraftVersion,
@@ -40,6 +42,15 @@ import {
 import { assertSite, type Site } from '../../../scripts/lib/editorial/index.js';
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
+const DISPOSITIONS = new Set(['addressed', 'deferred', 'wontfix'] as const);
+type Disposition = 'addressed' | 'deferred' | 'wontfix';
+
+interface DispositionEntry {
+  disposition: Disposition;
+  reason?: string;
+}
+
+type DispositionMap = Record<string, DispositionEntry>;
 
 type IterableKind = 'longform' | 'outline';
 
@@ -47,6 +58,7 @@ interface Args {
   site: Site;
   slug: string;
   kind: IterableKind;
+  dispositionsPath?: string;
 }
 
 function parseKind(value: string | undefined): IterableKind {
@@ -58,6 +70,7 @@ function parseKind(value: string | undefined): IterableKind {
 function parseArgs(argv: readonly string[]): Args {
   let site: string | undefined;
   let kindRaw: string | undefined;
+  let dispositionsPath: string | undefined;
   const positional: string[] = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -65,16 +78,56 @@ function parseArgs(argv: readonly string[]): Args {
     if (a.startsWith('--site=')) { site = a.slice('--site='.length); continue; }
     if (a === '--kind') { kindRaw = argv[++i]; continue; }
     if (a.startsWith('--kind=')) { kindRaw = a.slice('--kind='.length); continue; }
+    if (a === '--dispositions') { dispositionsPath = argv[++i]; continue; }
+    if (a.startsWith('--dispositions=')) { dispositionsPath = a.slice('--dispositions='.length); continue; }
     positional.push(a);
   }
   if (positional.length !== 1) {
-    throw new Error('Usage: finalize.ts [--site <site>] [--kind <longform|outline>] <slug>');
+    throw new Error(
+      'Usage: finalize.ts [--site <site>] [--kind <longform|outline>] ' +
+      '[--dispositions <path>] <slug>',
+    );
   }
   const slug = positional[0];
   if (!SLUG_RE.test(slug)) {
     throw new Error(`invalid slug: ${slug} (must match ${SLUG_RE})`);
   }
-  return { site: assertSite(site), slug, kind: parseKind(kindRaw) };
+  return { site: assertSite(site), slug, kind: parseKind(kindRaw), dispositionsPath };
+}
+
+/**
+ * Load and validate a dispositions JSON file. Shape:
+ *   { "<commentId>": { "disposition": "addressed"|"deferred"|"wontfix",
+ *                      "reason": "optional text" }, ... }
+ * Throws on any structural violation — we'd rather fail loudly than
+ * silently skip a comment the agent intended to address.
+ */
+function loadDispositions(path: string): DispositionMap {
+  const raw = readFileSync(path, 'utf8');
+  const parsed: unknown = JSON.parse(raw);
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error(`dispositions: expected JSON object at ${path}`);
+  }
+  const out: DispositionMap = {};
+  for (const [commentId, value] of Object.entries(parsed as Record<string, unknown>)) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      throw new Error(`dispositions[${commentId}]: expected object with 'disposition' field`);
+    }
+    const v = value as { disposition?: unknown; reason?: unknown };
+    if (typeof v.disposition !== 'string' || !DISPOSITIONS.has(v.disposition as Disposition)) {
+      throw new Error(
+        `dispositions[${commentId}]: disposition must be one of ${[...DISPOSITIONS].join(', ')}`,
+      );
+    }
+    if (v.reason !== undefined && typeof v.reason !== 'string') {
+      throw new Error(`dispositions[${commentId}]: reason must be a string if provided`);
+    }
+    out[commentId] = {
+      disposition: v.disposition as Disposition,
+      ...(typeof v.reason === 'string' ? { reason: v.reason } : {}),
+    };
+  }
+  return out;
 }
 
 function blogFilePath(rootDir: string, site: Site, slug: string): string {
@@ -150,15 +203,40 @@ function main(): void {
   }
 
   const nextVersion = appendVersion(rootDir, workflow.id, diskMarkdown, 'agent');
+
+  // Record per-comment dispositions if provided. Written AFTER
+  // appendVersion so the `version` field matches the snapshot that
+  // the agent claims to have addressed these comments in.
+  const dispositions: DispositionMap = args.dispositionsPath
+    ? loadDispositions(args.dispositionsPath)
+    : {};
+  const dispositionCount = { addressed: 0, deferred: 0, wontfix: 0 };
+  for (const [commentId, entry] of Object.entries(dispositions)) {
+    const annotation = mintAnnotation({
+      type: 'address',
+      workflowId: workflow.id,
+      commentId,
+      version: nextVersion.version,
+      disposition: entry.disposition,
+      ...(entry.reason ? { reason: entry.reason } : {}),
+    });
+    appendAnnotation(rootDir, annotation);
+    dispositionCount[entry.disposition]++;
+  }
+
   transitionState(rootDir, workflow.id, 'in-review');
 
   const reviewUrl = `http://localhost:4321/dev/editorial-review/${args.slug}?site=${args.site}`;
+  const dispositionLine = args.dispositionsPath
+    ? `  address  ${dispositionCount.addressed} addressed, ${dispositionCount.deferred} deferred, ${dispositionCount.wontfix} wontfix`
+    : `  address  (no --dispositions provided; no address annotations written)`;
   const lines = [
     `Iterated. v${nextVersion.version} persisted; workflow is now in 'in-review'.`,
     `  id       ${workflow.id}`,
     `  site     ${args.site}`,
     `  slug     ${args.slug}`,
     `  version  ${nextVersion.version}`,
+    dispositionLine,
     '',
     `Review at: ${reviewUrl}`,
     `Operator decides next: Approve / Iterate again / Reject.`,

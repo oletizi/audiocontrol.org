@@ -1,0 +1,18 @@
+{
+  "id": "5600b24a-ad9e-46a5-a5f5-704afa9f5eea",
+  "timestamp": "2026-04-22T20:37:32.439Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-22T20:37:32.439Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "commentId": "02521eca-61af-425b-8cd1-a5c3aa2f90e4",
+      "version": 4,
+      "disposition": "deferred",
+      "reason": "On prior version; surface as rebased so operator decides whether to re-flag.",
+      "id": "5600b24a-ad9e-46a5-a5f5-704afa9f5eea",
+      "createdAt": "2026-04-22T20:37:32.439Z"
+    }
+  }
+}
