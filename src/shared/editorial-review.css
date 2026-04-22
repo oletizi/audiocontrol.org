@@ -1295,25 +1295,6 @@ body:has([data-review-ui="longform"]) .site-footer {
   margin-top: var(--er-space-1);
 }
 
-[data-review-ui="longform"] .er-marginalia-composer-hint {
-  font-family: var(--er-font-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.1em;
-  color: var(--er-faded-2);
-  margin: 0.35rem 0 0;
-  text-align: right;
-}
-[data-review-ui="longform"] .er-marginalia-composer-hint kbd {
-  font-family: var(--er-font-mono);
-  font-size: 0.58rem;
-  padding: 0.1rem 0.3rem;
-  border: 1px solid var(--er-faded-2);
-  border-radius: 2px;
-  color: var(--er-faded);
-  margin: 0 0.1rem;
-  background: transparent;
-}
-
 /* ---------- Toast ---------- */
 
 .er-toast {
