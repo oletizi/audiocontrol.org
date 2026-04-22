@@ -1,0 +1,22 @@
+{
+  "id": "505f9f44-986b-45e2-8aab-df4da32d631b",
+  "timestamp": "2026-04-22T18:58:14.267Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-22T18:58:14.267Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "version": 1,
+      "range": {
+        "start": 8449,
+        "end": 8649
+      },
+      "text": "What is this for?",
+      "category": "other",
+      "anchor": "In this dispatch\n\n00 The short version, up top\n01 The prompt-tuning trap\n02 The workflow decides what's easy\n03 What the feature-image library taught\n04 The mindset is the skill\n05 Where this is going",
+      "id": "505f9f44-986b-45e2-8aab-df4da32d631b",
+      "createdAt": "2026-04-22T18:58:14.267Z"
+    }
+  }
+}

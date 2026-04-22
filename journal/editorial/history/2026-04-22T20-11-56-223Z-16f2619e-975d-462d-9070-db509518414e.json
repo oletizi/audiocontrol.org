@@ -1,0 +1,22 @@
+{
+  "id": "16f2619e-975d-462d-9070-db509518414e",
+  "timestamp": "2026-04-22T20:11:56.223Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-22T20:11:56.223Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "version": 3,
+      "range": {
+        "start": 60,
+        "end": 830
+      },
+      "text": "This is *very* long and impenetrable. Can we make it concise and appealing--it should make the reader want to read more, not be an impenetrable wall.",
+      "category": "other",
+      "anchor": "Selection pressure as the default workflow posture, with feature-image prompts as the worked example (fitness from user ratings, lineage through forks, fitness×recency weighting). The broader claim: AI agents make selection infrastructure (rating UIs, fitness signals, side-by-side review apps) cheap enough to build weekly, so the operator's skill is noticing where variation + selection can replace engineering. The evolutionary mindset is the skill; the agent is what makes it practical. Pairs with `feature-image-automation-evolution-gallery-claude-code` (the applied half — how the framework plays out in practice); the two should cross-link. Close uses the meta move: this dispatch was itself reframed mid-planning by consulting the `editorialcontrol-voice` skill.",
+      "id": "16f2619e-975d-462d-9070-db509518414e",
+      "createdAt": "2026-04-22T20:11:56.223Z"
+    }
+  }
+}

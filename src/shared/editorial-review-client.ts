@@ -55,6 +55,23 @@ interface ResolveAnnotation {
 }
 
 /**
+ * Agent-written per-iteration disposition. The sidebar reads the
+ * most recent address annotation per comment and stamps it with
+ * "Addressed in v{N}" / "Deferred in v{N}" / "Won't fix (v{N})"
+ * so the operator can see which comments the latest iterate touched.
+ */
+interface AddressAnnotation {
+  id: string;
+  type: 'address';
+  workflowId: string;
+  commentId: string;
+  version: number;
+  disposition: 'addressed' | 'deferred' | 'wontfix';
+  reason?: string;
+  createdAt: string;
+}
+
+/**
  * Classification applied to every comment annotation when the page
  * renders. Determines how the comment shows up in the UI:
  *   - `current`: anchor belongs to the version being viewed; render
@@ -228,16 +245,17 @@ export function initEditorialReview(): void {
 
     const quote = document.createElement('div');
     quote.className = 'quote';
-    // Rebased comments show the anchor text (displayed at the
-    // current, rebased position). Unresolved comments show the
-    // original anchor if we have one; legacy annotations without
-    // anchor say so explicitly rather than rendering a wrong slice.
-    if (status === 'unresolved') {
-      quote.textContent = annotation.anchor
-        ? annotation.anchor
-        : '(legacy comment — no anchor captured)';
-    } else {
+    // The stored anchor IS the selected text captured at mark time —
+    // authoritative regardless of status. Offsets into the text
+    // stream are a locator, not the source of truth; they drift with
+    // any edit. Only fall back to the range-slice for legacy
+    // annotations that predate anchor capture.
+    if (annotation.anchor) {
+      quote.textContent = annotation.anchor;
+    } else if (status === 'current') {
       quote.textContent = extractQuote(annotation.range);
+    } else {
+      quote.textContent = '(legacy comment — no anchor captured)';
     }
 
     const text = document.createElement('p');
@@ -246,6 +264,12 @@ export function initEditorialReview(): void {
 
     li.appendChild(cat);
     li.appendChild(quote);
+    // Agent's per-iteration stamp, if any. Sits between the quote
+    // and the note — visually close to the comment body so the
+    // operator can read "[addressed in v4]" alongside the comment
+    // itself rather than as a detached metadata chip.
+    const stamp = buildAddressStamp(annotation.id);
+    if (stamp) li.appendChild(stamp);
     li.appendChild(text);
 
     // Every live item gets a Resolve affordance, including unresolved
@@ -472,6 +496,21 @@ export function initEditorialReview(): void {
    * can render them without a re-fetch. */
   const resolvedHistory: { ann: CommentAnnotation; status: AnnotationStatus }[] = [];
 
+  /**
+   * Most recent address annotation per commentId. Populated on
+   * `loadAnnotations` and consulted by `addSidebarItem` /
+   * `renderResolvedItem` to decorate each comment with its
+   * per-version disposition badge. Latest-wins by `createdAt`.
+   */
+  const addressByCommentId = new Map<string, AddressAnnotation>();
+
+  function computeLatestAddresses(all: AddressAnnotation[]): Map<string, AddressAnnotation> {
+    const byCreatedAt = [...all].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    const map = new Map<string, AddressAnnotation>();
+    for (const a of byCreatedAt) map.set(a.commentId, a);
+    return map;
+  }
+
   async function loadAnnotations(): Promise<void> {
     try {
       // Omit `version` — the server returns every annotation for the
@@ -482,10 +521,17 @@ export function initEditorialReview(): void {
       const res = await fetch(url);
       if (!res.ok) return;
       const body = await res.json();
-      const all: Array<CommentAnnotation | ResolveAnnotation> = body.annotations || [];
+      const all: Array<CommentAnnotation | ResolveAnnotation | AddressAnnotation> =
+        body.annotations || [];
       const comments = all.filter((a): a is CommentAnnotation => a.type === 'comment');
       const resolves = all.filter((a): a is ResolveAnnotation => a.type === 'resolve');
+      const addresses = all.filter((a): a is AddressAnnotation => a.type === 'address');
       const resolvedIds = computeResolvedSet(resolves);
+      // Latest-wins address map, consulted by render helpers below.
+      addressByCommentId.clear();
+      for (const [id, ann] of computeLatestAddresses(addresses)) {
+        addressByCommentId.set(id, ann);
+      }
 
       // Stable render order: current-version first, then rebased
       // (by original version desc), then unresolved (by original
@@ -666,6 +712,8 @@ export function initEditorialReview(): void {
     text.className = 'note';
     text.textContent = ann.text;
 
+    const stamp = buildAddressStamp(ann.id);
+
     const actions = document.createElement('div');
     actions.className = 'er-marginalia-actions';
     const reopenBtn = document.createElement('button');
@@ -680,9 +728,57 @@ export function initEditorialReview(): void {
 
     li.appendChild(cat);
     li.appendChild(quote);
+    if (stamp) li.appendChild(stamp);
     li.appendChild(text);
     li.appendChild(actions);
     return li;
+  }
+
+  /**
+   * Render a copy-editor-style stamp for a comment: "[addressed in v4]"
+   * / "[deferred in v4]" / "[won't fix · v4]". Returns null if no
+   * address annotation has been written for this comment yet. The
+   * stamp includes an optional reason line (the agent's one-sentence
+   * explanation) on hover / below the label so the operator can read
+   * why something was deferred or rejected.
+   */
+  function buildAddressStamp(commentId: string): HTMLElement | null {
+    const addr = addressByCommentId.get(commentId);
+    if (!addr) return null;
+    const stamp = document.createElement('div');
+    stamp.className = `er-marginalia-stamp er-marginalia-stamp--${addr.disposition}`;
+    stamp.dataset.disposition = addr.disposition;
+
+    // Glyph keyed to disposition: filled diamond echoes the
+    // editorialcontrol tagline ◆, so "addressed" feels native;
+    // hollow ◇ for "deferred" reads as "still open"; ✕ for
+    // "won't fix" is final.
+    const mark = document.createElement('span');
+    mark.className = 'er-marginalia-stamp-mark';
+    mark.setAttribute('aria-hidden', 'true');
+    mark.textContent =
+      addr.disposition === 'addressed' ? '◆' :
+      addr.disposition === 'deferred' ? '◇' :
+      '✕';
+
+    const label = document.createElement('span');
+    label.className = 'er-marginalia-stamp-label';
+    label.textContent =
+      addr.disposition === 'addressed' ? `addressed in v${addr.version}` :
+      addr.disposition === 'deferred' ? `deferred in v${addr.version}` :
+      `won't fix · v${addr.version}`;
+
+    stamp.appendChild(mark);
+    stamp.appendChild(label);
+
+    if (addr.reason) {
+      const reason = document.createElement('span');
+      reason.className = 'er-marginalia-stamp-reason';
+      reason.textContent = addr.reason;
+      stamp.appendChild(reason);
+    }
+
+    return stamp;
   }
 
   // ---- Edit mode ----

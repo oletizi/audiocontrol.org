@@ -108,12 +108,38 @@ export interface ResolveAnnotation extends AnnotationBase {
   resolved: boolean;
 }
 
+/**
+ * Agent's per-comment disposition for a specific iteration. Written by
+ * `finalize.ts` after it appends the new version. Unlike `resolve` —
+ * which is operator-driven and terminal — `address` is a lightweight
+ * claim: "in vN, I handled this comment by doing X." The sidebar
+ * reads the most recent address annotation per comment to stamp
+ * "Addressed in vN" / "Deferred in vN" badges, so the operator can
+ * see at a glance what the latest iteration touched.
+ *
+ * Multiple address annotations on the same commentId are allowed —
+ * a later iteration can revise the disposition. Latest-wins per
+ * `createdAt` when rendering the badge.
+ */
+export interface AddressAnnotation extends AnnotationBase {
+  type: 'address';
+  /** The comment this disposition refers to. */
+  commentId: string;
+  /** The version this disposition was recorded on (the version the agent just produced). */
+  version: number;
+  /** How the agent handled this comment in that version. */
+  disposition: 'addressed' | 'deferred' | 'wontfix';
+  /** Optional free-text explanation the agent surfaced. */
+  reason?: string;
+}
+
 export type DraftAnnotation =
   | CommentAnnotation
   | EditAnnotation
   | ApproveAnnotation
   | RejectAnnotation
-  | ResolveAnnotation;
+  | ResolveAnnotation
+  | AddressAnnotation;
 
 export interface DraftVersion {
   /** 1-based version number; v1 is the initial draft. */

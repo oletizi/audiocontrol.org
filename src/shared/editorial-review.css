@@ -900,6 +900,88 @@ body:has([data-review-ui="longform"]) .site-footer {
   color: var(--er-ink);
 }
 
+/* ---- Per-iteration disposition stamp --------------------------------- *
+ *
+ * Agent-written "addressed / deferred / wontfix" marker for each
+ * comment. Sits between the quote and the note. Visually modeled on
+ * a copy-editor's margin proof-mark: a colored glyph keyed to the
+ * disposition (◆ addressed, ◇ deferred, ✕ wontfix), a thin monospaced
+ * label, and an optional reason line in italic small type.
+ *
+ * Layout is a subgrid so the glyph column aligns across all stamps
+ * in the sidebar — reads as a proof-column when three in a row.
+ */
+.er-marginalia-stamp {
+  display: grid;
+  grid-template-columns: 0.9rem 1fr;
+  column-gap: 0.45rem;
+  align-items: baseline;
+  margin: 0 0 0.4rem;
+  padding: 0.25rem 0.5rem 0.3rem;
+  background: var(--er-paper-2);
+  border-left: 2px solid currentColor;
+  font-family: var(--er-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.25;
+  color: var(--er-faded);
+}
+.er-marginalia-stamp-mark {
+  font-family: var(--er-font-display);
+  font-size: 0.78rem;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  color: currentColor;
+  align-self: center;
+}
+.er-marginalia-stamp-label {
+  font-weight: 600;
+  color: currentColor;
+}
+.er-marginalia-stamp-reason {
+  grid-column: 2;
+  display: block;
+  margin-top: 0.2rem;
+  font-family: var(--er-font-display);
+  font-style: italic;
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  line-height: 1.35;
+  text-transform: none;
+  color: var(--er-ink-soft);
+}
+
+/* Addressed — chartreuse/amber accent. The "done" color in this
+ * palette; matches the highlight swatch used for selection glow. */
+.er-marginalia-stamp--addressed {
+  color: #8B6914; /* deeper amber, readable on paper-2 */
+  background: var(--er-highlight-soft);
+}
+
+/* Deferred — graphite. Neutral by design: "we saw it, we carried it
+ * forward, no judgment." */
+.er-marginalia-stamp--deferred {
+  color: var(--er-ink-soft);
+  background: var(--er-paper-2);
+}
+
+/* Won't fix — red-pencil. Rare, final. Signals a rejection the
+ * operator may want to re-comment on. */
+.er-marginalia-stamp--wontfix {
+  color: var(--er-red-pencil);
+  background: var(--er-paper-2);
+  border-left-style: double;
+  border-left-width: 3px;
+}
+
+/* On resolved-history items, fade the stamp slightly so it reads as
+ * historical rather than active. */
+.er-marginalia-item--resolved .er-marginalia-stamp {
+  opacity: 0.75;
+}
+
 /* BlogLayout renders the title + dek in .essay-header, outside
  * #draft-body. Margin notes only attach to selections inside
  * #draft-body — so the operator couldn't annotate the title or

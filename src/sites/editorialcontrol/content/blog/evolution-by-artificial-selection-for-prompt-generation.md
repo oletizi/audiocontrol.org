@@ -1,6 +1,6 @@
 ---
 title: "You Don't Need a Better Prompt. You Need Selection Pressure."
-description: "Selection pressure as the default workflow posture, with feature-image prompts as the worked example (fitness from user ratings, lineage through forks, fitness×recency weighting). The broader claim: AI agents make selection infrastructure (rating UIs, fitness signals, side-by-side review apps) cheap enough to build weekly, so the operator's skill is noticing where variation + selection can replace engineering. The evolutionary mindset is the skill; the agent is what makes it practical. Pairs with `feature-image-automation-evolution-gallery-claude-code` (the applied half — how the framework plays out in practice); the two should cross-link. Close uses the meta move: this dispatch was itself reframed mid-planning by consulting the `editorialcontrol-voice` skill."
+description: "Champion prompts go stale. A population under selection pressure doesn't. The worked example: an agent that builds the review app for the images it generates — in an afternoon."
 date: "April 2026"
 datePublished: "2026-04-21"
 dateModified: "2026-04-21"
@@ -55,13 +55,9 @@ In this dispatch
 
 ---
 
-## You Don't Need a Better Prompt. You Need Selection Pressure.
+## 00 TL;DR
 
-## 00 The short version, up top
-
-Skimmers shouldn't have to read fifteen hundred words to find the move. Here it is:
-
-1. **Stop tuning one champion prompt.** A single prompt can't track a shifting subject matter. A population can.
+1. **Tuning one champion prompt isn't the best you can do.** A single prompt can't track a shifting subject matter. A population can.
 2. **Keep the population, and capture any fitness signal.** Even a thumbs column on a journal row. Perfect fitness is the enemy of any fitness.
 3. **Prune.** Selection requires deletion. A population that never loses variants isn't a population — it's a landfill.
 4. **The workflow has to make this the easy path.** If selection-driven prompting takes willpower, it won't happen. Variation, fitness, and retention need to live on the same gradient as the work.
