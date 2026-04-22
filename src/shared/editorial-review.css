@@ -1186,93 +1186,132 @@ body:has([data-review-ui="longform"]) .site-footer {
   margin-left: var(--er-space-1);
 }
 
-/* ---------- Comment modal ---------- */
+/* ---------- Margin-note composer ----------
+ *
+ * In-situ replacement for the old comment modal. Lives inside the
+ * margin rail (same `[data-comments-sidebar]` aside that hosts
+ * saved notes) so starting a new mark never pulls focus off the
+ * draft. Saving promotes the composer contents into a normal
+ * margin item rendered below; cancel dismisses without leaving
+ * a trace. Scoped under [data-review-ui="longform"] so the
+ * cream-on-dark host theme can't leak its link colors onto our
+ * controls. */
 
-.er-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--er-space-3);
-}
-
-.er-modal-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(26,22,20,0.3);
-  backdrop-filter: blur(4px);
-}
-
-.er-modal-panel {
+[data-review-ui="longform"] .er-marginalia-composer {
   position: relative;
-  background: var(--er-paper);
-  border: var(--er-rule-med);
-  max-width: 32rem;
-  width: 100%;
-  padding: var(--er-space-4);
-  box-shadow: 4px 4px 0 rgba(26,22,20,0.15);
+  padding: var(--er-space-2) var(--er-space-2) var(--er-space-2) var(--er-space-3);
+  margin: 0 0 var(--er-space-2);
+  /* Red-pencil left rail distinguishes a draft slip from saved
+   * notes (which use the softer --er-red-soft). Same rhythm; a
+   * single degree warmer. */
+  border-left: 3px solid var(--er-red-pencil);
+  border-bottom: 1px solid var(--er-red-pencil);
+  background: linear-gradient(180deg, var(--er-paper-2) 0%, var(--er-paper) 100%);
+  transition: opacity 220ms ease-out, transform 220ms ease-out;
 }
 
-.er-modal-header {
+/* Entry frame: composer is translated up + faded when first
+ * revealed; a single frame later the class is removed and the
+ * transition slides it home. Gives the operator a clear "arrived
+ * on the rail" moment without being precious about it. */
+[data-review-ui="longform"] .er-marginalia-composer--entering {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+[data-review-ui="longform"] .er-marginalia-composer-head {
   font-family: var(--er-font-mono);
-  font-size: 0.7rem;
+  font-size: 0.62rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--er-red-pencil);
-  border-bottom: 1px solid var(--er-red-pencil);
-  padding-bottom: var(--er-space-1);
-  margin: 0 0 var(--er-space-3);
+  margin: 0 0 var(--er-space-1);
 }
 
-.er-modal-quote {
+[data-review-ui="longform"] .er-marginalia-composer-quote {
+  /* Match saved-item quote styling exactly so the composer reads
+   * as a draft in the same rhythm as the marks below it. Known
+   * legible on cream. */
   font-family: var(--er-font-display);
   font-style: italic;
-  font-size: 1rem;
-  border-left: 3px solid var(--er-red-soft);
-  padding: var(--er-space-1) var(--er-space-2);
-  color: var(--er-ink-soft);
-  background: var(--er-paper-2);
-  margin: 0 0 var(--er-space-3);
+  font-size: 0.88rem;
   line-height: 1.4;
+  color: var(--er-ink-soft);
+  border-left: 2px solid var(--er-red-soft);
+  padding: 0 var(--er-space-1);
+  margin: 0 0 var(--er-space-2);
+  /* Belt-and-suspenders against any host-theme color bleed: be
+   * explicit that the text is the soft-ink, not whatever a parent
+   * `<blockquote>` rule might have set. */
+  background: transparent;
 }
 
-.er-modal-label {
+[data-review-ui="longform"] .er-marginalia-composer-label {
   font-family: var(--er-font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--er-faded);
   display: block;
-  margin-bottom: var(--er-space-0);
+  margin: var(--er-space-1) 0 0.15rem;
 }
 
-.er-modal-panel select,
-.er-modal-panel textarea {
+[data-review-ui="longform"] .er-marginalia-composer-select,
+[data-review-ui="longform"] .er-marginalia-composer-textarea {
   width: 100%;
   font: inherit;
-  padding: var(--er-space-1) var(--er-space-2);
-  border: var(--er-rule-thin);
+  padding: 0.35rem var(--er-space-1);
   background: var(--er-paper);
   color: var(--er-ink);
-  margin-bottom: var(--er-space-2);
-  font-family: var(--er-font-body);
-  border-radius: 2px;
-}
-.er-modal-panel textarea {
-  font-family: var(--er-font-display);
-  font-variation-settings: "opsz" 18, "wght" 400;
-  min-height: 5rem;
-  resize: vertical;
-  line-height: 1.5;
+  border: 1px solid var(--er-faded-2);
+  border-radius: 0;
+  margin-bottom: var(--er-space-1);
+  transition: border-color 120ms ease;
 }
 
-.er-modal-actions {
+[data-review-ui="longform"] .er-marginalia-composer-select:focus,
+[data-review-ui="longform"] .er-marginalia-composer-textarea:focus {
+  outline: none;
+  border-color: var(--er-red-pencil);
+}
+
+[data-review-ui="longform"] .er-marginalia-composer-textarea {
+  font-family: var(--er-font-body);
+  font-size: 0.92rem;
+  min-height: 4.5rem;
+  line-height: 1.5;
+  resize: vertical;
+  color: var(--er-ink);
+}
+[data-review-ui="longform"] .er-marginalia-composer-textarea::placeholder {
+  color: var(--er-faded);
+  font-style: italic;
+}
+
+[data-review-ui="longform"] .er-marginalia-composer-actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--er-space-1);
-  margin-top: var(--er-space-2);
+  margin-top: var(--er-space-1);
+}
+
+[data-review-ui="longform"] .er-marginalia-composer-hint {
+  font-family: var(--er-font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: var(--er-faded-2);
+  margin: 0.35rem 0 0;
+  text-align: right;
+}
+[data-review-ui="longform"] .er-marginalia-composer-hint kbd {
+  font-family: var(--er-font-mono);
+  font-size: 0.58rem;
+  padding: 0.1rem 0.3rem;
+  border: 1px solid var(--er-faded-2);
+  border-radius: 2px;
+  color: var(--er-faded);
+  margin: 0 0.1rem;
+  background: transparent;
 }
 
 /* ---------- Toast ---------- */

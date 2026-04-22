@@ -98,8 +98,8 @@ export function initEditorialReview(): void {
   const editToolbar = q<HTMLElement>('[data-edit-toolbar]');
   const editHint = q<HTMLElement>('[data-edit-hint]');
   const addBtn = q<HTMLButtonElement>('[data-add-comment-btn]');
-  const modal = q<HTMLElement>('[data-comment-modal]');
-  const modalQuote = q<HTMLElement>('[data-modal-quote]');
+  const composer = q<HTMLElement>('[data-comment-composer]');
+  const composerQuote = q<HTMLElement>('[data-composer-quote]');
   const categorySel = q<HTMLSelectElement>('[data-comment-category]');
   const textArea = q<HTMLTextAreaElement>('[data-comment-text]');
   const sidebarList = q<HTMLElement>('[data-sidebar-list]');
@@ -325,28 +325,43 @@ export function initEditorialReview(): void {
     pendingRange = offsets;
   });
 
-  function openMarkModal(): void {
+  /**
+   * Reveal the in-margin composer at the top of the margin-rail
+   * with the selected quote pre-populated. No modal — the composer
+   * lives inside the same sidebar that hosts saved marks, so the
+   * reading frame never gets pulled out from under the operator.
+   */
+  function openComposer(): void {
     if (!pendingRange) return;
-    modalQuote.textContent = extractQuote(pendingRange);
+    composerQuote.textContent = extractQuote(pendingRange);
     textArea.value = '';
     categorySel.value = 'other';
-    modal.hidden = false;
+    composer.hidden = false;
+    composer.classList.add('er-marginalia-composer--entering');
+    // Next frame, strip the entering class so the CSS transition
+    // runs. Reading the offsetWidth forces a layout flush which is
+    // enough to separate the two class changes into distinct frames.
+    void composer.offsetWidth;
+    composer.classList.remove('er-marginalia-composer--entering');
     addBtn.hidden = true;
     textArea.focus();
   }
 
-  addBtn.addEventListener('click', openMarkModal);
+  addBtn.addEventListener('click', openComposer);
 
   // Operator-friendly second entry: click anywhere in the margin-notes
   // sidebar (but not on an existing note, which has its own scroll-to
-  // behavior) to open the Mark modal for the current selection. This
-  // honors the natural "I selected text → now I click the margin"
-  // instinct that the floating pencil alone doesn't satisfy.
+  // behavior, and not on the composer itself) to open the composer
+  // for the current selection. This honors the natural "I selected
+  // text → now I click the margin" instinct that the floating pencil
+  // alone doesn't satisfy.
   const sidebar = q<HTMLElement>('[data-comments-sidebar]');
   sidebar.addEventListener('mousedown', (ev) => {
     const target = ev.target instanceof HTMLElement ? ev.target : null;
     // Clicks on an existing note: let that handler run (scroll to highlight).
     if (target?.closest('.er-marginalia-item')) return;
+    // Clicks inside the composer: let normal form input behavior run.
+    if (target?.closest('[data-comment-composer]')) return;
     // Preserve the selection the browser is about to clear on mouseup.
     // selectionchange already stashed `pendingRange`; just suppress the
     // default mousedown so the selection survives into click.
@@ -355,23 +370,34 @@ export function initEditorialReview(): void {
   sidebar.addEventListener('click', (ev) => {
     const target = ev.target instanceof HTMLElement ? ev.target : null;
     if (target?.closest('.er-marginalia-item')) return;
+    if (target?.closest('[data-comment-composer]')) return;
     if (!pendingRange) {
       showToast('Select text in the draft first, then click here to mark it.');
       return;
     }
-    openMarkModal();
+    openComposer();
   });
 
-  // ---- Modal submission ----
+  // ---- Composer submission ----
 
-  q('[data-modal-backdrop]').addEventListener('click', closeModal);
-  q('[data-action="cancel-comment"]').addEventListener('click', closeModal);
+  q('[data-action="cancel-comment"]').addEventListener('click', closeComposer);
   q('[data-action="submit-comment"]').addEventListener('click', submitComment);
+  // Cmd/Ctrl+Enter submits from anywhere inside the composer.
+  composer.addEventListener('keydown', (ev) => {
+    const e = ev as KeyboardEvent;
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      void submitComment();
+    }
+  });
 
-  function closeModal(): void { modal.hidden = true; pendingRange = null; }
+  function closeComposer(): void {
+    composer.hidden = true;
+    pendingRange = null;
+  }
 
   async function submitComment(): Promise<void> {
-    if (!pendingRange) { closeModal(); return; }
+    if (!pendingRange) { closeComposer(); return; }
     const text = textArea.value.trim();
     if (!text) { showToast('Comment text is required', true); return; }
     // Capture the selected text at comment time so later versions
@@ -398,7 +424,7 @@ export function initEditorialReview(): void {
       if (!res.ok) { showToast(`Annotate failed: ${body.error || res.status}`, true); return; }
       wrapRange(body.annotation.range, body.annotation.id);
       addSidebarItem(body.annotation, 'current');
-      closeModal();
+      closeComposer();
       showToast('Comment saved');
     } catch (e) {
       showToast(`Network error: ${(e as Error).message}`, true);
@@ -907,8 +933,9 @@ export function initEditorialReview(): void {
     if (typing) {
       if (ev.key === 'Escape') {
         target.blur();
-        // If the operator was typing inside the comment modal, also close it.
-        if (!modal.hidden) closeModal();
+        // If the operator was typing inside the margin-note composer,
+        // also dismiss it. Same gesture, same expectation.
+        if (!composer.hidden) closeComposer();
       }
       return;
     }
@@ -922,7 +949,7 @@ export function initEditorialReview(): void {
     }
     if (ev.key === 'Escape') {
       if (shortcutsOverlay && !shortcutsOverlay.hidden) { showShortcuts(false); return; }
-      if (!modal.hidden) { closeModal(); return; }
+      if (!composer.hidden) { closeComposer(); return; }
     }
     if (ev.key === 'e') { ev.preventDefault(); toggleBtn.click(); return; }
     if (ev.key === 'a') { ev.preventDefault(); approveBtn?.click(); return; }
