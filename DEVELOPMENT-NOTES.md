@@ -4,6 +4,59 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-23: Editorial Calendar — Phase 17e (iterate-loop helpers, disposition stamps, editor UX polish)
+
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar (branch `feature/studio-clearer-buttons`)
+
+**Goal:** Continue driving the evolution dispatch through iterate rounds. Whatever pipeline gaps surface, fix them in the pipeline rather than routing around them.
+
+**Accomplished:**
+
+- **Iterate-loop helpers (`pending.ts`, `finalize.ts`).** Built a proper pre-step helper (`pending.ts`) that replaces the ad-hoc tsx one-liners I had been rebuilding every iterate run — prints workflow state + pending comments, non-zero exits on no-workflow / wrong-state / nothing-to-iterate. SKILL.md rewritten so the helpers are step 1 and step 5; "do not hand-roll the pre/post logic" made explicit.
+- **Per-iteration disposition stamps.** New `AddressAnnotation` type (`addressed` | `deferred` | `wontfix`, optional `reason`). `finalize.ts --dispositions <path>` takes a JSON map keyed by comment id and writes one address annotation per entry. Sidebar stamps render ◆ addressed (amber) / ◇ deferred (graphite) / ✕ wontfix (red-pencil), keyed to the editorialcontrol `◆` tagline glyph so the marks feel native to the publication. `addressed` auto-resolves the comment via a paired `ResolveAnnotation`; `deferred` and `wontfix` stay in the live sidebar.
+- **Anchor-authoritative quote rendering.** Sidebar quote is now always sourced from the stored `annotation.anchor` (the captured selection text), not a slice of the current body at the comment's original range. Offsets drift with any edit; the anchor doesn't. Only legacy comments without an anchor fall back to range-slicing.
+- **`pending.ts` treats every unresolved comment as pending.** The earlier current-only filter silently dropped carried-forward concerns — the whole point of anchor rebasing is that prior-version comments that land on text still in the body are still the revision brief.
+- **Double-click-to-edit lands the cursor at the clicked word.** Captures a context-limited snippet from the rendered prose (single paragraph, word-boundary snapped) and passes it to `enterEdit`; the editor does `indexOf` on the source to position the cursor. Falls back to the raw clicked word if the full snippet is ambiguous (markdown syntax can break verbatim matches). Adds `EditorHandle.setCursor(pos)`.
+- **Markdown preview strips `## Outline` at render time.** Phase 17 split the outline into a stowable drawer for the editor but the preview was still rendering it inline whenever the caller passed the rejoined source. Fixed by pulling `splitOutline` into `schedulePreview` itself so every caller gets the same behavior and the preview matches the prod `/blog/<slug>/` render.
+- **Heading-anchored scroll sync in split view (editor → preview).** Editor scroll reads the topmost visible line, walks back to the last `## N` heading, finds the matching `<h2>` in the preview, scrolls it to the top (with an 8px nudge). Proportional sync rejected because editor length (frontmatter + outline + body) ≠ preview length (rendered body only). One-way for v1; a suppress flag guards against feedback loops if bi-directional sync gets added later.
+- **Evolution dispatch iterated v3 → v12.** Compressed frontmatter dek (770 chars → 2-sentence hook); retired "shifting subject matter" in the body in favor of concrete receipts (model releases, platform rules, image-generator failure modes); renamed §01 "trap" → "instinct"; inserted new §01 "The garden and the thicket" per operator's structural ask with downstream section renumbering; added "Drift is the default" as TL;DR item 1 echoing §01's willpower diagnosis.
+- **Intake:** `socratic-coding-agents` to editorialcontrol Ideas (placeholder title; description pins the pattern and the receipts source — session transcripts under `data/sessions/content/`).
+- **Two PRs merged to main:** #111 (editor polish, outline drawer, commentable frontmatter, disposition stamps) and #112 (iterate-loop fixes, dblclick cursor placement, intake, v9).
+
+**Didn't Work:**
+
+- First-cut cursor-placement heuristic passed a wide-context snippet (60 chars both sides, whitespace-snapped) to `indexOf`. Failed silently because the snippet spanned paragraph boundaries: rendered `\n` maps to `\n\n**` in markdown source, which breaks verbatim matches. Fix: clamp the snippet to stay within a single rendered paragraph.
+- First-cut disposition UX stamped `addressed` but left the comment in the live sidebar. Operator expected the addressed comment to clear from the stream (stamp + resolve, not stamp only). Added the paired `ResolveAnnotation` write inside `finalize.ts` for `addressed` dispositions specifically.
+
+**Course Corrections:**
+
+- [PROCESS] User: "why are you using one-off one-liners instead of helper scripts?" — exactly the recurring `feedback_skill_helper_scripts` memory. Led to `pending.ts`/`finalize.ts` and the SKILL.md rewrite that makes them step 1/5. Going forward the skill document itself forbids hand-rolling the pre/post logic.
+- [UX] User: "The selected text and the accompanying margin note don't agree (the selected text is correct)." Sidebar was slicing the current body with the comment's original range, which landed on completely different text after rebasing. Root fix: anchor is authoritative everywhere, not just for rebased/unresolved.
+- [UX] User: "If a margin note is unresolved, why would [we] declare that nothing is pending?" Pending was filtering current-version only. Fix: every unresolved comment is pending regardless of origin version.
+- [UX] User asked for an "addressed / deferred" stamp in the sidebar — previously I'd only ephemerally reported per-annotation status in chat. Built the full annotation type + finalize flag + UI stamp in one pass.
+- [UX] User: "the markdown preview pane in the markdown editor shows the outline section, a holdover from before we segregated the fenced outline section to a stowable review panel." Fixed; preview now matches prod render.
+- [UX] User asked for scroll sync between editor and preview pane. Proportional sync was the first instinct; heading-anchored sync was the correct move once the length mismatch was surfaced.
+
+**Quantitative:**
+
+- Messages: ~70
+- Commits: 11 feature commits this session (`1bcd65c` onward up to `d6b4878`, plus `a5aabe0` and merge commits)
+- PRs: #111 and #112 both opened + merged
+- Corrections: ~6 (1 [PROCESS], 5 [UX])
+- Dispatch iterations: v3 → v12 (9 new versions — v4, v5 by agent; v6-v8 by operator; v9-v12 by agent)
+- Files changed in feature area: `pending.ts` (new), `finalize.ts` (extended), `types.ts` (AddressAnnotation), `handlers.ts` (address case), `editorial-review-client.ts` (stamps + anchor priority + dblclick cursor + scroll sync + preview strip), `editorial-review-editor.ts` (setCursor), `editorial-review.css` (stamp styles), `SKILL.md` (dispositions workflow)
+
+**Insights:**
+
+- **Helper scripts pay back immediately.** Once `pending.ts` existed, every subsequent iterate turn was shorter, more consistent, and caught state-check bugs early. The first turn felt like overhead; the next six turns felt free.
+- **Anchor text > offsets.** For annotations that outlive the version they were created on, the captured anchor text is the authoritative locator. Offsets are a display locator for the current version only. The codebase partially honored this (the rebase mechanism stored anchor specifically to survive edits); the sidebar preview had drifted out of compliance. One rule everywhere is better than three rules gated on status.
+- **Addressed ≠ seen.** The agent stamping `addressed` is a claim that the revision handled the comment; the operator shouldn't have to click Resolve to make it stop following us. Auto-resolve on `addressed` made the loop close naturally. The reversible nature of resolves means operators can override if the agent's claim is wrong.
+- **Heading-anchored sync is the right shape for docs with structure.** Proportional sync breaks the moment editor and preview have different lengths — which is always the case when outline is stripped, when the editor's line heights differ from the preview's, or when code blocks render differently. Heading anchors are robust because they map structural landmarks directly.
+- **Press-check aesthetic discipline rewards itself.** The disposition glyphs (◆/◇/✕) chosen to echo the editorialcontrol tagline turned out to also read clearly as "filled = done, hollow = pending, crossed = killed." Design-coherent choices are usually semantically coherent too.
+
+---
+
 ## 2026-04-21: Editorial Calendar — Phase 17 shipped (content collections, prod gate, outline stage) + 17d UX follow-ons
 
 ### Feature: editorial-calendar

@@ -1029,3 +1029,31 @@ File-based routing can't conditionally skip pages, so the gate requires content 
 - Should the outline section be stripped from the article on publish, preserved as a commented-out block, or kept as an authored section? (Proposed: **preserve inline as-authored** for the first pass. Operators who want it gone can strip manually; we can add an auto-strip later if it becomes a pattern.)
 - Does the outline workflow need its own list view in the studio, or does the existing unified list with a contentKind pill cover it? (Proposed: **unified list with pill** — avoids multiplying surfaces. Revisit if outline reviews get lost.)
 - Should there be an `Outline Approved` explicit sub-stage, or is the Outlining → Drafting transition sufficient signal? (Proposed: **just Drafting** — the outline is approved when the workflow moves to Drafting; a separate "outline approved" stage would be redundant with the calendar stage transition.)
+
+### Phase 17e: Iterate-loop helpers, disposition stamps, editor UX polish
+
+**Deliverable:** Thirteen commits + two merged PRs (#111, #112) covering iterate-loop infrastructure, per-iteration disposition tracking, editor/preview UX refinements, and a full iteration run on the evolution dispatch (v3 → v12).
+
+**Motivation:** Driving the evolution dispatch through multiple iterate rounds surfaced systemic gaps that were worth fixing rather than routing around: operators had no durable signal of what the agent addressed vs. deferred; `pending.ts` silently dropped carried-forward comments; the sidebar's anchor preview pulled stale offset slices; the editor opened at position 0 ignoring where the operator was reading; the preview showed the outline scaffold that the drawer feature was supposed to hide; the preview didn't follow the editor in split view.
+
+- [x] `pending.ts` iterate pre-step helper — prints workflow state + pending comments; non-zero exit codes for no-workflow / wrong-state / nothing-to-iterate. Replaces ad-hoc tsx one-liners.
+- [x] `AddressAnnotation` type + `/api/dev/editorial-review/annotate` support — agent-written per-iteration dispositions (`addressed` | `deferred` | `wontfix`, optional `reason`).
+- [x] `finalize.ts --dispositions <path>` — accepts JSON map keyed by comment id; writes one address annotation per entry after appending the new version.
+- [x] Sidebar stamp UI: ◆ addressed (amber) / ◇ deferred (graphite) / ✕ wontfix (red-pencil), keyed to the editorialcontrol tagline glyph so the marks feel native.
+- [x] `addressed` disposition auto-resolves the comment via paired `ResolveAnnotation`. `deferred` and `wontfix` stay in the live sidebar — both "keep operator in the loop" states.
+- [x] `pending.ts` treats every unresolved comment as pending regardless of origin version. The earlier current-only filter silently dropped carried-forward concerns.
+- [x] Sidebar quote sourced from `annotation.anchor` (the captured selection text) rather than a slice of the current body at the comment's original range — offsets drift, anchor doesn't. Only legacy comments fall back to range-slicing.
+- [x] Double-click enters edit mode with the cursor at the clicked word. Captures a context-limited snippet (single paragraph, word-boundary snapped) and uses `indexOf` on the source; falls back to the raw clicked word if the full snippet doesn't uniquely match. Adds `EditorHandle.setCursor(pos)`.
+- [x] Markdown preview pane strips the `## Outline` section via `splitOutline` before rendering — matches the remark-strip-outline plugin used in the prod build, so preview and prod render agree.
+- [x] Heading-anchored scroll sync in split view (editor → preview). Finds the last `## N` heading at or above the editor's topmost visible line; scrolls the matching `<h2>` in the preview to the top. Proportional sync rejected because editor length ≠ preview length.
+- [x] Evolution dispatch iterated v3 → v12 across multiple operator feedback rounds: compressed frontmatter dek, retired "shifting subject matter" abstraction in favor of concrete receipts (model releases, platform rules, failure modes), renamed §01 trap → instinct, inserted new §01 "The garden and the thicket" per operator's structural ask with downstream section renumbering, added "Drift is the default" TL;DR item.
+- [x] Intake: `socratic-coding-agents` to editorialcontrol Ideas (placeholder title + description; refine at `/editorial-plan` time).
+
+**Acceptance criteria — 17e:**
+
+- [x] Every iterate run uses `pending.ts` / `finalize.ts` — no one-liner regressions in SKILL.md.
+- [x] Address annotations produce correct sidebar stamps for all three dispositions; `addressed` auto-resolves the comment.
+- [x] Double-click lands the CodeMirror cursor at the clicked word for prose-heavy sections; falls back to position 0 only when the snippet is ambiguous.
+- [x] Markdown preview pane never shows the outline section, even when the caller passes the rejoined source.
+- [x] Split-view preview follows editor scroll via heading anchors — verified against the evolution dispatch's six-section body.
+- [x] Both PRs (#111, #112) merge-cleanly to main.
