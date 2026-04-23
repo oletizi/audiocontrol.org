@@ -2,6 +2,8 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import rehypeStringify from 'rehype-stringify';
+// @ts-expect-error — JS module without a .d.ts; the plugin is plain mdast traversal.
+import remarkImageFigure from '../editorial/remark-image-figure.mjs';
 
 export interface ParsedDraft {
   frontmatter: Record<string, string>;
@@ -25,6 +27,12 @@ export function parseDraftFrontmatter(markdown: string): ParsedDraft {
 export async function renderMarkdownToHtml(markdown: string): Promise<string> {
   const result = await unified()
     .use(remarkParse)
+    // Mirror the public Astro pipeline: wrap standalone images in
+    // <figure><figcaption> so the review surface shows what the
+    // reader will see, captions and all. Outline-strip is NOT added
+    // here on purpose — the review surface needs the outline visible
+    // for annotate-and-iterate work.
+    .use(remarkImageFigure)
     .use(remarkRehype)
     .use(rehypeStringify)
     .process(markdown);

@@ -1,6 +1,6 @@
 ---
 title: "Your Content Workflow Is Already Obsolete. Your AI Agent Is the Replacement."
-description: "AI in content marketing is table stakes; most workflows using it aren't fast or flexible enough to keep up. A better option: stop treating AI as a feature bolted onto your workflow and start treating the agent as the workflow — so the workflow itself evolves, fast, without a vendor release cycle or a team meeting. Here's how and why I built an editorial calendar on top of a coding agent, Markdown files, and a weekend of work."
+description: "AI in content marketing is table stakes; most workflows using it aren't fast or flexible enough to keep up. A better option: stop treating AI as a feature bolted onto your workflow and start treating the agent as the workflow — so the workflow itself evolves, fast, without a vendor release cycle or a team meeting. Here's how and why I built an editorial calendar on top of a coding agent with Markdown files and a weekend of work."
 date: "April 2026"
 datePublished: "2026-04-18"
 dateModified: "2026-04-18"
@@ -58,7 +58,7 @@ The `.claude/skills/` convention is Claude Code-specific. Cursor has its own equ
 
 ## Flexibility as survival
 
-The clearest case for the agent-as-workflow model is the changes that had to happen *mid-operation*. Five representative moves from the first eight days of this project's history (first calendar commit: 2026-04-15), each of which would have required a SaaS vendor feature request or a homegrown-process rebellion:
+The clearest case for the agent-as-workflow model is the changes that had to happen *mid-operation*. Four representative moves from the first eight days of this project's history (first calendar commit: 2026-04-15), each of which would have required a SaaS vendor feature request or a homegrown-process rebellion:
 
 **Adding YouTube as a first-class content type.** A Reddit sync surfaced six recent shares of a YouTube demo video — not a blog post. The calendar had no place to track that. I asked the agent to make YouTube a first-class entry type alongside blog posts. It figured out what that meant and made it so: the schema shift, the parser update, the skill branches, the re-sync. I reviewed the diff, said yes, and the six previously-unattributable shares attached to the right entry. Time elapsed: an afternoon. I never opened the code.
 
@@ -67,8 +67,6 @@ The clearest case for the agent-as-workflow model is the changes that had to hap
 **Adding new subreddit topics as audience targeting sharpened.** `content-marketing` and `automation-workflow` didn't exist as tags on this project a week ago. Editing one JSON file added them, along with curated subreddit lists for each. The cross-posting skill picked them up on next run. Zero lines of product code.
 
 **Breaking out a sibling publication in an evening.** Around day four of this project, it became clear that the posts being drafted fell into two different registers — hardware service-manual work for musicians on one side, meta-commentary on using AI to build (and write about) that work on the other. They didn't belong on the same site. So editorialcontrol.org, the publication you're reading now, got spun up in a single evening: voice definition, design, a per-site content-collection split, new shared nav, the existing multi-site infrastructure already in place to absorb it. Nobody filed a product-expansion ticket. No roadmap consultation. The old site kept its register; this one got its own.
-
-**Adding image captions, click-to-view images, and pull quotes — while I was writing this post.** Drafting the section above, I realized the two screenshots I wanted to embed needed captions under them, a reader-friendly click-to-enlarge overlay, and that one sentence in §03 deserved pull-quote treatment. None of that existed on the blog. So I asked the agent to build the three pieces: a remark plugin that wraps standalone images in `<figure>` with a `<figcaption>` sourced from the alt text, a small vanilla-DOM lightbox module wired from the blog layout, and the CSS for both plus the pull-quote treatment a `>` blockquote now renders with. Time elapsed: one conversational round inside the same session. I didn't wait for a developer. I didn't — egads — build it myself. I asked for the shape I wanted, reviewed the diff, and kept writing. The figures you saw a few paragraphs ago and the pull quote a few paragraphs from now are the evidence.
 
 Then there's the case that isn't a bullet. A sibling system in the same repo — a feature-image pipeline — started generating branded AI images for posts. Wiring it into the editorial calendar took about as long as writing this sentence: one new field on the entry schema (`contentUrl`), a new skill family (`/feature-image-*`) that reads from and writes to the calendar, and done. Nobody filed a support ticket. Nobody waited for a release. The post you're reading right now will get its feature image through that pipeline in the next session, because there's nothing in the way of making that happen.
 
