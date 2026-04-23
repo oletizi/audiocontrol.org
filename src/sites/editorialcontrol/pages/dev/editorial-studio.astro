@@ -172,19 +172,26 @@ function workflowLink(w: DraftWorkflowItem): string {
 /**
  * Dev-preview URL for a scaffolded blog article. The studio is
  * served from editorialcontrol's dev server, so same-origin links
- * only work for editorialcontrol articles — audiocontrol has its
- * own dev server (auto-assigned port when both run in parallel),
- * which we can't reliably predict. Return null for cross-site
- * rows; the caller falls back to plain text.
+ * Routing by state:
+ *   - Published → the public website for that site (absolute URL).
+ *     Safe across sites; doesn't depend on a local dev server.
+ *   - Not published → the review surface on this dev server
+ *     (`/dev/editorial-review/<slug>?site=<site>`). The review page
+ *     reads the content-collection markdown directly from disk,
+ *     so it works regardless of whether the sibling site's dev
+ *     server is running.
  *
- * In dev, drafts render via the content-collection `[slug].astro`
- * route regardless of `state: draft | published` (17b filters only
- * in prod). So a drafted article is readable at its final URL
- * before approval.
+ * This replaces an earlier "link to /blog/<slug>/ on the dev server"
+ * strategy that 404'd whenever both sites ran simultaneously — both
+ * dev servers share `.astro/data-store.json` at the project root and
+ * their content syncs overwrite each other.
  */
-function blogPreviewLink(site: Site, slug: string): string | null {
-  if (site === 'editorialcontrol') return `/blog/${slug}/`;
-  return null;
+function blogPreviewLink(site: Site, slug: string, entry: CalendarEntry): string {
+  const isPublished = entry.stage === 'Published';
+  if (isPublished) {
+    return `https://${site}.org/blog/${slug}/`;
+  }
+  return `/dev/editorial-review/${slug}?site=${site}`;
 }
 
 // Short, mono site label shown on each row and card.
@@ -361,10 +368,11 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                             <a href={workflowLink(wf)} title="open the review surface">{entry.slug}</a>
                           ) : hasFile ? (
                             (() => {
-                              const preview = blogPreviewLink(site, entry.slug);
-                              return preview ? (
-                                <a href={preview} title="read the drafted article in dev">{entry.slug}</a>
-                              ) : entry.slug;
+                              const preview = blogPreviewLink(site, entry.slug, entry);
+                              const title = entry.stage === 'Published'
+                                ? 'read the published article'
+                                : 'open the review surface for this draft';
+                              return <a href={preview} title={title}>{entry.slug}</a>;
                             })()
                           ) : entry.slug}
                         </span>
