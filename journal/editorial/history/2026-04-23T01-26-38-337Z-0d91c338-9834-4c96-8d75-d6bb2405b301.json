@@ -1,0 +1,18 @@
+{
+  "id": "0d91c338-9834-4c96-8d75-d6bb2405b301",
+  "timestamp": "2026-04-23T01:26:38.337Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T01:26:38.337Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "commentId": "cf1aa0b2-3c37-4926-a0e1-85cc4fce64a3",
+      "version": 10,
+      "disposition": "addressed",
+      "reason": "Re-grounded the dek in a specific domain (AI content generators — DALL-E, Midjourney, Claude for copy) before the abstraction lands. Thesis → instinct → third-option shape preserved.",
+      "id": "0d91c338-9834-4c96-8d75-d6bb2405b301",
+      "createdAt": "2026-04-23T01:26:38.337Z"
+    }
+  }
+}

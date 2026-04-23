@@ -33,6 +33,7 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 15 | Review-UI fixes, dblclick-to-edit, manual, multi-site consolidation | Complete (PR #106) |
 | 16 | Pipeline drive-through: skill helpers, voice consultation, body-state gate, session archive | In Flight (unmerged commits) |
 | 17 | Content collections + draft prod gate + outline stage | Complete on branch (17a+b+c) + UX follow-ons (anchor-rebased margin notes, resolve/re-open, /dev navigation, walker-space offset fix, outline-aware body-state) |
+| 17e | Iterate-loop helpers + disposition stamps + editor UX polish | Complete (PRs #111, #112 merged; [PR #113](https://github.com/oletizi/audiocontrol.org/pull/113) open: preview outline-strip, scroll sync, evolution v10-v12) |
 
 ## Dependencies
 

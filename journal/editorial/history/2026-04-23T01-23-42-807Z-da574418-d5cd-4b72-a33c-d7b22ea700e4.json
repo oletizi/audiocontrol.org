@@ -1,0 +1,22 @@
+{
+  "id": "da574418-d5cd-4b72-a33c-d7b22ea700e4",
+  "timestamp": "2026-04-23T01:23:42.807Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T01:23:42.807Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "version": 9,
+      "range": {
+        "start": 1204,
+        "end": 1235
+      },
+      "text": "I don't think this should be the first section. I think the first section should be an overview of the general problem--that without some kind of guiding principle, AI-generated assets will drift away from brand fidelity and start looking like a thicket rather than a garden. There are many failure modes, and they all share one thing in common: enforcing a guiding principle by sheer willpower is exhausting--and prone to failure.",
+      "category": "other",
+      "anchor": "01 The champion-prompt instinct",
+      "id": "da574418-d5cd-4b72-a33c-d7b22ea700e4",
+      "createdAt": "2026-04-23T01:23:42.807Z"
+    }
+  }
+}
