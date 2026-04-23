@@ -75,7 +75,7 @@ Run any AI-assisted content workflow long enough without a guiding principle and
 
 The drift doesn't come from one big failure. It comes from many small ones, all sharing the same underlying condition: enforcing a guiding principle by sheer willpower is exhausting, and willpower is finite. Every session starts on an empty stomach. The operator either relitigates the decisions they already made last time (and gets them subtly different), or works off a document they have to remember to consult (and doesn't). Either way, the garden drifts.
 
-This is the problem the rest of this dispatch is trying to solve. The next section names the first shape the problem takes — the instinct that pops up the moment you notice the drift — and the failure modes that follow from it.
+I want to address the prompt cultivation problem using a positive feedback loop where many options fan out, and selection pressure that naturally cultivates a winning stable of prompts that reliably yield good results fit for purpose.
 
 ---
 
