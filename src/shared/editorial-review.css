@@ -198,6 +198,15 @@ body[data-review-ui="shortform"] {
   margin-left: auto;
 }
 
+/* Stage-level action button — sits at the right edge of the
+ * section title, a small nudge off the count. Currently used by
+ * the Ideas stage for the "intake new idea" copy-button. */
+.er-section-title .er-section-action {
+  margin-left: var(--er-space-2);
+  align-self: center;
+  font-variation-settings: normal;
+}
+
 .er-section + .er-section { margin-top: var(--er-space-5); }
 
 .er-section-rule {

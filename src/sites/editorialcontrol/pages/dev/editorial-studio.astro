@@ -273,6 +273,14 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                 <span>{stage}</span>
                 <span class="ornament">{STAGE_ORNAMENTS[stage]}</span>
                 <span class="count">№ {stageEntries.length}</span>
+                {stage === 'Ideas' && (
+                  <button
+                    class="er-btn er-btn-small er-copy-btn er-section-action"
+                    type="button"
+                    data-copy="/editorial-add"
+                    title="copy command — the skill prompts for site, title, description, content type"
+                  >intake new idea →</button>
+                )}
               </h2>
 
               {stageEntries.length === 0 ? (
