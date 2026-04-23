@@ -1,0 +1,22 @@
+{
+  "id": "753e8bce-a574-4852-be5d-e71c9e9bf4ad",
+  "timestamp": "2026-04-23T20:35:31.915Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T20:35:31.915Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "a2a43ac8-b031-4078-b8c8-2f0bba7ac581",
+      "version": 9,
+      "range": {
+        "start": 6246,
+        "end": 6269
+      },
+      "text": "The missing money shot is that I realized that, in addition to writing articles about my work with AI to build tools for musicians, I was also writing articles about the process of using AI to write articles--so, I had claude build an entirely new site (editorialcontrol.org) in an evening. We need to talk about this enormous flexibility win. And, when the article about how we developed editorialcontrol.org is live, we need to point to it here.",
+      "category": "other",
+      "anchor": "Flexibility as survival",
+      "id": "753e8bce-a574-4852-be5d-e71c9e9bf4ad",
+      "createdAt": "2026-04-23T20:35:31.915Z"
+    }
+  }
+}

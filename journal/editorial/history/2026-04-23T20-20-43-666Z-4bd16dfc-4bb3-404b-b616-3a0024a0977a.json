@@ -1,0 +1,22 @@
+{
+  "id": "4bd16dfc-4bb3-404b-b616-3a0024a0977a",
+  "timestamp": "2026-04-23T20:20:43.666Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T20:20:43.666Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "a2a43ac8-b031-4078-b8c8-2f0bba7ac581",
+      "version": 5,
+      "range": {
+        "start": 791,
+        "end": 902
+      },
+      "text": "This is a little clunky. Can this be a bit more elegant?",
+      "category": "other",
+      "anchor": "There are two common failure modes that I have personally lived through and, I also hope, on to the other side.",
+      "id": "4bd16dfc-4bb3-404b-b616-3a0024a0977a",
+      "createdAt": "2026-04-23T20:20:43.666Z"
+    }
+  }
+}

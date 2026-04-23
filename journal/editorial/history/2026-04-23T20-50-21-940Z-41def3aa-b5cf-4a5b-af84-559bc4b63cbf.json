@@ -1,0 +1,18 @@
+{
+  "id": "41def3aa-b5cf-4a5b-af84-559bc4b63cbf",
+  "timestamp": "2026-04-23T20:50:21.940Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T20:50:21.940Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "a2a43ac8-b031-4078-b8c8-2f0bba7ac581",
+      "commentId": "4bd16dfc-4bb3-404b-b616-3a0024a0977a",
+      "version": 12,
+      "disposition": "addressed",
+      "reason": "Elegance pass on the clunky 'I have personally lived through and, I also hope, on to the other side' — now 'I've lived through two common failure modes — and, I hope, out the other side of both.'",
+      "id": "41def3aa-b5cf-4a5b-af84-559bc4b63cbf",
+      "createdAt": "2026-04-23T20:50:21.940Z"
+    }
+  }
+}

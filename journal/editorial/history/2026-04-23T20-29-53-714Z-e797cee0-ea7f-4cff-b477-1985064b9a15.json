@@ -1,0 +1,22 @@
+{
+  "id": "e797cee0-ea7f-4cff-b477-1985064b9a15",
+  "timestamp": "2026-04-23T20:29:53.714Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T20:29:53.714Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "a2a43ac8-b031-4078-b8c8-2f0bba7ac581",
+      "version": 9,
+      "range": {
+        "start": 6401,
+        "end": 6421
+      },
+      "text": "Use the session transcripts to determine exactly how long we've been developing the editorial calendar.",
+      "category": "other",
+      "anchor": "the last three weeks",
+      "id": "e797cee0-ea7f-4cff-b477-1985064b9a15",
+      "createdAt": "2026-04-23T20:29:53.714Z"
+    }
+  }
+}

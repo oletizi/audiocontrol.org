@@ -1,0 +1,22 @@
+{
+  "id": "96d7f13f-a018-472b-b087-4a01dfb37ab5",
+  "timestamp": "2026-04-23T20:44:09.906Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T20:44:09.906Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "a2a43ac8-b031-4078-b8c8-2f0bba7ac581",
+      "version": 10,
+      "range": {
+        "start": 10617,
+        "end": 10705
+      },
+      "text": "This point needs to go in the dek.",
+      "category": "other",
+      "anchor": "the workflow itself is evolving, fast, without a vendor release cycle or a team meeting.",
+      "id": "96d7f13f-a018-472b-b087-4a01dfb37ab5",
+      "createdAt": "2026-04-23T20:44:09.906Z"
+    }
+  }
+}

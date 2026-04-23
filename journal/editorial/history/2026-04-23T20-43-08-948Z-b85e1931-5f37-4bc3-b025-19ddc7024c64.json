@@ -1,0 +1,22 @@
+{
+  "id": "b85e1931-5f37-4bc3-b025-19ddc7024c64",
+  "timestamp": "2026-04-23T20:43:08.948Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T20:43:08.948Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "a2a43ac8-b031-4078-b8c8-2f0bba7ac581",
+      "version": 10,
+      "range": {
+        "start": 9389,
+        "end": 9718
+      },
+      "text": "Let's talk about concrete numbers when we have more content out the door. We don't have anything to brag about yet. Our tooling is just starting to yield fruit.",
+      "category": "other",
+      "anchor": "Concrete numbers: between January 2025 and March 2026, this site shipped three posts. In the first eighteen days of April 2026, once the agent had accumulated enough skills to move content through without hand-cropping, hand-tracking, or hand-linking, it shipped seven. Same author. Same subject matter. Different friction floor.",
+      "id": "b85e1931-5f37-4bc3-b025-19ddc7024c64",
+      "createdAt": "2026-04-23T20:43:08.948Z"
+    }
+  }
+}

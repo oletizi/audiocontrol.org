@@ -1,0 +1,22 @@
+{
+  "id": "d1b517d6-c9a6-4833-9523-1741b877af2d",
+  "timestamp": "2026-04-23T20:44:55.446Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T20:44:55.446Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "a2a43ac8-b031-4078-b8c8-2f0bba7ac581",
+      "version": 10,
+      "range": {
+        "start": 10909,
+        "end": 11041
+      },
+      "text": "Let's make this a pull quote",
+      "category": "other",
+      "anchor": "Friction is the thing the agent model is actually attacking, and it's the one measure neither vendor pricing nor headcount captures.",
+      "id": "d1b517d6-c9a6-4833-9523-1741b877af2d",
+      "createdAt": "2026-04-23T20:44:55.446Z"
+    }
+  }
+}
