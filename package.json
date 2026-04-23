@@ -3,9 +3,9 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev --config astro.audiocontrol.config.mjs",
-    "dev:audiocontrol": "astro dev --config astro.audiocontrol.config.mjs",
-    "dev:editorialcontrol": "astro dev --config astro.editorialcontrol.config.mjs",
+    "dev": "astro dev --host --config astro.audiocontrol.config.mjs",
+    "dev:audiocontrol": "astro dev --host --config astro.audiocontrol.config.mjs",
+    "dev:editorialcontrol": "astro dev --host --config astro.editorialcontrol.config.mjs",
     "build": "npm run build:audiocontrol && npm run build:editorialcontrol",
     "build:audiocontrol": "npm run generate-og && astro build --config astro.audiocontrol.config.mjs",
     "build:editorialcontrol": "astro build --config astro.editorialcontrol.config.mjs",

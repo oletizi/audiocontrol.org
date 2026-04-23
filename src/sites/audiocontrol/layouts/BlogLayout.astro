@@ -1,6 +1,7 @@
 ---
 import Layout from './Layout.astro';
 import '../styles/prose.css';
+import '../../../shared/blog-figure.css';
 
 interface Heading {
   depth: number;
@@ -197,6 +198,9 @@ const tocHeadings = headings.filter((h) => h.depth === 2);
 </style>
 
 <script>
+  import { initLightbox } from '../../../shared/lightbox.ts';
+  initLightbox();
+
   const tocLinks = document.querySelectorAll('.toc-link');
   const headings = document.querySelectorAll('.blog-article h2');
 

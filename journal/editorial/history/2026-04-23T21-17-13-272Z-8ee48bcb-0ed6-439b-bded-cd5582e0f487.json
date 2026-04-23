@@ -1,0 +1,18 @@
+{
+  "id": "8ee48bcb-0ed6-439b-bded-cd5582e0f487",
+  "timestamp": "2026-04-23T21:17:13.272Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T21:17:13.272Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "a2a43ac8-b031-4078-b8c8-2f0bba7ac581",
+      "commentId": "1386fbfa-98d1-4732-a101-a04a8a9600c0",
+      "version": 19,
+      "disposition": "addressed",
+      "reason": "Moved the friction pull quote above the fold — now sits between the third-option paragraph and the 'This post is about…' transition, where it reads as thesis compression before the body starts. §04's original placement is replaced with a short 'as noted up top' callback so the friction argument still closes that section without re-quoting.",
+      "id": "8ee48bcb-0ed6-439b-bded-cd5582e0f487",
+      "createdAt": "2026-04-23T21:17:13.272Z"
+    }
+  }
+}

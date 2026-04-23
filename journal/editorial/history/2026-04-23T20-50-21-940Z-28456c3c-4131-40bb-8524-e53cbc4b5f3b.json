@@ -1,0 +1,18 @@
+{
+  "id": "28456c3c-4131-40bb-8524-e53cbc4b5f3b",
+  "timestamp": "2026-04-23T20:50:21.940Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T20:50:21.940Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "a2a43ac8-b031-4078-b8c8-2f0bba7ac581",
+      "commentId": "3b9675a1-b627-434a-b393-6bd0bb59808b",
+      "version": 12,
+      "disposition": "addressed",
+      "reason": "Simplified the YouTube content-type paragraph — dropped the schema/parser/skill-branch implementation details, kept the operator-facing shape: 'I asked, it figured out what that meant, I reviewed the diff, I never opened the code.'",
+      "id": "28456c3c-4131-40bb-8524-e53cbc4b5f3b",
+      "createdAt": "2026-04-23T20:50:21.940Z"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3b9675a1-b627-434a-b393-6bd0bb59808b",
+  "timestamp": "2026-04-23T20:32:06.632Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T20:32:06.632Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "a2a43ac8-b031-4078-b8c8-2f0bba7ac581",
+      "version": 9,
+      "range": {
+        "start": 6741,
+        "end": 7050
+      },
+      "text": "This is too technical for the audience. The important part is that the agent figured out how to integrate a new thing into the workflow without me having to think about exactly how it works under the hood. I just asked the agent to build me the thing and gave it a thumbs up when it actually met my needs. And, it did it in less than an hour.",
+      "category": "other",
+      "anchor": "The agent extended the entry schema with contentType: 'youtube', taught the parser to emit an optional Type column when any entry used it, updated three skills to branch on the new type, and re-ran the sync. Time elapsed: an afternoon. The six previously-unattributable shares now attached to the right entry.",
+      "id": "3b9675a1-b627-434a-b393-6bd0bb59808b",
+      "createdAt": "2026-04-23T20:32:06.632Z"
+    }
+  }
+}

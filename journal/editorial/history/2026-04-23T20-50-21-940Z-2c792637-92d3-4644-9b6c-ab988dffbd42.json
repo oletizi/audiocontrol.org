@@ -1,0 +1,18 @@
+{
+  "id": "2c792637-92d3-4644-9b6c-ab988dffbd42",
+  "timestamp": "2026-04-23T20:50:21.940Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T20:50:21.940Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "a2a43ac8-b031-4078-b8c8-2f0bba7ac581",
+      "commentId": "753e8bce-a574-4852-be5d-e71c9e9bf4ad",
+      "version": 12,
+      "disposition": "addressed",
+      "reason": "New §02 flexibility bullet 'Breaking out a sibling publication in an evening' — names the two-register realization that drove splitting editorialcontrol off from audiocontrol, single-evening build, no ticket / no roadmap.",
+      "id": "2c792637-92d3-4644-9b6c-ab988dffbd42",
+      "createdAt": "2026-04-23T20:50:21.940Z"
+    }
+  }
+}

@@ -11,7 +11,9 @@
 
 ## Planned
 
-*No entries.*
+| Slug | Title | Description | Keywords | Topics | Source |
+|------|------|------|------|------|------|
+| midi-to-mcu-macro-bridge | MIDI Song Position to MCU: Teaching a 1987 Roland MC-500 to Drive Logic Pro | A module inside audiocontrol that translates MIDI song position pointer + start/stop/continue from vintage sequencers (Roland MC-500 and similar) into MCU (Mackie Control Universal) transport messages for DAW hosts. Worked example: driving Logic Pro's timeline from the MC-500's transport. Covers the MCU protocol message shapes (play/stop/FF/rewind + timeline scrub), the SPP-to-timecode conversion, and the macOS CoreMIDI virtual-port plumbing. Pairs with the reverse-engineering post set — same methodology (service manual + working hardware + small focused software module). | MIDI Song Position Pointer, SPP to MCU, Mackie Control Universal, Roland MC-500, MC-500 DAW transport, MIDI transport bridge, Logic Pro MCU controller, vintage sequencer DAW integration, MIDI to MCU converter, SPP start stop continue, MCU protocol reverse engineering, hardware sequencer as DAW controller, CoreMIDI virtual port, audiocontrol MIDI tooling | roland, vintage-hardware, home-studio, reverse-engineering, programming | manual |
 
 ## Drafting
 

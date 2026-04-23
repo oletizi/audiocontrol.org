@@ -1057,3 +1057,31 @@ File-based routing can't conditionally skip pages, so the gate requires content 
 - [x] Markdown preview pane never shows the outline section, even when the caller passes the rejoined source.
 - [x] Split-view preview follows editor scroll via heading anchors — verified against the evolution dispatch's six-section body.
 - [x] Both PRs (#111, #112) merge-cleanly to main.
+
+### Phase 17f: Studio intake flow + blog figures/lightbox + first editorial-control dispatch ships
+
+**Deliverable:** Same-day continuation of 17e. PR #113 merged (preview outline-strip, scroll sync, evolution v10–v12). Shipped: studio intake form, clipboard fallback for LAN browsers, signature-based polling (no more flicker), blog figure/caption + lightbox + pull-quote support, midi-to-mcu idea intake on audiocontrol, `building-the-editorial-calendar-feature` article carried from v3 through v19 and approved for publication.
+
+**Motivation:** Further pipeline drive-through of the editorial calendar surfaced gaps every time the operator tried to do real work on it. Each gap was small, localized, and cheaper to fix in-place than to defer. In parallel, iterating the meta-article on the editorial calendar itself exercised the entire toolchain end-to-end and produced a worked example inside the post.
+
+- [x] Dev servers bind to all interfaces via `--host` so LAN access works (`http://orion-m4:4321/`).
+- [x] Studio 'intake new idea →' button in the Ideas section header — copies `/editorial-add` to clipboard as a pure hand-off (phase 1).
+- [x] `execCommand('copy')` fallback when the async Clipboard API is blocked on insecure contexts (LAN browser → dev HTTP server).
+- [x] Inline intake sheet under the Ideas header (phase 2) — site / title / description / content type / optional content URL; assembles a self-contained natural-language prompt that instructs the agent to run `/editorial-add` non-interactively.
+- [x] Polling reload skips when any input/textarea/select has focus OR the intake form is open — no more nuked in-progress input.
+- [x] Signature-based polling — new dev-only `/api/dev/editorial-studio/state-signature` endpoint returns a 16-char hash compounded from calendar-file mtimes, workflow pipeline/history directories, and per-site content directories. Reload only fires when the hash changes, so the flicker only appears when underlying data actually moves.
+- [x] Intake for `midi-to-mcu-macro-bridge` on audiocontrol via the new intake flow (first use of the new form end-to-end); planned into Planned stage with voice-skill-informed title + dek + 14 keywords + 5 topics.
+- [x] Blog figure support — new `remark-image-figure.mjs` wraps standalone `![alt](src)` in `<figure><figcaption>`. Registered in both public Astro pipelines AND the editorial-review unified render pipeline so captions show in both the production blog and the review surface.
+- [x] Lightbox overlay — new `src/shared/lightbox.ts` + `src/shared/blog-figure.css`. Click `figure.blog-figure img` → overlay with backdrop-blur, close on backdrop/button/Esc. Wired from both BlogLayouts.
+- [x] Pull-quote support — markdown `>` blockquotes already render; used inline in `building-the-editorial-calendar-feature` and moved above the fold per operator direction.
+- [x] `building-the-editorial-calendar-feature` iterated v3 → v19 across multiple operator comment rounds: grounded the dek with vendor-release-cycle / team-meeting contrast, replaced bragging numbers with a structural claim, added a dispatch-era §02 bullet on the editorial-control sibling breakout, new §02 bullet on figures-as-just-in-time-UX, pull quote moved above the fold. Approved at v19 and applied (no git operation — operator commits manually).
+
+**Acceptance criteria — 17f:**
+
+- [x] PR #113 merges cleanly to main.
+- [x] Studio intake flow produces a paste-ready prompt that runs `/editorial-add` end-to-end without operator re-prompts.
+- [x] Signature polling replaces the blind 10-second reload — verified via mtime bump on a calendar file flipping the hash.
+- [x] Blog figures render with captions on both the public `/blog/<slug>/` render AND the review surface.
+- [x] Lightbox opens on figure click, closes on backdrop / button / Esc.
+- [x] `building-the-editorial-calendar-feature` moves from in-review → approved → applied; disk matches the approved content by SSOT invariant.
+- [x] Code review (feature-review) passes with zero blockers. Three warnings noted (polling visibility guard, lightbox keydown listener re-registration, focus trap); five info items; all tracked for follow-up.

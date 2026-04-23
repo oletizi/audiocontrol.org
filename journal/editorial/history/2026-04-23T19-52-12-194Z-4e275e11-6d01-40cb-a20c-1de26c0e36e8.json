@@ -1,0 +1,22 @@
+{
+  "id": "4e275e11-6d01-40cb-a20c-1de26c0e36e8",
+  "timestamp": "2026-04-23T19:52:12.194Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T19:52:12.194Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "version": 12,
+      "range": {
+        "start": 4610,
+        "end": 4671
+      },
+      "text": "There's more than three option",
+      "category": "other",
+      "anchor": "There's a third option that didn't exist eighteen months ago.",
+      "id": "4e275e11-6d01-40cb-a20c-1de26c0e36e8",
+      "createdAt": "2026-04-23T19:52:12.194Z"
+    }
+  }
+}

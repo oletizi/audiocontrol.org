@@ -6,6 +6,7 @@ import netlify from '@astrojs/netlify';
 import sitemap from '@astrojs/sitemap';
 
 import remarkStripOutline from './scripts/lib/editorial/remark-strip-outline.mjs';
+import remarkImageFigure from './scripts/lib/editorial/remark-image-figure.mjs';
 
 // Last modified dates for sitemap
 const lastModified = {
@@ -54,7 +55,7 @@ export default defineConfig({
   // and stays unaffected; the outline stays visible where it's used
   // for annotate-and-iterate work, and disappears from /blog/<slug>/.
   markdown: {
-    remarkPlugins: [remarkStripOutline],
+    remarkPlugins: [remarkStripOutline, remarkImageFigure],
   },
   vite: {
     server: {

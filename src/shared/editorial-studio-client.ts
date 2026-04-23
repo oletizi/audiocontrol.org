@@ -34,13 +34,47 @@ function showToast(msg: string, isError = false): void {
   setTimeout(() => { toastEl.hidden = true; }, 4000);
 }
 
+/**
+ * Copy text across both secure and insecure contexts. The async
+ * Clipboard API (navigator.clipboard.writeText) is gated on a
+ * secure context — HTTPS or localhost. Dev access from another
+ * machine on the LAN (http://orion-m4:4321/, etc.) isn't secure
+ * in the browser's eyes, so the API throws. Fall back to the
+ * legacy execCommand('copy') path on a hidden textarea, which
+ * works in plain HTTP.
+ */
+async function copyTextToClipboard(text: string): Promise<void> {
+  if (typeof navigator !== 'undefined' && navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  // Keep it off-screen but still focusable; some browsers skip
+  // copy if the element isn't in the layout tree.
+  ta.style.position = 'fixed';
+  ta.style.top = '-1000px';
+  ta.style.left = '-1000px';
+  ta.setAttribute('readonly', '');
+  document.body.appendChild(ta);
+  ta.select();
+  ta.setSelectionRange(0, text.length);
+  let ok = false;
+  try {
+    ok = document.execCommand('copy');
+  } finally {
+    document.body.removeChild(ta);
+  }
+  if (!ok) throw new Error('execCommand copy returned false');
+}
+
 function initCopyButtons(): void {
   document.querySelectorAll<HTMLButtonElement>('.er-copy-btn').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const text = btn.dataset.copy ?? '';
       if (!text) return;
       try {
-        await navigator.clipboard.writeText(text);
+        await copyTextToClipboard(text);
         const original = btn.textContent;
         btn.classList.add('copied');
         btn.textContent = 'copied ✓';
@@ -271,23 +305,151 @@ function initKeyboardShortcuts(): void {
   });
 }
 
+/**
+ * Poll the state-signature endpoint and reload only when the
+ * signature changes. Replaces the old blunt 10-second reload that
+ * caused a visible flicker even when nothing had moved on the
+ * backend. The server endpoint compounds mtimes of calendar files,
+ * workflow pipeline/history directories, and per-site content
+ * directories into a short hash — any real change advances it;
+ * idle time doesn't.
+ *
+ * Guards preserved from the prior polling:
+ *   - search query active → skip (don't blow away the operator's
+ *     filter)
+ *   - intake form open → skip (don't nuke in-progress input)
+ *   - a text field has focus → skip (same reason)
+ *
+ * If the endpoint is unreachable (dev server restart, network
+ * glitch), we silently retry on the next tick rather than falling
+ * back to a blind reload.
+ */
 function initPolling(): void {
   const searchInput = document.querySelector<HTMLInputElement>('[data-filter-input]');
-  let lastInteraction = Date.now();
-  for (const evName of ['input', 'focus', 'keydown', 'mousedown'] as const) {
-    document.addEventListener(
-      evName,
-      () => { lastInteraction = Date.now(); },
-      { passive: true, capture: true },
-    );
+  let baseline: string | null = null;
+
+  async function fetchSignature(): Promise<string | null> {
+    try {
+      const res = await fetch('/api/dev/editorial-studio/state-signature', { cache: 'no-store' });
+      if (!res.ok) return null;
+      const body = (await res.json()) as { signature?: string };
+      return typeof body.signature === 'string' ? body.signature : null;
+    } catch {
+      return null;
+    }
   }
-  setInterval(() => {
-    if (Date.now() - lastInteraction < 4000) return;
+
+  // Establish the baseline on page load so the first real change
+  // triggers the reload (not whatever state happened to be on disk
+  // at render time).
+  void fetchSignature().then((sig) => { baseline = sig; });
+
+  setInterval(async () => {
     if (searchInput && searchInput.value.trim().length > 0) return;
+    const intakeForm = document.querySelector<HTMLElement>('[data-intake-form]');
+    if (intakeForm && !intakeForm.hidden) return;
+    const active = document.activeElement;
+    if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active instanceof HTMLSelectElement) return;
+
+    const current = await fetchSignature();
+    if (!current) return; // transient failure — try again next tick
+    if (baseline === null) { baseline = current; return; }
+    if (current === baseline) return; // nothing moved
+
     const pollIndicator = document.querySelector<HTMLElement>('[data-poll]');
     if (pollIndicator) pollIndicator.classList.add('polling');
     window.location.reload();
   }, 10000);
+}
+
+/**
+ * Intake sheet — click the "intake new idea" button in the Ideas
+ * section header, fill in the form, and the copy button produces a
+ * self-contained prompt the agent can run without a second pass of
+ * interactive prompts. The prompt reads like natural English so it
+ * survives being pasted verbatim into Claude Code.
+ */
+function initIntakeForm(): void {
+  const toggleBtn = document.querySelector<HTMLButtonElement>('[data-action="intake-toggle"]');
+  const form = document.querySelector<HTMLElement>('[data-intake-form]');
+  if (!toggleBtn || !form) return;
+
+  const field = <T extends HTMLElement = HTMLInputElement>(name: string): T | null =>
+    form.querySelector<T>(`[data-intake-field="${name}"]`);
+  const contentTypeSel = field<HTMLSelectElement>('contentType');
+  const contentUrlRow = form.querySelector<HTMLElement>('[data-intake-content-url]');
+
+  function syncContentUrlVisibility(): void {
+    if (!contentTypeSel || !contentUrlRow) return;
+    const kind = contentTypeSel.value;
+    contentUrlRow.hidden = kind === 'blog';
+  }
+  contentTypeSel?.addEventListener('change', syncContentUrlVisibility);
+  syncContentUrlVisibility();
+
+  function open(): void {
+    form.hidden = false;
+    toggleBtn.setAttribute('aria-expanded', 'true');
+    const title = field<HTMLInputElement>('title');
+    title?.focus();
+  }
+  function close(): void {
+    form.hidden = true;
+    toggleBtn.setAttribute('aria-expanded', 'false');
+  }
+  toggleBtn.addEventListener('click', () => {
+    if (form.hidden) open(); else close();
+  });
+
+  form.querySelector('[data-action="intake-cancel"]')?.addEventListener('click', () => close());
+
+  form.querySelector('[data-action="intake-copy"]')?.addEventListener('click', async () => {
+    const site = field<HTMLSelectElement>('site')?.value.trim() || '';
+    const title = field<HTMLInputElement>('title')?.value.trim() || '';
+    const description = field<HTMLTextAreaElement>('description')?.value.trim() || '';
+    const contentType = field<HTMLSelectElement>('contentType')?.value.trim() || 'blog';
+    const contentUrl = field<HTMLInputElement>('contentUrl')?.value.trim() || '';
+    if (!site || !title) {
+      showToast('Site and title are required', true);
+      return;
+    }
+    const lines = [
+      `Run /editorial-add --site ${site} to intake a new idea using these pre-filled values. Do NOT interactively re-prompt for any field below — use them verbatim.`,
+      '',
+      `- Site: ${site}`,
+      `- Title: ${title}`,
+      ...(description ? [`- Description: ${description}`] : [`- Description: (none — leave empty)`]),
+      `- Content type: ${contentType}`,
+      ...(contentType !== 'blog' && contentUrl ? [`- Content URL: ${contentUrl}`] : []),
+      ...(contentType !== 'blog' && !contentUrl ? [`- Content URL: (not yet published — skip; /editorial-publish will refuse until it's set)`] : []),
+    ];
+    const payload = lines.join('\n');
+    try {
+      await copyTextToClipboard(payload);
+      const btn = form.querySelector<HTMLButtonElement>('[data-action="intake-copy"]');
+      if (btn) {
+        const original = btn.textContent;
+        btn.classList.add('copied');
+        btn.textContent = 'copied ✓';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.textContent = original;
+          close();
+        }, 900);
+      }
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      showToast(`Clipboard unavailable (${message}) — copy manually: ${payload}`, true);
+    }
+  });
+
+  // Cmd/Ctrl-Enter from anywhere in the form triggers copy.
+  form.addEventListener('keydown', (ev) => {
+    if ((ev.metaKey || ev.ctrlKey) && ev.key === 'Enter') {
+      ev.preventDefault();
+      form.querySelector<HTMLButtonElement>('[data-action="intake-copy"]')?.click();
+    }
+  });
 }
 
 function init(): void {
@@ -298,6 +460,7 @@ function init(): void {
   initFilter();
   initKeyboardShortcuts();
   initPolling();
+  initIntakeForm();
 }
 
 init();

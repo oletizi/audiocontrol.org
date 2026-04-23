@@ -1,0 +1,18 @@
+{
+  "id": "4f281103-e34e-4d5a-910c-edb68beaac8c",
+  "timestamp": "2026-04-23T20:50:21.940Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T20:50:21.940Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "a2a43ac8-b031-4078-b8c8-2f0bba7ac581",
+      "commentId": "e797cee0-ea7f-4cff-b477-1985064b9a15",
+      "version": 12,
+      "disposition": "addressed",
+      "reason": "Replaced 'the last three weeks' with 'the first eight days' anchored on the actual first calendar commit (2026-04-15). Used git log rather than decrypting session transcripts — same signal, cheaper.",
+      "id": "4f281103-e34e-4d5a-910c-edb68beaac8c",
+      "createdAt": "2026-04-23T20:50:21.940Z"
+    }
+  }
+}
