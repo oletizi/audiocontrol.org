@@ -28,6 +28,14 @@ interface OverlayConfig {
   backgroundBuffer: Buffer;
   /** Target output format */
   format: OutputFormat;
+  /**
+   * Target site whose brand mark goes in the lower-left corner.
+   * `'audiocontrol'` uses that site's favicon; `'editorialcontrol'`
+   * uses its own. Previously hardcoded to audiocontrol for every
+   * composite, which produced the wrong logo on editorialcontrol
+   * feature images.
+   */
+  site: 'audiocontrol' | 'editorialcontrol';
 }
 
 interface FontData {
@@ -56,8 +64,8 @@ async function loadFonts(): Promise<FontData> {
   return cachedFonts;
 }
 
-async function loadLogoDataUri(): Promise<string> {
-  const svgPath = join(rootDir, 'src/sites/audiocontrol/public/favicon.svg');
+async function loadLogoDataUri(site: OverlayConfig['site']): Promise<string> {
+  const svgPath = join(rootDir, `src/sites/${site}/public/favicon.svg`);
   const pngBuffer = await sharp(svgPath)
     .resize(32, 32)
     .png()
@@ -65,7 +73,11 @@ async function loadLogoDataUri(): Promise<string> {
   return `data:image/png;base64,${pngBuffer.toString('base64')}`;
 }
 
-let cachedLogoUri: string | null = null;
+// Per-site cache: before Phase 17g this was a single string, which
+// meant the first site's logo bled into every subsequent site's
+// composite (first call wins forever). Keyed by site so each brand
+// mark is loaded once and never confused with the other's.
+const cachedLogoUri: Partial<Record<OverlayConfig['site'], string>> = {};
 
 /**
  * Compute font size that fits within maxWidth, given a character count.
@@ -97,9 +109,10 @@ async function renderOverlay(config: OverlayConfig): Promise<Buffer> {
   const { width, height } = format;
 
   const fonts = await loadFonts();
-  if (!cachedLogoUri) {
-    cachedLogoUri = await loadLogoDataUri();
+  if (!cachedLogoUri[config.site]) {
+    cachedLogoUri[config.site] = await loadLogoDataUri(config.site);
   }
+  const logoUri = cachedLogoUri[config.site]!;
 
   const panelPadding = Math.round(width * 0.05);
   const maxTextWidth = width - panelPadding * 2;
@@ -180,7 +193,7 @@ async function renderOverlay(config: OverlayConfig): Promise<Buffer> {
                       {
                         type: 'img',
                         props: {
-                          src: cachedLogoUri,
+                          src: logoUri,
                           width: logoSize,
                           height: logoSize,
                           style: {

@@ -1,6 +1,8 @@
 ---
 export const prerender = false;
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import OGPreview, {
   type PresetName,
   type FilterState,
@@ -78,6 +80,20 @@ if (!bgSrc) {
 
 const effectiveSite: Site = inheritedSite ?? site;
 
+// The bake page is served by audiocontrol's dev server (the gallery's
+// host). A bare `/favicon.svg` therefore always resolves to
+// audiocontrol's mark even when the target brand is editorialcontrol.
+// Read the target site's favicon from disk and inline it as a data
+// URI so the logo always matches the effective site, independent of
+// which dev server is serving this page.
+const faviconPath = join(
+  process.cwd(),
+  'src', 'sites', effectiveSite, 'public', 'favicon.svg',
+);
+const faviconSvg = readFileSync(faviconPath, 'utf-8');
+const effectiveLogoSrc =
+  'data:image/svg+xml;utf8,' + encodeURIComponent(faviconSvg);
+
 // Each site needs its self-hosted fonts plus a Google-Fonts fallback for any
 // display face the preview wants that isn't shipped locally (Fraunces for
 // editorialcontrol). Local fonts live under /fonts on their own site; for
@@ -129,6 +145,7 @@ const fontHead = effectiveSite === 'editorialcontrol'
     overlayPosition={overlayPosition}
     overlayAlign={overlayAlign}
     site={effectiveSite}
+    logoSrc={effectiveLogoSrc}
     width={w}
     height={h}
   />
