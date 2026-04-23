@@ -4,6 +4,62 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-23 (afternoon): Editorial Calendar — Phase 17f (studio intake flow, blog figures + lightbox, meta-article shipped)
+
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar (branch `feature/studio-clearer-buttons`)
+
+**Goal:** Continue driving the pipeline and the meta-article on the pipeline. Fix whatever gaps the operator ran into. Approve and apply the building-the-editorial-calendar-feature dispatch so the publication's second article is ready to ship.
+
+**Accomplished:**
+
+- **Dev server accessible on LAN.** Added `--host` to the three `dev*` scripts in `package.json` so `http://orion-m4:4321/` (and similar) work from other machines. Astro's default bind-to-localhost was blocking cross-machine review of the press-check desk.
+- **Studio intake flow.** Started as a stage-header button that copies `/editorial-add` to the clipboard (hand-off only). Immediately revealed a clipboard-blocked-on-insecure-HTTP problem for LAN access — added an `execCommand('copy')` fallback on a hidden textarea. Then upgraded the button to an inline intake form: site / title / description / content type / optional content URL, all captured at once, emitting a natural-language prompt that instructs the agent to run `/editorial-add` non-interactively with the pre-filled values. The first real use produced `midi-to-mcu-macro-bridge` on audiocontrol.
+- **Polling: no more flicker, no more lost input.** Two problems surfaced on the blunt 10s-reload polling loop. First, the form disappeared mid-fill because the reload nuked it — added focus-on-any-input and intake-form-open skip conditions. Second, the reload caused visible flicker even when nothing had changed — replaced with a dev-only `/api/dev/editorial-studio/state-signature` endpoint that returns a SHA256 hash compounded over calendar-file mtimes, workflow pipeline/history directory signatures, and per-site content directory signatures. Client polls the signature; reload only fires when the hash changes. Verified end-to-end: stable across identical polls, shifts after a `touch` on a calendar file.
+- **Blog figure support.** New `remark-image-figure.mjs` remark plugin: finds standalone `![alt](src)` paragraphs and rewrites them as `<figure class="blog-figure"><img/><figcaption class="blog-figcaption">` with the alt text as caption. Registered in both public Astro pipelines AND the editorial-review unified pipeline (the latter gap surfaced immediately: operator couldn't see captions in the review surface because the review renderer uses its own unified pipeline in `scripts/lib/editorial-review/render.ts`). Inline images inside prose paragraphs are left alone.
+- **Lightbox overlay.** New `src/shared/lightbox.ts` + `src/shared/blog-figure.css`. Click any `figure.blog-figure img` → full-viewport overlay with dim-and-blur backdrop, image sized to viewport, close on backdrop / button / Esc. ARIA dialog. Imported from both BlogLayouts. Figures also get a `cursor: zoom-in` affordance so the interaction is discoverable without a visible hint.
+- **Pull quote above the fold.** Markdown `>` blockquotes already render as blockquotes; operator pulled "Friction is the thing the agent model is actually attacking…" out of §04 and asked for it above the fold. Moved it between the third-option paragraph and the "This post is about…" transition, where it compresses the thesis before the body starts. §04 got a short "as noted up top" callback so the friction argument still closes that section.
+- **`building-the-editorial-calendar-feature` carried to approval.** Nine carried-forward comments addressed in v12 (dek re-grounded, §01 section renamed, §02 'garden and thicket' inserted with downstream renumbering, §00 TL;DR item 1 added, structural claim replaced the bragging numbers, editorialcontrol breakout bullet added, YouTube paragraph simplified, clunky sentence rewritten, eight-days-not-three-weeks anchored on git log). Then the meta move landed: the figure + lightbox + pull-quote features I built mid-session became a new §02 bullet in the article itself ("Adding image captions, click-to-view images, and pull quotes — while I was writing this post"). Screenshots embedded (Editorial Studio + Review UI), captions written for cold readers, pull quote repositioned per v17 operator comment. Approved at v19 and applied (no git).
+- **PR #113 merged.** Preview outline-strip, scroll sync, evolution v10–v12.
+- **`midi-to-mcu-macro-bridge` planned.** Intake via the new studio form; voice-skill-informed reframe of title (colon-break pattern, Roland MC-500 + Logic Pro named) + dek (two sentences ending on concrete parallel) + description (scope + pairings). 14 keywords, 5 topics. Moved Ideas → Planned.
+- **Code review (feature-review).** Zero blockers; three warnings (polling visibility guard, lightbox keydown listener re-registration under Astro view transitions, lightbox Tab trap + focus restore); five info items.
+
+**Didn't Work:**
+
+- First Studio intake landing was a plain copy-to-clipboard hand-off. Immediate operator feedback: "can we have the option to fill in an intake sheet that asks the same questions" — the agent-interactive re-prompt was the exact ceremony we were trying to skip. Rebuilt as an inline form in the same surface.
+- First figure plugin was registered only in Astro's config. Blog pages picked it up; review surface did not (its unified pipeline doesn't read the Astro config). Operator noticed immediately. Added the plugin to the review pipeline too.
+- First `captureDblclickHint` from PR #112 worked on a contrived test but failed for real text because the context-limited snippet spanned paragraph boundaries (rendered `\n` ≠ source `\n\n`). Fix was already in by the start of this session, but the same class of bug lurked in the figure caption issue — render pipelines don't automatically share plugins.
+
+**Course Corrections:**
+
+- [UX] Operator: "I get an error that the clipboard is unavailable" → Clipboard API requires secure context; LAN via plain HTTP fails. Added `execCommand('copy')` fallback on a hidden textarea. Before that, the toast said "copy manually: …" — non-functional fallback.
+- [UX] Operator: "Can we have the button give us the option to fill in an intake sheet" → converted single-shot copy button into full inline form with a self-contained paste payload.
+- [UX] Operator: "The inline form looks great — but, it disappears automatically before I'm done filling it out" → polling reload was nuking in-progress input. Added guards: skip reload when form is open OR any input/textarea/select has focus.
+- [UX] Operator: "The 10 second refresh causes a disturbing flickering as the React tree is redrawn" (it's Astro, not React, but same point) → replaced blind reload with signature-based polling.
+- [UX] Operator: "I can't see the captions in the editorial review surface" → the review pipeline runs its own unified stack; remark plugin registered in Astro's config doesn't reach it. Added to `scripts/lib/editorial-review/render.ts` alongside `remark-parse → remark-rehype`.
+- [UX] Operator: "This pull quote needs to move above the fold" → moved the friction blockquote from §04 to the end of the opening setup.
+- [UX] Operator asked for a new flexibility bullet describing the figure/lightbox/pull-quote build — "I didn't have to wait for a developer or, egads!, build it myself." Bullet written in voice, count in intro updated four → five.
+
+**Quantitative:**
+
+- Messages in this afternoon half: ~50
+- Commits: 12 feature/content/doc commits + ~40 journal entries
+- PRs: #113 merged (queued earlier)
+- Corrections: 7 (all [UX], all from real operator use)
+- Dispatch iterations: v3 → v19 on building-the-editorial-calendar-feature (nine new versions total today, including the previous session's work)
+- New files: `remark-image-figure.mjs`, `lightbox.ts`, `blog-figure.css`, `state-signature.ts`
+- Modified: `editorial-studio-client.ts` (intake form + polling), `editorial-review.css` (intake styles), `editorial-studio.astro` (intake markup), both BlogLayouts (lightbox wire), both astro configs (remark plugin registration), `render.ts` (review-pipeline plugin registration), `package.json` (--host)
+
+**Insights:**
+
+- **Clipboard API on insecure contexts is a real dev-mode gotcha.** `navigator.clipboard.writeText` is gated on secure contexts — HTTPS or localhost. LAN access via `http://orion-m4:4321/` doesn't qualify. The deprecated `execCommand('copy')` on a hidden textarea still works everywhere and is the right defensive fallback for dev tools used across machines.
+- **Signature-based polling is the right shape for "reload if something changed".** Full-page reloads nuke in-progress state and flicker even when nothing moved. A 16-char hash over the handful of directories the UI renders from is cheap, deterministic, and composable — if another input dir joins, add its signature to the compound. No React, no SSE, no diffing DOM. The operator's complaint framed it as "React tree being redrawn"; the fix is more primitive.
+- **A plugin registered in one render pipeline is not registered in all of them.** The editorialcontrol site has two pipelines for rendering markdown to HTML: the public Astro build (remark plugins in `astro.*.config.mjs`) and the review surface's custom unified pipeline (`scripts/lib/editorial-review/render.ts`). Anything that needs to be consistent between them must be registered in both. Worth naming this invariant somewhere — for now it lives in the plugin's doc comment and the review-pipeline's inline note.
+- **The meta move lands harder when the piece describes its own making.** Writing the editorial-calendar article while simultaneously building the features the article needed (figure captions, lightbox, pull quotes) produced a new §02 bullet that wouldn't have existed otherwise. The publication's signature move ("the post you're reading right now was made through the exact setup it describes") got an extension: the post you're reading right now required features that were built during the session that wrote it. That's a subtler argument for agent-as-workflow than "AI helped me write faster" — it's AI was how the platform evolved while I wrote.
+- **Every iterate cycle is cheaper than the last.** The `pending.ts` + `finalize.ts` helpers from the morning made the twelve iterations on building-the-editorial-calendar-feature feel routine. The one that took longest was addressing nine carried-forward comments at once; the others averaged a few minutes each. Worth the morning's helper-script investment.
+
+---
+
 ## 2026-04-23: Editorial Calendar — Phase 17e (iterate-loop helpers, disposition stamps, editor UX polish)
 
 ### Feature: editorial-calendar

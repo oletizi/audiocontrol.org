@@ -23,6 +23,8 @@ Both failures are stuck on the same structural issue: a process that isn't clear
 
 There's another option that didn't really exist eighteen months ago. Stop treating the AI as a feature bolted onto your workflow, and start treating the agent as the workflow. You never leave the agent for a static tool. You talk to it. It does the work. Over time, it accumulates a toolkit of its own — shortcuts, scripts, conventions — and refines that toolkit through use. Skills that don't carry their weight get rewritten or thrown out. Skills that work get sharpened. The agent's toolkit isn't a static configuration you set up once; it evolves, under your direction, in response to what the work actually needs. Claude Code, Codex, Cursor, any of the serious coding agents shipped in the last year will do this. The agent is the closest thing most content teams have ever had to a full-time in-house developer, and the cost of having one is no longer the limiting factor.
 
+> Friction is the thing the agent model is actually attacking, and it's the one measure neither vendor pricing nor headcount captures.
+
 This post is about what that looks like in practice, using the editorial calendar I built for [audiocontrol.org](https://audiocontrol.org/) (and, now, editorialcontrol.org) as the example.
 
 ## What it looks like when the agent is the workflow
@@ -84,9 +86,7 @@ The effect is structural, not anecdotal: once the per-post cost drops far enough
 
 This is the part that a SaaS stack can't replicate and a homegrown process can't sustain: the workflow itself is evolving, fast, without a vendor release cycle or a team meeting.
 
-Both loops only work if friction stays low. SaaS friction, even a few minutes of it compounded across every post, breaks them. Homegrown-process friction breaks them the same way, with different stalls.
-
-> Friction is the thing the agent model is actually attacking, and it's the one measure neither vendor pricing nor headcount captures.
+Both loops only work if friction stays low. SaaS friction, even a few minutes of it compounded across every post, breaks them. Homegrown-process friction breaks them the same way, with different stalls. And friction — as noted up top — is the measure that neither vendor pricing nor headcount captures.
 
 ## If you're still reading, here's the short version
 
