@@ -23,6 +23,10 @@ import {
   type Site,
   type Stage,
 } from '../../../../../scripts/lib/editorial/types.js';
+import {
+  readWorkflow as readFeatureImageWorkflow,
+  type WorkflowItem as FeatureImageWorkflowItem,
+} from '../../../../../scripts/feature-image/workflow.js';
 
 if (import.meta.env.PROD) {
   return new Response('Not Found', { status: 404 });
@@ -123,6 +127,112 @@ function entryBodyState(site: Site, entry: CalendarEntry): BodyState {
 
 function entryHasFile(site: Site, entry: CalendarEntry): boolean {
   return entryBodyState(site, entry) !== 'missing';
+}
+
+// ---- Feature-image state per (site, slug) ---------------------------------
+//
+// Each calendar row that has a blog file on disk shows a row-level button
+// for the feature-image pipeline. Label + action depend on two signals:
+//
+//   1. Whichever feature-image workflow (if any) is currently associated
+//      with that post — read from the feature-image pipeline journal.
+//      'open' / 'decided' / 'applied' / 'cancelled' states map to
+//      "continue / apply / re-image / start" respectively.
+//   2. Whether a `feature-og.png` already exists in the post's public
+//      images dir — the applied-image tell. If yes, the row shows a small
+//      "✓ baked" chip so the operator can see at a glance which posts are
+//      already imaged without clicking into the studio.
+//
+// `relevantWorkflowFor` picks the most-recent non-terminal workflow,
+// falling back to the most-recent terminal one if nothing is open. That
+// matches the operator's mental model: "what's the current thing for
+// this post" rather than "the first one ever queued."
+const featureImageWorkflows: FeatureImageWorkflowItem[] = (() => {
+  try {
+    return readFeatureImageWorkflow();
+  } catch (e) {
+    console.error('[editorial-studio] failed to read feature-image workflows:', e);
+    return [];
+  }
+})();
+
+function workflowMatchesPost(w: FeatureImageWorkflowItem, site: Site, slug: string): boolean {
+  const path = w.context.postPath;
+  if (!path) return false;
+  return path.includes(`/src/sites/${site}/content/blog/${slug}.md`)
+      || path.endsWith(`src/sites/${site}/content/blog/${slug}.md`);
+}
+
+function relevantWorkflowFor(site: Site, slug: string): FeatureImageWorkflowItem | null {
+  const matches = featureImageWorkflows.filter(w => workflowMatchesPost(w, site, slug));
+  if (matches.length === 0) return null;
+  // Prefer non-terminal (open / decided) over terminal (applied /
+  // cancelled); within each tier, most recent createdAt.
+  const isTerminal = (s: string) => s === 'applied' || s === 'cancelled';
+  const sorted = [...matches].sort((a, b) => {
+    const at = isTerminal(a.state) ? 1 : 0;
+    const bt = isTerminal(b.state) ? 1 : 0;
+    if (at !== bt) return at - bt;
+    return b.createdAt.localeCompare(a.createdAt);
+  });
+  return sorted[0];
+}
+
+function entryHasBakedFeatureImage(site: Site, slug: string): boolean {
+  const path = join(
+    process.cwd(),
+    'src', 'sites', site, 'public', 'images', 'blog', slug, 'feature-og.png',
+  );
+  return existsSync(path);
+}
+
+interface FeatureImageAction {
+  label: string;
+  /** When set, renders as an er-copy-btn that copies this command. */
+  copyCommand?: string;
+  /** When set, renders as a link to this in-app URL. */
+  href?: string;
+  /** Tooltip. */
+  title: string;
+  /** Extra class flavor. */
+  variant?: 'primary' | 'approve';
+}
+
+function featureImageAction(site: Site, entry: CalendarEntry): FeatureImageAction {
+  const slug = entry.slug;
+  const wf = relevantWorkflowFor(site, slug);
+  const postPath = `src/sites/${site}/content/blog/${slug}.md`;
+  if (!wf) {
+    return {
+      label: 'feature image →',
+      copyCommand: `/feature-image-blog ${postPath}`,
+      title: 'copy command — start a feature-image workflow for this post',
+    };
+  }
+  if (wf.state === 'open') {
+    return {
+      label: 'continue in studio →',
+      href: '/dev/studio/',
+      title: 'feature-image workflow is open — iterate in the studio',
+      variant: 'primary',
+    };
+  }
+  if (wf.state === 'decided') {
+    return {
+      label: 'apply →',
+      copyCommand: '/feature-image-apply',
+      title: 'a generation is approved — run to copy files + wire frontmatter',
+      variant: 'approve',
+    };
+  }
+  // applied / cancelled → start a fresh workflow
+  return {
+    label: 're-image →',
+    copyCommand: `/feature-image-blog ${postPath}`,
+    title: wf.state === 'applied'
+      ? 'a previous image was applied — start a fresh workflow to re-image'
+      : 'previous workflow cancelled — start a fresh one',
+  };
 }
 
 // Group entries by stage (preserve stage order). Each entry keeps its site tag.
@@ -391,6 +501,9 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                         {kind !== 'blog' && (
                           <span class="er-calendar-meta er-calendar-meta-kind">{kind}</span>
                         )}
+                        {kind === 'blog' && hasFile && entryHasBakedFeatureImage(site, entry.slug) && (
+                          <span class="er-calendar-meta er-calendar-meta-baked" title="feature-og.png is baked in this post's public dir">✓ feature image</span>
+                        )}
                       </div>
                       <span class="er-calendar-status">
                         {hasRepoContent(kind) && (
@@ -502,6 +615,27 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                             title="re-review a published post"
                           >re-review</button>
                         )}
+                        {hasFile && effectiveContentType(entry) === 'blog' && (() => {
+                          const fi = featureImageAction(site, entry);
+                          const variantClass =
+                            fi.variant === 'approve' ? 'er-btn-approve' :
+                            fi.variant === 'primary' ? 'er-btn-primary' : '';
+                          const btnClass = `er-btn er-btn-small ${variantClass}`.trim();
+                          return fi.copyCommand ? (
+                            <button
+                              class={`${btnClass} er-copy-btn`}
+                              type="button"
+                              data-copy={fi.copyCommand}
+                              title={fi.title}
+                            >{fi.label}</button>
+                          ) : (
+                            <a
+                              class={btnClass}
+                              href={fi.href}
+                              title={fi.title}
+                            >{fi.label}</a>
+                          );
+                        })()}
                       </span>
                     </div>
                   );
