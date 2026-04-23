@@ -1,0 +1,22 @@
+{
+  "id": "de09e4b4-7b10-4a81-9083-1d877bed3026",
+  "timestamp": "2026-04-23T01:29:28.027Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T01:29:28.027Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "version": 10,
+      "range": {
+        "start": 279,
+        "end": 1112
+      },
+      "text": "This needs to take into account the new garden and thicket section 01, and reordering of the rest.",
+      "category": "other",
+      "anchor": "Tuning one champion prompt isn't the best you can do. A single prompt can't track a world that keeps moving — new models, new platform rules, new failure modes every month. A population can.\nKeep the population, and capture any fitness signal. Even a thumbs up/down column on a journal row can serve as a fitness signal. Perfect fitness is the enemy of any fitness.\nPrune. Selection requires deletion. A population that never loses variants isn't a population — it's a landfill.\nThe workflow has to make this the easy path. If selection-driven prompting takes willpower, it won't happen. Variation, fitness, and retention need to live on the same gradient as the work.\nVersion control is non-negotiable — especially with agents in the loop. It's useful for human-only workflows. It's mandatory once an agent is the one editing files.",
+      "id": "de09e4b4-7b10-4a81-9083-1d877bed3026",
+      "createdAt": "2026-04-23T01:29:28.027Z"
+    }
+  }
+}

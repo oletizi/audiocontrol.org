@@ -1,6 +1,6 @@
 ---
 title: "You Don't Need a Better Prompt. You Need Selection Pressure."
-description: "Champion prompts go stale. A population under selection pressure doesn't. The worked example: an agent that builds the review app for the images it generates — in an afternoon."
+description: "Use an AI content generator long enough and your output drifts. The third option: a population of prompts under selection pressure — and an agent that builds the review app for its own output in an afternoon."
 date: "April 2026"
 datePublished: "2026-04-21"
 dateModified: "2026-04-21"
@@ -38,7 +38,7 @@ state: draft
 
 ---
 
-AI-assisted output quality is table stakes. The instinct that produces — *write a better prompt* — is the wrong one. A single champion prompt can't track a world that keeps moving; selection pressure over a population can. What makes that tractable isn't a budget. It's a workflow where the agent doing the work also builds the tools that make selection the easy path.
+Use an AI content generator — DALL-E, Midjourney, Claude for copy — long enough and your output drifts. The instinct is to write a better prompt. A single champion can't track a world that keeps moving; a population of prompts under selection pressure can. What makes it tractable isn't a budget — it's a workflow where the agent doing the work also builds the tools that make selection the easy path.
 
 April 2026 · Orion Letizi
 
@@ -47,27 +47,39 @@ April 2026 · Orion Letizi
 In this dispatch
 
 1. 00 The short version, up top
-2. 01 The champion-prompt instinct
-3. 02 The workflow decides what's easy
-4. 03 What the feature-image library taught
-5. 04 The mindset is the skill
-6. 05 Where this is going
+2. 01 The garden and the thicket
+3. 02 The champion-prompt instinct
+4. 03 The workflow decides what's easy
+5. 04 What the feature-image library taught
+6. 05 The mindset is the skill
+7. 06 Where this is going
 
 ---
 
 ## 00 TL;DR
 
-1. **Tuning one champion prompt isn't the best you can do.** A single prompt can't track a world that keeps moving — new models, new platform rules, new failure modes every month. A population can.
-2. **Keep the population, and capture any fitness signal.** Even a thumbs up/down column on a journal row can serve as a fitness signal. Perfect fitness is the enemy of any fitness.
-3. **Prune.** Selection requires deletion. A population that never loses variants isn't a population — it's a landfill.
-4. **The workflow has to make this the easy path.** If selection-driven prompting takes willpower, it won't happen. Variation, fitness, and retention need to live on the same gradient as the work.
-5. **Version control is non-negotiable** — *especially* with agents in the loop. It's useful for human-only workflows. It's mandatory once an agent is the one editing files.
+1. **Drift is the default.** Without a guiding principle on the easy path, AI-generated output drifts — your brand turns from a garden into a thicket. Willpower doesn't close the gap; willpower is finite.
+2. **Tuning one champion prompt isn't the best you can do.** A single prompt can't track a world that keeps moving — new models, new platform rules, new failure modes every month. A population can.
+3. **Keep the population, and capture any fitness signal.** Even a thumbs up/down column on a journal row can serve as a fitness signal. Perfect fitness is the enemy of any fitness.
+4. **Prune.** Selection requires deletion. A population that never loses variants isn't a population — it's a landfill.
+5. **The workflow has to make this the easy path.** If selection-driven prompting takes willpower, it won't happen. Variation, fitness, and retention need to live on the same gradient as the work.
+6. **Version control is non-negotiable** — *especially* with agents in the loop. It's useful for human-only workflows. It's mandatory once an agent is the one editing files.
 
 The rest of this dispatch is why each of those is load-bearing, and what the whole move looks like on an actual project.
 
 ---
 
-## 01 The champion-prompt instinct
+## 01 The garden and the thicket
+
+Run any AI-assisted content workflow long enough without a guiding principle and the output drifts. Brand voice softens. Visual identity fragments. The copy starts sounding like it was written by a dozen different people who never spoke to each other. What started as a garden — deliberate, composed, legible at a glance — starts looking like a thicket: everything survived, nothing was pruned, and you can't find what you need without cutting your way in.
+
+The drift doesn't come from one big failure. It comes from many small ones, all sharing the same underlying condition: enforcing a guiding principle by sheer willpower is exhausting, and willpower is finite. Every session starts on an empty stomach. The operator either relitigates the decisions they already made last time (and gets them subtly different), or works off a document they have to remember to consult (and doesn't). Either way, the garden drifts.
+
+This is the problem the rest of this dispatch is trying to solve. The next section names the first shape the problem takes — the instinct that pops up the moment you notice the drift — and the failure modes that follow from it.
+
+---
+
+## 02 The champion-prompt instinct
 
 Prompt quality matters, of course. If you're shipping AI-assisted work and the prompts are sloppy, the output drifts, the brand softens, and every new session has to relitigate decisions the last session already made. We're not defending sloppy prompts here.
 
@@ -85,7 +97,7 @@ There's a third option that didn't exist eighteen months ago.
 
 ---
 
-## 02 The workflow decides what's easy
+## 03 The workflow decides what's easy
 
 The third option isn't that the infrastructure got cheap. That framing misses the actual shift. Selection pressure has always been a feasible idea. What used to make it unworkable on a real project wasn't cost — it was friction. Disconnected workflow and tooling made the *wrong* move the easy one.
 
@@ -105,7 +117,7 @@ An agent with variation and fitness on the easy path turns prompt quality from a
 
 ---
 
-## 03 What the feature-image library taught — and why the agent being the workflow is the whole move
+## 04 What the feature-image library taught — and why the agent being the workflow is the whole move
 
 The sibling site, audiocontrol.org, runs a feature-image generator for its blog posts. First shipped 2026-04-15 (commit `6fb0908`). Five posts have gone through it. The prompt-evolution infrastructure merged 2026-04-20 as PR #105. Fitness × recency weighting, lineage forks when a prompt gets remixed, side-by-side review in a dev-only gallery app.
 
@@ -123,7 +135,7 @@ One honest note, because the worked example is a generous case. Feature-image ge
 
 ---
 
-## 04 The mindset is the skill
+## 05 The mindset is the skill
 
 The infrastructure argument is the tractable half. The harder half is the posture the operator has to develop.
 
@@ -137,7 +149,7 @@ Agents are the leverage that makes these moves tractable. The moves are the skil
 
 ---
 
-## 05 Where this is going
+## 06 Where this is going
 
 The mindset is portable even where the example isn't. Feature-image generation was an easy first case: strong fitness signal, visual, quick to rate, cheap to generate variants. The shape — population + fitness + pruning, made easy by an agent that lives inside the work — transfers to any domain where a single-champion prompt keeps going stale. Code-review rubrics, classification prompts, summarization prompts, copy-critique passes. The signal gets cruder; the move doesn't change.
 

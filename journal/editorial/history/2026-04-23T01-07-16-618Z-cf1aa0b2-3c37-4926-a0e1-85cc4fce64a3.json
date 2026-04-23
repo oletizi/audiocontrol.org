@@ -1,0 +1,22 @@
+{
+  "id": "cf1aa0b2-3c37-4926-a0e1-85cc4fce64a3",
+  "timestamp": "2026-04-23T01:07:16.618Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T01:07:16.618Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "version": 9,
+      "range": {
+        "start": 60,
+        "end": 236
+      },
+      "text": "We need to ground this into a specific context. Something like \"When using AI-assisted content generators, like DALL-E or <insert popular AI asset generator here>, maintaining brand consistency can a challenge across many sessions. It's tempting to pursue the perfect prompt. But, that may not be the best way forward.",
+      "category": "other",
+      "anchor": "Champion prompts go stale. A population under selection pressure doesn't. The worked example: an agent that builds the review app for the images it generates — in an afternoon.",
+      "id": "cf1aa0b2-3c37-4926-a0e1-85cc4fce64a3",
+      "createdAt": "2026-04-23T01:07:16.618Z"
+    }
+  }
+}

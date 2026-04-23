@@ -1,0 +1,18 @@
+{
+  "id": "33905894-36fc-4955-9a61-e1db1667915f",
+  "timestamp": "2026-04-23T01:30:42.239Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T01:30:42.239Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "commentId": "de09e4b4-7b10-4a81-9083-1d877bed3026",
+      "version": 11,
+      "disposition": "addressed",
+      "reason": "Added a new TL;DR item 1 ('Drift is the default') that echoes the §01 garden/thicket framing and the willpower diagnosis. Existing 5 items preserved in order as items 2-6 — item 5 already named the willpower threshold, so no other edits needed in the TL;DR.",
+      "id": "33905894-36fc-4955-9a61-e1db1667915f",
+      "createdAt": "2026-04-23T01:30:42.239Z"
+    }
+  }
+}

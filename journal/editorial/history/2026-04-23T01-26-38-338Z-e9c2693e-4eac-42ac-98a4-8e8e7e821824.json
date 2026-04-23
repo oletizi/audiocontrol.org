@@ -1,0 +1,18 @@
+{
+  "id": "e9c2693e-4eac-42ac-98a4-8e8e7e821824",
+  "timestamp": "2026-04-23T01:26:38.338Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-23T01:26:38.338Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "027c96d3-149e-4c13-8419-b149f1d9d6ec",
+      "commentId": "da574418-d5cd-4b72-a33c-d7b22ea700e4",
+      "version": 10,
+      "disposition": "addressed",
+      "reason": "Inserted a new §01 'The garden and the thicket' that names the general problem (drift without a guiding principle, willpower doesn't scale) using the operator's garden/thicket metaphor. Old §01 (champion-prompt instinct) becomes §02; §§02–05 renumbered to §§03–06. ToC updated.",
+      "id": "e9c2693e-4eac-42ac-98a4-8e8e7e821824",
+      "createdAt": "2026-04-23T01:26:38.338Z"
+    }
+  }
+}
