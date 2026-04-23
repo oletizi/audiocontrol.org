@@ -34,13 +34,47 @@ function showToast(msg: string, isError = false): void {
   setTimeout(() => { toastEl.hidden = true; }, 4000);
 }
 
+/**
+ * Copy text across both secure and insecure contexts. The async
+ * Clipboard API (navigator.clipboard.writeText) is gated on a
+ * secure context — HTTPS or localhost. Dev access from another
+ * machine on the LAN (http://orion-m4:4321/, etc.) isn't secure
+ * in the browser's eyes, so the API throws. Fall back to the
+ * legacy execCommand('copy') path on a hidden textarea, which
+ * works in plain HTTP.
+ */
+async function copyTextToClipboard(text: string): Promise<void> {
+  if (typeof navigator !== 'undefined' && navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  // Keep it off-screen but still focusable; some browsers skip
+  // copy if the element isn't in the layout tree.
+  ta.style.position = 'fixed';
+  ta.style.top = '-1000px';
+  ta.style.left = '-1000px';
+  ta.setAttribute('readonly', '');
+  document.body.appendChild(ta);
+  ta.select();
+  ta.setSelectionRange(0, text.length);
+  let ok = false;
+  try {
+    ok = document.execCommand('copy');
+  } finally {
+    document.body.removeChild(ta);
+  }
+  if (!ok) throw new Error('execCommand copy returned false');
+}
+
 function initCopyButtons(): void {
   document.querySelectorAll<HTMLButtonElement>('.er-copy-btn').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const text = btn.dataset.copy ?? '';
       if (!text) return;
       try {
-        await navigator.clipboard.writeText(text);
+        await copyTextToClipboard(text);
         const original = btn.textContent;
         btn.classList.add('copied');
         btn.textContent = 'copied ✓';
