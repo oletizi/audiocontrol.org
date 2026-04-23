@@ -305,28 +305,57 @@ function initKeyboardShortcuts(): void {
   });
 }
 
+/**
+ * Poll the state-signature endpoint and reload only when the
+ * signature changes. Replaces the old blunt 10-second reload that
+ * caused a visible flicker even when nothing had moved on the
+ * backend. The server endpoint compounds mtimes of calendar files,
+ * workflow pipeline/history directories, and per-site content
+ * directories into a short hash — any real change advances it;
+ * idle time doesn't.
+ *
+ * Guards preserved from the prior polling:
+ *   - search query active → skip (don't blow away the operator's
+ *     filter)
+ *   - intake form open → skip (don't nuke in-progress input)
+ *   - a text field has focus → skip (same reason)
+ *
+ * If the endpoint is unreachable (dev server restart, network
+ * glitch), we silently retry on the next tick rather than falling
+ * back to a blind reload.
+ */
 function initPolling(): void {
   const searchInput = document.querySelector<HTMLInputElement>('[data-filter-input]');
-  let lastInteraction = Date.now();
-  for (const evName of ['input', 'focus', 'keydown', 'mousedown'] as const) {
-    document.addEventListener(
-      evName,
-      () => { lastInteraction = Date.now(); },
-      { passive: true, capture: true },
-    );
+  let baseline: string | null = null;
+
+  async function fetchSignature(): Promise<string | null> {
+    try {
+      const res = await fetch('/api/dev/editorial-studio/state-signature', { cache: 'no-store' });
+      if (!res.ok) return null;
+      const body = (await res.json()) as { signature?: string };
+      return typeof body.signature === 'string' ? body.signature : null;
+    } catch {
+      return null;
+    }
   }
-  setInterval(() => {
-    if (Date.now() - lastInteraction < 4000) return;
+
+  // Establish the baseline on page load so the first real change
+  // triggers the reload (not whatever state happened to be on disk
+  // at render time).
+  void fetchSignature().then((sig) => { baseline = sig; });
+
+  setInterval(async () => {
     if (searchInput && searchInput.value.trim().length > 0) return;
-    // Don't reload while the operator is mid-way through filling an
-    // open form — reload would nuke their in-progress input. Also
-    // don't reload if any form field is focused, regardless of
-    // which form owns it: a text field holding focus means the
-    // operator is working on something.
     const intakeForm = document.querySelector<HTMLElement>('[data-intake-form]');
     if (intakeForm && !intakeForm.hidden) return;
     const active = document.activeElement;
     if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active instanceof HTMLSelectElement) return;
+
+    const current = await fetchSignature();
+    if (!current) return; // transient failure — try again next tick
+    if (baseline === null) { baseline = current; return; }
+    if (current === baseline) return; // nothing moved
+
     const pollIndicator = document.querySelector<HTMLElement>('[data-poll]');
     if (pollIndicator) pollIndicator.classList.add('polling');
     window.location.reload();
