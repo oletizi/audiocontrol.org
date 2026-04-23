@@ -318,6 +318,15 @@ function initPolling(): void {
   setInterval(() => {
     if (Date.now() - lastInteraction < 4000) return;
     if (searchInput && searchInput.value.trim().length > 0) return;
+    // Don't reload while the operator is mid-way through filling an
+    // open form — reload would nuke their in-progress input. Also
+    // don't reload if any form field is focused, regardless of
+    // which form owns it: a text field holding focus means the
+    // operator is working on something.
+    const intakeForm = document.querySelector<HTMLElement>('[data-intake-form]');
+    if (intakeForm && !intakeForm.hidden) return;
+    const active = document.activeElement;
+    if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active instanceof HTMLSelectElement) return;
     const pollIndicator = document.querySelector<HTMLElement>('[data-poll]');
     if (pollIndicator) pollIndicator.classList.add('polling');
     window.location.reload();
