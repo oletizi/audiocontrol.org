@@ -324,6 +324,96 @@ function initPolling(): void {
   }, 10000);
 }
 
+/**
+ * Intake sheet — click the "intake new idea" button in the Ideas
+ * section header, fill in the form, and the copy button produces a
+ * self-contained prompt the agent can run without a second pass of
+ * interactive prompts. The prompt reads like natural English so it
+ * survives being pasted verbatim into Claude Code.
+ */
+function initIntakeForm(): void {
+  const toggleBtn = document.querySelector<HTMLButtonElement>('[data-action="intake-toggle"]');
+  const form = document.querySelector<HTMLElement>('[data-intake-form]');
+  if (!toggleBtn || !form) return;
+
+  const field = <T extends HTMLElement = HTMLInputElement>(name: string): T | null =>
+    form.querySelector<T>(`[data-intake-field="${name}"]`);
+  const contentTypeSel = field<HTMLSelectElement>('contentType');
+  const contentUrlRow = form.querySelector<HTMLElement>('[data-intake-content-url]');
+
+  function syncContentUrlVisibility(): void {
+    if (!contentTypeSel || !contentUrlRow) return;
+    const kind = contentTypeSel.value;
+    contentUrlRow.hidden = kind === 'blog';
+  }
+  contentTypeSel?.addEventListener('change', syncContentUrlVisibility);
+  syncContentUrlVisibility();
+
+  function open(): void {
+    form.hidden = false;
+    toggleBtn.setAttribute('aria-expanded', 'true');
+    const title = field<HTMLInputElement>('title');
+    title?.focus();
+  }
+  function close(): void {
+    form.hidden = true;
+    toggleBtn.setAttribute('aria-expanded', 'false');
+  }
+  toggleBtn.addEventListener('click', () => {
+    if (form.hidden) open(); else close();
+  });
+
+  form.querySelector('[data-action="intake-cancel"]')?.addEventListener('click', () => close());
+
+  form.querySelector('[data-action="intake-copy"]')?.addEventListener('click', async () => {
+    const site = field<HTMLSelectElement>('site')?.value.trim() || '';
+    const title = field<HTMLInputElement>('title')?.value.trim() || '';
+    const description = field<HTMLTextAreaElement>('description')?.value.trim() || '';
+    const contentType = field<HTMLSelectElement>('contentType')?.value.trim() || 'blog';
+    const contentUrl = field<HTMLInputElement>('contentUrl')?.value.trim() || '';
+    if (!site || !title) {
+      showToast('Site and title are required', true);
+      return;
+    }
+    const lines = [
+      `Run /editorial-add --site ${site} to intake a new idea using these pre-filled values. Do NOT interactively re-prompt for any field below — use them verbatim.`,
+      '',
+      `- Site: ${site}`,
+      `- Title: ${title}`,
+      ...(description ? [`- Description: ${description}`] : [`- Description: (none — leave empty)`]),
+      `- Content type: ${contentType}`,
+      ...(contentType !== 'blog' && contentUrl ? [`- Content URL: ${contentUrl}`] : []),
+      ...(contentType !== 'blog' && !contentUrl ? [`- Content URL: (not yet published — skip; /editorial-publish will refuse until it's set)`] : []),
+    ];
+    const payload = lines.join('\n');
+    try {
+      await copyTextToClipboard(payload);
+      const btn = form.querySelector<HTMLButtonElement>('[data-action="intake-copy"]');
+      if (btn) {
+        const original = btn.textContent;
+        btn.classList.add('copied');
+        btn.textContent = 'copied ✓';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.textContent = original;
+          close();
+        }, 900);
+      }
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      showToast(`Clipboard unavailable (${message}) — copy manually: ${payload}`, true);
+    }
+  });
+
+  // Cmd/Ctrl-Enter from anywhere in the form triggers copy.
+  form.addEventListener('keydown', (ev) => {
+    if ((ev.metaKey || ev.ctrlKey) && ev.key === 'Enter') {
+      ev.preventDefault();
+      form.querySelector<HTMLButtonElement>('[data-action="intake-copy"]')?.click();
+    }
+  });
+}
+
 function init(): void {
   initCopyButtons();
   initScaffoldButtons();
@@ -332,6 +422,7 @@ function init(): void {
   initFilter();
   initKeyboardShortcuts();
   initPolling();
+  initIntakeForm();
 }
 
 init();

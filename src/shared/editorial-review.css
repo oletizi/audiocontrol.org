@@ -200,11 +200,96 @@ body[data-review-ui="shortform"] {
 
 /* Stage-level action button — sits at the right edge of the
  * section title, a small nudge off the count. Currently used by
- * the Ideas stage for the "intake new idea" copy-button. */
+ * the Ideas stage for the "intake new idea" toggle. */
 .er-section-title .er-section-action {
   margin-left: var(--er-space-2);
   align-self: center;
   font-variation-settings: normal;
+}
+
+/* ---- Intake sheet (Ideas section) ------------------------------------
+ *
+ * Inline form that unfolds below the Ideas section header when the
+ * operator clicks "intake new idea". Keeps the press-check palette:
+ * parchment panel, red-pencil rule, monospaced field labels with
+ * serif italic hints. The copy button assembles a self-contained
+ * paste that the agent executes without a second round of prompts. */
+.er-intake-form {
+  margin: 0 0 var(--er-space-3);
+  padding: var(--er-space-3);
+  background: var(--er-paper-2);
+  border-left: 3px solid var(--er-red-pencil);
+  border-top: 1px dashed var(--er-faded-2);
+  border-bottom: 1px dashed var(--er-faded-2);
+}
+.er-intake-hint {
+  margin: 0 0 var(--er-space-2);
+  font-family: var(--er-font-display);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--er-ink-soft);
+}
+.er-intake-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--er-space-2) var(--er-space-3);
+}
+.er-intake-grid > label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-family: var(--er-font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--er-faded);
+}
+.er-intake-grid > label > span {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.er-intake-grid > label em {
+  font-family: var(--er-font-display);
+  font-style: italic;
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--er-ink-soft);
+}
+.er-intake-grid .er-intake-wide {
+  grid-column: 1 / -1;
+}
+.er-intake-grid input,
+.er-intake-grid select,
+.er-intake-grid textarea {
+  font-family: var(--er-font-body);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--er-ink);
+  background: var(--er-paper);
+  border: 1px solid var(--er-faded-2);
+  border-radius: 0;
+  padding: 0.4rem 0.55rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.er-intake-grid textarea {
+  resize: vertical;
+  min-height: 5rem;
+}
+.er-intake-grid input:focus,
+.er-intake-grid select:focus,
+.er-intake-grid textarea:focus {
+  outline: none;
+  border-color: var(--er-red-pencil);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--er-red-pencil) 15%, transparent);
+}
+.er-intake-actions {
+  margin-top: var(--er-space-3);
+  display: flex;
+  gap: var(--er-space-2);
+  justify-content: flex-end;
 }
 
 .er-section + .er-section { margin-top: var(--er-space-5); }

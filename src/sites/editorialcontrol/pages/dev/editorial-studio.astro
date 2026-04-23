@@ -275,13 +275,52 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                 <span class="count">№ {stageEntries.length}</span>
                 {stage === 'Ideas' && (
                   <button
-                    class="er-btn er-btn-small er-copy-btn er-section-action"
+                    class="er-btn er-btn-small er-section-action"
                     type="button"
-                    data-copy="/editorial-add"
-                    title="copy command — the skill prompts for site, title, description, content type"
+                    data-action="intake-toggle"
+                    title="fill out an intake sheet and copy a self-contained command"
                   >intake new idea →</button>
                 )}
               </h2>
+              {stage === 'Ideas' && (
+                <div class="er-intake-form" data-intake-form hidden>
+                  <p class="er-intake-hint">
+                    Fill in what you know; the agent will use the values verbatim (no interactive interview). Tab-order runs through the fields; cmd/ctrl-enter copies.
+                  </p>
+                  <div class="er-intake-grid">
+                    <label>
+                      <span>Site</span>
+                      <select data-intake-field="site">
+                        {SITES.map(s => <option value={s}>{s}</option>)}
+                      </select>
+                    </label>
+                    <label>
+                      <span>Content type</span>
+                      <select data-intake-field="contentType">
+                        <option value="blog">blog (default — lives in this repo)</option>
+                        <option value="youtube">youtube</option>
+                        <option value="tool">tool</option>
+                      </select>
+                    </label>
+                    <label class="er-intake-wide">
+                      <span>Title <em>(placeholder OK — refine at /editorial-plan time)</em></span>
+                      <input type="text" data-intake-field="title" placeholder="Working title of the idea" />
+                    </label>
+                    <label class="er-intake-wide">
+                      <span>Description <em>(2–4 sentences, scope + any pairing notes)</em></span>
+                      <textarea data-intake-field="description" rows="4" placeholder="What the piece is about, what the worked example is, pairing notes if any."></textarea>
+                    </label>
+                    <label class="er-intake-wide" data-intake-content-url hidden>
+                      <span>Content URL <em>(required for youtube/tool if already published; leave blank otherwise)</em></span>
+                      <input type="url" data-intake-field="contentUrl" placeholder="https://..." />
+                    </label>
+                  </div>
+                  <div class="er-intake-actions">
+                    <button class="er-btn er-btn-small" type="button" data-action="intake-cancel">cancel</button>
+                    <button class="er-btn er-btn-small er-btn-primary" type="button" data-action="intake-copy">copy intake →</button>
+                  </div>
+                </div>
+              )}
 
               {stageEntries.length === 0 ? (
                 <div class="er-empty" style="padding: 1rem 0.25rem; font-size: 0.95rem;">
