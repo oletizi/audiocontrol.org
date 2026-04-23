@@ -796,6 +796,83 @@ export function initEditorialReview(): void {
   let editorHandle: import('./editorial-review-editor').EditorHandle | null = null;
   let previewDebounce: number | null = null;
 
+  /**
+   * Wire heading-anchored scroll sync between the editor and the
+   * preview pane, one-way (editor → preview). Only active in split
+   * view; in source/preview-only views it's irrelevant.
+   *
+   * Algorithm:
+   *   1. Editor scroll fires (rAF-debounced).
+   *   2. Read the topmost visible line in the editor via CodeMirror's
+   *      `posAtCoords` on the scroll container's top edge.
+   *   3. Walk backward in the source to find the last `## ` heading
+   *      at or above that line. That heading is what the operator is
+   *      currently reading, from a reader's POV.
+   *   4. In the preview DOM, find the matching <h2> by textContent
+   *      and scroll it to the top of the preview pane.
+   *
+   * A suppress flag prevents any incidental scroll event on the preview
+   * from ping-ponging back (reserved for future bi-directional sync).
+   */
+  let scrollSyncSuppress = false;
+  let scrollSyncRaf = 0;
+  function wireScrollSync(): void {
+    if (!editorHandle) return;
+    const scrollDOM = editorHandle.view.scrollDOM;
+    scrollDOM.addEventListener('scroll', () => {
+      if (scrollSyncSuppress) return;
+      if (editPanes.dataset.view !== 'split') return;
+      if (scrollSyncRaf) return;
+      scrollSyncRaf = requestAnimationFrame(() => {
+        scrollSyncRaf = 0;
+        syncPreviewFromEditor();
+      });
+    }, { passive: true });
+  }
+
+  /** Find the heading the operator is currently reading in the editor
+   * and scroll the preview to the matching <h2>. */
+  function syncPreviewFromEditor(): void {
+    if (!editorHandle) return;
+    const view = editorHandle.view;
+    const scrollRect = view.scrollDOM.getBoundingClientRect();
+    // Pick a point a few px below the top edge to avoid landing on a
+    // partially-scrolled line.
+    const pos = view.posAtCoords({ x: scrollRect.left + 8, y: scrollRect.top + 4 });
+    if (pos == null) return;
+    const lineInfo = view.state.doc.lineAt(pos);
+    const source = view.state.doc.toString();
+    const lines = source.split('\n');
+    const topLineIdx = lineInfo.number - 1;
+    // Walk back through the source to find the last ## heading.
+    // Capture the heading text so we can match on the preview side.
+    let headingText: string | null = null;
+    for (let i = Math.min(topLineIdx, lines.length - 1); i >= 0; i--) {
+      const m = lines[i].match(/^##[ \t]+(.+?)\s*$/);
+      if (m) { headingText = m[1].trim(); break; }
+    }
+    // Find matching h2 in preview and scroll to it. If no heading is
+    // found (we're above the first one), scroll preview to the top.
+    if (!headingText) {
+      scrollSyncSuppress = true;
+      editPreviewHost.scrollTop = 0;
+      requestAnimationFrame(() => { scrollSyncSuppress = false; });
+      return;
+    }
+    const h2s = editPreviewHost.querySelectorAll<HTMLElement>('h2');
+    for (const h of h2s) {
+      if ((h.textContent || '').trim() === headingText) {
+        scrollSyncSuppress = true;
+        // offsetTop is relative to the nearest positioned ancestor,
+        // which is the preview host. Small nudge so the heading sits
+        // below the pane's top padding rather than flush against it.
+        editPreviewHost.scrollTop = Math.max(0, h.offsetTop - 8);
+        requestAnimationFrame(() => { scrollSyncSuppress = false; });
+        return;
+      }
+    }
+  }
+
   /** Debounced render of the current source into the preview pane.
    *
    * The preview mirrors what a reader will see on `/blog/<slug>/`,
@@ -916,6 +993,16 @@ export function initEditorialReview(): void {
     editToolbar.scrollIntoView({ behavior: 'smooth', block: 'start' });
     editorHandle.focus();
     schedulePreview(state.currentVersion.markdown);
+    // Wire editor-scroll → preview-scroll sync. Proportional sync
+    // breaks badly here: the editor shows the full source (frontmatter
+    // + body) while the preview shows only the rendered body, so top-
+    // percentage mapping drifts. Heading-anchored sync works because
+    // every `## N Title` heading in source has a matching <h2>Title</h2>
+    // in the preview DOM — we find the last heading at-or-above the
+    // editor's topmost visible line and scroll the preview to that
+    // heading. Guarded against feedback with a suppress flag so the
+    // later preview scroll event doesn't loop back.
+    wireScrollSync();
 
     // Land the cursor near where the operator was reading. The hint
     // is a plain-text snippet from the rendered body; markdown source
