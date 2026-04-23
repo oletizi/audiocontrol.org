@@ -796,16 +796,25 @@ export function initEditorialReview(): void {
   let editorHandle: import('./editorial-review-editor').EditorHandle | null = null;
   let previewDebounce: number | null = null;
 
-  /** Debounced render of the current source into the preview pane. */
+  /** Debounced render of the current source into the preview pane.
+   *
+   * The preview mirrors what a reader will see on `/blog/<slug>/`,
+   * which uses the remark-strip-outline plugin to drop the `## Outline`
+   * section (planning scaffold, not editorial copy). We strip the
+   * same section here before rendering so the dev preview matches
+   * the production render — no outline in the preview pane even
+   * when the caller passes the rejoined document. */
   function schedulePreview(md: string): void {
     if (previewDebounce !== null) window.clearTimeout(previewDebounce);
     previewDebounce = window.setTimeout(async () => {
       try {
-        const { renderMarkdownToHtml, parseDraftFrontmatter } = await import(
-          '../../scripts/lib/editorial-review/render.js'
-        );
+        const [{ renderMarkdownToHtml, parseDraftFrontmatter }, { splitOutline }] = await Promise.all([
+          import('../../scripts/lib/editorial-review/render.js'),
+          import('./outline-split.ts'),
+        ]);
         const parsed = parseDraftFrontmatter(md);
-        const html = await renderMarkdownToHtml(parsed.body);
+        const bodyNoOutline = splitOutline(parsed.body).body;
+        const html = await renderMarkdownToHtml(bodyNoOutline);
         editPreviewHost.innerHTML = html;
       } catch (e) {
         editPreviewHost.innerHTML = `<p class="er-edit-preview-error">Preview failed: ${(e as Error).message}</p>`;
