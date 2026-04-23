@@ -836,6 +836,11 @@ export function initEditorialReview(): void {
     if (!editorHandle) return;
     const view = editorHandle.view;
     const scrollRect = view.scrollDOM.getBoundingClientRect();
+    // Bail if the scroll container has no layout yet — happens in a
+    // narrow window where the split view is transitioning in.
+    // posAtCoords can return stale positions (typically 0) in that
+    // state, which would snap the preview back to the top.
+    if (scrollRect.height === 0) return;
     // Pick a point a few px below the top edge to avoid landing on a
     // partially-scrolled line.
     const pos = view.posAtCoords({ x: scrollRect.left + 8, y: scrollRect.top + 4 });
