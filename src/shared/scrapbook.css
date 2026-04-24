@@ -301,6 +301,31 @@
   font-style: italic;
   color: hsl(var(--muted-foreground));
 }
+.scrapbook-body-md table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1.1rem;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+.scrapbook-body-md th,
+.scrapbook-body-md td {
+  text-align: left;
+  padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid hsl(var(--border));
+  vertical-align: top;
+}
+.scrapbook-body-md th {
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  border-bottom-color: hsl(var(--foreground) / 0.35);
+}
+.scrapbook-body-md tbody tr:last-child td {
+  border-bottom: 0;
+}
 
 .scrapbook-body-code {
   font-family: var(--font-mono);

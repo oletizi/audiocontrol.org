@@ -234,7 +234,8 @@ function renderMarkdown(src: string): string {
   };
   const flushAll = () => { flushList(); flushPara(); flushQuote(); };
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     // Fenced code block
     const fence = line.match(/^```(\w+)?\s*$/);
     if (fence) {
@@ -248,6 +249,21 @@ function renderMarkdown(src: string): string {
       continue;
     }
     if (inCode !== null) { inCode += line + '\n'; continue; }
+
+    // GFM pipe table: header row, then |---|---| separator, then body rows
+    if (line.includes('|') && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
+      flushAll();
+      const header = splitTableRow(line);
+      const bodyRows: string[][] = [];
+      let j = i + 2;
+      while (j < lines.length && lines[j].includes('|') && lines[j].trim() !== '') {
+        bodyRows.push(splitTableRow(lines[j]));
+        j++;
+      }
+      out.push(renderTable(header, bodyRows));
+      i = j - 1;
+      continue;
+    }
 
     // Headings
     const h = line.match(/^(#{1,6})\s+(.*)$/);
@@ -278,6 +294,30 @@ function renderMarkdown(src: string): string {
   flushAll();
   if (inCode !== null) out.push(`<pre><code>${escapeHtml(inCode)}</code></pre>`);
   return out.join('\n');
+}
+
+function isTableSeparator(line: string): boolean {
+  const trimmed = line.trim();
+  if (!trimmed.includes('|')) return false;
+  // A separator row is only pipes, dashes, colons, and whitespace, with
+  // at least one dash.
+  return /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(trimmed);
+}
+
+function splitTableRow(line: string): string[] {
+  // Strip leading/trailing pipe then split. Trim each cell.
+  let t = line.trim();
+  if (t.startsWith('|')) t = t.slice(1);
+  if (t.endsWith('|')) t = t.slice(0, -1);
+  return t.split('|').map((c) => c.trim());
+}
+
+function renderTable(header: string[], rows: string[][]): string {
+  const thead = `<thead><tr>${header.map((h) => `<th>${inline(h)}</th>`).join('')}</tr></thead>`;
+  const tbody = rows.length
+    ? `<tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody>`
+    : '';
+  return `<table>${thead}${tbody}</table>`;
 }
 
 function inline(text: string): string {
