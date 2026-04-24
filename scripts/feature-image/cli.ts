@@ -55,6 +55,7 @@ async function main(): Promise<void> {
       name: { type: 'string', default: 'generated' },
       width: { type: 'string', default: '1792' },
       height: { type: 'string', default: '1024' },
+      site: { type: 'string', default: 'editorialcontrol' },
       help: { type: 'boolean', default: false },
     },
     strict: true,
@@ -91,6 +92,7 @@ async function main(): Promise<void> {
     outputDir,
     baseName: values.name as string,
     formats: values.formats as string,
+    site: values.site as 'audiocontrol' | 'editorialcontrol',
   });
 
   if (result.filtersApplied.length > 0) {

@@ -26,5 +26,6 @@
   "durationMs": 8084,
   "status": "generated",
   "templateSlug": "pull-quote",
-  "site": "editorialcontrol"
+  "site": "editorialcontrol",
+  "archived": true
 }

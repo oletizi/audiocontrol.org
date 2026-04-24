@@ -18,5 +18,6 @@
   "durationMs": 7169,
   "status": "generated",
   "site": "editorialcontrol",
-  "rating": 4
+  "rating": 4,
+  "archived": true
 }

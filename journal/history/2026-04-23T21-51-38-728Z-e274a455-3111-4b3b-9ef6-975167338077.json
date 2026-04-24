@@ -25,5 +25,6 @@
   "status": "generated",
   "notes": "rebaked from bc9411ae via DOM",
   "parentEntryId": "bc9411ae-f498-40a8-b109-113b3ca9e52c",
-  "site": "editorialcontrol"
+  "site": "editorialcontrol",
+  "archived": true
 }

@@ -1,0 +1,22 @@
+{
+  "id": "16af36e3-1edd-4ee7-b60d-578cd2e0a3dc",
+  "timestamp": "2026-04-24T00:18:02.118Z",
+  "prompt": "Abstract tracked-changes revision marks, flowing horizontal\nsignal-green chartreuse strokes underlining and striking\nthrough invisible text, scattered warm parchment-cream caret\nmarks and small annotations drifting in the margins, ink-bleed\nsoftness at each stroke edge, cool ink-near-black background,\neditorial revision-pass atmosphere, sparse and intentional\nplacement, compositional weight in the upper half with quiet\nmeasure below, no text no words no letters no typography no\nlabels no people no objects",
+  "provider": "flux",
+  "preset": "subtle",
+  "title": "You Don't Need a Better Prompt. You Need Selection Pressure.",
+  "subtitle": "Use an AI content generator long enough and your output drifts. The third option: a population of prompts under selection pressure — and an agent that builds the review app for its own output in an afternoon.",
+  "formats": "og",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/editorialcontrol/public/images/generated",
+  "outputs": {
+    "raw": [],
+    "filtered": [],
+    "composited": []
+  },
+  "durationMs": 0,
+  "status": "rejected",
+  "error": "Input file is missing: /Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/undefined/public/favicon.svg",
+  "templateSlug": "tracked-changes",
+  "site": "editorialcontrol",
+  "archived": true
+}

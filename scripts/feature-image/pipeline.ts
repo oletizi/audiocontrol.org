@@ -39,6 +39,15 @@ export interface GenerateRequest {
   baseName?: string;
   /** Comma-separated format names. Default: all. */
   formats?: string;
+  /**
+   * Target site for the composite overlay's brand mark. Determines
+   * which favicon.svg gets inlined in the lower-left corner. When
+   * omitted, falls back to the gallery host site. Callers that know
+   * the target (the /generate API pulls it from LogEntry.site) should
+   * always pass it explicitly — otherwise the wrong brand mark ends
+   * up on the OG image.
+   */
+  site?: 'audiocontrol' | 'editorialcontrol';
 }
 
 export interface CompositedOutput {
@@ -125,6 +134,10 @@ export async function generateFeatureImage(request: GenerateRequest): Promise<Ge
     outputDir,
     baseName = 'generated',
     formats = 'og,youtube,instagram',
+    // Default the target site to editorialcontrol — the gallery's
+    // host site since the feature-image infra moved. Callers that
+    // know the real target pass `site` explicitly.
+    site = 'editorialcontrol',
   } = request;
 
   if (!prompt && !backgroundPath) {
@@ -204,6 +217,7 @@ export async function generateFeatureImage(request: GenerateRequest): Promise<Ge
           subtitle,
           backgroundBuffer: bg.buffer,
           format,
+          site,
         });
         writeFileSync(outPath, buffer);
         result.composited.push({

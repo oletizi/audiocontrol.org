@@ -41,5 +41,6 @@
   "parentEntryId": "0d9d0767-0009-4bac-ae7c-911fffa99904",
   "site": "editorialcontrol",
   "overlayPosition": "left-two-thirds",
-  "overlayAlign": "auto"
+  "overlayAlign": "auto",
+  "archived": true
 }

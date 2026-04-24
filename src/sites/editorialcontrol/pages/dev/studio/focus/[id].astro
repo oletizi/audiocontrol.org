@@ -144,6 +144,12 @@ function selectOptions(values: string[], selected: string): string {
     </nav>
 
     <div class="studio-focus__workbench">
+      {entry.status === 'rejected' && entry.error && (
+        <div class="studio-focus__error" role="alert">
+          <span class="studio-focus__error-label">Generation failed</span>
+          <pre class="studio-focus__error-message">{entry.error}</pre>
+        </div>
+      )}
       <div class="studio-focus__hero">
         <div class="studio-focus__format-tabs" role="tablist" aria-label="Preview format">
           <button type="button" class="studio-focus__format-tab" data-format-tab="og" aria-selected="true">
@@ -400,6 +406,34 @@ function selectOptions(values: string[], selected: string): string {
     .studio-focus__workbench {
       grid-template-columns: 1fr;
     }
+  }
+
+  /* ── Error panel (surfaces rejected-entry error messages) ─────── */
+  .studio-focus__error {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    border-left: 3px solid hsl(0 70% 55%);
+    background: hsl(0 35% 15%);
+    color: hsl(0 15% 90%);
+    margin-bottom: 1.25rem;
+  }
+  .studio-focus__error-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(0 60% 70%);
+  }
+  .studio-focus__error-message {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 
   /* ── Image hero ───────────────────────────────────────────────── */
