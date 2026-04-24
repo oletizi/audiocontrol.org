@@ -31,6 +31,7 @@
  */
 
 import { readFileSync, writeFileSync } from 'fs';
+import { randomUUID } from 'node:crypto';
 import {
   PLATFORMS,
   STAGES,
@@ -117,7 +118,12 @@ function parseEntries(lines: string[], stage: Stage): CalendarEntry[] {
     const slug = col(cells, cols, 'slug');
     const title = col(cells, cols, 'title');
     if (slug && title) {
+      // UUID column is optional for backward compatibility. Missing IDs
+      // get a fresh v4 assigned in-memory; the next writeCalendar
+      // persists them, so one save fully migrates a legacy calendar.
+      const existingId = col(cells, cols, 'uuid') ?? col(cells, cols, 'id');
       const entry: CalendarEntry = {
+        id: existingId ?? randomUUID(),
         slug,
         title,
         description: col(cells, cols, 'description') ?? '',
@@ -177,7 +183,12 @@ function parseDistributions(lines: string[]): DistributionRecord[] {
     const dateShared = col(cells, cols, 'shared');
 
     if (slug && platformValue && url && dateShared && isPlatform(platformValue)) {
+      // entryId may be missing on legacy rows. Left empty here and
+      // backfilled in parseCalendar once entries are parsed and a
+      // slug → entry lookup table is available.
+      const entryIdCell = col(cells, cols, 'entryid') ?? col(cells, cols, 'uuid');
       const rec: DistributionRecord = {
+        entryId: entryIdCell ?? '',
         slug,
         platform: platformValue,
         url,
@@ -295,6 +306,19 @@ export function parseCalendar(markdown: string): EditorialCalendar {
     if (rec) rec.shortform = b.text;
   }
 
+  // Backfill missing entryIds on DistributionRecords by slug match
+  // against the entries we just parsed. Records whose slug doesn't
+  // resolve to a known entry keep an empty entryId — writeCalendar
+  // preserves that (the row is still parseable), and a subsequent
+  // `/editorial-distribute` or migration run will fix it.
+  const entryBySlug = new Map(entries.map((e) => [e.slug, e]));
+  for (const d of distributions) {
+    if (!d.entryId) {
+      const match = entryBySlug.get(d.slug);
+      if (match) d.entryId = match.id;
+    }
+  }
+
   return { entries, distributions };
 }
 
@@ -329,7 +353,7 @@ function renderStageTable(entries: CalendarEntry[], stage: Stage): string {
   );
   const isPublished = stage === 'Published';
 
-  const headers: string[] = ['Slug', 'Title', 'Description', 'Keywords'];
+  const headers: string[] = ['UUID', 'Slug', 'Title', 'Description', 'Keywords'];
   if (hasTopics) headers.push('Topics');
   if (hasType) headers.push('Type');
   if (hasUrl) headers.push('URL');
@@ -341,7 +365,11 @@ function renderStageTable(entries: CalendarEntry[], stage: Stage): string {
   lines.push(`|${headers.map(() => '------').join('|')}|`);
 
   for (const e of entries) {
+    // Backfill a UUID at render time if one is missing. Mutates the
+    // entry so subsequent reads/writes see a stable id.
+    if (!e.id) e.id = randomUUID();
     const row: string[] = [
+      e.id,
       escapeCell(e.slug),
       escapeCell(e.title),
       escapeCell(e.description),
@@ -365,7 +393,7 @@ function renderDistributionTable(records: DistributionRecord[]): string {
     (r) => r.channel !== undefined && r.channel !== '',
   );
 
-  const headers: string[] = ['Slug', 'Platform', 'URL', 'Shared'];
+  const headers: string[] = ['EntryID', 'Slug', 'Platform', 'URL', 'Shared'];
   if (hasChannel) headers.push('Channel');
   headers.push('Notes');
 
@@ -374,6 +402,7 @@ function renderDistributionTable(records: DistributionRecord[]): string {
 
   for (const r of records) {
     const row: string[] = [
+      r.entryId ?? '',
       escapeCell(r.slug),
       r.platform,
       escapeCell(r.url),
@@ -459,6 +488,7 @@ export function addEntry(
   }
 
   const entry: CalendarEntry = {
+    id: randomUUID(),
     slug,
     title,
     description: opts?.description ?? '',
@@ -469,6 +499,19 @@ export function addEntry(
 
   calendar.entries.push(entry);
   return entry;
+}
+
+/**
+ * Find a calendar entry by its stable UUID. Prefer this over `findEntry`
+ * (slug lookup) anywhere the caller has an entry already and wants the
+ * join to survive a future slug rename.
+ */
+export function findEntryById(
+  calendar: EditorialCalendar,
+  id: string,
+): CalendarEntry | undefined {
+  if (!id) return undefined;
+  return calendar.entries.find((e) => e.id === id);
 }
 
 /** Move an entry to the Planned stage and set target keywords. */
@@ -571,15 +614,25 @@ export function addDistribution(
   calendar: EditorialCalendar,
   record: DistributionRecord,
 ): DistributionRecord {
-  const entry = calendar.entries.find((e) => e.slug === record.slug);
+  // Resolve by entryId when present (stable) or fall back to slug
+  // (legacy callers). On success, stamp entryId onto the record so
+  // downstream joins use the stable identity even if slug later
+  // changes.
+  const entry =
+    (record.entryId && calendar.entries.find((e) => e.id === record.entryId)) ||
+    calendar.entries.find((e) => e.slug === record.slug);
   if (!entry) {
-    throw new Error(`No calendar entry found with slug: ${record.slug}`);
+    throw new Error(
+      `No calendar entry found with entryId "${record.entryId}" or slug "${record.slug}"`,
+    );
   }
   if (entry.stage !== 'Published') {
     throw new Error(
-      `Entry "${record.slug}" is in stage "${entry.stage}" — must be Published to record a distribution`,
+      `Entry "${entry.slug}" is in stage "${entry.stage}" — must be Published to record a distribution`,
     );
   }
+  record.entryId = entry.id;
+  record.slug = entry.slug;
   calendar.distributions.push(record);
   return record;
 }

@@ -1,0 +1,31 @@
+{
+  "id": "52b720ba-4d22-4630-a974-26976d24f9c0",
+  "timestamp": "2026-04-24T02:16:55.468Z",
+  "prompt": "Abstract isometric illustration of layered translucent data packets flowing through a network of glowing wireframe nodes, cool teal cyan dominant with warm amber accent highlights on connection lines, deep shadow background suggesting intense focused analysis, thin glowing trace lines weaving between the nodes, minimalist editorial style, dark moody atmosphere, no objects no people no text no words no letters no typography no labels",
+  "provider": "flux",
+  "preset": "retro-crt",
+  "title": "Reverse-Engineering the Akai S3000XL MIDI-over-SCSI Protocol: An Odyssey",
+  "subtitle": "How a failed attempt to run Akai's MESA II in a Mac OS 9 emulator led us through 38 disproven theories in five days of intense debugging, and ultimately to a standalone 68k emulator that cracked the protocol in four hours.",
+  "formats": "og",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/editorialcontrol/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/52b720ba-raw.png"
+    ],
+    "filtered": [
+      "/images/generated/52b720ba-filtered.png"
+    ],
+    "composited": [
+      {
+        "provider": "flux",
+        "format": "og",
+        "path": "/images/generated/52b720ba-og.png"
+      }
+    ]
+  },
+  "durationMs": 3947,
+  "status": "generated",
+  "templateSlug": "data-packet-network",
+  "site": "audiocontrol",
+  "archived": true
+}

@@ -3,7 +3,7 @@
   "type": "feature-image-blog",
   "createdAt": "2026-04-20T21:34:28.344Z",
   "createdBy": "agent",
-  "state": "open",
+  "state": "cancelled",
   "context": {
     "postPath": "src/sites/editorialcontrol/pages/blog/building-the-editorial-calendar-feature/index.md",
     "slug": "building-the-editorial-calendar-feature",
@@ -18,6 +18,7 @@
       "tracked-changes",
       "proof-constellation"
     ],
-    "notes": "AI-agent editorial workflow post; tracked-changes baseline (ai-agents + editorial tags matched); proof-constellation as fallback (workflow). editorialcontrol brand."
+    "notes": "AI-agent editorial workflow post; tracked-changes baseline (ai-agents + editorial tags matched); proof-constellation as fallback (workflow). editorialcontrol brand.",
+    "entryId": "fc4716b3-344d-49a4-ab8b-b230a0f7b1fd"
   }
 }

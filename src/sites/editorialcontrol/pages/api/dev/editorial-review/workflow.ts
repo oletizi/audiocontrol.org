@@ -7,6 +7,7 @@ export const GET: APIRoute = async ({ url }) => {
   if (import.meta.env.PROD) return new Response('Not Found', { status: 404 });
   const result = handleGetWorkflow(process.cwd(), {
     id: url.searchParams.get('id'),
+    entryId: url.searchParams.get('entryId'),
     site: url.searchParams.get('site'),
     slug: url.searchParams.get('slug'),
     contentKind: url.searchParams.get('contentKind'),

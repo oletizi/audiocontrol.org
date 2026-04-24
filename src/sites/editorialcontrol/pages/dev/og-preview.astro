@@ -1,0 +1,433 @@
+---
+export const prerender = false;
+
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import Layout from '../../layouts/Layout.astro';
+
+if (import.meta.env.PROD) {
+  return new Response('Not Found', { status: 404 });
+}
+
+type Site = 'audiocontrol' | 'editorialcontrol';
+const VALID_SITES: Site[] = ['audiocontrol', 'editorialcontrol'];
+
+const url = Astro.url;
+const p = url.searchParams;
+const siteParam = p.get('site');
+const slug = (p.get('slug') ?? '').trim();
+
+const site: Site | null =
+  siteParam && (VALID_SITES as string[]).includes(siteParam)
+    ? (siteParam as Site)
+    : null;
+
+// Read the post markdown from `content/blog/<slug>.md` (the collection
+// location); fall back to the legacy `pages/blog/<slug>/index.md` for
+// older posts that haven't moved yet.
+function readPostFrontmatter(
+  site: Site,
+  slug: string,
+): { title: string; description: string; socialImage: string | null; image: string | null } | null {
+  const collection = join(process.cwd(), 'src', 'sites', site, 'content', 'blog', `${slug}.md`);
+  const legacy = join(process.cwd(), 'src', 'sites', site, 'pages', 'blog', slug, 'index.md');
+  const postPath = existsSync(collection) ? collection : existsSync(legacy) ? legacy : null;
+  if (!postPath) return null;
+
+  const src = readFileSync(postPath, 'utf-8');
+  const fmMatch = src.match(/^---\s*\n([\s\S]*?)\n---/);
+  if (!fmMatch) return null;
+
+  const fm = fmMatch[1];
+  const field = (key: string): string | null => {
+    const m = fm.match(new RegExp(`^${key}:\\s*["']?(.+?)["']?\\s*$`, 'm'));
+    return m ? m[1] : null;
+  };
+
+  return {
+    title: field('title') ?? slug,
+    description: field('description') ?? '',
+    socialImage: field('socialImage'),
+    image: field('image'),
+  };
+}
+
+// Inline the OG image as a data URI so the preview works regardless of
+// which dev server is serving this page (feature-og.png lives in the
+// target site's public tree, not this host's).
+function loadOgImage(site: Site, socialImage: string | null): string | null {
+  if (!socialImage) return null;
+  const publicRel = socialImage.replace(/^\//, '');
+  const abs = join(process.cwd(), 'src', 'sites', site, 'public', publicRel);
+  if (!existsSync(abs)) return null;
+  const bytes = readFileSync(abs);
+  return `data:image/png;base64,${bytes.toString('base64')}`;
+}
+
+let error: string | null = null;
+let title = '';
+let description = '';
+let ogDataUri: string | null = null;
+let publicUrl = '';
+
+if (!site || !slug) {
+  error = 'Missing ?site=<site>&slug=<slug> query params.';
+} else {
+  const fm = readPostFrontmatter(site, slug);
+  if (!fm) {
+    error = `No post found for ${site}:${slug}.`;
+  } else if (!fm.socialImage) {
+    error = `Post ${site}:${slug} has no \`socialImage\` frontmatter yet — approve + apply an image first.`;
+  } else {
+    title = fm.title;
+    description = fm.description;
+    ogDataUri = loadOgImage(site, fm.socialImage);
+    if (!ogDataUri) {
+      error = `socialImage path ${fm.socialImage} points to a file that does not exist on disk.`;
+    }
+    const host = site === 'audiocontrol' ? 'audiocontrol.org' : 'editorialcontrol.org';
+    publicUrl = `https://${host}/blog/${slug}/`;
+  }
+}
+---
+
+<Layout title={`OG preview — ${title || 'unknown'}`} description="Social-share composite preview.">
+  <section class="og-preview">
+    <header class="og-preview__head">
+      <p class="kicker">Social preview</p>
+      <h1 class="og-preview__title">{title || 'OG preview'}</h1>
+      {!error && (
+        <p class="og-preview__url">{publicUrl}</p>
+      )}
+      <p class="og-preview__hint">
+        Mock of how the shared link will render. Not pixel-perfect to each
+        platform — good enough to judge composition, legibility, and crop.
+      </p>
+    </header>
+
+    {error && (
+      <div class="og-preview__error">
+        <strong>Can't preview.</strong> {error}
+      </div>
+    )}
+
+    {!error && ogDataUri && (
+      <div class="og-preview__grid">
+        <figure class="og-card og-card--linkedin">
+          <figcaption class="og-card__caption">LinkedIn</figcaption>
+          <div class="og-card__frame og-card__frame--li">
+            <img class="og-card__img" src={ogDataUri} alt="" />
+            <div class="og-card__meta og-card__meta--li">
+              <div class="og-card__title og-card__title--li">{title}</div>
+              <div class="og-card__domain og-card__domain--li">
+                {publicUrl.replace(/^https?:\/\//, '').replace(/\/.*$/, '').toLowerCase()}
+              </div>
+            </div>
+          </div>
+        </figure>
+
+        <figure class="og-card og-card--x">
+          <figcaption class="og-card__caption">X / Twitter · summary_large_image</figcaption>
+          <div class="og-card__frame og-card__frame--x">
+            <img class="og-card__img" src={ogDataUri} alt="" />
+            <div class="og-card__meta og-card__meta--x">
+              <div class="og-card__domain og-card__domain--x">
+                {publicUrl.replace(/^https?:\/\//, '').replace(/\/.*$/, '').toLowerCase()}
+              </div>
+              <div class="og-card__title og-card__title--x">{title}</div>
+            </div>
+          </div>
+        </figure>
+
+        <figure class="og-card og-card--fb">
+          <figcaption class="og-card__caption">Facebook</figcaption>
+          <div class="og-card__frame og-card__frame--fb">
+            <img class="og-card__img" src={ogDataUri} alt="" />
+            <div class="og-card__meta og-card__meta--fb">
+              <div class="og-card__domain og-card__domain--fb">
+                {publicUrl.replace(/^https?:\/\//, '').replace(/\/.*$/, '').toUpperCase()}
+              </div>
+              <div class="og-card__title og-card__title--fb">{title}</div>
+              <div class="og-card__desc og-card__desc--fb">{description}</div>
+            </div>
+          </div>
+        </figure>
+
+        <figure class="og-card og-card--slack">
+          <figcaption class="og-card__caption">Slack / Messenger / Discord</figcaption>
+          <div class="og-card__frame og-card__frame--slack">
+            <div class="og-card__slack-inner">
+              <div class="og-card__slack-text">
+                <div class="og-card__domain og-card__domain--slack">
+                  {publicUrl.replace(/^https?:\/\//, '').replace(/\/.*$/, '').toLowerCase()}
+                </div>
+                <div class="og-card__title og-card__title--slack">{title}</div>
+                <div class="og-card__desc og-card__desc--slack">{description}</div>
+              </div>
+              <img class="og-card__slack-thumb" src={ogDataUri} alt="" />
+            </div>
+          </div>
+        </figure>
+      </div>
+    )}
+
+    <footer class="og-preview__foot">
+      <p>
+        Raw file: <code>{error ? '—' : `src/sites/${site}/public/images/blog/${slug}/feature-og.png`}</code>
+      </p>
+      <p>
+        For platform-accurate validation once deployed:
+        <a href="https://www.linkedin.com/post-inspector/" target="_blank" rel="noopener">LinkedIn Post Inspector</a> ·
+        <a href="https://cards-dev.twitter.com/validator" target="_blank" rel="noopener">X Card Validator</a> ·
+        <a href="https://developers.facebook.com/tools/debug/" target="_blank" rel="noopener">Facebook Sharing Debugger</a>
+      </p>
+    </footer>
+  </section>
+</Layout>
+
+<style>
+  .og-preview {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    color: var(--color-text, #e9e6dd);
+  }
+
+  .og-preview__head {
+    margin-bottom: 2rem;
+  }
+
+  .kicker {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-chartreuse, #C6E839);
+    margin: 0 0 0.4rem;
+  }
+
+  .og-preview__title {
+    font-family: var(--font-serif, 'Fraunces', serif);
+    font-size: 2.2rem;
+    line-height: 1.1;
+    margin: 0 0 0.4rem;
+  }
+
+  .og-preview__url {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.85rem;
+    color: #9aa0a6;
+    margin: 0 0 0.6rem;
+    word-break: break-all;
+  }
+
+  .og-preview__hint {
+    font-size: 0.95rem;
+    color: #a8a29e;
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .og-preview__error {
+    background: #2a1717;
+    border: 1px solid #7b2d2d;
+    color: #f3c3c3;
+    padding: 1rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+
+  .og-preview__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+    gap: 2.5rem 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .og-card {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .og-card__caption {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9aa0a6;
+  }
+
+  .og-card__img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* LinkedIn card: white bg, rounded, image on top, title+domain below */
+  .og-card__frame--li {
+    background: #ffffff;
+    border: 1px solid #d5dadd;
+    border-radius: 4px;
+    overflow: hidden;
+    color: #000;
+    font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+  .og-card__meta--li {
+    padding: 0.75rem 0.9rem 0.9rem;
+  }
+  .og-card__title--li {
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    color: #000;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .og-card__domain--li {
+    font-size: 0.78rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  /* X / Twitter card: dark, rounded-xl */
+  .og-card__frame--x {
+    background: #000;
+    border: 1px solid #2f3336;
+    border-radius: 16px;
+    overflow: hidden;
+    color: #e7e9ea;
+    font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+    position: relative;
+  }
+  .og-card__meta--x {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    max-width: calc(100% - 1.5rem);
+  }
+  .og-card__title--x {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #fff;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .og-card__domain--x {
+    font-size: 0.72rem;
+    color: #d0d3d6;
+  }
+
+  /* Facebook card: off-white, sharp corners, domain in all caps */
+  .og-card__frame--fb {
+    background: #f0f2f5;
+    border: none;
+    overflow: hidden;
+    color: #050505;
+    font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+  .og-card__meta--fb {
+    padding: 0.75rem 0.9rem 0.9rem;
+  }
+  .og-card__domain--fb {
+    font-size: 0.72rem;
+    color: #606770;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.25rem;
+  }
+  .og-card__title--fb {
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.3;
+    color: #050505;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .og-card__desc--fb {
+    font-size: 0.85rem;
+    color: #606770;
+    margin-top: 0.3rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Slack-style: small thumbnail right, title+desc left, left accent */
+  .og-card__frame--slack {
+    background: #1a1d21;
+    border-left: 4px solid #3f4350;
+    padding: 0.75rem 0.9rem;
+    color: #e9e6dd;
+    font-family: 'Lato', -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+    border-radius: 0 4px 4px 0;
+  }
+  .og-card__slack-inner {
+    display: grid;
+    grid-template-columns: 1fr 120px;
+    gap: 1rem;
+    align-items: start;
+  }
+  .og-card__slack-thumb {
+    width: 120px;
+    height: 68px;
+    object-fit: cover;
+    object-position: left top;
+    border-radius: 4px;
+  }
+  .og-card__domain--slack {
+    font-size: 0.78rem;
+    color: #a9acb4;
+  }
+  .og-card__title--slack {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #4d9eeb;
+    margin-top: 0.2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .og-card__desc--slack {
+    font-size: 0.85rem;
+    color: #d0cfcc;
+    margin-top: 0.2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .og-preview__foot {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #3f4350;
+    font-size: 0.85rem;
+    color: #9aa0a6;
+  }
+  .og-preview__foot code {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.82rem;
+  }
+  .og-preview__foot a {
+    color: var(--color-chartreuse, #C6E839);
+    text-decoration: none;
+  }
+  .og-preview__foot a:hover {
+    text-decoration: underline;
+  }
+</style>

@@ -502,7 +502,11 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                           <span class="er-calendar-meta er-calendar-meta-kind">{kind}</span>
                         )}
                         {kind === 'blog' && hasFile && entryHasBakedFeatureImage(site, entry.slug) && (
-                          <span class="er-calendar-meta er-calendar-meta-baked" title="feature-og.png is baked in this post's public dir">✓ feature image</span>
+                          <a
+                            class="er-calendar-meta er-calendar-meta-baked er-calendar-meta-link"
+                            href={`/dev/og-preview?site=${site}&slug=${entry.slug}`}
+                            title="feature-og.png is baked — click for social-share previews"
+                          >✓ feature image</a>
                         )}
                       </div>
                       <span class="er-calendar-status">

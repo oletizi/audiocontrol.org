@@ -91,6 +91,13 @@ function writeHistory(rootDir: string, entry: DraftHistoryEntry): void {
 }
 
 export interface CreateWorkflowParams {
+  /**
+   * Stable UUID of the target calendar entry. Preferred over `slug` as
+   * the natural key so renames don't split a single entry's workflow
+   * history across two keys. Optional for pre-Phase-18 callers; when
+   * present, it replaces the slug match in idempotent lookup.
+   */
+  entryId?: string;
   site: Site;
   slug: string;
   contentKind: ContentKind;
@@ -101,9 +108,13 @@ export interface CreateWorkflowParams {
 }
 
 function matchesKey(w: DraftWorkflowItem, k: CreateWorkflowParams): boolean {
+  // Prefer entryId when both sides have it — stable identity survives
+  // slug renames. Fall back to (site, slug) otherwise so legacy
+  // workflows (pre-Phase-18) remain matchable.
+  const idMatch =
+    k.entryId && w.entryId ? w.entryId === k.entryId : w.site === k.site && w.slug === k.slug;
   return (
-    w.site === k.site &&
-    w.slug === k.slug &&
+    idMatch &&
     w.contentKind === k.contentKind &&
     (w.platform ?? null) === (k.platform ?? null) &&
     (w.channel ?? null) === (k.channel ?? null)
@@ -136,6 +147,7 @@ export function createWorkflow(
   const now = new Date().toISOString();
   const item: DraftWorkflowItem = {
     id: randomUUID(),
+    entryId: params.entryId,
     site: params.site,
     slug: params.slug,
     contentKind: params.contentKind,

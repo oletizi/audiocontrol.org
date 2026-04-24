@@ -64,6 +64,22 @@
   border-radius: 2px;
   font-weight: 600;
 }
+
+/* When the baked chip is a link to the og-preview page, give it a
+ * subtle hover cue. The link variant only differs on :hover — default
+ * state should look identical to the plain chip so existing rows don't
+ * shift visually. */
+a.er-calendar-meta-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.12s ease, box-shadow 0.12s ease;
+}
+a.er-calendar-meta-link:hover,
+a.er-calendar-meta-link:focus-visible {
+  background: var(--er-highlight);
+  box-shadow: 0 0 0 1px rgba(139, 105, 20, 0.3);
+  outline: none;
+}
 .er-calendar-status {
   display: inline-flex;
   align-items: center;
