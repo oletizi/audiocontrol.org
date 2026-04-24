@@ -27,6 +27,7 @@ import {
   readWorkflow as readFeatureImageWorkflow,
   type WorkflowItem as FeatureImageWorkflowItem,
 } from '../../../../../scripts/feature-image/workflow.js';
+import { countScrapbook } from '../../../../../scripts/lib/editorial/scrapbook.js';
 
 if (import.meta.env.PROD) {
   return new Response('Not Found', { status: 404 });
@@ -514,6 +515,17 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                             title="feature-og.png is baked — click for social-share previews"
                           >✓ feature image</a>
                         )}
+                        {kind === 'blog' && (() => {
+                          const n = countScrapbook(process.cwd(), site, entry.slug);
+                          if (n === 0) return null;
+                          return (
+                            <a
+                              class="er-calendar-meta er-calendar-meta-scrapbook er-calendar-meta-link"
+                              href={`/dev/scrapbook/${site}/${entry.slug}`}
+                              title={`${n} scrapbook item${n === 1 ? '' : 's'}`}
+                            >scrapbook · <span class="er-calendar-meta-scrapbook-count">{n}</span> →</a>
+                          );
+                        })()}
                       </div>
                       <span class="er-calendar-status">
                         {hasRepoContent(kind) && (
