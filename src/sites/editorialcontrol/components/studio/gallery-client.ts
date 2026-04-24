@@ -288,16 +288,21 @@ function cardHtml(entry: LogEntry): string {
     ? `<button type="button" class="studio-btn" disabled>Rejected ✗</button>`
     : `<button type="button" class="studio-btn studio-btn--danger" data-action="reject">Reject</button>`;
 
-  // Apply button — surfaces only on approved entries. Copies
-  // `/feature-image-apply` to the clipboard; the apply skill scans
-  // for pending decisions + approved entries and does the actual
-  // file-copy + frontmatter-upsert. The button is a process-motion
-  // affordance: the operator clicks Approve → Apply → paste in Claude
-  // Code. Making both visible on the card tells the story without
-  // hiding the last step behind an out-of-band command.
-  const applyBtn = isApproved
-    ? `<button type="button" class="studio-btn studio-btn--primary studio-copy-btn" data-action="copy-apply" data-copy="/feature-image-apply" title="copy /feature-image-apply to clipboard — run in Claude Code to bake files into the post">Apply →</button>`
-    : '';
+  // Apply button — only surfaces on approved entries that are neither
+  // archived nor already applied. `scan.ts` filters out archived +
+  // appliedTo entries; the card UI has to match or clicking Apply
+  // produces "nothing pending" since there's nothing left to drain.
+  // Applied entries show a disabled "Applied ✓" stamp instead so the
+  // process-motion affordance still reads end-to-end.
+  const isApplied = Boolean(entry.appliedTo);
+  const isArchived = Boolean(entry.archived);
+  const applyBtn = !isApproved
+    ? ''
+    : isApplied
+      ? `<button type="button" class="studio-btn" disabled title="applied to ${entry.appliedTo}">Applied ✓</button>`
+      : isArchived
+        ? ''
+        : `<button type="button" class="studio-btn studio-btn--primary studio-copy-btn" data-action="copy-apply" data-copy="/feature-image-apply" title="copy /feature-image-apply to clipboard — run in Claude Code to bake files into the post">Apply →</button>`;
 
   const archiveLabel = entry.archived ? 'Restore' : 'Archive';
 

@@ -3,7 +3,7 @@
   "type": "feature-image-blog",
   "createdAt": "2026-04-23T23:36:37.602Z",
   "createdBy": "agent",
-  "state": "decided",
+  "state": "cancelled",
   "context": {
     "postPath": "src/sites/editorialcontrol/content/blog/evolution-by-artificial-selection-for-prompt-generation.md",
     "slug": "evolution-by-artificial-selection-for-prompt-generation",
