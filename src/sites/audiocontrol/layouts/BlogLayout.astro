@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import Layout from './Layout.astro';
 import '../styles/prose.css';
 import '../../../shared/blog-figure.css';
@@ -17,8 +19,11 @@ interface Props {
     datePublished?: string;
     dateModified?: string;
     author?: string;
-    image?: string;
-    socialImage?: string;
+    // After Phase 18c: co-located assets resolve to ImageMetadata.
+    // Raw string paths still work for shared assets that aren't
+    // per-post (e.g. `/images/s-330-feature.jpg`).
+    image?: ImageMetadata | string;
+    socialImage?: ImageMetadata | string;
   };
   headings?: Heading[];
   title?: string;
@@ -27,6 +32,11 @@ interface Props {
   datePublished?: string;
   dateModified?: string;
   author?: string;
+}
+
+function urlOf(value: ImageMetadata | string | undefined): string | undefined {
+  if (!value) return undefined;
+  return typeof value === 'string' ? value : value.src;
 }
 
 const {
@@ -54,8 +64,8 @@ const ogImageSlug = pathSegments.join('-');
 const autoOgImage = `/images/og/${ogImageSlug}.png`;
 // `image` is for inline display only. `socialImage` overrides the OG/sharing image.
 const featureImage = frontmatter?.image;
-const socialImage = frontmatter?.socialImage ?? autoOgImage;
-const schemaImage = new URL(socialImage, Astro.site).toString();
+const socialImageUrl = urlOf(frontmatter?.socialImage) ?? autoOgImage;
+const schemaImage = new URL(socialImageUrl, Astro.site).toString();
 
 const blogPostingJsonLd = {
   '@context': 'https://schema.org',
@@ -86,7 +96,7 @@ const blogPostingJsonLd = {
 const tocHeadings = headings.filter((h) => h.depth === 2);
 ---
 
-<Layout title={title} description={description} image={socialImage} type="article" jsonLd={blogPostingJsonLd}>
+<Layout title={title} description={description} image={socialImageUrl} type="article" jsonLd={blogPostingJsonLd}>
   <div class="article-layout">
     {tocHeadings.length > 0 && (
       <aside class="toc" aria-label="Table of contents">
@@ -108,7 +118,10 @@ const tocHeadings = headings.filter((h) => h.depth === 2);
       )}
       {featureImage && (
         <figure class="post-feature-image">
-          <img src={featureImage} alt="" />
+          {typeof featureImage === 'string'
+            ? <img src={featureImage} alt="" />
+            : <Image src={featureImage} alt="" />
+          }
         </figure>
       )}
       <slot />

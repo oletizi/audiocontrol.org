@@ -2072,6 +2072,92 @@ body.er-focus-mode .er-outline-tab {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ---------- Rename-slug inline form (one per blog row) ----------
+ *
+ * Expands in-place under the row when the operator clicks that row's
+ * "rename →" button. No modal — the operator's eye stays on the row
+ * they're acting on. Matches the press-check palette: paper-2
+ * background, red-pencil left rail (same visual register as the
+ * intake sheet), monospace "rename →" kicker, and a diff-style
+ * old-slug → new-input row. */
+.er-calendar-row-wrap { display: contents; }
+.er-rename-inline {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  margin: 0 0 var(--er-space-2) 0;
+  padding: var(--er-space-2) var(--er-space-3);
+  background: var(--er-paper-2);
+  border-left: 3px solid var(--er-red-pencil);
+  font-family: var(--er-font-mono);
+  font-size: 0.78rem;
+  animation: er-rename-in 160ms ease-out;
+}
+@keyframes er-rename-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.er-rename-inline .er-rename-kicker {
+  color: var(--er-red-pencil);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+.er-rename-inline .er-rename-old {
+  padding: 0.1em 0.4em;
+  border: 1px dashed var(--er-faded-2);
+  color: var(--er-ink-soft);
+  background: var(--er-paper);
+  text-decoration: line-through;
+  text-decoration-color: var(--er-red-pencil);
+  text-decoration-thickness: 1px;
+  font-family: var(--er-font-mono);
+  font-size: 0.78rem;
+}
+.er-rename-inline .er-rename-arrow {
+  color: var(--er-red-pencil);
+  font-weight: 600;
+}
+.er-rename-inline input[data-rename-input] {
+  font-family: var(--er-font-mono);
+  font-size: 0.85rem;
+  line-height: 1.3;
+  color: var(--er-ink);
+  background: var(--er-paper);
+  border: 1px solid var(--er-faded-2);
+  border-radius: 0;
+  padding: 0.25rem 0.45rem;
+  min-width: 20rem;
+  flex: 1 1 20rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.er-rename-inline input[data-rename-input]:focus {
+  outline: none;
+  border-color: var(--er-red-pencil);
+  box-shadow: 0 0 0 2px rgba(188, 63, 50, 0.2);
+}
+.er-rename-inline .er-rename-hint {
+  font-family: var(--er-font-display);
+  font-style: italic;
+  font-size: 0.82rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--er-ink-soft);
+  margin: 0;
+  flex-basis: 100%;
+}
+.er-rename-inline .er-rename-hint[data-error='true'] {
+  color: var(--er-red-pencil);
+}
+.er-rename-inline button.copied {
+  background: var(--er-stamp-green);
+  border-color: var(--er-stamp-green);
+  color: var(--er-paper);
+}
+
 /* ---------- Keyboard shortcut overlay ---------- */
 
 .er-shortcuts {

@@ -36,8 +36,9 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 17 | Content collections + draft prod gate + outline stage | Complete on branch (17a+b+c) + UX follow-ons (anchor-rebased margin notes, resolve/re-open, /dev navigation, walker-space offset fix, outline-aware body-state) |
 | 17e | Iterate-loop helpers + disposition stamps + editor UX polish | Complete (PRs #111, #112, #113 merged) |
 | 17f | Studio intake flow + blog figures/lightbox/pull-quotes + 'Building the Editorial Calendar Feature' shipped | Complete on branch (intake form, signature polling, clipboard fallback, figure remark plugin, lightbox overlay; article approved at v19) |
-| 18a | Stable UUID identity for calendar entries + distribution records | Planned (prep for 18b — no user-visible change) |
-| 18b | `/editorial-rename-slug` skill + Netlify redirect management | Planned (depends on 18a) |
+| 18a | Stable UUID identity for calendar entries + distribution records | Complete (PR #118 merged) |
+| 18b | `/editorial-rename-slug` skill + studio rename affordance | Complete on branch (PR #119 — helper, inline studio form, drift guard, first renames) |
+| 18c | Directory-based content collections with co-located assets | Complete on branch (PR #119 — migration of 11 posts, schema switch to `image()`, simplified rename to `mv`) |
 
 ## Dependencies
 

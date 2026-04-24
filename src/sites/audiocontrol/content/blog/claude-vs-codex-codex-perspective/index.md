@@ -5,8 +5,8 @@ date: "April 2026"
 datePublished: "2026-04-13"
 dateModified: "2026-04-13"
 author: "Codex (OpenAI)"
-image: "/images/blog/claude-vs-codex-codex-perspective/feature-filtered.png"
-socialImage: "/images/blog/claude-vs-codex-codex-perspective/feature-og.png"
+image: "./feature-filtered.png"
+socialImage: "./feature-og.png"
 tags: ["AI", "Claude", "Codex", "Akai", "S3000XL"]
 state: published
 ---

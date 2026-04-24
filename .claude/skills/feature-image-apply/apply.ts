@@ -8,8 +8,9 @@
  *
  * Responsibilities per invocation:
  *   - Copy -og, -youtube, -instagram, -filtered, and -raw files from the
- *     scratch output dir to src/sites/<site>/public/images/blog/<slug>/
- *     with the feature-<format>.png naming convention
+ *     scratch output dir to src/sites/<site>/content/blog/<slug>/
+ *     (co-located with the post's index.md), with the
+ *     feature-<format>.png naming convention
  *   - Edit the post markdown frontmatter to add image + socialImage fields
  *   - Mark the log entry with appliedTo=<postPath>
  *   - If applying a decided workflow, mark the workflow applied with
@@ -113,8 +114,12 @@ function siteFromPostPath(postPath: string): Site {
 }
 
 function slugFromPostPath(postPath: string): string {
+  // Directory-form collection entry (Phase 18c): content/blog/<slug>/index.md
   const match =
+    postPath.match(/content\/blog\/([^/]+)\/index\.md$/) ??
+    // Legacy flat collection file: content/blog/<slug>.md
     postPath.match(/content\/blog\/([^/]+)\.md$/) ??
+    // Legacy pre-collection pages route: pages/blog/<slug>/index.md
     postPath.match(/pages\/blog\/([^/]+)\/index\.md$/);
   if (!match) throw new Error(`Cannot infer slug from post path: ${postPath}`);
   return match[1];
@@ -157,8 +162,8 @@ function updateFrontmatter(postPath: string, slug: string, dryRun: boolean): voi
   const src = readFileSync(abs, 'utf-8');
   const today = new Date().toISOString().slice(0, 10);
   let next = src;
-  next = upsertFrontmatterField(next, 'image', `/images/blog/${slug}/feature-filtered.png`);
-  next = upsertFrontmatterField(next, 'socialImage', `/images/blog/${slug}/feature-og.png`);
+  next = upsertFrontmatterField(next, 'image', `./feature-filtered.png`);
+  next = upsertFrontmatterField(next, 'socialImage', `./feature-og.png`);
   next = upsertFrontmatterField(next, 'dateModified', today);
   if (next === src) {
     console.log('  frontmatter already current (no diff)');
@@ -201,7 +206,10 @@ async function main() {
 
   const site = siteFromPostPath(postPath);
   const slug = slugFromPostPath(postPath);
-  const destDir = join(root, 'src', 'sites', site, 'public', 'images', 'blog', slug);
+  // Post-Phase-18c: applied feature images live co-located with the
+  // post's index.md under content/blog/<slug>/. Astro's image
+  // pipeline resolves the relative frontmatter paths at build time.
+  const destDir = join(root, 'src', 'sites', site, 'content', 'blog', slug);
 
   console.log(`Apply plan:`);
   console.log(`  entry:     ${entryId}`);

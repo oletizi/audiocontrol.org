@@ -5,8 +5,8 @@ date: "April 2026"
 datePublished: "2026-04-17"
 dateModified: "2026-04-17"
 author: "Orion Letizi"
-image: "/images/blog/what-2400-session-taught-us-about-agent-workflow/feature-filtered.png"
-socialImage: "/images/blog/what-2400-session-taught-us-about-agent-workflow/feature-og.png"
+image: "./feature-filtered.png"
+socialImage: "./feature-og.png"
 tags: ["AI", "Claude", "Workflow", "Process"]
 state: published
 ---

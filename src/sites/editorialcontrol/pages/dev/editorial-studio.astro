@@ -49,10 +49,15 @@ interface SitedDistribution {
 
 const calendarEntries: SitedEntry[] = [];
 const distributions: SitedDistribution[] = [];
+const slugsBySite: Record<string, string[]> = {};
 for (const site of SITES) {
+  slugsBySite[site] = [];
   try {
     const cal = readCalendar(process.cwd(), site);
-    for (const entry of cal.entries) calendarEntries.push({ site, entry });
+    for (const entry of cal.entries) {
+      calendarEntries.push({ site, entry });
+      slugsBySite[site].push(entry.slug);
+    }
     for (const d of cal.distributions) {
       distributions.push({ site, platform: d.platform, slug: d.slug, shortform: d.shortform ?? false });
     }
@@ -463,6 +468,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                     site,
                   ].join(' ').toLowerCase();
                   return (
+                    <div class="er-calendar-row-wrap" data-row-wrap data-search={search}>
                     <div
                       class="er-calendar-row"
                       data-stage={stage}
@@ -640,7 +646,50 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                             >{fi.label}</a>
                           );
                         })()}
+                        {effectiveContentType(entry) === 'blog' && (
+                          <button
+                            class="er-btn er-btn-small"
+                            type="button"
+                            data-action="rename-open"
+                            title="rename the slug (SEO realignment) — copies /editorial-rename-slug to clipboard"
+                          >rename →</button>
+                        )}
                       </span>
+                    </div>
+                    {effectiveContentType(entry) === 'blog' && (
+                      <form
+                        class="er-rename-inline"
+                        data-rename-form
+                        data-site={site}
+                        data-slug={entry.slug}
+                        hidden
+                      >
+                        <span class="er-rename-kicker" aria-hidden="true">rename →</span>
+                        <code class="er-rename-old" title="current slug; will 301 after rename">{entry.slug}</code>
+                        <span class="er-rename-arrow" aria-hidden="true">→</span>
+                        <input
+                          type="text"
+                          name="new-slug"
+                          data-rename-input
+                          autocomplete="off"
+                          spellcheck="false"
+                          placeholder="new-slug-here"
+                          aria-label="new slug"
+                          required
+                        />
+                        <small class="er-rename-hint" data-rename-hint>lowercase, digits, hyphens</small>
+                        <button
+                          type="button"
+                          class="er-btn er-btn-small"
+                          data-action="rename-cancel"
+                        >cancel</button>
+                        <button
+                          type="submit"
+                          class="er-btn er-btn-small er-btn-primary"
+                          data-action="rename-copy"
+                        >copy /rename →</button>
+                      </form>
+                    )}
                     </div>
                   );
                 })
@@ -800,6 +849,17 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
 
   <div class="er-toast" data-toast hidden></div>
   <div class="er-poll-indicator" data-poll>auto-refresh · 10s</div>
+
+  <!--
+    Shared per-site slug lists, read by the inline rename form so
+    collision checks run client-side without a round trip.
+  -->
+  <script
+    type="application/json"
+    data-rename-slugs
+    set:html={JSON.stringify(slugsBySite)}
+  ></script>
+
 
   <script>
     import '../../../../shared/editorial-studio-client.ts';
