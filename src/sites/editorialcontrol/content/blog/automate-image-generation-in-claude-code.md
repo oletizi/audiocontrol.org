@@ -6,8 +6,8 @@ datePublished: "2026-04-18"
 dateModified: "2026-04-20"
 author: "Orion Letizi"
 tags: ["AI", "Automation", "Design", "Workflow"]
-image: "/images/blog/ai-doesnt-remember/feature-filtered.png"
-socialImage: "/images/blog/ai-doesnt-remember/feature-og.png"
+image: "/images/blog/automate-image-generation-in-claude-code/feature-filtered.png"
+socialImage: "/images/blog/automate-image-generation-in-claude-code/feature-og.png"
 state: published
 ---
 

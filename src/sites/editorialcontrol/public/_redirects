@@ -4,3 +4,8 @@
 
 # Sitemap alias so external linkers hitting /sitemap.xml find the real one.
 /sitemap.xml  /sitemap-index.xml  301
+
+# Phase 18b: /blog/ai-doesnt-remember/ renamed to /blog/automate-image-generation-in-claude-code/
+/blog/ai-doesnt-remember        /blog/automate-image-generation-in-claude-code/          301
+/blog/ai-doesnt-remember/       /blog/automate-image-generation-in-claude-code/          301
+/blog/ai-doesnt-remember/*      /blog/automate-image-generation-in-claude-code/:splat    301
