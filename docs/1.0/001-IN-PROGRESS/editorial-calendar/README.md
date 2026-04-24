@@ -4,6 +4,7 @@
 **Feature Branch:** `feature/editorial-calendar`
 **GitHub Issue:** oletizi/audiocontrol.org#29 (parent)
 **Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7), #89 (content edits), #98 (Phases 8-13 editorial-review extension), #101 (editorial-review redesign), #104 (Phase 14 — studio as command center + journal migration), #106 (Phase 15 — UI fixes, dblclick-edit, manual, multi-site consolidation)
+**Open PR:** #115 (feature-image studio moves to editorialcontrol + studio state-aware routing + meta-dispatch feature image)
 **Unshipped commits on branch:** ~27 (Phase 16 + Phase 17 — see workplan)
 
 ## Overview
