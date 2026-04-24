@@ -16,6 +16,7 @@ import {
   renameScrapbookFile,
   deleteScrapbookFile,
   writeScrapbookUpload,
+  seedScrapbookReadme,
   formatRelativeTime,
   formatSize,
   isValidSite,
@@ -196,6 +197,33 @@ describe('CRUD', () => {
   it('writeScrapbookUpload refuses overwrite', () => {
     writeScrapbookUpload(root, 'audiocontrol', 'post', 'pic.png', Buffer.from([1, 2, 3]));
     expect(() => writeScrapbookUpload(root, 'audiocontrol', 'post', 'pic.png', Buffer.from([4]))).toThrow(/already exists/);
+  });
+});
+
+describe('seedScrapbookReadme', () => {
+  it('seeds a README.md with title + article context', () => {
+    const item = seedScrapbookReadme(root, 'audiocontrol', 'my-post', 'My Post Title');
+    expect(item).not.toBeNull();
+    expect(item!.name).toBe('README.md');
+    const content = readFileSync(
+      scrapbookFilePath(root, 'audiocontrol', 'my-post', 'README.md'),
+      'utf-8',
+    );
+    expect(content).toContain('Scrapbook — My Post Title');
+    expect(content).toContain('`my-post`');
+    expect(content).toContain('## Receipts');
+  });
+  it('is idempotent — returns null when README already exists', () => {
+    seedScrapbookReadme(root, 'audiocontrol', 'my-post', 'First Title');
+    const second = seedScrapbookReadme(root, 'audiocontrol', 'my-post', 'Different Title');
+    expect(second).toBeNull();
+    // Ensure the original content was not overwritten.
+    const content = readFileSync(
+      scrapbookFilePath(root, 'audiocontrol', 'my-post', 'README.md'),
+      'utf-8',
+    );
+    expect(content).toContain('First Title');
+    expect(content).not.toContain('Different Title');
   });
 });
 

@@ -45,6 +45,7 @@ import {
   type Site,
   type Stage,
 } from './types.js';
+import { seedScrapbookReadme } from './scrapbook.js';
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -532,6 +533,22 @@ export function planEntry(
   entry.stage = 'Planned';
   entry.targetKeywords = keywords;
   return entry;
+}
+
+/**
+ * Seed the scrapbook README for a freshly-planned blog entry. Called
+ * separately (not inside `planEntry`) so `planEntry` stays a pure
+ * in-memory mutation. Writes to disk — the caller is responsible for
+ * scrapbook-sided errors. Returns the seeded item or null if one
+ * already exists. No-op for non-blog entries.
+ */
+export function seedPlanScrapbook(
+  rootDir: string,
+  site: Site,
+  entry: CalendarEntry,
+): ReturnType<typeof seedScrapbookReadme> {
+  if (effectiveContentType(entry) !== 'blog') return null;
+  return seedScrapbookReadme(rootDir, site, entry.slug, entry.title);
 }
 
 /** Move an entry to the Outlining stage. Precondition: Planned.

@@ -327,6 +327,44 @@ export function deleteScrapbookFile(
 }
 
 /**
+ * Seed a scrapbook's `README.md` at plan time. Idempotent — if the
+ * README already exists, returns null without touching it. Used by
+ * `/editorial-plan` so every Planned article gets a scrapbook home
+ * with a template that names the article and invites receipts.
+ */
+export function seedScrapbookReadme(
+  rootDir: string,
+  site: Site,
+  slug: string,
+  title: string,
+): ScrapbookItem | null {
+  const abs = scrapbookFilePath(rootDir, site, slug, 'README.md');
+  if (existsSync(abs)) return null;
+  const now = new Date().toISOString().slice(0, 10);
+  const body = [
+    `# Scrapbook — ${title}`,
+    '',
+    `Planned ${now}. Working notes, research, receipts, and references`,
+    `for the \`${slug}\` dispatch. Committed to git alongside the article;`,
+    'not baked to the public site.',
+    '',
+    '## Receipts',
+    '',
+    '- ',
+    '',
+    '## Notes',
+    '',
+    '- ',
+    '',
+    '## References',
+    '',
+    '- ',
+    '',
+  ].join('\n');
+  return createScrapbookMarkdown(rootDir, site, slug, 'README.md', body);
+}
+
+/**
  * Write an uploaded file into the scrapbook. Filename + content come
  * from the multipart body upstream; we validate and persist.
  */

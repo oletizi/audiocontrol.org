@@ -1170,28 +1170,28 @@ File-based routing can't conditionally skip pages, so the gate requires content 
 
 **Motivation:** Phase 18c's directory-based content collections made per-article co-located assets safe; the scrapbook convention we just landed (`content/blog/<slug>/scrapbook/` with the content-collection glob tightened to `*/index.md` so nothing in the scrapbook leaks to production) gives every article a private research drawer on disk. Without a UI, that drawer is reachable only through the filesystem and loses the "review + comment comfortably" property that motivated the editorial studio. Seeing the scrapbook as a reviewable surface is what turns the convention into a workflow.
 
-- [ ] `src/sites/editorialcontrol/pages/dev/scrapbook/[site]/[slug].astro` (new) — read-and-render viewer. Lists files under `content/blog/<slug>/scrapbook/`; renders markdown inline via the existing remark/rehype pipeline; previews images; links other file types with type + size.
-- [ ] `src/sites/editorialcontrol/pages/api/dev/scrapbook/*.ts` (new) — CRUD endpoints:
+- [x] `src/sites/editorialcontrol/pages/dev/scrapbook/[site]/[slug].astro` (new) — read-and-render viewer. Lists files under `content/blog/<slug>/scrapbook/`; renders markdown inline via the existing remark/rehype pipeline; previews images; links other file types with type + size.
+- [x] `src/sites/editorialcontrol/pages/api/dev/scrapbook/*.ts` (new) — CRUD endpoints:
   - `POST /api/dev/scrapbook/create` — new markdown note with optional frontmatter.
   - `POST /api/dev/scrapbook/save` — update existing file (markdown only in v1).
   - `POST /api/dev/scrapbook/rename` — rename file preserving contents.
   - `POST /api/dev/scrapbook/delete` — delete a file.
   - `POST /api/dev/scrapbook/upload` — multipart upload for images / data files.
-- [ ] All endpoints 404 in prod (`if (import.meta.env.PROD) return new Response('Not Found', { status: 404 });` per `/dev/*` convention) — no production attack surface.
-- [ ] `.claude/skills/editorial-plan/` seeds `content/blog/<slug>/scrapbook/README.md` at plan time using a template that names the article slug, the planning moment, and a skeleton for receipts/notes/references. Existing Planned articles without a scrapbook get one lazily on first visit.
-- [ ] `src/sites/editorialcontrol/pages/dev/editorial-studio.astro` — per-row `scrapbook →` link on each calendar entry + a count badge (`scrapbook · N`) when the directory has content. Chip styling matches the existing `✓ feature image` chip register.
-- [ ] `frontend-design` skill drives the viewer's visual treatment. Must sit in the press-check desk register (Fraunces italic titles, JetBrains Mono kickers, red-pencil accents) and respect the "no modal" rule from `editorial-review-client.ts:354` (inline affordances, not popups).
-- [ ] Unit tests for the CRUD handlers (happy path + `..`-traversal rejection + site/slug validation).
+- [x] All endpoints 404 in prod (`if (import.meta.env.PROD) return new Response('Not Found', { status: 404 });` per `/dev/*` convention) — no production attack surface.
+- [x] `.claude/skills/editorial-plan/` seeds `content/blog/<slug>/scrapbook/README.md` at plan time using a template that names the article slug, the planning moment, and a skeleton for receipts/notes/references. Existing Planned articles without a scrapbook get one lazily on first visit.
+- [x] `src/sites/editorialcontrol/pages/dev/editorial-studio.astro` — per-row `scrapbook →` link on each calendar entry + a count badge (`scrapbook · N`) when the directory has content. Chip styling matches the existing `✓ feature image` chip register.
+- [x] `frontend-design` skill drives the viewer's visual treatment. Must sit in the press-check desk register (Fraunces italic titles, JetBrains Mono kickers, red-pencil accents) and respect the "no modal" rule from `editorial-review-client.ts:354` (inline affordances, not popups).
+- [x] Unit tests for the CRUD handlers (happy path + `..`-traversal rejection + site/slug validation).
 
 **Acceptance criteria — 19a:**
 
-- [ ] `/dev/scrapbook/editorialcontrol/socratic-coding-agents` renders the existing scrapbook (README, patterns.json, mine-patterns.mjs, all-corrections.json) with correct file types and inline markdown rendering.
-- [ ] Operator can create a new markdown note, rename it, edit its contents, and delete it — all through the viewer, with no CLI needed.
-- [ ] Image upload works (drag-drop or file picker); uploaded images render inline alongside other scrapbook content.
-- [ ] Studio calendar rows display a `scrapbook` link + count. Clicking jumps to the viewer for that site+slug.
-- [ ] `/editorial-plan` on a fresh slug seeds `scrapbook/README.md` in the content-collection directory.
-- [ ] Production build emits no `/dev/scrapbook/...` routes and no scrapbook content in `dist/<site>/`.
-- [ ] All 19a endpoints return 404 in production.
+- [x] `/dev/scrapbook/editorialcontrol/socratic-coding-agents` renders the existing scrapbook (README, patterns.json, mine-patterns.mjs, all-corrections.json) with correct file types and inline markdown rendering.
+- [x] Operator can create a new markdown note, rename it, edit its contents, and delete it — all through the viewer, with no CLI needed.
+- [x] Image upload works (drag-drop or file picker); uploaded images render inline alongside other scrapbook content.
+- [x] Studio calendar rows display a `scrapbook` link + count. Clicking jumps to the viewer for that site+slug.
+- [x] `/editorial-plan` on a fresh slug seeds `scrapbook/README.md` in the content-collection directory.
+- [x] Production build emits no `/dev/scrapbook/...` routes and no scrapbook content in `dist/<site>/`.
+- [x] All 19a endpoints return 404 in production.
 
 ### Phase 19b: Scrapbook in context (review/edit surface integration)
 
