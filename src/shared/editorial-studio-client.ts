@@ -453,132 +453,178 @@ function initIntakeForm(): void {
 }
 
 /**
- * Rename-slug modal — shared across all calendar rows. Each "rename →"
- * button carries data-site / data-slug / data-title; opening the
- * dialog pre-fills the form so the operator only has to type the new
- * slug. Submit builds the skill command and copies it to the
- * clipboard. Validation mirrors the server-side rules in
- * scripts/lib/editorial/rename-slug.ts (kebab-case, no collision on
- * the same site, not identical to the current slug).
+ * Inline rename-slug form — one per blog row, rendered hidden under
+ * the row. Clicking the row's "rename →" button expands the form in
+ * place; the operator's eye stays on the row they're acting on (no
+ * modal). Submit copies the `/editorial-rename-slug` command to the
+ * clipboard and collapses. Validation mirrors the server-side rules
+ * in scripts/lib/editorial/rename-slug.ts.
  */
-function initRenameDialog(): void {
-  const dialog = document.querySelector<HTMLDialogElement>('[data-rename-dialog]');
-  if (!dialog || typeof dialog.showModal !== 'function') return;
-
-  const form = dialog.querySelector<HTMLFormElement>('[data-rename-form]');
-  const titleEl = dialog.querySelector<HTMLElement>('[data-rename-title]');
-  const metaEl = dialog.querySelector<HTMLElement>('[data-rename-meta]');
-  const input = dialog.querySelector<HTMLInputElement>('[data-rename-input]');
-  const hint = dialog.querySelector<HTMLElement>('[data-rename-hint]');
-  const copyBtn = dialog.querySelector<HTMLButtonElement>('[data-action="rename-copy"]');
-  if (!form || !titleEl || !metaEl || !input || !hint || !copyBtn) return;
-
+function initRenameForms(): void {
   const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 
+  // Read the shared site → slugs list once. Fallback to empty if
+  // missing (the collision check will be bypassed server-side anyway
+  // by rename-slug.ts).
   let slugsBySite: Record<string, string[]> = {};
-  try {
-    const raw = dialog.getAttribute('data-slugs-by-site') ?? '{}';
-    slugsBySite = JSON.parse(raw);
-  } catch {
-    slugsBySite = {};
+  const slugsScript = document.querySelector<HTMLScriptElement>('script[data-rename-slugs]');
+  if (slugsScript?.textContent) {
+    try {
+      slugsBySite = JSON.parse(slugsScript.textContent);
+    } catch {
+      slugsBySite = {};
+    }
   }
 
-  type Context = { site: string; oldSlug: string; title: string };
-  let active: Context | null = null;
+  type FormContext = {
+    form: HTMLFormElement;
+    input: HTMLInputElement;
+    hint: HTMLElement;
+    copyBtn: HTMLButtonElement;
+    site: string;
+    oldSlug: string;
+  };
 
-  function validate(next: string): string | null {
+  function contextFor(form: HTMLFormElement): FormContext | null {
+    const input = form.querySelector<HTMLInputElement>('[data-rename-input]');
+    const hint = form.querySelector<HTMLElement>('[data-rename-hint]');
+    const copyBtn = form.querySelector<HTMLButtonElement>('[data-action="rename-copy"]');
+    const site = form.dataset.site ?? '';
+    const oldSlug = form.dataset.slug ?? '';
+    if (!input || !hint || !copyBtn || !site || !oldSlug) return null;
+    return { form, input, hint, copyBtn, site, oldSlug };
+  }
+
+  function validate(ctx: FormContext, next: string): string | null {
     if (!next) return 'required';
-    if (!SLUG_RE.test(next)) return 'must be kebab-case (a-z, 0-9, -)';
-    if (!active) return 'no row selected';
-    if (next === active.oldSlug) return 'same as current slug';
-    const taken = (slugsBySite[active.site] ?? []).some(
-      (s) => s === next && s !== active!.oldSlug,
+    if (!SLUG_RE.test(next)) return 'kebab-case only (a-z, 0-9, -)';
+    if (next === ctx.oldSlug) return 'same as current slug';
+    const taken = (slugsBySite[ctx.site] ?? []).some(
+      (s) => s === next && s !== ctx.oldSlug,
     );
-    if (taken) return `already used on ${active.site}.org`;
+    if (taken) return `already used on ${ctx.site}.org`;
     return null;
   }
 
-  function open(ctx: Context): void {
-    active = ctx;
-    titleEl!.textContent = ctx.title;
-    metaEl!.textContent = `${ctx.site}.org · current slug: ${ctx.oldSlug}`;
-    input!.value = '';
-    hint!.textContent =
-      'Lowercase letters, digits, hyphens. Cannot match another entry on the same site.';
-    hint!.removeAttribute('data-error');
-    copyBtn!.disabled = false;
-    dialog!.showModal();
-    // Focus after the dialog is visible
-    setTimeout(() => input!.focus(), 0);
+  function close(form: HTMLFormElement): void {
+    form.hidden = true;
+    const input = form.querySelector<HTMLInputElement>('[data-rename-input]');
+    if (input) input.value = '';
+    const hint = form.querySelector<HTMLElement>('[data-rename-hint]');
+    if (hint) {
+      hint.textContent = 'lowercase, digits, hyphens';
+      hint.removeAttribute('data-error');
+    }
+    const copyBtn = form.querySelector<HTMLButtonElement>('[data-action="rename-copy"]');
+    if (copyBtn) copyBtn.disabled = false;
   }
 
-  function close(): void {
-    active = null;
-    dialog!.close();
+  function closeAllForms(except?: HTMLFormElement): void {
+    document
+      .querySelectorAll<HTMLFormElement>('form[data-rename-form]')
+      .forEach((f) => {
+        if (f !== except && !f.hidden) close(f);
+      });
   }
 
+  function open(form: HTMLFormElement): void {
+    closeAllForms(form);
+    form.hidden = false;
+    const input = form.querySelector<HTMLInputElement>('[data-rename-input]');
+    // Next frame: focus after the form is visible.
+    setTimeout(() => input?.focus(), 0);
+  }
+
+  // Click delegation: "rename →" opens the form inside its row's wrap;
+  // "cancel" closes the form that contains the cancel button.
   document.addEventListener('click', (ev) => {
-    const target = (ev.target as Element | null)?.closest<HTMLButtonElement>(
+    const openBtn = (ev.target as Element | null)?.closest<HTMLButtonElement>(
       'button[data-action="rename-open"]',
     );
-    if (!target) return;
-    const site = target.dataset.site ?? '';
-    const oldSlug = target.dataset.slug ?? '';
-    const title = target.dataset.title ?? oldSlug;
-    if (!site || !oldSlug) return;
-    open({ site, oldSlug, title });
-  });
-
-  form.querySelector('[data-action="rename-cancel"]')?.addEventListener('click', (ev) => {
-    ev.preventDefault();
-    close();
-  });
-
-  input.addEventListener('input', () => {
-    const err = validate(input.value.trim());
-    if (err) {
-      hint.textContent = err;
-      hint.setAttribute('data-error', 'true');
-      copyBtn.disabled = true;
-    } else {
-      hint.textContent = 'Looks good. Submit to copy the command.';
-      hint.removeAttribute('data-error');
-      copyBtn.disabled = false;
-    }
-  });
-
-  form.addEventListener('submit', async (ev) => {
-    ev.preventDefault();
-    const next = input.value.trim();
-    const err = validate(next);
-    if (err) {
-      hint.textContent = err;
-      hint.setAttribute('data-error', 'true');
-      copyBtn.disabled = true;
+    if (openBtn) {
+      const wrap = openBtn.closest<HTMLElement>('[data-row-wrap]');
+      const form = wrap?.querySelector<HTMLFormElement>('form[data-rename-form]') ?? null;
+      if (form) {
+        if (form.hidden) open(form); else close(form);
+      }
       return;
     }
-    if (!active) return;
-    const command = `/editorial-rename-slug --site ${active.site} ${active.oldSlug} ${next}`;
+    const cancelBtn = (ev.target as Element | null)?.closest<HTMLButtonElement>(
+      'button[data-action="rename-cancel"]',
+    );
+    if (cancelBtn) {
+      ev.preventDefault();
+      const form = cancelBtn.closest<HTMLFormElement>('form[data-rename-form]');
+      if (form) close(form);
+    }
+  });
+
+  // Input validation on every keystroke inside any rename form.
+  document.addEventListener('input', (ev) => {
+    const input = (ev.target as Element | null)?.closest<HTMLInputElement>(
+      'input[data-rename-input]',
+    );
+    if (!input) return;
+    const form = input.closest<HTMLFormElement>('form[data-rename-form]');
+    if (!form) return;
+    const ctx = contextFor(form);
+    if (!ctx) return;
+    const err = validate(ctx, ctx.input.value.trim());
+    if (err) {
+      ctx.hint.textContent = err;
+      ctx.hint.setAttribute('data-error', 'true');
+      ctx.copyBtn.disabled = true;
+    } else {
+      ctx.hint.textContent = 'looks good — submit to copy';
+      ctx.hint.removeAttribute('data-error');
+      ctx.copyBtn.disabled = false;
+    }
+  });
+
+  // Esc key closes the currently-open form (if any). Keeps focus on
+  // the row so the next action is in-context.
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Escape') return;
+    const active = document.activeElement;
+    const form = active?.closest<HTMLFormElement>('form[data-rename-form]');
+    if (form && !form.hidden) {
+      ev.preventDefault();
+      close(form);
+    }
+  });
+
+  // Submit handler on every rename form.
+  document.addEventListener('submit', async (ev) => {
+    const form = (ev.target as Element | null)?.closest<HTMLFormElement>(
+      'form[data-rename-form]',
+    );
+    if (!form) return;
+    ev.preventDefault();
+    const ctx = contextFor(form);
+    if (!ctx) return;
+    const next = ctx.input.value.trim();
+    const err = validate(ctx, next);
+    if (err) {
+      ctx.hint.textContent = err;
+      ctx.hint.setAttribute('data-error', 'true');
+      ctx.copyBtn.disabled = true;
+      return;
+    }
+    const command = `/editorial-rename-slug --site ${ctx.site} ${ctx.oldSlug} ${next}`;
     try {
       await copyTextToClipboard(command);
-      const original = copyBtn.textContent;
-      copyBtn.classList.add('copied');
-      copyBtn.textContent = 'copied ✓';
+      const original = ctx.copyBtn.textContent;
+      ctx.copyBtn.classList.add('copied');
+      ctx.copyBtn.textContent = 'copied ✓';
       setTimeout(() => {
-        copyBtn.classList.remove('copied');
-        copyBtn.textContent = original;
-        close();
+        ctx.copyBtn.classList.remove('copied');
+        if (original !== null) ctx.copyBtn.textContent = original;
+        close(form);
       }, 900);
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       showToast(`Clipboard unavailable (${message}) — copy manually: ${command}`, true);
     }
-  });
-
-  // Native dialog fires 'close' on Esc; clear state so the next open
-  // doesn't see stale context.
-  dialog.addEventListener('close', () => {
-    active = null;
   });
 }
 
@@ -591,7 +637,7 @@ function init(): void {
   initKeyboardShortcuts();
   initPolling();
   initIntakeForm();
-  initRenameDialog();
+  initRenameForms();
 }
 
 init();

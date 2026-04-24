@@ -468,6 +468,7 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                     site,
                   ].join(' ').toLowerCase();
                   return (
+                    <div class="er-calendar-row-wrap" data-row-wrap data-search={search}>
                     <div
                       class="er-calendar-row"
                       data-stage={stage}
@@ -650,13 +651,45 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                             class="er-btn er-btn-small"
                             type="button"
                             data-action="rename-open"
-                            data-site={site}
-                            data-slug={entry.slug}
-                            data-title={entry.title}
                             title="rename the slug (SEO realignment) — copies /editorial-rename-slug to clipboard"
                           >rename →</button>
                         )}
                       </span>
+                    </div>
+                    {effectiveContentType(entry) === 'blog' && (
+                      <form
+                        class="er-rename-inline"
+                        data-rename-form
+                        data-site={site}
+                        data-slug={entry.slug}
+                        hidden
+                      >
+                        <span class="er-rename-kicker" aria-hidden="true">rename →</span>
+                        <code class="er-rename-old" title="current slug; will 301 after rename">{entry.slug}</code>
+                        <span class="er-rename-arrow" aria-hidden="true">→</span>
+                        <input
+                          type="text"
+                          name="new-slug"
+                          data-rename-input
+                          autocomplete="off"
+                          spellcheck="false"
+                          placeholder="new-slug-here"
+                          aria-label="new slug"
+                          required
+                        />
+                        <small class="er-rename-hint" data-rename-hint>lowercase, digits, hyphens</small>
+                        <button
+                          type="button"
+                          class="er-btn er-btn-small"
+                          data-action="rename-cancel"
+                        >cancel</button>
+                        <button
+                          type="submit"
+                          class="er-btn er-btn-small er-btn-primary"
+                          data-action="rename-copy"
+                        >copy /rename →</button>
+                      </form>
+                    )}
                     </div>
                   );
                 })
@@ -817,56 +850,16 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
   <div class="er-toast" data-toast hidden></div>
   <div class="er-poll-indicator" data-poll>auto-refresh · 10s</div>
 
-  <!-- Rename-slug modal. Shared across rows: each "rename →" button
-       pre-fills the form via data-site / data-slug / data-title
-       attributes on open. Submit copies the /editorial-rename-slug
-       command to the clipboard (paste-ready for Claude Code). The
-       slug list per site is serialized below so collision checks
-       happen client-side without a round trip. -->
-  <dialog
-    class="er-rename-dialog"
-    data-rename-dialog
-    data-slugs-by-site={JSON.stringify(slugsBySite)}
-  >
-    <form class="er-rename-form" data-rename-form>
-      <header class="er-rename-header">
-        <span class="er-rename-kicker">Rename slug</span>
-        <h3 class="er-rename-title" data-rename-title>—</h3>
-        <p class="er-rename-meta" data-rename-meta>—</p>
-      </header>
-      <label class="er-rename-field">
-        <span>New slug</span>
-        <input
-          type="text"
-          name="new-slug"
-          data-rename-input
-          autocomplete="off"
-          spellcheck="false"
-          placeholder="kebab-case-only"
-          required
-        />
-        <small class="er-rename-hint" data-rename-hint>
-          Lowercase letters, digits, hyphens. Cannot match another entry on the same site.
-        </small>
-      </label>
-      <p class="er-rename-hint er-rename-hint--subtle">
-        Submit copies <code>/editorial-rename-slug …</code> to the clipboard.
-        Paste it into Claude Code to run; dry-run first, then commit the diff manually.
-      </p>
-      <menu class="er-rename-actions">
-        <button
-          class="er-btn er-btn-small"
-          type="button"
-          data-action="rename-cancel"
-        >cancel</button>
-        <button
-          class="er-btn er-btn-small er-btn-primary"
-          type="submit"
-          data-action="rename-copy"
-        >copy command →</button>
-      </menu>
-    </form>
-  </dialog>
+  <!--
+    Shared per-site slug lists, read by the inline rename form so
+    collision checks run client-side without a round trip.
+  -->
+  <script
+    type="application/json"
+    data-rename-slugs
+    set:html={JSON.stringify(slugsBySite)}
+  ></script>
+
 
   <script>
     import '../../../../shared/editorial-studio-client.ts';
