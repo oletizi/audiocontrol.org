@@ -24,6 +24,8 @@
 | Phase 12: Voice-Library Feedback Signal | oletizi/audiocontrol.org#94 |
 | Phase 13: Editorial Studio (unified dashboard) | oletizi/audiocontrol.org#96 |
 | Phase 14: Studio as calendar command center + journal migration | oletizi/audiocontrol.org#102 |
+| Phase 18a: Stable UUID identity for calendar entries + distribution records | oletizi/audiocontrol.org#116 |
+| Phase 18b: /editorial-rename-slug skill + Netlify redirect management | oletizi/audiocontrol.org#117 |
 
 ## Files Affected
 
@@ -1085,3 +1087,50 @@ File-based routing can't conditionally skip pages, so the gate requires content 
 - [x] Lightbox opens on figure click, closes on backdrop / button / Esc.
 - [x] `building-the-editorial-calendar-feature` moves from in-review → approved → applied; disk matches the approved content by SSOT invariant.
 - [x] Code review (feature-review) passes with zero blockers. Three warnings noted (polling visibility guard, lightbox keydown listener re-registration, focus trap); five info items; all tracked for follow-up.
+
+### Phase 18a: Stable UUID identity for calendar entries + distribution records
+
+**Deliverable:** Refactor that adds a stable UUID to every `CalendarEntry` and `entryId` to every `DistributionRecord`, routes all internal joins through the UUID, and backfills existing data. Zero user-visible change; the prep step before Phase 18b's slug rename.
+
+**Motivation:** Slug is currently the only stable identifier — every workflow, distribution record, and skill helper joins back to the calendar through it. Renaming a slug for SEO realignment currently requires rewriting history across multiple JSON journals and markdown tables. Separating internal identity (UUID) from the public handle (slug) makes the rename cheap and non-destructive, and stabilizes the data model for any future operation that would have cared about slug stability.
+
+- [ ] `scripts/lib/editorial/types.ts` — add `id: string` (UUID v4) to `CalendarEntry` (line 76); add `entryId: string` to `DistributionRecord` (line 151); add `entryById(calendar, id)` and `distributionsByEntryId(calendar, entryId)` helpers alongside the existing `distributionsBySlug`. Keep `slug` on DistributionRecord as a human-readable cross-reference.
+- [ ] `scripts/lib/editorial/calendar.ts` — add a leading `UUID` column to every stage-table renderer (Ideas, Planned, Drafting, Review, Published) and the distribution table. `parseEntries` (line 104) and `parseDistributions` (line 161) tolerate missing UUID columns on legacy rows and generate v4 UUIDs in-memory; `writeCalendar` persists UUIDs back on the next save (idempotent backfill).
+- [ ] Add `findEntryById(calendar, id)` to `calendar.ts`. Stage-transition helpers (`planEntry`, `outlineEntry`, `draftEntry`, `publishEntry`, `addDistribution`) accept either slug or id and prefer id when available. Existing slug-based signatures stay as-is so all current call sites keep working.
+- [ ] `scripts/feature-image/workflow.ts` (line 13) — add `entryId?: string` to `WorkflowContext` (sits alongside `postPath`, `slug`, `site`). Optional so legacy workflows remain valid.
+- [ ] `scripts/lib/editorial-review/types.ts` (line 155) — add `entryId: string` to `DraftWorkflowItem`.
+- [ ] `scripts/lib/editorial-review/pipeline.ts` — `matchesKey` (line 103) and `findOpenByKey` (line 118) prefer `entryId` for the join; fall back to `(site, slug, contentKind)` when the workflow predates the refactor.
+- [ ] `scripts/lib/editorial-review/handlers.ts` (lines 167–218) — `handleGetWorkflow` accepts `entryId` as a query param; keeps slug as fallback.
+- [ ] `.claude/skills/editorial-approve/apply.ts` (lines 50–80) — accept entryId as primary key; slug remains a convenience fallback.
+- [ ] `scripts/editorial/backfill-uuids.ts` (new) — one-shot, idempotent. Loads both calendars, backfills missing UUIDs, then walks every JSON file under `journal/pipeline/` and stamps `entryId` on the context by matching `(site, slug, contentKind)` against the backfilled calendar. Prints mapping preview before writing in `--dry-run` mode.
+- [ ] Run the backfill against both calendars + all workflow journals. Both calendars now have UUID columns on every row; every active workflow has `entryId` in its context.
+- [ ] `npm test` passes — parser round-trip preserves all data AND emits the UUID column.
+
+**Acceptance criteria — 18a:**
+
+- [ ] Every row in both `docs/editorial-calendar-*.md` has a UUID column populated.
+- [ ] Every distribution row has a matching `entryId` populated.
+- [ ] Every non-terminal workflow in `journal/pipeline/` has `entryId` in its context.
+- [ ] `tsx .claude/skills/feature-image-apply/scan.ts` output is unchanged (no behavior diff).
+- [ ] `npm run dev:editorialcontrol` — studio, feature-image pipeline, and editorial review all render without error.
+- [ ] Unit tests pass; backward-compatibility round-trip test covers a legacy (no-UUID) calendar.
+
+### Phase 18b: `/editorial-rename-slug` skill
+
+**Deliverable:** Skill + helper that renames a calendar entry's slug. With 18a's UUID identity in place, internal joins don't break — only the public surface changes (filename, URL, redirect).
+
+**Motivation:** Post-publish SEO data regularly suggests a better slug than the one picked at planning time. Without tooling, renaming requires manual coordination across the content file, image dir, frontmatter, calendar row, and a Netlify redirect for the legacy URL — error-prone and skipped in practice, leaving slugs locked to first-guess SEO choices.
+
+- [ ] `scripts/lib/editorial/rename-slug.ts` (new) — core library with `renameSlug({site, oldSlug, newSlug, dryRun})`. Operations in order: content file rename (`src/sites/<site>/content/blog/<old>.md` → `<new>.md`), image dir rename (`src/sites/<site>/public/images/blog/<old>/` → `<new>/`), frontmatter `image:` / `socialImage:` path rewrite, `entry.slug = <new>` in calendar (entry.id unchanged), cosmetic slug update on matching DistributionRecords, 301-redirect append to `netlify.toml`.
+- [ ] Redirect block matches existing `netlify.toml` patterns: bare path, trailing-slash, splat (`/*`) variants with `status = 301, force = true`.
+- [ ] `.claude/skills/editorial-rename-slug/SKILL.md` + `rename.ts` (new) — skill wraps the helper. Usage: `/editorial-rename-slug --site <site> <old-slug> <new-slug>`. `--dry-run` prints the full change list (files to rename, frontmatter diffs, calendar row change, redirect block) without writing.
+- [ ] No git operations in the skill. User reviews diff and commits.
+- [ ] Verify end-to-end on a throwaway entry: rename, inspect calendar + file moves, confirm `netlify.toml` has the redirect block, confirm feature-image workflows + distribution records for the renamed entry still resolve by entryId.
+
+**Acceptance criteria — 18b:**
+
+- [ ] `/editorial-rename-slug --site <site> <old> <new>` produces a clean dry-run change list.
+- [ ] Non-dry-run run renames content file + image dir + frontmatter + calendar row + appends the Netlify 301.
+- [ ] Workflow and distribution records for the renamed entry still join correctly (via entryId).
+- [ ] Old URL 301s to new URL on deployed preview (verified via Netlify deploy preview).
+- [ ] Existing skills (`/editorial-approve`, `/feature-image-apply`, etc.) continue to work after a rename.

@@ -88,6 +88,18 @@ This phase also migrates the editorial-review JSONL pipeline+history to the per-
 
 **Out of scope for Phase 14:** Ideas-stage creation from the studio (needs target-keyword form; Claude Code is fine), inline editing of calendar metadata (title/description), shortform drafting from the studio (still agent-driven via `/editorial-shortform-draft`), stage reordering / custom stages.
 
+## In Scope (Phase 18 addition: stable UUID identity + slug rename)
+
+Slug is currently the only stable identifier for a calendar entry — every workflow, distribution record, cross-link audit, and skill helper joins back to the calendar through it. That prevents post-publish slug changes for SEO realignment without rewriting history across multiple JSON journals and markdown tables.
+
+Phase 18 decouples internal identity (UUID) from the public handle (slug). Ships as two sequential PRs.
+
+- **Phase 18a — UUID identity refactor (no user-visible change).** Adds `id: string` (UUID v4) to `CalendarEntry` and `entryId: string` to `DistributionRecord`. Both calendars grow a leading `UUID` column in every stage table; parser tolerates missing UUIDs on legacy rows and backfills in-memory so data loads cleanly, then persists on the next `writeCalendar`. Workflow contexts (both `scripts/feature-image/workflow.ts` and `scripts/lib/editorial-review/types.ts`) gain optional `entryId`. Join call sites (`matchesKey`, `findOpenByKey`, `handleGetWorkflow`, `editorial-approve/apply.ts`) prefer entryId and fall back to slug for legacy workflows. One-shot `scripts/editorial/backfill-uuids.ts` stamps entryId onto existing workflow journal records by matching `(site, slug, contentKind)` against the backfilled calendar.
+- **Phase 18b — `/editorial-rename-slug` skill.** With UUID identity in place, a slug rename touches only the public surface: `scripts/lib/editorial/rename-slug.ts` + `.claude/skills/editorial-rename-slug/` rename the content-collection file (`src/sites/<site>/content/blog/<old>.md` → `<new>.md`), rename the per-post image dir, rewrite `image:` / `socialImage:` frontmatter paths, update `entry.slug` in the calendar (entry.id unchanged), and append a 301 redirect block to `netlify.toml` for the legacy URL. Internal cross-link rewrites are out of scope — the 301 covers them and SEO equity is preserved. No git ops (matches existing editorial-approve pattern).
+- **No Astro route changes.** Blog URLs still derive from filename. Decoupling URL from filename would lose the property the user wants: a slug change IS a URL change (that's the whole point of SEO realignment).
+
+**Out of scope for Phase 18:** scanning other posts for `/blog/<old>/` link text and rewriting it (the 301 redirect covers inbound internal links), renaming the GitHub issue title on slug change, updating historical workflow slug fields (joins use entryId — slug in old journal entries is historical record), storing UUIDs anywhere other than the markdown calendar (no sidecar JSON; calendar stays single-source-of-truth).
+
 ## Deferred Scope
 
 - **Reddit auto-posting (Tier 3)**: programmatically submitting link posts to subreddits. Documented in detail in the [workplan](./workplan.md#deferred-tier-3--auto-posting-to-reddit). Deferred indefinitely — operational risk (bot bans, spam filters), per-subreddit rule complexity, and limited value-add over manual posting outweigh the automation benefit. A clipboard-helper alternative is proposed there if partial automation becomes interesting later.
