@@ -1,0 +1,45 @@
+{
+  "id": "bc9411ae-f498-40a8-b109-113b3ca9e52c",
+  "timestamp": "2026-04-23T21:46:42.889Z",
+  "prompt": "Abstract tracked-changes revision marks, flowing horizontal\nsignal-green chartreuse strokes underlining and striking\nthrough invisible text, scattered warm parchment-cream caret\nmarks and small annotations drifting in the margins, ink-bleed\nsoftness at each stroke edge, cool ink-near-black background,\neditorial revision-pass atmosphere, sparse and intentional\nplacement, compositional weight in the upper half with quiet\nmeasure below, no text no words no letters no typography no\nlabels no people no objects",
+  "provider": "dom-bake",
+  "preset": "teal-amber",
+  "filters": "{\"grade\":\"teal-amber\",\"phosphor\":\"off\",\"vignette\":\"heavy\",\"scanlines\":\"off\",\"grain\":\"heavy\"}",
+  "title": "Your Content Workflow is Already Obsolete",
+  "subtitle": "Your AI Agent is the Replacement",
+  "formats": "og,youtube,instagram",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/audiocontrol/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/dc563618-raw.png"
+    ],
+    "filtered": [
+      "/images/generated/bc9411ae-filtered.png"
+    ],
+    "composited": [
+      {
+        "provider": "dom",
+        "format": "og",
+        "path": "/images/generated/bc9411ae-og.png"
+      },
+      {
+        "provider": "dom",
+        "format": "youtube",
+        "path": "/images/generated/bc9411ae-youtube.png"
+      },
+      {
+        "provider": "dom",
+        "format": "instagram",
+        "path": "/images/generated/bc9411ae-instagram.png"
+      }
+    ]
+  },
+  "durationMs": 4228,
+  "status": "approved",
+  "notes": "rebaked from dc563618 via DOM",
+  "parentEntryId": "dc563618-7789-430d-9d4c-aeee0016fc67",
+  "site": "editorialcontrol",
+  "overlayPosition": "bottom",
+  "overlayAlign": "auto",
+  "archived": true
+}

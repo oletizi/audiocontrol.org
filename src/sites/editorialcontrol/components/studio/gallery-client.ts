@@ -288,6 +288,22 @@ function cardHtml(entry: LogEntry): string {
     ? `<button type="button" class="studio-btn" disabled>Rejected ✗</button>`
     : `<button type="button" class="studio-btn studio-btn--danger" data-action="reject">Reject</button>`;
 
+  // Apply button — only surfaces on approved entries that are neither
+  // archived nor already applied. `scan.ts` filters out archived +
+  // appliedTo entries; the card UI has to match or clicking Apply
+  // produces "nothing pending" since there's nothing left to drain.
+  // Applied entries show a disabled "Applied ✓" stamp instead so the
+  // process-motion affordance still reads end-to-end.
+  const isApplied = Boolean(entry.appliedTo);
+  const isArchived = Boolean(entry.archived);
+  const applyBtn = !isApproved
+    ? ''
+    : isApplied
+      ? `<button type="button" class="studio-btn" disabled title="applied to ${entry.appliedTo}">Applied ✓</button>`
+      : isArchived
+        ? ''
+        : `<button type="button" class="studio-btn studio-btn--primary studio-copy-btn" data-action="copy-apply" data-copy="/feature-image-apply" title="copy /feature-image-apply to clipboard — run in Claude Code to bake files into the post">Apply →</button>`;
+
   const archiveLabel = entry.archived ? 'Restore' : 'Archive';
 
   return `
@@ -331,6 +347,7 @@ function cardHtml(entry: LogEntry): string {
             <a class="studio-btn" href="/dev/studio/focus/${entry.id}">Focus →</a>
             ${approveBtn}
             ${rejectBtn}
+            ${applyBtn}
           </div>
           <div class="studio-card__status-row">
             <div class="studio-card__rating">${ratingHtml}</div>
@@ -565,21 +582,60 @@ async function approveEntry(entry: LogEntry): Promise<void> {
   }
 }
 
-async function copyAsInput(entry: LogEntry): Promise<void> {
+/**
+ * Copy text across both secure and insecure contexts. The async
+ * Clipboard API is gated on a secure context (HTTPS / localhost); LAN
+ * access via plain HTTP is blocked. Falls back to execCommand('copy')
+ * on a hidden textarea, which works in plain HTTP.
+ */
+async function copyTextToClipboardFlex(text: string): Promise<boolean> {
   try {
-    const text = [
-      `prompt: ${entry.prompt ?? ''}`,
-      `preset: ${entry.preset ?? ''}`,
-      `title: ${entry.title ?? ''}`,
-      `subtitle: ${entry.subtitle ?? ''}`,
-      `site: ${entry.site ?? 'audiocontrol'}`,
-    ].join('\n');
-    await navigator.clipboard.writeText(text);
-    toast('Copied prompt + params to clipboard');
-  } catch (err) {
-    console.error('copy failed', err);
-    toast('Copy failed — check console');
+    if (typeof navigator !== 'undefined' && navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch { /* fall through */ }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.top = '-1000px';
+  ta.style.left = '-1000px';
+  ta.setAttribute('readonly', '');
+  document.body.appendChild(ta);
+  ta.select();
+  ta.setSelectionRange(0, text.length);
+  let ok = false;
+  try { ok = document.execCommand('copy'); }
+  finally { document.body.removeChild(ta); }
+  return ok;
+}
+
+/** Copy text + flash a "copied ✓" badge on the triggering button. */
+async function copyToClipboard(text: string, btn: HTMLButtonElement): Promise<void> {
+  const ok = await copyTextToClipboardFlex(text);
+  if (!ok) {
+    toast('Copy failed — clipboard unavailable');
+    return;
   }
+  const original = btn.textContent;
+  btn.classList.add('copied');
+  btn.textContent = 'copied ✓';
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.textContent = original;
+  }, 1500);
+}
+
+async function copyAsInput(entry: LogEntry): Promise<void> {
+  const text = [
+    `prompt: ${entry.prompt ?? ''}`,
+    `preset: ${entry.preset ?? ''}`,
+    `title: ${entry.title ?? ''}`,
+    `subtitle: ${entry.subtitle ?? ''}`,
+    `site: ${entry.site ?? 'audiocontrol'}`,
+  ].join('\n');
+  const ok = await copyTextToClipboardFlex(text);
+  toast(ok ? 'Copied prompt + params to clipboard' : 'Copy failed — check console');
 }
 
 function saveAsTemplate(entry: LogEntry): void {
@@ -706,6 +762,11 @@ function onGalleryClick(event: MouseEvent): void {
       case 'save-template':
         saveAsTemplate(entry);
         break;
+      case 'copy-apply': {
+        const cmd = actionEl.dataset.copy ?? '/feature-image-apply';
+        void copyToClipboard(cmd, actionEl as HTMLButtonElement);
+        break;
+      }
       case 'overflow-toggle': {
         const overflow = actionEl.closest<HTMLElement>('.studio-card__overflow');
         if (overflow) {
@@ -747,6 +808,13 @@ function onWorkflowClick(event: MouseEvent): void {
   if (action === 'activate') {
     writeActiveWorkflowId(id);
     renderWorkflowPanel();
+    // Hand the operator off to Generate. Activating a workflow is a
+    // commitment to start producing images against it, and Generate
+    // is the immediate next step — its form auto-prefills from the
+    // active workflow's context (prompt, preset, template, site).
+    // Without this nav, activating just silently updates a list
+    // entry and leaves the operator wondering what to do next.
+    window.location.href = '/dev/studio/generate';
   } else if (action === 'deactivate') {
     writeActiveWorkflowId(null);
     renderWorkflowPanel();
@@ -763,11 +831,23 @@ function onArchivedToggle(): void {
 }
 
 // ── Poll loop ────────────────────────────────────────────────────────
+//
+// Signature-based change detection, same policy as the editorial studio's
+// state-signature endpoint. The poll tick fetches data, serializes it to
+// a stable string, and ONLY re-renders when the string changes. Without
+// this, every tick (every 6s) rebuilt the timeline DOM and the workflow
+// panel from scratch, producing a visible flicker even when nothing had
+// moved on the backend.
+
+let lastEntriesSignature: string | null = null;
+let lastWorkflowsSignature: string | null = null;
 
 async function refreshEntries(): Promise<void> {
   try {
     const next = await fetchEntries();
-    // Reverse — server returns chronological? /log endpoint reverses already
+    const signature = JSON.stringify(next);
+    if (signature === lastEntriesSignature) return;
+    lastEntriesSignature = signature;
     entries = next;
     renderTimeline();
     renderEntriesCount();
@@ -778,7 +858,11 @@ async function refreshEntries(): Promise<void> {
 
 async function refreshWorkflows(): Promise<void> {
   try {
-    workflows = await fetchOpenWorkflows();
+    const next = await fetchOpenWorkflows();
+    const signature = JSON.stringify(next);
+    if (signature === lastWorkflowsSignature) return;
+    lastWorkflowsSignature = signature;
+    workflows = next;
     renderWorkflowPanel();
   } catch (err) {
     console.error('refresh workflows failed', err);

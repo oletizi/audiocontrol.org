@@ -3,10 +3,12 @@ title: "Your Content Workflow Is Already Obsolete. Your AI Agent Is the Replacem
 description: "AI in content marketing is table stakes; most workflows using it aren't fast or flexible enough to keep up. A better option: stop treating AI as a feature bolted onto your workflow and start treating the agent as the workflow — so the workflow itself evolves, fast, without a vendor release cycle or a team meeting. Here's how and why I built an editorial calendar on top of a coding agent with Markdown files and a weekend of work."
 date: "April 2026"
 datePublished: "2026-04-18"
-dateModified: "2026-04-18"
+dateModified: "2026-04-24"
 author: "Orion Letizi"
 tags: ["AI agents", "Editorial", "Workflow", "Claude"]
 state: published
+image: "/images/blog/building-the-editorial-calendar-feature/feature-filtered.png"
+socialImage: "/images/blog/building-the-editorial-calendar-feature/feature-og.png"
 ---
 
 # Your Content Workflow Is Already Obsolete. Your AI Agent Is the Replacement.

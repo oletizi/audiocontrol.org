@@ -54,6 +54,16 @@
   padding: 0.1em 0.4em;
   border-radius: 2px;
 }
+/* "✓ feature image" chip — signals that feature-og.png has been baked
+ * into this post's public dir. Amber because the feature-image pipeline
+ * is the amber pigment in the studio's palette. */
+.er-calendar-meta-baked {
+  background: var(--er-highlight-soft);
+  color: #8B6914;
+  padding: 0.1em 0.45em;
+  border-radius: 2px;
+  font-weight: 600;
+}
 .er-calendar-status {
   display: inline-flex;
   align-items: center;

@@ -1,0 +1,36 @@
+{
+  "id": "c87c084e-7289-4dfe-b98c-285515940037",
+  "timestamp": "2026-04-24T01:33:55.998Z",
+  "prompt": "Abstract tracked-changes revision marks, flowing horizontal\nsignal-green chartreuse strokes underlining and striking\nthrough invisible text, scattered warm parchment-cream caret\nmarks and small annotations drifting in the margins, ink-bleed\nsoftness at each stroke edge, cool ink-near-black background,\neditorial revision-pass atmosphere, sparse and intentional\nplacement, compositional weight in the upper half with quiet\nmeasure below, no text no words no letters no typography no\nlabels no people no objects",
+  "provider": "dom-bake",
+  "preset": "retro-crt",
+  "filters": "{\"grade\":\"crt\",\"phosphor\":\"on\",\"vignette\":\"on\",\"scanlines\":\"on\",\"grain\":\"on\"}",
+  "title": "Your Content Workflow Is Already Obsolete.",
+  "subtitle": "Your AI Agent Is the Replacement",
+  "formats": "og",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/editorialcontrol/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/f4e612a9-raw.png"
+    ],
+    "filtered": [
+      "/images/generated/c87c084e-filtered.png"
+    ],
+    "composited": [
+      {
+        "provider": "dom",
+        "format": "og",
+        "path": "/images/generated/c87c084e-og.png"
+      }
+    ]
+  },
+  "durationMs": 2218,
+  "status": "generated",
+  "templateSlug": "tracked-changes",
+  "notes": "rebaked from a5dda68f via DOM",
+  "parentEntryId": "a5dda68f-4a63-4a19-9e42-585aa3649619",
+  "site": "editorialcontrol",
+  "overlayPosition": "bottom",
+  "overlayAlign": "auto",
+  "archived": true
+}

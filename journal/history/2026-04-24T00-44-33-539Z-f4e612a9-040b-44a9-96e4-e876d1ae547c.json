@@ -1,0 +1,32 @@
+{
+  "id": "f4e612a9-040b-44a9-96e4-e876d1ae547c",
+  "timestamp": "2026-04-24T00:44:33.539Z",
+  "prompt": "Abstract tracked-changes revision marks, flowing horizontal\nsignal-green chartreuse strokes underlining and striking\nthrough invisible text, scattered warm parchment-cream caret\nmarks and small annotations drifting in the margins, ink-bleed\nsoftness at each stroke edge, cool ink-near-black background,\neditorial revision-pass atmosphere, sparse and intentional\nplacement, compositional weight in the upper half with quiet\nmeasure below, no text no words no letters no typography no\nlabels no people no objects",
+  "provider": "flux",
+  "preset": "retro-crt",
+  "title": "Your Content Workflow Is Already Obsolete. Your AI Agent Is the Replacement.",
+  "subtitle": "AI in content marketing is table stakes; most workflows using it aren't fast or flexible enough to keep up. The third option: stop treating AI as a feature bolted onto your workflow and start treating the agent as the workflow. An editorial calendar built on top of a coding agent (Claude Code, Codex, Cursor, any of them), Markdown files, and a weekend of work.",
+  "formats": "og",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/editorialcontrol/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/f4e612a9-raw.png"
+    ],
+    "filtered": [
+      "/images/generated/f4e612a9-filtered.png"
+    ],
+    "composited": [
+      {
+        "provider": "flux",
+        "format": "og",
+        "path": "/images/generated/f4e612a9-og.png"
+      }
+    ]
+  },
+  "durationMs": 4141,
+  "status": "generated",
+  "templateSlug": "tracked-changes",
+  "site": "editorialcontrol",
+  "rating": 4,
+  "archived": true
+}

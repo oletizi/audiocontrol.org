@@ -32,7 +32,7 @@ Options:
   --formats      Comma-separated output formats: og,youtube,instagram (default: all)
   --filters      Comma-separated filter names: scanlines,vignette,grain,grade
   --preset       Named preset: ${Object.keys(PRESETS).join(', ')}
-  --output       Output directory (default: src/sites/audiocontrol/public/images/generated)
+  --output       Output directory (default: src/sites/editorialcontrol/public/images/generated)
   --name         Base filename for output (default: generated)
   --width        Generation width in pixels (default: 1792)
   --height       Generation height in pixels (default: 1024)
@@ -51,10 +51,11 @@ async function main(): Promise<void> {
       formats: { type: 'string', default: 'og,youtube,instagram' },
       filters: { type: 'string' },
       preset: { type: 'string' },
-      output: { type: 'string', default: 'src/sites/audiocontrol/public/images/generated' },
+      output: { type: 'string', default: 'src/sites/editorialcontrol/public/images/generated' },
       name: { type: 'string', default: 'generated' },
       width: { type: 'string', default: '1792' },
       height: { type: 'string', default: '1024' },
+      site: { type: 'string', default: 'editorialcontrol' },
       help: { type: 'boolean', default: false },
     },
     strict: true,
@@ -91,6 +92,7 @@ async function main(): Promise<void> {
     outputDir,
     baseName: values.name as string,
     formats: values.formats as string,
+    site: values.site as 'audiocontrol' | 'editorialcontrol',
   });
 
   if (result.filtersApplied.length > 0) {

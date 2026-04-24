@@ -114,6 +114,7 @@ export const POST: APIRoute = async ({ request }) => {
       height: body.height,
       outputDir,
       baseName,
+      site,
     });
 
     const entry: LogEntry = {

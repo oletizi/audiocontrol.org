@@ -39,5 +39,6 @@
   "site": "editorialcontrol",
   "rating": 4,
   "status": "approved",
-  "appliedTo": "src/sites/editorialcontrol/pages/blog/ai-doesnt-remember/index.md"
+  "appliedTo": "src/sites/editorialcontrol/pages/blog/ai-doesnt-remember/index.md",
+  "archived": true
 }

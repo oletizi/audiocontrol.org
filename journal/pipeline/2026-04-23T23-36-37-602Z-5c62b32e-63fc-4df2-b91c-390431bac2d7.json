@@ -1,0 +1,30 @@
+{
+  "id": "5c62b32e-63fc-4df2-b91c-390431bac2d7",
+  "type": "feature-image-blog",
+  "createdAt": "2026-04-23T23:36:37.602Z",
+  "createdBy": "agent",
+  "state": "cancelled",
+  "context": {
+    "postPath": "src/sites/editorialcontrol/content/blog/evolution-by-artificial-selection-for-prompt-generation.md",
+    "slug": "evolution-by-artificial-selection-for-prompt-generation",
+    "site": "editorialcontrol",
+    "title": "You Don't Need a Better Prompt. You Need Selection Pressure.",
+    "description": "Use an AI content generator long enough and your output drifts. The third option: a population of prompts under selection pressure — and an agent that builds the review app for its own output in an afternoon.",
+    "suggestedPrompt": "Abstract field of parallel vertical rules of varying length\nsuggesting a population of candidate measures, parchment-cream\nlines on a deep cool ink-near-black background with one single\nsignal-green chartreuse rule offset from the rest — the selected\nchampion emerging from the population, faint horizontal lineage\ntethers connecting clusters of lines in genealogical groups,\ncontrolled asymmetric balance, compositional weight in the upper\ntwo-thirds with quiet open measure below, editorial publication\nabstraction evoking selection pressure over a typographic\npopulation, publication-dark atmosphere, no text no words no\nletters no typography no labels no people no objects",
+    "suggestedPreset": "subtle",
+    "suggestedProvider": "flux",
+    "suggestedTemplateSlug": "margin-rules",
+    "candidateTemplates": [
+      "margin-rules",
+      "proof-constellation",
+      "ink-bleed-marginalia",
+      "galley-columns",
+      "pull-quote"
+    ],
+    "notes": "Editorialcontrol dispatch on selection pressure over a population of prompts. Seeded from the 'margin-rules' template but bespoked to express the thesis: many parchment rules + one chartreuse champion offset, with faint lineage tethers suggesting genealogical groups. Other candidates worth iterating toward: proof-constellation (scattered proof-mark glyphs, one chartreuse), ink-bleed-marginalia (chartreuse margin annotations)."
+  },
+  "decision": {
+    "decidedAt": "2026-04-24T01:29:46.966Z",
+    "logEntryId": "a5dda68f-4a63-4a19-9e42-585aa3649619"
+  }
+}

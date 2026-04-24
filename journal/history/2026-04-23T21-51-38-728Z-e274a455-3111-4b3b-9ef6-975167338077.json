@@ -1,0 +1,30 @@
+{
+  "id": "e274a455-3111-4b3b-9ef6-975167338077",
+  "timestamp": "2026-04-23T21:51:38.728Z",
+  "prompt": "Abstract tracked-changes revision marks, flowing horizontal\nsignal-green chartreuse strokes underlining and striking\nthrough invisible text, scattered warm parchment-cream caret\nmarks and small annotations drifting in the margins, ink-bleed\nsoftness at each stroke edge, cool ink-near-black background,\neditorial revision-pass atmosphere, sparse and intentional\nplacement, compositional weight in the upper half with quiet\nmeasure below, no text no words no letters no typography no\nlabels no people no objects",
+  "provider": "dom-bake",
+  "preset": "teal-amber",
+  "title": "Your Content Workflow is Already Obsolete",
+  "subtitle": "Your AI Agent is the Replacement",
+  "formats": "og",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/audiocontrol/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/dc563618-raw.png"
+    ],
+    "filtered": [],
+    "composited": [
+      {
+        "provider": "dom",
+        "format": "og",
+        "path": "/images/generated/e274a455-og.png"
+      }
+    ]
+  },
+  "durationMs": 1504,
+  "status": "generated",
+  "notes": "rebaked from bc9411ae via DOM",
+  "parentEntryId": "bc9411ae-f498-40a8-b109-113b3ca9e52c",
+  "site": "editorialcontrol",
+  "archived": true
+}

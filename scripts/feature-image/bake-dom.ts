@@ -38,6 +38,10 @@ export interface BakeParams {
   overlayPosition?: OverlayPosition;
   /** Vertical anchor inside the panel. 'auto' follows the position default. */
   overlayAlign?: OverlayAlign;
+  /** Operator-adjustable title-size multiplier from the focus page slider. */
+  titleScale?: string;
+  /** Operator-adjustable subtitle-size multiplier from the focus page slider. */
+  subtitleScale?: string;
   variants: BakeVariant[];
 }
 
@@ -65,6 +69,8 @@ function buildBakeUrl(baseUrl: string, variant: BakeVariant, params: BakeParams)
   url.searchParams.set('overlay', variant.overlay ? 'on' : 'off');
   if (params.overlayPosition) url.searchParams.set('overlayPosition', params.overlayPosition);
   if (params.overlayAlign) url.searchParams.set('overlayAlign', params.overlayAlign);
+  if (params.titleScale) url.searchParams.set('titleScale', params.titleScale);
+  if (params.subtitleScale) url.searchParams.set('subtitleScale', params.subtitleScale);
   for (const [k, v] of Object.entries(params.filters ?? {})) {
     if (v) url.searchParams.set(k, v);
   }

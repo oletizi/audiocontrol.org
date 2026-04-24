@@ -27,6 +27,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { basename, dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import { GALLERY_HOST_SITE } from '../../../scripts/feature-image/sites.js';
 
 type Site = 'audiocontrol' | 'editorialcontrol';
 
@@ -98,10 +99,9 @@ interface WorkflowItem {
 
 /** Resolve URL-style public path (/images/...) to absolute filesystem path. */
 function resolvePublicPath(urlPath: string, root: string): string {
-  // Scratch output lands in audiocontrol's publicDir (GALLERY_HOST_SITE).
-  // URL path /images/generated/foo.png → src/sites/audiocontrol/public/images/generated/foo.png
+  // Scratch output lands in the gallery host site's publicDir.
   const clean = urlPath.replace(/^\//, '');
-  return join(root, 'src', 'sites', 'audiocontrol', 'public', clean);
+  return join(root, 'src', 'sites', GALLERY_HOST_SITE, 'public', clean);
 }
 
 function siteFromPostPath(postPath: string): Site {

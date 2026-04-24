@@ -84,6 +84,8 @@ function readPreviewState(): Record<string, string> {
     overlayAlign: el.dataset.overlayAlign ?? 'auto',
     preset: el.dataset.preset ?? '',
     site: el.dataset.site ?? 'audiocontrol',
+    titleScale: el.dataset.titleScale ?? '1',
+    subtitleScale: el.dataset.subtitleScale ?? '1',
   };
 }
 
@@ -124,11 +126,20 @@ function restoreDraft(entryId: string): void {
     const el = getPreview();
     if (!el) return;
 
-    for (const key of ['format', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay', 'overlayPosition', 'overlayAlign', 'preset', 'site']) {
+    for (const key of ['format', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay', 'overlayPosition', 'overlayAlign', 'preset', 'site', 'titleScale', 'subtitleScale']) {
       if (draft[key] !== undefined) {
         el.dataset[key] = draft[key];
         const sel = qs<HTMLSelectElement | HTMLInputElement>(`[data-ctl="${key}"]`);
-        if (sel && sel instanceof HTMLSelectElement) sel.value = draft[key];
+        if (sel) sel.value = draft[key];
+      }
+    }
+
+    // Font-size sliders: apply saved values as CSS vars + sync readouts.
+    for (const [key, cssVar] of [['titleScale', '--og-title-scale'], ['subtitleScale', '--og-subtitle-scale']] as const) {
+      if (draft[key] !== undefined) {
+        el.style.setProperty(cssVar, draft[key]);
+        const readout = qs<HTMLElement>(`[data-readout="${key}"]`);
+        if (readout) readout.textContent = `${Number(draft[key]).toFixed(2)}×`;
       }
     }
 
@@ -195,6 +206,23 @@ function onControlInput(event: Event): void {
   } else if (ctl === 'all-formats') {
     // Checkbox — no preview change, just state for commit/approve
     return;
+  } else if (ctl === 'titleScale' || ctl === 'subtitleScale') {
+    // Slider: apply the multiplier directly as a CSS variable on the
+    // preview so the title / subtitle rescale live. og-preview.css
+    // uses --og-text-scale as a single multiplier for both today; we
+    // refine it by introducing --og-title-scale and --og-subtitle-scale
+    // which fall through to --og-text-scale when unset. Store the
+    // chosen value on the dataset so the draft-persistence pass and
+    // the rebake path can pick it up.
+    const raw = (target as HTMLInputElement).value;
+    writePreviewAttr(ctl, raw);
+    const preview = getPreview();
+    if (preview) {
+      const cssVar = ctl === 'titleScale' ? '--og-title-scale' : '--og-subtitle-scale';
+      preview.style.setProperty(cssVar, raw);
+    }
+    const readout = qs<HTMLElement>(`[data-readout="${ctl}"]`);
+    if (readout) readout.textContent = `${Number(raw).toFixed(2)}×`;
   } else if (['overlayPosition', 'overlayAlign', 'format', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain'].includes(ctl)) {
     writePreviewAttr(ctl, (target as HTMLSelectElement).value);
   }
@@ -358,6 +386,8 @@ function gatherRecompositeBody(): Record<string, unknown> {
     overlayAlign: state.overlayAlign,
     formats,
     site: state.site,
+    titleScale: state.titleScale,
+    subtitleScale: state.subtitleScale,
   };
 }
 
@@ -534,9 +564,18 @@ function renderThread(messages: ThreadMessage[]): void {
     .join('');
 }
 
+// Signature-based change detection: only re-render the thread when the
+// fetched messages actually differ from the last render. Without this
+// the thread panel rebuilds every 6s and composer focus / text selection
+// blink every tick.
+let lastThreadSignature: string | null = null;
+
 async function refreshThread(): Promise<void> {
   try {
     const msgs = await fetchThread();
+    const signature = JSON.stringify(msgs);
+    if (signature === lastThreadSignature) return;
+    lastThreadSignature = signature;
     renderThread(msgs);
   } catch { /* noop — leaves whatever was there */ }
 }
@@ -617,8 +656,54 @@ function wireActions(): void {
       case 'commit':  btn.addEventListener('click', () => void commit()); break;
       case 'approve': btn.addEventListener('click', () => void approve()); break;
       case 'reject':  btn.addEventListener('click', () => void reject()); break;
+      case 'copy-apply': btn.addEventListener('click', () => void copyApplyCommand(btn)); break;
     }
   });
+}
+
+/**
+ * Copy `/feature-image-apply` to the clipboard. The apply skill
+ * itself does the file-copy + frontmatter-upsert; this button is a
+ * process-motion affordance so the operator can see "approve → apply"
+ * as one motion inside the studio, instead of the apply step living
+ * only as an out-of-band command.
+ *
+ * Secure-context aware: falls back to execCommand('copy') on a hidden
+ * textarea when navigator.clipboard is unavailable (LAN HTTP dev).
+ */
+async function copyApplyCommand(btn: HTMLButtonElement): Promise<void> {
+  const cmd = btn.dataset.copy ?? '/feature-image-apply';
+  let ok = false;
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(cmd);
+      ok = true;
+    }
+  } catch { /* fall through to execCommand */ }
+  if (!ok) {
+    const ta = document.createElement('textarea');
+    ta.value = cmd;
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.left = '-1000px';
+    ta.setAttribute('readonly', '');
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, cmd.length);
+    try { ok = document.execCommand('copy'); }
+    finally { document.body.removeChild(ta); }
+  }
+  if (!ok) {
+    setStatusMessage('error', 'Clipboard unavailable');
+    return;
+  }
+  const original = btn.textContent;
+  btn.classList.add('copied');
+  btn.textContent = 'copied ✓';
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.textContent = original;
+  }, 1500);
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────

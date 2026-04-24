@@ -28,7 +28,9 @@ test-results/
 # Playwright MCP scratch output (screenshots, snapshots, console logs)
 .playwright-mcp/
 
-# scratch output from feature-image CLI iterations (per-site publicDir)
+# scratch output from feature-image CLI iterations. Only editorialcontrol
+# hosts the gallery (see scripts/feature-image/sites.ts — GALLERY_HOST_SITE).
+# Keeping the audiocontrol entry ignored too for any old files that linger.
 src/sites/audiocontrol/public/images/generated/
 src/sites/editorialcontrol/public/images/generated/
 
