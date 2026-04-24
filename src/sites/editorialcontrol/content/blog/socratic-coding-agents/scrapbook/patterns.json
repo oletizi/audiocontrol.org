@@ -1,0 +1,227 @@
+{
+  "totals": {
+    "sessions": 76,
+    "corrections": 98,
+    "avg_per_session": 1.29
+  },
+  "correction_categories": [
+    [
+      "process",
+      68
+    ],
+    [
+      "fabrication",
+      10
+    ],
+    [
+      "ux",
+      8
+    ],
+    [
+      "documentation",
+      7
+    ],
+    [
+      "complexity",
+      4
+    ],
+    [
+      "architecture",
+      3
+    ]
+  ],
+  "high_correction_sessions": [
+    {
+      "session": "2026-03-29_3db928d3",
+      "count": 6,
+      "arc": "mixed"
+    },
+    {
+      "session": "2026-03-28_36d312ce",
+      "count": 5,
+      "arc": "feature"
+    },
+    {
+      "session": "2026-03-28_de5bea43",
+      "count": 5,
+      "arc": "feature"
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "count": 5,
+      "arc": "mixed"
+    },
+    {
+      "session": "2026-03-30_f6329a25",
+      "count": 5,
+      "arc": "mixed"
+    },
+    {
+      "session": "2026-04-15_544d7878",
+      "count": 5,
+      "arc": "debug"
+    },
+    {
+      "session": "2026-03-21_27263c0e",
+      "count": 4,
+      "arc": "feature"
+    },
+    {
+      "session": "2026-03-29_593e17b4",
+      "count": 4,
+      "arc": "feature"
+    },
+    {
+      "session": "2026-04-13_885f8871",
+      "count": 4,
+      "arc": "feature"
+    },
+    {
+      "session": "2026-02-19_8db89009",
+      "count": 3,
+      "arc": "quick-task"
+    },
+    {
+      "session": "2026-03-28_a2ec33b7",
+      "count": 3,
+      "arc": "exploration"
+    },
+    {
+      "session": "2026-04-11_3f12836f",
+      "count": 3,
+      "arc": "feature"
+    }
+  ],
+  "zero_correction_sessions": 41,
+  "mental_model_hits_count": 8,
+  "mental_model_samples": [
+    {
+      "session": "2026-03-20_5ced7864",
+      "category": "fabrication",
+      "description": "Claude assumed Google Drive credentials would be missing and needed configuration; user didn't actually ask for that, and the topic shift made it moot."
+    },
+    {
+      "session": "2026-03-21_27263c0e",
+      "category": "fabrication",
+      "description": "Agent assumed loop-editor would automatically use updated tree node structure with directoryName field instead of fileName. Required explicit code updates in three locations."
+    },
+    {
+      "session": "2026-03-21_526c062b",
+      "category": "fabrication",
+      "description": "Agent incorrectly assumed the file path worked and kept trying variations instead of asking user for help or checking if the file existed. User pointed out the escaping issue."
+    },
+    {
+      "session": "2026-03-28_36d312ce",
+      "category": "process",
+      "description": "Agent didn't check saved output files immediately when tests completed. User had to ask why failures weren't noticed."
+    },
+    {
+      "session": "2026-03-28_de5bea43",
+      "category": "process",
+      "description": "User pointed out that the agent didn't check existing git branches before deciding which branch to push to, making incorrect assumptions about the deploy branch naming"
+    },
+    {
+      "session": "2026-03-29_89af97fa",
+      "category": "fabrication",
+      "description": "Initial plan incorrectly assumed OPFS backend didn't exist at all. Investigation revealed it is fully implemented in the app but not exposed as a user-selectable option."
+    },
+    {
+      "session": "2026-04-15_5f3f6c9c",
+      "category": "fabrication",
+      "description": "Generated images looked like realistic gear (Roland samplers, MPC-style hardware) but the agent fabricated plausible-but-wrong details. User corrected: 'Anyone who knows Roland gear will instantly know it's fake. We don't want anything to look fake.' Redirected to purely abstract prompts."
+    },
+    {
+      "session": "2026-04-16_69cbd6ae",
+      "category": "fabrication",
+      "description": "Agent assumed GA4 was the right analytics source and spent time setting up googleapis dependency. User redirected to Umami instead, which is simpler (no extra npm packages, just API key auth)."
+    }
+  ],
+  "socratic_pattern_count": 19,
+  "socratic_pattern_samples": [
+    {
+      "session": "2026-02-19_3d171144",
+      "pattern": "User clarified actual request (documentation only, not implementation) early in session"
+    },
+    {
+      "session": "2026-03-20_5ced7864",
+      "pattern": "User frequently asked Claude to verify and clarify requirements (multi-backend generalization, HTTPS support) before implementation"
+    },
+    {
+      "session": "2026-03-21_f95740db",
+      "pattern": "User clarified intent when sensing misunderstanding (portable library should be superset, not replacement)"
+    },
+    {
+      "session": "2026-03-21_f95740db",
+      "source": "strength",
+      "pattern": "Adapted plan based on user clarifications without re-planning from scratch"
+    },
+    {
+      "session": "2026-03-28_32828414",
+      "source": "strength",
+      "pattern": "Followed detailed plan precisely without asking for clarification"
+    },
+    {
+      "session": "2026-03-28_de5bea43",
+      "source": "strength",
+      "pattern": "Communicated progress clearly and asked clarifying questions about Netlify API limitations"
+    },
+    {
+      "session": "2026-04-11_095ccc74",
+      "pattern": "Structured interview minimizes questions (4-6) by proposing concrete options and extracting from user's own descriptions"
+    },
+    {
+      "session": "2026-04-11_3f12836f",
+      "source": "strength",
+      "pattern": "Properly delegated all actual writing tasks once user confirmed the goal (used documentation-engineer agent)"
+    },
+    {
+      "session": "2026-04-13_62a16914",
+      "pattern": "Assistant appropriately paused feature-complete workflow to clarify ambiguous feature state (high test coverage gaps, no tracked PR, no formal issue tracking)"
+    },
+    {
+      "session": "2026-04-13_62a16914",
+      "pattern": "No user corrections were issued — session ended during clarification phase"
+    },
+    {
+      "session": "2026-04-13_62a16914",
+      "source": "strength",
+      "pattern": "Asked clarifying questions rather than proceeding with incomplete information"
+    },
+    {
+      "session": "2026-04-13_885f8871",
+      "pattern": "User gives precise course corrections by asking clarifying questions rather than directives"
+    },
+    {
+      "session": "2026-04-13_a8c1dd30",
+      "pattern": "Agent uses /feature-define skill in a discovery mode, asking clarifying questions before jumping to implementation"
+    },
+    {
+      "session": "2026-04-15_544d7878",
+      "source": "strength",
+      "pattern": "Systematically verified fix: confirmed correct fields parsed, confirmed unit tests still pass, confirmed e2e tests still pass"
+    },
+    {
+      "session": "2026-04-17_eff0ef6b",
+      "source": "strength",
+      "pattern": "Wrote comprehensive acceptance criteria and caught a scope clarification needed (tracking vs automated publishing)"
+    },
+    {
+      "session": "2026-04-19_d4df8ec4",
+      "source": "strength",
+      "pattern": "Iterative clarification questions that narrowed scope and revealed constraints (audiocontrol.org's live calendar, need for incremental migration)"
+    },
+    {
+      "session": "2026-04-21_81bfd33c",
+      "pattern": "Agent over-asked for clarification when user provided directive; should have inferred from context"
+    },
+    {
+      "session": "2026-04-21_81bfd33c",
+      "pattern": "Agent successfully identified and adapted project-specific patterns after redirection"
+    },
+    {
+      "session": "2026-04-21_9b2bba4d",
+      "source": "strength",
+      "pattern": "Thoroughly investigated the codebase layout structure before making changes (checked both Layout.astro and BlogLayout.astro to understand inheritance)"
+    }
+  ]
+}

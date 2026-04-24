@@ -1,0 +1,502 @@
+[
+  {
+    "session": "2026-02-19_8db89009",
+    "category": "process",
+    "description": "Assistant started creating code and tasks instead of just project management assets. User corrected by explicitly stating 'You are to create the project management assets defined in ~/work/PROJECT-MANAGEMENT.md ONLY.'"
+  },
+  {
+    "session": "2026-02-19_8db89009",
+    "category": "process",
+    "description": "Assistant created documentation files in the local-midi-routing worktree instead of creating a new worktree for the route-graph feature. User corrected by asking if the assistant understands how features and worktrees interact."
+  },
+  {
+    "session": "2026-02-19_8db89009",
+    "category": "process",
+    "description": "During linux-installer feature work, assistant again started creating implementation tasks instead of just project management assets. User corrected to reinforce the guidelines."
+  },
+  {
+    "session": "2026-03-13_32b8c637",
+    "category": "process",
+    "description": "User correctly rejected the approach of creating backward compatibility aliases. Creating type aliases (S330MidiAdapter -> SSeriesMidiAdapter) adds technical debt and confusion. Types should directly use shared names."
+  },
+  {
+    "session": "2026-03-20_5ced7864",
+    "category": "fabrication",
+    "description": "Claude assumed Google Drive credentials would be missing and needed configuration; user didn't actually ask for that, and the topic shift made it moot."
+  },
+  {
+    "session": "2026-03-20_5ced7864",
+    "category": "process",
+    "description": "Claude attempted to run `pnpm install` and `make` commands directly instead of asking user; user interrupted and handled the build themselves."
+  },
+  {
+    "session": "2026-03-21_27263c0e",
+    "category": "fabrication",
+    "description": "Agent assumed loop-editor would automatically use updated tree node structure with directoryName field instead of fileName. Required explicit code updates in three locations."
+  },
+  {
+    "session": "2026-03-21_27263c0e",
+    "category": "process",
+    "description": "Agent initially placed program loading logic in samples.ts (wrong module) instead of creating a separate programs.ts file. User pointed out programs are a higher-order concept separate from samples."
+  },
+  {
+    "session": "2026-03-21_27263c0e",
+    "category": "ux",
+    "description": "Agent fixed loop-editor's handleLoadSelectedIntoEditor to require libraryOrigin, which broke the ability to load a freshly selected sample without first having loaded it. Required adding selectedNodeInfo state to track selected tree node separately from loaded sample."
+  },
+  {
+    "session": "2026-03-21_27263c0e",
+    "category": "process",
+    "description": "Agent didn't recognize that sampler-editor had its own duplicate implementation of loadCommonSample() that wasn't automatically updated when sampler-library functions changed."
+  },
+  {
+    "session": "2026-03-21_526c062b",
+    "category": "fabrication",
+    "description": "Agent incorrectly assumed the file path worked and kept trying variations instead of asking user for help or checking if the file existed. User pointed out the escaping issue."
+  },
+  {
+    "session": "2026-03-21_526c062b",
+    "category": "ux",
+    "description": "Agent added sustain end detection but it was placing loop endpoints in the decay tail (87% into sample) instead of at the end of the sustain region (75%). The algorithm was correct in principle but the decay tail wasn't being properly bounded."
+  },
+  {
+    "session": "2026-03-28_36d312ce",
+    "category": "complexity",
+    "description": "Agent started with Playwright e2e tests requiring dev server, then overcomplicated with React/Zustand integration. User pointed out simple SysEx ping would be better."
+  },
+  {
+    "session": "2026-03-28_36d312ce",
+    "category": "process",
+    "description": "Agent ran blocking commands without timeout protection, causing hangs. User had to interrupt multiple times."
+  },
+  {
+    "session": "2026-03-28_36d312ce",
+    "category": "process",
+    "description": "Agent didn't check saved output files immediately when tests completed. User had to ask why failures weren't noticed."
+  },
+  {
+    "session": "2026-03-28_36d312ce",
+    "category": "complexity",
+    "description": "Agent created unnecessary abstraction layers (accessing midiStore through Zustand, starting servers, serving HTML files). User pushed back multiple times for simpler approaches."
+  },
+  {
+    "session": "2026-03-28_36d312ce",
+    "category": "process",
+    "description": "Agent used 90-second timeout and ran tests in blocking mode. User called out the slowness when MIDI operations should be milliseconds."
+  },
+  {
+    "session": "2026-03-28_70b3c95e",
+    "category": "process",
+    "description": "User pointed out that working on features and refactoring is not appropriate for a docs-roadmap repository. The assistant was about to suggest medium/low priority work (completing features, refactoring code) which belongs in the main audiocontrol repo, not the documentation repo."
+  },
+  {
+    "session": "2026-03-28_a2ec33b7",
+    "category": "process",
+    "description": "User interrupted initial audit agent launches to point out that latest code from main branch should be pulled first before exploring codebase"
+  },
+  {
+    "session": "2026-03-28_a2ec33b7",
+    "category": "process",
+    "description": "User corrected file organization for audit output - should use a datestamped directory under docs/1.0/ rather than writing directly to docs/1.0/"
+  },
+  {
+    "session": "2026-03-28_a2ec33b7",
+    "category": "documentation",
+    "description": "User pointed out that TYPESCRIPT-ARCHITECTURE.md should not be stored in ~/.claude since that directory is not version controlled and won't be accessible across development environments or via GitHub"
+  },
+  {
+    "session": "2026-03-28_de5bea43",
+    "category": "process",
+    "description": "User pointed out that the agent didn't check existing git branches before deciding which branch to push to, making incorrect assumptions about the deploy branch naming"
+  },
+  {
+    "session": "2026-03-28_de5bea43",
+    "category": "documentation",
+    "description": "User requested feature documentation before implementation, requiring the agent to create PRD, workplan, and README files per PROJECT-MANAGEMENT.md structure"
+  },
+  {
+    "session": "2026-03-28_de5bea43",
+    "category": "process",
+    "description": "User clarified that the netlify CLI should be used to investigate deployment instead of making assumptions, and to update CLAUDE.md accordingly"
+  },
+  {
+    "session": "2026-03-28_de5bea43",
+    "category": "process",
+    "description": "User indicated the build system was recently changed to use Make, so Netlify should use 'make' command from repo root, not .build-stamp targets"
+  },
+  {
+    "session": "2026-03-28_de5bea43",
+    "category": "fabrication",
+    "description": "User corrected the agent's assumption about Netlify site naming - there was already an `audiocontrol.org` site and the agent should have investigated existing sites first"
+  },
+  {
+    "session": "2026-03-29_3db928d3",
+    "category": "process",
+    "description": "Switched between Python, Ruby, and Node.js to validate YAML syntax when simple file inspection would have sufficed or validation wasn't necessary"
+  },
+  {
+    "session": "2026-03-29_3db928d3",
+    "category": "process",
+    "description": "Agent suggested sticking to the project tech stack (Node.js, TypeScript, C++) instead of introducing external tools"
+  },
+  {
+    "session": "2026-03-29_3db928d3",
+    "category": "ux",
+    "description": "Tests were silently falling back to Web MIDI when HTTP MIDI wasn't properly configured, instead of failing loudly when device couldn't be reached"
+  },
+  {
+    "session": "2026-03-29_3db928d3",
+    "category": "architecture",
+    "description": "Agent suggested URL parameters for transport selection when app should have a proper connection UI for transport selection with localStorage persistence"
+  },
+  {
+    "session": "2026-03-29_3db928d3",
+    "category": "architecture",
+    "description": "Test setup was using hardcoded ports instead of validating device presence first and discovering actual MIDI ports"
+  },
+  {
+    "session": "2026-03-29_3db928d3",
+    "category": "architecture",
+    "description": "Agent proposed rewriting test to use HTTP MIDI transport when architecture decision was to add it to the connection UI first"
+  },
+  {
+    "session": "2026-03-29_593e17b4",
+    "category": "ux",
+    "description": "Switched from URL parameter-based transport selection (?midi=http&midiServerPort=X) to localStorage + UI approach"
+  },
+  {
+    "session": "2026-03-29_593e17b4",
+    "category": "process",
+    "description": "When test suite has 13 skipped tests, the issue should fail loudly rather than silently skipping - indicates missing validation or incorrect test configuration"
+  },
+  {
+    "session": "2026-03-29_593e17b4",
+    "category": "ux",
+    "description": "Device connectivity validation should run before tests and use dynamically discovered MIDI port, not hardcoded values"
+  },
+  {
+    "session": "2026-03-29_593e17b4",
+    "category": "process",
+    "description": "Rapidly switching between Python, Ruby, and Node for YAML validation - should stick to project's technology stack"
+  },
+  {
+    "session": "2026-03-29_89af97fa",
+    "category": "process",
+    "description": "Initially proposed using query string parameters (`?library=opfs`) to enable OPFS mode for e2e tests. User rejected this as not reflecting real user behavior."
+  },
+  {
+    "session": "2026-03-29_89af97fa",
+    "category": "fabrication",
+    "description": "Initial plan incorrectly assumed OPFS backend didn't exist at all. Investigation revealed it is fully implemented in the app but not exposed as a user-selectable option."
+  },
+  {
+    "session": "2026-03-29_9361ac41",
+    "category": "process",
+    "description": "Created separate http-midi-hardware.spec.ts test file instead of using same test suite with config-only changes. User corrected this by asking why there's a special test."
+  },
+  {
+    "session": "2026-03-29_9361ac41",
+    "category": "complexity",
+    "description": "Did not recognize existing tests use raw Web MIDI API (navigator.requestMIDIAccess()) which bypasses the transport layer. User pointed out tests should work through app UI for either transport to work without code changes."
+  },
+  {
+    "session": "2026-03-30_17fc89b3",
+    "category": "process",
+    "description": "Agent started to write feature docs in the main repo clone instead of the feature branch worktree"
+  },
+  {
+    "session": "2026-03-30_17fc89b3",
+    "category": "process",
+    "description": "Agent made vite config change to the wrong file (electron.vite.config.ts instead of scripts/server.ts)"
+  },
+  {
+    "session": "2026-03-30_81e7c13f",
+    "category": "process",
+    "description": "Agent was doing research/investigation directly (reading files, grepping, analyzing screenshots) instead of delegating to sub-agents. CLAUDE.md says sub-agents research, main agent executes."
+  },
+  {
+    "session": "2026-03-30_81e7c13f",
+    "category": "process",
+    "description": "Agent was sending sub-agents to execute changes directly instead of having them research/propose first, then main agent executes"
+  },
+  {
+    "session": "2026-03-30_81e7c13f",
+    "category": "documentation",
+    "description": "CLAUDE.md documented raw pnpm/script commands for e2e tests instead of canonical make targets"
+  },
+  {
+    "session": "2026-03-30_81e7c13f",
+    "category": "fabrication",
+    "description": "Agent claimed devenv was the canonical way to run tests when actually the Make targets were canonical. Make targets should wrap devenv."
+  },
+  {
+    "session": "2026-03-30_81e7c13f",
+    "category": "process",
+    "description": "Agent weakened devenv guard to allow MIDI_SERVER_BIN instead of keeping guard strong. The guard correctly caught that Makefile wasn't using devenv."
+  },
+  {
+    "session": "2026-03-30_f6329a25",
+    "category": "process",
+    "description": "User had to interrupt multiple times telling me to delegate to sub-agents. I was doing manual investigation work instead of using Task/Agent tools. User emphasized that delegation should be proactive, not reactive."
+  },
+  {
+    "session": "2026-03-30_f6329a25",
+    "category": "process",
+    "description": "User had me weaken the devenv guard to accept MIDI_SERVER_BIN from Makefile, but this missed the actual problem that the Makefile shouldn't work outside devenv. The guard was catching a real bug."
+  },
+  {
+    "session": "2026-03-30_f6329a25",
+    "category": "process",
+    "description": "I manually ran `npx playwright install` instead of adding it to the Makefile as part of the canonical target. User pointed out environment provisioning should be automated."
+  },
+  {
+    "session": "2026-03-30_f6329a25",
+    "category": "documentation",
+    "description": "CLAUDE.md referenced running e2e tests with pnpm commands and scripts directly, not the canonical make targets. User wanted the make targets documented since they handle all setup."
+  },
+  {
+    "session": "2026-03-30_f6329a25",
+    "category": "process",
+    "description": "User corrected my understanding of delegation - sub-agents should research and propose, then main agent executes. I was having sub-agents make changes directly without showing the user what would be changed first."
+  },
+  {
+    "session": "2026-03-30_fdf62c43",
+    "category": "process",
+    "description": "Assistant ran e2e tests outside the required devenv shell environment and misattributed the failure to missing infrastructure, when the actual issue was not activating the devenv shell which provides midi-server"
+  },
+  {
+    "session": "2026-03-30_fdf62c43",
+    "category": "documentation",
+    "description": "Assistant should have recognized from CLAUDE.md that e2e tests require running inside 'devenv shell' before assuming infrastructure wasn't available, and should have proposed adding guards to scripts to prevent this misconception in the future"
+  },
+  {
+    "session": "2026-04-11_095ccc74",
+    "category": "process",
+    "description": "Agent created feature infrastructure (branch, worktree, docs directory) without first understanding what the feature was supposed to do. User redirected to define the feature first before building infrastructure."
+  },
+  {
+    "session": "2026-04-11_3f12836f",
+    "category": "process",
+    "description": "Agent started reading PROJECT-MANAGEMENT.md and gathering context to write code itself instead of delegating. User asked 'did you delegate?' — agent acknowledged it had not, despite this being the documented role."
+  },
+  {
+    "session": "2026-04-11_3f12836f",
+    "category": "process",
+    "description": "Agent explained the issue (path of least resistance because agent has capability) but failed to proactively prevent it. This same correction has occurred in 3/3 orchestrator sessions. User asked 'Why didn't you delegate?' forcing explicit acknowledgment."
+  },
+  {
+    "session": "2026-04-11_3f12836f",
+    "category": "process",
+    "description": "Agent proposed a single 'orchestrator' agent scope and implementation plan without recognizing the need to split into project-level (infrastructure) and feature-level (implementation) orchestrators. User suggested the architectural distinction."
+  },
+  {
+    "session": "2026-04-11_53907a57",
+    "category": "process",
+    "description": "User said 'you are the orchestrator, not the implementation team' but Claude tried to read worktree files and start editing after the plan was created. Should have delegated implementation or waited for user direction."
+  },
+  {
+    "session": "2026-04-11_53907a57",
+    "category": "process",
+    "description": "User redirected from general documentation guidance to understanding that agents learn patterns from the code itself (Makefile). Documentation needs to be at the source of confusion (inline comments) not in a separate guide."
+  },
+  {
+    "session": "2026-04-11_53907a57",
+    "category": "process",
+    "description": "User corrected approach to finding decryption instructions—instead of trying workarounds, should have looked in the obvious place (tools/ directory)."
+  },
+  {
+    "session": "2026-04-11_b337c6fd",
+    "category": "process",
+    "description": "Agent changed save button from <button> to <span role='button'> after user pointed out it created nested button elements causing DOM validation errors"
+  },
+  {
+    "session": "2026-04-11_b337c6fd",
+    "category": "process",
+    "description": "Agent created duplicated vite.config code in both editors instead of extracting to shared module like user suggested"
+  },
+  {
+    "session": "2026-04-11_b337c6fd",
+    "category": "process",
+    "description": "Agent initially put shared vite config in src/build/ which was ignored by .gitignore; had to rename to src/vite/"
+  },
+  {
+    "session": "2026-04-12_92a92c10",
+    "category": "process",
+    "description": "Agent started implementing Phase 2 directly instead of delegating to a sub-agent. User asked 'are you delegating?' to redirect the approach."
+  },
+  {
+    "session": "2026-04-12_92a92c10",
+    "category": "process",
+    "description": "Agent was waiting for confirmation at each phase boundary instead of driving autonomously to completion. User said 'proceed to feature complete—I'll check your work in the morning' to redirect."
+  },
+  {
+    "session": "2026-04-12_92a92c10",
+    "category": "process",
+    "description": "Agent spawned a sub-agent for 3 simple, well-defined edits instead of doing them directly with Edit tool. User complained that compound agent calls force approval of heavy operations when individual edits would be faster."
+  },
+  {
+    "session": "2026-04-13_5bd0b7a6",
+    "category": "process",
+    "description": "Agent started implementing Phase 1 directly instead of delegating to sub-agents. Should have used Agent tool from the beginning."
+  },
+  {
+    "session": "2026-04-13_5bd0b7a6",
+    "category": "process",
+    "description": "Agent proposed using full e2e dev environment with hardware connection for testing UI features. Should create minimal isolated test harness instead."
+  },
+  {
+    "session": "2026-04-13_5bd0b7a6",
+    "category": "process",
+    "description": "Agent proposed testing solutions (Storybook, Playwright e2e) without first researching what infrastructure already exists in the codebase."
+  },
+  {
+    "session": "2026-04-13_66875892",
+    "category": "ux",
+    "description": "User said charts were enormous. The assistant had set explicit `width` and `height` attributes on canvas elements, making them render full-size. The fix was to wrap canvases in 600px containers and remove explicit dimensions, letting Chart.js handle responsive sizing."
+  },
+  {
+    "session": "2026-04-13_66875892",
+    "category": "ux",
+    "description": "User wanted charts in a format suitable for Reddit posts (text-based, not images). The assistant created ASCII art versions but used unicode box-drawing characters. User clarified they needed versions inside code blocks that would render properly on Reddit using only standard ASCII."
+  },
+  {
+    "session": "2026-04-13_885f8871",
+    "category": "ux",
+    "description": "Agent created a 13-second demo video with 7 interactions. User pointed out each interaction needs 5-8 seconds for anticipation, action, and absorption phases. Agent respaced video to 53 seconds."
+  },
+  {
+    "session": "2026-04-13_885f8871",
+    "category": "process",
+    "description": "Agent set video timing before writing voiceover script. User asked if VO script existed, then explained the script is the real pacing test — if a human can't read the narration in time allotted, the video is wrong. Script must drive timing, not animation. Agent then wrote VO scripts with timing first."
+  },
+  {
+    "session": "2026-04-13_885f8871",
+    "category": "documentation",
+    "description": "Agent saved pacing feedback to local memory only. User directed creation of a top-level project document. Agent created VIDEO-DEMOS.md but didn't follow naming convention (used VIDEO-DEMOS instead of SUBJECT-ASPECT order)."
+  },
+  {
+    "session": "2026-04-13_885f8871",
+    "category": "process",
+    "description": "User redirected module location from tools/demo-video-gen/ (standalone scripts) to modules/video-control/ (pnpm workspace module) to get proper dependency management and build integration."
+  },
+  {
+    "session": "2026-04-15_0689fde6",
+    "category": "process",
+    "description": "Assistant copied docs from main into feature worktrees without checking if docs already existed on those branches, overwriting tracked files that contained prior work (completed phases 1-3 for feature-image-generator). Should have run git status/log first to understand what was already committed."
+  },
+  {
+    "session": "2026-04-15_0689fde6",
+    "category": "process",
+    "description": "Assistant attempted to clean up by deleting an untracked file and discarding tracked changes with git checkout -- in a single destructive command, without asking the user. Should have used git restore and asked before removing anything."
+  },
+  {
+    "session": "2026-04-15_0689fde6",
+    "category": "documentation",
+    "description": "Assistant created feature docs in the main worktree (docs/1.0/001-IN-PROGRESS/) instead of the feature worktrees, making them invisible to the implementation team. Feature docs must live on the feature branches where they'll be worked on."
+  },
+  {
+    "session": "2026-04-15_544d7878",
+    "category": "process",
+    "description": "Agent spent significant time analyzing UI state management code paths (stale closures, raw buffer references, handleCommitHeader re-encode loop) before user asked to write a test. Agent then wrote unit tests replicating code patterns, but user redirected to Playwright e2e as the correct layer."
+  },
+  {
+    "session": "2026-04-15_544d7878",
+    "category": "process",
+    "description": "Agent continued analyzing code after Playwright tests passed. User provided the correct hypothesis directly: the field mapping is wrong, not the logic. This would have been discovered earlier with user's quick exploratory approach rather than building formal test infrastructure."
+  },
+  {
+    "session": "2026-04-15_544d7878",
+    "category": "process",
+    "description": "Agent proposed building a proper e2e test harness for field discovery. User suggested ad-hoc approach instead: throwaway Node script to read, user changes device, script diffs. Much faster for exploration."
+  },
+  {
+    "session": "2026-04-15_544d7878",
+    "category": "process",
+    "description": "Agent tried to run throwaway script from /tmp (outside monorepo). Module resolution failed because pnpm workspace paths don't resolve in /tmp. Should have put script inside the workspace directory from the start."
+  },
+  {
+    "session": "2026-04-15_544d7878",
+    "category": "process",
+    "description": "Agent started writing a comprehensive efreq-probe test with multiple candidates and pauses for front-panel checking. Unnecessary over-engineering when user could just spot-check a few key fields."
+  },
+  {
+    "session": "2026-04-15_5f3f6c9c",
+    "category": "fabrication",
+    "description": "Generated images looked like realistic gear (Roland samplers, MPC-style hardware) but the agent fabricated plausible-but-wrong details. User corrected: 'Anyone who knows Roland gear will instantly know it's fake. We don't want anything to look fake.' Redirected to purely abstract prompts."
+  },
+  {
+    "session": "2026-04-15_5f3f6c9c",
+    "category": "process",
+    "description": "Agent tried local woff2 fonts with satori, which doesn't support woff2. Should have checked satori's font format requirements upfront (TTF/OTF only). Quickly fixed by fetching from Google Fonts."
+  },
+  {
+    "session": "2026-04-16_40f17316",
+    "category": "process",
+    "description": "User redirected from immediately implementing skills to updating PRD/workplan first with the new composable skill design. Agent had started creating a monolithic /editorial skill but user wanted separate /editorial-* skills."
+  },
+  {
+    "session": "2026-04-16_69cbd6ae",
+    "category": "fabrication",
+    "description": "Agent assumed GA4 was the right analytics source and spent time setting up googleapis dependency. User redirected to Umami instead, which is simpler (no extra npm packages, just API key auth)."
+  },
+  {
+    "session": "2026-04-16_69cbd6ae",
+    "category": "process",
+    "description": "Agent created debug scripts and test files that should have been cleaned up. User did not explicitly ask for cleanup, but the agent should have proactively removed debug artifacts."
+  },
+  {
+    "session": "2026-04-16_bc965958",
+    "category": "fabrication",
+    "description": "Agent included SRAW capture in protocol report with the statement 'would need ASPACK wrapping' — this is an inference baked into harness code, not a finding from running the real SCSI Plug. The user caught it: 'Agent skipped SRAW capture with inference, not finding.' Should have either (a) let SEND_FUNC_SLOT run unintercepted to see real CDBs, or (b) statically decoded the function. Instead presented inference as evidence."
+  },
+  {
+    "session": "2026-04-16_bc965958",
+    "category": "process",
+    "description": "After earlier session blamed for 'unbridled device exploration leads to confusion,' the user explicitly re-stated disassemble-before-probing preference. Agent should have weighted static analysis higher and was not aggressive enough about capturing SRAW on wire during the hardware phase."
+  },
+  {
+    "session": "2026-04-16_bc965958",
+    "category": "process",
+    "description": "User requested tool constraint (avoid # in heredocs, avoid sed -i, prefer scripts) but had to ask THREE TIMES before it was written into CLAUDE.md and propagated to sub-agent prompts. Agent should have proactively documented permission-gate triggers in memory after first occurrence."
+  },
+  {
+    "session": "2026-04-17_eff0ef6b",
+    "category": "process",
+    "description": "Did not test the Umami integration against live APIs before staging the commit. Only discovered API shape mismatch, silent parameter filtering, and empty dataset when exercising the code live."
+  },
+  {
+    "session": "2026-04-17_eff0ef6b",
+    "category": "fabrication",
+    "description": "Made up the Umami referrer response shape from intuition ({name, pageviews, visitors, visits}) instead of checking a real response. This is a classic error the CLAUDE.md rules warn against — never bypass typing with mock assumptions about external APIs."
+  },
+  {
+    "session": "2026-04-18_37eadf79",
+    "category": "process",
+    "description": "Original reading of workplan said 'move src/pages' but that would require rewriting imports in every file. The charitable reading (move everything audiocontrol-specific under src/sites/audiocontrol/) was the actual intent. Moved the full subtree including layouts/components/styles instead of just pages."
+  },
+  {
+    "session": "2026-04-18_37eadf79",
+    "category": "process",
+    "description": "Made a decision about whether npm run build should run both sites or default to audiocontrol before asking the user. Should have asked first."
+  },
+  {
+    "session": "2026-04-19_d4df8ec4",
+    "category": "process",
+    "description": "User corrected the agent's use of plain `mv` instead of `git mv` when renaming the blog post directory. The agent should use git-aware tools to preserve version control history."
+  },
+  {
+    "session": "2026-04-21_81bfd33c",
+    "category": "process",
+    "description": "Agent asked for confirmation on visibility and structure when user had already decided. User said 'do it' and provided the upstream origin, expecting the agent to execute rather than ask questions."
+  },
+  {
+    "session": "2026-04-21_81bfd33c",
+    "category": "complexity",
+    "description": "Agent initially drafted a monorepo named 'agent-plugins' when the user wanted it named 'deskwork' (after the flagship plugin). Agent refactored all references after discovering the remote was at audiocontrol-org/deskwork."
+  },
+  {
+    "session": "2026-04-21_9827e073",
+    "category": "process",
+    "description": "Agent proposed splitting Phase 2 into 2a (foundation) and 2b (calendar+frontmatter+install), and asked the user which they preferred. User said 'I don't care', which the agent correctly interpreted as 'go wide — do as much as you can in one session' rather than continuing to ask. The agent then landed 2a + most of 2b in a single session."
+  }
+]
