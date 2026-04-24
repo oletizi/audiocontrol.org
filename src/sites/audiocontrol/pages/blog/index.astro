@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
 
 const entries = await getCollection('blog', ({ data }) =>
@@ -41,7 +42,10 @@ const formatBlogDate = (dateStr: string): string => {
           <article class="blog-card-inner">
             {post.image && (
               <div class="blog-card-image">
-                <img src={post.image} alt="" loading="lazy" />
+                {typeof post.image === 'string'
+                  ? <img src={post.image} alt="" loading="lazy" />
+                  : <Image src={post.image} alt="" loading="lazy" />
+                }
               </div>
             )}
             <div class="blog-card-content">
