@@ -4,6 +4,55 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-24 (afternoon): Editorialcontrol homepage polish + blog render cleanup
+
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar (branch `feature/editorial-calendar`)
+
+**Goal:** Fix up a few rough edges on editorialcontrol.org that surfaced during live review of the Phase 18 deploy previews. Started small (editor email, aspirational homepage section that no back-catalog backed), grew into a design-language pass (conform homepage sections to the Desk listing register; add marginalia so the reading-column sections read as intentional asymmetry rather than empty right zones; strip throat-clearing from blog body renders).
+
+**Accomplished:**
+
+- **Editor email** — `orion@audiocontrol.org` → `orion@editorialcontrol.org` across four surfaces (contact, about, homepage dispatch CTA, blog-index dispatch CTA). PR #120.
+- **"On the desk" aspirational topics → "Recent dispatches"** — homepage topic list (5 sections the publication promises to return to) replaced with a live listing of actually-published posts (title + description + date, sorted newest first). Topics array preserved as a commented block for revival once the publication has enough catalog to back the claims. PR #120.
+- **Conformed the Recent dispatches item pattern to the Desk register** — initial implementation inherited the 2-column marker-body grid from the old topics section. Refactored to match `/blog/` (The desk) listing: `No. 01` chartreuse mono + uppercase mono date in a meta row, Fraunces italic title (primary on hover), muted body description, hairline separator per item, whole-item clickable. Added an "All dispatches on the desk →" footer pointer. PR #120.
+- **Audiocontrol blog index `[object Object]` bug** — after the Phase 18c schema switch to `image()`, `post.image` is an `ImageMetadata` object, and the blog-index template interpolated it as a string attribute. Same pattern as the BlogLayout fix: route through Astro's `<Image>` component with string fallback. Bug surfaced on the deploy preview by the operator. PR #120.
+- **Marginalia pattern (Option A)** — after diagnosing that the homepage reading-column sections (`.masthead`, `.schedule`, `.dispatch`) were left-aligned in a wide `.site-container` with no right-column content, added small editorial-ephemera blocks on the right: `ISSUE` stamp (Vol. 01 / Issue 00, Pre-press, date, replacing the inline meta line above the masthead title); `THE DESK` index (dispatch count + "Slowly published. One issue at a time."); `HANDLING` card (By hand / No list / No automation). Shared `.marginalia` styles (mono kicker + mono value-lines + serif italic prose + thin left hairline rule). Mobile: collapses below content under 820px with a top rule. PR #120.
+- **Orphan fix** — `text-wrap: pretty` on `.lede` to prevent the one-word "it." orphan on the masthead lede's last line. PR #120.
+- **Strip body's leading `# Title`** — new `remark-strip-first-h1.mjs` plugin. The editorialcontrol voice skill prescribes "Repeat the title above the body" as a print-magazine convention, but on a scrolling web document it reads as throat-clearing: BlogLayout already renders the title from frontmatter, so the body's `# Title` appears again right under the feature image. Plugin drops the first H1 from the rendered mdast tree while leaving the `.md` files intact (markdown stays self-contained). Registered in both Astro configs + the editorial-review unified render pipeline so review matches production. 5 new unit tests; 283/283 passing. PR #121.
+- **Single-hairline fix** — dropped a redundant `border-top` on `.dispatch-item:first-child` that was doubling the header's `.rule-single`.
+- **Minor hygiene** — widened `.gitignore` for playwright screenshots that leaked into earlier commits.
+
+**Didn't Work:**
+
+- **Ticker-tape confusion.** Operator reported the homepage ticker wasn't scrolling in their browser. Playwright inspection confirmed the DOM + CSS were intact (`animation: ticker 60s linear infinite`, `prefersReducedMotion: false`, computed transform mid-animation). Nothing to fix on our side; likely OS reduce-motion or browser cache on their end. Noted as a "works in Playwright, not in browser" mismatch.
+- **Overstated the Desk page's need for marginalia.** After shipping the homepage marginalia pattern, initially committed to "carrying it to the `/blog/` Desk page." The operator asked me to justify that. Correct answer: the Desk page caps `.desk` at `max-width: 58rem` centered in the viewport, so it doesn't have the "text left, empty right in a wide container" problem the homepage had. Recommended leaving the Desk alone unless the homepage pattern feels orphaned on navigation. Nothing shipped to the Desk.
+
+**Course Corrections:**
+
+- **[UX]** Modal dialog → inline form (caught earlier in session but resurfaced as a pattern): the Recent dispatches section was initially styled using the 2-col marker-body grid (topics-style) rather than the Desk listing pattern. Operator didn't flag it directly but the design-language question ("make it conform") was the same category as the modal decision from earlier. Lesson: when introducing a NEW listing pattern on a site that already has a canonical listing pattern, look up the canonical pattern first.
+- **[PROCESS]** Overstated carry-over. I claimed "the Desk page has the same gap" and offered to port the marginalia there. Operator asked for the rationale before implementing. My answer on inspection: the Desk doesn't have the gap. The carry-over would have been decoration, not a repair. Good catch on the operator's part.
+- **[DOCUMENTATION]** Design-system rules live scattered (no-modal rule in a single client-side code comment; "dispatch" vocabulary in the voice skill; typographic conventions in `design-tokens.css`). The homepage design-language review was a solo exercise that would have been faster with a central design-system index. Not fixed this session; carried forward from the prior session's insights.
+
+**Quantitative:**
+
+- Messages (this afternoon): ~40
+- Commits: 8 on branch (7 behavior + 1 docs README update)
+- PRs: 2 opened, 2 merged (#120, #121)
+- New tests: 5 (remark-strip-first-h1)
+- Tests: 283/283 passing
+- Playwright inspections: 4 (ticker-tape confirmation, dispatches redesign snapshot, rule cleanup snapshot, lede orphan snapshot)
+
+**Insights:**
+
+- **Playwright is the fastest way to resolve "the site looks different on my browser" reports.** Two conversations in this session hit deltas between the operator's browser and the deployed state. Playwright returning computed styles and actual DOM geometry (plus screenshots) settled each one in one round-trip. For any "it's broken" report that isn't accompanied by a console error, inspect first, fix second.
+- **The marginalia gap was latent under-development, not a bug.** The homepage sections had always been structured as reading-column inside wide container — but the publication never filled in the margin furniture that would make the asymmetry read as intentional. The site-builder (me) shipped the structure without shipping the content that gives it meaning. Worth watching for in other sections where content was designed to occupy a slot that's currently empty.
+- **Render-pipeline interventions beat per-post edits for cross-cutting transforms.** The three remark plugins now live in one directory (`scripts/lib/editorial/remark-*.mjs`) and compose: strip-outline, strip-first-h1, image-figure. Markdown files stay self-contained while the pipeline decides what ships to the reader. Same pattern will apply the next time a "blog posts should do X" transformation comes up.
+- **Print-magazine conventions don't all translate to the web.** "Repeat the title above the body" is real in magazines (page turn reorientation) and fake on the web (continuous scroll). The voice skill prescribed it; the web experience revealed the mismatch. Worth recording in the voice-skill reference that the convention is for print register, not web render.
+- **"Can you explain why?" is one of the operator's best moves.** Twice this session the operator asked for rationale before agreeing to a change (the Desk carry-over; the homepage column rhythm). Both times the answer improved — once by scaling the proposal back, once by clarifying intent. Treat the question as an invitation to diagnose more precisely, not to defend.
+
+---
+
 ## 2026-04-24: Editorial Calendar — Phase 18 trilogy (UUID identity, rename-slug skill, directory-based content collections)
 
 ### Feature: editorial-calendar
