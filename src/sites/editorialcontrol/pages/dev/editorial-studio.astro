@@ -49,10 +49,15 @@ interface SitedDistribution {
 
 const calendarEntries: SitedEntry[] = [];
 const distributions: SitedDistribution[] = [];
+const slugsBySite: Record<string, string[]> = {};
 for (const site of SITES) {
+  slugsBySite[site] = [];
   try {
     const cal = readCalendar(process.cwd(), site);
-    for (const entry of cal.entries) calendarEntries.push({ site, entry });
+    for (const entry of cal.entries) {
+      calendarEntries.push({ site, entry });
+      slugsBySite[site].push(entry.slug);
+    }
     for (const d of cal.distributions) {
       distributions.push({ site, platform: d.platform, slug: d.slug, shortform: d.shortform ?? false });
     }
@@ -640,6 +645,17 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                             >{fi.label}</a>
                           );
                         })()}
+                        {effectiveContentType(entry) === 'blog' && (
+                          <button
+                            class="er-btn er-btn-small"
+                            type="button"
+                            data-action="rename-open"
+                            data-site={site}
+                            data-slug={entry.slug}
+                            data-title={entry.title}
+                            title="rename the slug (SEO realignment) — copies /editorial-rename-slug to clipboard"
+                          >rename →</button>
+                        )}
                       </span>
                     </div>
                   );
@@ -800,6 +816,57 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
 
   <div class="er-toast" data-toast hidden></div>
   <div class="er-poll-indicator" data-poll>auto-refresh · 10s</div>
+
+  <!-- Rename-slug modal. Shared across rows: each "rename →" button
+       pre-fills the form via data-site / data-slug / data-title
+       attributes on open. Submit copies the /editorial-rename-slug
+       command to the clipboard (paste-ready for Claude Code). The
+       slug list per site is serialized below so collision checks
+       happen client-side without a round trip. -->
+  <dialog
+    class="er-rename-dialog"
+    data-rename-dialog
+    data-slugs-by-site={JSON.stringify(slugsBySite)}
+  >
+    <form class="er-rename-form" data-rename-form>
+      <header class="er-rename-header">
+        <span class="er-rename-kicker">Rename slug</span>
+        <h3 class="er-rename-title" data-rename-title>—</h3>
+        <p class="er-rename-meta" data-rename-meta>—</p>
+      </header>
+      <label class="er-rename-field">
+        <span>New slug</span>
+        <input
+          type="text"
+          name="new-slug"
+          data-rename-input
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="kebab-case-only"
+          required
+        />
+        <small class="er-rename-hint" data-rename-hint>
+          Lowercase letters, digits, hyphens. Cannot match another entry on the same site.
+        </small>
+      </label>
+      <p class="er-rename-hint er-rename-hint--subtle">
+        Submit copies <code>/editorial-rename-slug …</code> to the clipboard.
+        Paste it into Claude Code to run; dry-run first, then commit the diff manually.
+      </p>
+      <menu class="er-rename-actions">
+        <button
+          class="er-btn er-btn-small"
+          type="button"
+          data-action="rename-cancel"
+        >cancel</button>
+        <button
+          class="er-btn er-btn-small er-btn-primary"
+          type="submit"
+          data-action="rename-copy"
+        >copy command →</button>
+      </menu>
+    </form>
+  </dialog>
 
   <script>
     import '../../../../shared/editorial-studio-client.ts';

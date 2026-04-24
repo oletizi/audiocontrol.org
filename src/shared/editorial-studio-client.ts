@@ -452,6 +452,136 @@ function initIntakeForm(): void {
   });
 }
 
+/**
+ * Rename-slug modal — shared across all calendar rows. Each "rename →"
+ * button carries data-site / data-slug / data-title; opening the
+ * dialog pre-fills the form so the operator only has to type the new
+ * slug. Submit builds the skill command and copies it to the
+ * clipboard. Validation mirrors the server-side rules in
+ * scripts/lib/editorial/rename-slug.ts (kebab-case, no collision on
+ * the same site, not identical to the current slug).
+ */
+function initRenameDialog(): void {
+  const dialog = document.querySelector<HTMLDialogElement>('[data-rename-dialog]');
+  if (!dialog || typeof dialog.showModal !== 'function') return;
+
+  const form = dialog.querySelector<HTMLFormElement>('[data-rename-form]');
+  const titleEl = dialog.querySelector<HTMLElement>('[data-rename-title]');
+  const metaEl = dialog.querySelector<HTMLElement>('[data-rename-meta]');
+  const input = dialog.querySelector<HTMLInputElement>('[data-rename-input]');
+  const hint = dialog.querySelector<HTMLElement>('[data-rename-hint]');
+  const copyBtn = dialog.querySelector<HTMLButtonElement>('[data-action="rename-copy"]');
+  if (!form || !titleEl || !metaEl || !input || !hint || !copyBtn) return;
+
+  const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
+
+  let slugsBySite: Record<string, string[]> = {};
+  try {
+    const raw = dialog.getAttribute('data-slugs-by-site') ?? '{}';
+    slugsBySite = JSON.parse(raw);
+  } catch {
+    slugsBySite = {};
+  }
+
+  type Context = { site: string; oldSlug: string; title: string };
+  let active: Context | null = null;
+
+  function validate(next: string): string | null {
+    if (!next) return 'required';
+    if (!SLUG_RE.test(next)) return 'must be kebab-case (a-z, 0-9, -)';
+    if (!active) return 'no row selected';
+    if (next === active.oldSlug) return 'same as current slug';
+    const taken = (slugsBySite[active.site] ?? []).some(
+      (s) => s === next && s !== active!.oldSlug,
+    );
+    if (taken) return `already used on ${active.site}.org`;
+    return null;
+  }
+
+  function open(ctx: Context): void {
+    active = ctx;
+    titleEl!.textContent = ctx.title;
+    metaEl!.textContent = `${ctx.site}.org · current slug: ${ctx.oldSlug}`;
+    input!.value = '';
+    hint!.textContent =
+      'Lowercase letters, digits, hyphens. Cannot match another entry on the same site.';
+    hint!.removeAttribute('data-error');
+    copyBtn!.disabled = false;
+    dialog!.showModal();
+    // Focus after the dialog is visible
+    setTimeout(() => input!.focus(), 0);
+  }
+
+  function close(): void {
+    active = null;
+    dialog!.close();
+  }
+
+  document.addEventListener('click', (ev) => {
+    const target = (ev.target as Element | null)?.closest<HTMLButtonElement>(
+      'button[data-action="rename-open"]',
+    );
+    if (!target) return;
+    const site = target.dataset.site ?? '';
+    const oldSlug = target.dataset.slug ?? '';
+    const title = target.dataset.title ?? oldSlug;
+    if (!site || !oldSlug) return;
+    open({ site, oldSlug, title });
+  });
+
+  form.querySelector('[data-action="rename-cancel"]')?.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    close();
+  });
+
+  input.addEventListener('input', () => {
+    const err = validate(input.value.trim());
+    if (err) {
+      hint.textContent = err;
+      hint.setAttribute('data-error', 'true');
+      copyBtn.disabled = true;
+    } else {
+      hint.textContent = 'Looks good. Submit to copy the command.';
+      hint.removeAttribute('data-error');
+      copyBtn.disabled = false;
+    }
+  });
+
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const next = input.value.trim();
+    const err = validate(next);
+    if (err) {
+      hint.textContent = err;
+      hint.setAttribute('data-error', 'true');
+      copyBtn.disabled = true;
+      return;
+    }
+    if (!active) return;
+    const command = `/editorial-rename-slug --site ${active.site} ${active.oldSlug} ${next}`;
+    try {
+      await copyTextToClipboard(command);
+      const original = copyBtn.textContent;
+      copyBtn.classList.add('copied');
+      copyBtn.textContent = 'copied ✓';
+      setTimeout(() => {
+        copyBtn.classList.remove('copied');
+        copyBtn.textContent = original;
+        close();
+      }, 900);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      showToast(`Clipboard unavailable (${message}) — copy manually: ${command}`, true);
+    }
+  });
+
+  // Native dialog fires 'close' on Esc; clear state so the next open
+  // doesn't see stale context.
+  dialog.addEventListener('close', () => {
+    active = null;
+  });
+}
+
 function init(): void {
   initCopyButtons();
   initScaffoldButtons();
@@ -461,6 +591,7 @@ function init(): void {
   initKeyboardShortcuts();
   initPolling();
   initIntakeForm();
+  initRenameDialog();
 }
 
 init();
