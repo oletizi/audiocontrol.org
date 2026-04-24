@@ -1121,16 +1121,43 @@ File-based routing can't conditionally skip pages, so the gate requires content 
 
 **Motivation:** Post-publish SEO data regularly suggests a better slug than the one picked at planning time. Without tooling, renaming requires manual coordination across the content file, image dir, frontmatter, calendar row, and a Netlify redirect for the legacy URL — error-prone and skipped in practice, leaving slugs locked to first-guess SEO choices.
 
-- [ ] `scripts/lib/editorial/rename-slug.ts` (new) — core library with `renameSlug({site, oldSlug, newSlug, dryRun})`. Operations in order: content file rename (`src/sites/<site>/content/blog/<old>.md` → `<new>.md`), image dir rename (`src/sites/<site>/public/images/blog/<old>/` → `<new>/`), frontmatter `image:` / `socialImage:` path rewrite, `entry.slug = <new>` in calendar (entry.id unchanged), cosmetic slug update on matching DistributionRecords, 301-redirect append to `netlify.toml`.
-- [ ] Redirect block matches existing `netlify.toml` patterns: bare path, trailing-slash, splat (`/*`) variants with `status = 301, force = true`.
-- [ ] `.claude/skills/editorial-rename-slug/SKILL.md` + `rename.ts` (new) — skill wraps the helper. Usage: `/editorial-rename-slug --site <site> <old-slug> <new-slug>`. `--dry-run` prints the full change list (files to rename, frontmatter diffs, calendar row change, redirect block) without writing.
-- [ ] No git operations in the skill. User reviews diff and commits.
-- [ ] Verify end-to-end on a throwaway entry: rename, inspect calendar + file moves, confirm `netlify.toml` has the redirect block, confirm feature-image workflows + distribution records for the renamed entry still resolve by entryId.
+- [x] `scripts/lib/editorial/rename-slug.ts` (new) — core library with `renameSlug({site, oldSlug, newSlug, dryRun})`. After 18c the operation reduces to: post directory rename, `entry.slug = <new>` in calendar (entry.id unchanged), cosmetic slug update on matching DistributionRecords, and a 301-redirect append to `public/_redirects`.
+- [x] Redirect block matches existing `_redirects` patterns: bare path, trailing-slash, splat (`/*`) variants with `301`.
+- [x] `.claude/skills/editorial-rename-slug/SKILL.md` + `rename.ts` (new) — skill wraps the helper. Usage: `/editorial-rename-slug --site <site> <old-slug> <new-slug>`. `--dry-run` prints the full change list without writing.
+- [x] No git operations in the skill. User reviews diff and commits.
+- [x] Drift guard: helper refuses when a blog entry's post directory is missing from disk (surfaces stale calendar rows loudly rather than silently writing a useless 301).
+- [x] Studio affordance: per-row `rename →` button expands an inline form (no modal — matches the design-system "don't pull the reading frame out from under the operator" rule). Client-side validation mirrors server-side rules.
+- [x] Verified end-to-end: renamed `ai-doesnt-remember` → `automate-image-generation-in-claude-code` and `building-the-editorial-calendar-feature` → `build-and-run-your-editorial-calendar-in-your-ai-agent` on editorialcontrol. Calendar + directory + redirects all consistent on the deploy preview.
 
 **Acceptance criteria — 18b:**
 
-- [ ] `/editorial-rename-slug --site <site> <old> <new>` produces a clean dry-run change list.
-- [ ] Non-dry-run run renames content file + image dir + frontmatter + calendar row + appends the Netlify 301.
-- [ ] Workflow and distribution records for the renamed entry still join correctly (via entryId).
-- [ ] Old URL 301s to new URL on deployed preview (verified via Netlify deploy preview).
-- [ ] Existing skills (`/editorial-approve`, `/feature-image-apply`, etc.) continue to work after a rename.
+- [x] `/editorial-rename-slug --site <site> <old> <new>` produces a clean dry-run change list.
+- [x] Non-dry-run run moves the post directory + updates calendar row + appends the 301 redirect.
+- [x] Workflow and distribution records for the renamed entry still join correctly (via entryId).
+- [x] Old URL 301s to new URL on deployed preview (verified via Netlify deploy preview).
+- [x] Existing skills (`/editorial-approve`, `/feature-image-apply`, etc.) continue to work after a rename.
+
+### Phase 18c: Directory-based content collections with co-located assets
+
+**Deliverable:** Blog posts stored as directories at `src/sites/<site>/content/blog/<slug>/index.md` with feature images and body figures co-located in the same directory. Astro's `image()` schema resolves relative paths at build time into hashed `/_astro/...` URLs that don't embed the slug. A slug rename becomes a single directory rename with no body-path rewriting and no image redirects needed.
+
+**Motivation:** The first 18b rename exposed that body figures 404 after rename because my `rewriteEmbeddedSlug` only touched frontmatter, and the `/images/blog/<old>/*` redirect didn't catch every external image reference. Co-located assets + relative paths remove the whole class of problem rather than patching around it.
+
+- [x] Migrate all 11 blog posts (3 editorialcontrol, 8 audiocontrol) from flat `<slug>.md` to directory form `<slug>/index.md` via `git mv` with history preserved.
+- [x] Move per-post feature images from `public/images/blog/<slug>/` into each post's `content/blog/<slug>/` directory.
+- [x] Copy the shared asset `/images/s-330-feature.jpg` into each referencing post's directory (2 audiocontrol posts) so every `image:` reference becomes co-located.
+- [x] Rewrite every frontmatter / body `/images/blog/<slug>/...` reference to `./` in the migrated posts.
+- [x] Update both `content.config.ts` files: `**/index.md` glob, `generateId` stripping `/index`, Astro `image()` schema for `image` + `socialImage`.
+- [x] Update both `BlogLayout.astro` files: typed `ImageMetadata` handling via the `<Image>` component, with string-path fallback for back-compat.
+- [x] Update `.claude/skills/feature-image-apply/apply.ts` to target `content/blog/<slug>/` and write relative frontmatter paths (`./feature-filtered.png`).
+- [x] Simplify `scripts/lib/editorial/rename-slug.ts` to a single directory move + calendar update + one URL redirect. Drop `rewriteEmbeddedSlug`, image-dir rename, and image redirect (no longer needed under 18c).
+- [x] Purge the now-dead `/images/blog/<old>/*` redirect rules from `_redirects`.
+- [x] Tests updated to cover the new shape; both site builds clean; 278/278 tests pass.
+
+**Acceptance criteria — 18c:**
+
+- [x] Every blog post has its markdown + feature images co-located under `content/blog/<slug>/`.
+- [x] `npm run build:audiocontrol` and `npm run build:editorialcontrol` both complete without image-resolution errors.
+- [x] Astro's image pipeline emits hashed `/_astro/...` URLs for all co-located assets on deploy preview.
+- [x] `rename-slug.ts` reduced to directory move + calendar + single URL redirect; no body path munging needed.
+- [x] Drift guard in the rename helper now checks the post directory (not a flat file).
