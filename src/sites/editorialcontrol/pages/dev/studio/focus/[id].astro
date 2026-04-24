@@ -292,6 +292,16 @@ function selectOptions(values: string[], selected: string): string {
             <select class="studio-select" data-ctl="overlay">${selectOptions(['on','off'], 'on')}</select>
             <span class="studio-spec__unit">panel</span>
           </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Title size</span>
+            <input type="range" class="studio-slider" data-ctl="titleScale" min="0.6" max="1.6" step="0.05" value="1" />
+            <span class="studio-spec__unit" data-readout="titleScale">1.00×</span>
+          </li>
+          <li class="studio-spec__row">
+            <span class="studio-spec__label">Subtitle size</span>
+            <input type="range" class="studio-slider" data-ctl="subtitleScale" min="0.6" max="1.6" step="0.05" value="1" />
+            <span class="studio-spec__unit" data-readout="subtitleScale">1.00×</span>
+          </li>
         `} />
 
         <div class="studio-focus__panel-actions">

@@ -84,6 +84,8 @@ function readPreviewState(): Record<string, string> {
     overlayAlign: el.dataset.overlayAlign ?? 'auto',
     preset: el.dataset.preset ?? '',
     site: el.dataset.site ?? 'audiocontrol',
+    titleScale: el.dataset.titleScale ?? '1',
+    subtitleScale: el.dataset.subtitleScale ?? '1',
   };
 }
 
@@ -124,11 +126,20 @@ function restoreDraft(entryId: string): void {
     const el = getPreview();
     if (!el) return;
 
-    for (const key of ['format', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay', 'overlayPosition', 'overlayAlign', 'preset', 'site']) {
+    for (const key of ['format', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain', 'overlay', 'overlayPosition', 'overlayAlign', 'preset', 'site', 'titleScale', 'subtitleScale']) {
       if (draft[key] !== undefined) {
         el.dataset[key] = draft[key];
         const sel = qs<HTMLSelectElement | HTMLInputElement>(`[data-ctl="${key}"]`);
-        if (sel && sel instanceof HTMLSelectElement) sel.value = draft[key];
+        if (sel) sel.value = draft[key];
+      }
+    }
+
+    // Font-size sliders: apply saved values as CSS vars + sync readouts.
+    for (const [key, cssVar] of [['titleScale', '--og-title-scale'], ['subtitleScale', '--og-subtitle-scale']] as const) {
+      if (draft[key] !== undefined) {
+        el.style.setProperty(cssVar, draft[key]);
+        const readout = qs<HTMLElement>(`[data-readout="${key}"]`);
+        if (readout) readout.textContent = `${Number(draft[key]).toFixed(2)}×`;
       }
     }
 
@@ -195,6 +206,23 @@ function onControlInput(event: Event): void {
   } else if (ctl === 'all-formats') {
     // Checkbox — no preview change, just state for commit/approve
     return;
+  } else if (ctl === 'titleScale' || ctl === 'subtitleScale') {
+    // Slider: apply the multiplier directly as a CSS variable on the
+    // preview so the title / subtitle rescale live. og-preview.css
+    // uses --og-text-scale as a single multiplier for both today; we
+    // refine it by introducing --og-title-scale and --og-subtitle-scale
+    // which fall through to --og-text-scale when unset. Store the
+    // chosen value on the dataset so the draft-persistence pass and
+    // the rebake path can pick it up.
+    const raw = (target as HTMLInputElement).value;
+    writePreviewAttr(ctl, raw);
+    const preview = getPreview();
+    if (preview) {
+      const cssVar = ctl === 'titleScale' ? '--og-title-scale' : '--og-subtitle-scale';
+      preview.style.setProperty(cssVar, raw);
+    }
+    const readout = qs<HTMLElement>(`[data-readout="${ctl}"]`);
+    if (readout) readout.textContent = `${Number(raw).toFixed(2)}×`;
   } else if (['overlayPosition', 'overlayAlign', 'format', 'grade', 'phosphor', 'vignette', 'scanlines', 'grain'].includes(ctl)) {
     writePreviewAttr(ctl, (target as HTMLSelectElement).value);
   }
@@ -358,6 +386,8 @@ function gatherRecompositeBody(): Record<string, unknown> {
     overlayAlign: state.overlayAlign,
     formats,
     site: state.site,
+    titleScale: state.titleScale,
+    subtitleScale: state.subtitleScale,
   };
 }
 

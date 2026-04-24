@@ -17,5 +17,6 @@
   "status": "rejected",
   "error": "Input file is missing: /Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/undefined/public/favicon.svg",
   "templateSlug": "tracked-changes",
-  "site": "editorialcontrol"
+  "site": "editorialcontrol",
+  "archived": true
 }

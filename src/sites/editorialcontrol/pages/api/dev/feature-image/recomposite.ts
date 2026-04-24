@@ -36,6 +36,10 @@ interface RecompositeBody {
   baseName?: string;
   /** Override the inherited site for exploratory cross-site recomposition. */
   site?: string;
+  /** Operator-adjustable title-size multiplier. Default 1. */
+  titleScale?: string | number;
+  /** Operator-adjustable subtitle-size multiplier. Default 1. */
+  subtitleScale?: string | number;
 }
 
 function toPublicPath(absolutePath: string): string {
@@ -132,6 +136,8 @@ export const POST: APIRoute = async ({ request, url }) => {
       site,
       overlayPosition: body.overlayPosition,
       overlayAlign: body.overlayAlign,
+      titleScale: body.titleScale != null ? String(body.titleScale) : undefined,
+      subtitleScale: body.subtitleScale != null ? String(body.subtitleScale) : undefined,
       variants,
     });
 

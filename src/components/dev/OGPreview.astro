@@ -109,6 +109,10 @@ interface Props {
   logoSrc?: string;
   width?: number;
   height?: number;
+  /** Title-size multiplier, stacks on top of --og-text-scale. */
+  titleScale?: number | null;
+  /** Subtitle-size multiplier, stacks on top of --og-text-scale. */
+  subtitleScale?: number | null;
 }
 
 const {
@@ -127,7 +131,14 @@ const {
   logoSrc,
   width,
   height,
+  titleScale = null,
+  subtitleScale = null,
 } = Astro.props;
+
+const scaleStyle = [
+  titleScale != null ? `--og-title-scale: ${titleScale}` : '',
+  subtitleScale != null ? `--og-subtitle-scale: ${subtitleScale}` : '',
+].filter(Boolean).join('; ');
 
 const brand = BRANDS[site];
 const effectiveLogoSrc = logoSrc ?? '/favicon.svg';
@@ -145,7 +156,11 @@ const effective: Required<FilterState> = {
 const dimStyle = width && height
   ? `width: ${width}px; height: ${height}px; aspect-ratio: ${width} / ${height}; `
   : '';
-const inlineStyle = dimStyle + brandStyle(brand);
+const inlineStyle = [
+  dimStyle,
+  brandStyle(brand),
+  scaleStyle,
+].filter(Boolean).join('; ');
 ---
 
 <div

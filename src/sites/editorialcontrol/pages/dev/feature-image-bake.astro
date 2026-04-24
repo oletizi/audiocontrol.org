@@ -36,6 +36,18 @@ const overlayAlignParam = p.get('overlayAlign');
 const overlayAlign: OverlayAlign =
   isOverlayAlign(overlayAlignParam) ? overlayAlignParam : 'auto';
 
+// Font-size multipliers from the focus-page Title/Subtitle sliders.
+// Clamp defensively to the same 0.6–1.6 range the slider exposes so
+// a broken URL param can't produce absurd typography.
+function clampScale(raw: string | null): number | null {
+  if (!raw) return null;
+  const n = parseFloat(raw);
+  if (!Number.isFinite(n)) return null;
+  return Math.min(1.6, Math.max(0.6, n));
+}
+const titleScale = clampScale(p.get('titleScale'));
+const subtitleScale = clampScale(p.get('subtitleScale'));
+
 const siteParam = p.get('site');
 const validSites: Site[] = ['audiocontrol', 'editorialcontrol'];
 const site: Site = (siteParam && (validSites as string[]).includes(siteParam))
@@ -148,6 +160,8 @@ const fontHead = effectiveSite === 'editorialcontrol'
     logoSrc={effectiveLogoSrc}
     width={w}
     height={h}
+    titleScale={titleScale}
+    subtitleScale={subtitleScale}
   />
 </body>
 </html>
