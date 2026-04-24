@@ -534,9 +534,18 @@ function renderThread(messages: ThreadMessage[]): void {
     .join('');
 }
 
+// Signature-based change detection: only re-render the thread when the
+// fetched messages actually differ from the last render. Without this
+// the thread panel rebuilds every 6s and composer focus / text selection
+// blink every tick.
+let lastThreadSignature: string | null = null;
+
 async function refreshThread(): Promise<void> {
   try {
     const msgs = await fetchThread();
+    const signature = JSON.stringify(msgs);
+    if (signature === lastThreadSignature) return;
+    lastThreadSignature = signature;
     renderThread(msgs);
   } catch { /* noop — leaves whatever was there */ }
 }

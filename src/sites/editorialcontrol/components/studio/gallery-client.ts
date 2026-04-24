@@ -770,11 +770,23 @@ function onArchivedToggle(): void {
 }
 
 // ── Poll loop ────────────────────────────────────────────────────────
+//
+// Signature-based change detection, same policy as the editorial studio's
+// state-signature endpoint. The poll tick fetches data, serializes it to
+// a stable string, and ONLY re-renders when the string changes. Without
+// this, every tick (every 6s) rebuilt the timeline DOM and the workflow
+// panel from scratch, producing a visible flicker even when nothing had
+// moved on the backend.
+
+let lastEntriesSignature: string | null = null;
+let lastWorkflowsSignature: string | null = null;
 
 async function refreshEntries(): Promise<void> {
   try {
     const next = await fetchEntries();
-    // Reverse — server returns chronological? /log endpoint reverses already
+    const signature = JSON.stringify(next);
+    if (signature === lastEntriesSignature) return;
+    lastEntriesSignature = signature;
     entries = next;
     renderTimeline();
     renderEntriesCount();
@@ -785,7 +797,11 @@ async function refreshEntries(): Promise<void> {
 
 async function refreshWorkflows(): Promise<void> {
   try {
-    workflows = await fetchOpenWorkflows();
+    const next = await fetchOpenWorkflows();
+    const signature = JSON.stringify(next);
+    if (signature === lastWorkflowsSignature) return;
+    lastWorkflowsSignature = signature;
+    workflows = next;
     renderWorkflowPanel();
   } catch (err) {
     console.error('refresh workflows failed', err);

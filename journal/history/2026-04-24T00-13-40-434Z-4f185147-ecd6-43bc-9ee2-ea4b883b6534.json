@@ -1,0 +1,21 @@
+{
+  "id": "4f185147-ecd6-43bc-9ee2-ea4b883b6534",
+  "timestamp": "2026-04-24T00:13:40.434Z",
+  "prompt": "Abstract field of parallel vertical rules of varying length\nsuggesting a population of candidate measures, parchment-cream\nlines on a deep cool ink-near-black background with one single\nsignal-green chartreuse rule offset from the rest — the selected\nchampion emerging from the population, faint horizontal lineage\ntethers connecting clusters of lines in genealogical groups,\ncontrolled asymmetric balance, compositional weight in the upper\ntwo-thirds with quiet open measure below, editorial publication\nabstraction evoking selection pressure over a typographic\npopulation, publication-dark atmosphere, no text no words no\nletters no typography no labels no people no objects",
+  "provider": "flux",
+  "preset": "retro-crt",
+  "title": "You Don't Need a Better Prompt. You Need Selection Pressure.",
+  "subtitle": "Use an AI content generator long enough and your output drifts. The third option: a population of prompts under selection pressure — and an agent that builds the review app for its own output in an afternoon.",
+  "formats": "og",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/editorialcontrol/public/images/generated",
+  "outputs": {
+    "raw": [],
+    "filtered": [],
+    "composited": []
+  },
+  "durationMs": 0,
+  "status": "rejected",
+  "error": "Input file is missing: /Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/undefined/public/favicon.svg",
+  "templateSlug": "margin-rules",
+  "site": "editorialcontrol"
+}
