@@ -146,19 +146,29 @@ describe('Phase 18b: rename-slug helpers', () => {
       expect(markdown).not.toContain('/images/blog/old-slug/');
     });
 
-    it('leaves body content untouched', () => {
+    it('rewrites body figure paths too', () => {
       const src = [
         '---',
         'title: "t"',
+        'image: "/images/blog/old-slug/feature-og.png"',
         '---',
         '',
         '# body',
-        'Link: /images/blog/old-slug/feature-og.png',
+        '',
+        '![caption](/images/blog/old-slug/studio.png)',
+        '',
+        'Inline ref: /images/blog/old-slug/extra.png',
         '',
       ].join('\n');
       const { markdown, changed } = rewriteEmbeddedSlug(src, 'old-slug', 'new-slug');
-      expect(changed).toBe(false);
-      expect(markdown).toBe(src);
+      expect(changed).toBe(true);
+      // Frontmatter reference rewritten
+      expect(markdown).toContain('/images/blog/new-slug/feature-og.png');
+      // Body reference rewritten
+      expect(markdown).toContain('/images/blog/new-slug/studio.png');
+      expect(markdown).toContain('/images/blog/new-slug/extra.png');
+      // No old-slug image paths remain
+      expect(markdown).not.toContain('/images/blog/old-slug/');
     });
 
     it('returns unchanged when slug is not embedded', () => {
@@ -178,13 +188,18 @@ describe('Phase 18b: rename-slug helpers', () => {
   });
 
   describe('buildRedirectBlock', () => {
-    it('emits three redirect lines for bare / slash / splat', () => {
+    it('emits blog URL redirects (bare / slash / splat)', () => {
       const block = buildRedirectBlock('old-post', 'new-post');
       expect(block).toContain('/blog/old-post');
       expect(block).toContain('/blog/new-post/');
       expect(block).toContain('/blog/old-post/*');
       expect(block).toContain('/blog/new-post/:splat');
       expect(block).toContain('301');
+    });
+    it('emits an /images/blog redirect too (for body figures + cross-refs)', () => {
+      const block = buildRedirectBlock('old-post', 'new-post');
+      expect(block).toContain('/images/blog/old-post/*');
+      expect(block).toContain('/images/blog/new-post/:splat');
     });
   });
 

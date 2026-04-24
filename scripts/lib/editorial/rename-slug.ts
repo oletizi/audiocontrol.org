@@ -74,35 +74,43 @@ function redirectsPath(rootDir: string, site: Site): string {
 }
 
 /**
- * Rewrite frontmatter `image:` and `socialImage:` paths that embed the
- * old slug segment. Conservative: only touches lines that match the
- * specific `/images/blog/<oldSlug>/...` pattern so unrelated paths
- * (e.g. an image: referencing a shared asset) aren't disturbed.
+ * Rewrite every `/images/blog/<oldSlug>/...` reference to use the new
+ * slug — scans the whole markdown file (both frontmatter and body),
+ * not just the frontmatter. Frontmatter covers `image:` /
+ * `socialImage:`; body covers `![alt](...)` figure paths, inline HTML
+ * `<img src>`, and any other reference that embeds the slug segment.
+ *
+ * Conservative on shape: only matches the `/images/blog/<slug>/`
+ * prefix so unrelated paths (shared asset dirs, external URLs, the
+ * slug appearing as plain prose) are untouched.
  */
 export function rewriteEmbeddedSlug(
   markdown: string,
   oldSlug: string,
   newSlug: string,
 ): { markdown: string; changed: boolean } {
-  // Only rewrite inside frontmatter. The markdown format is
-  //   ---\n<frontmatter>\n---\n<body>
-  const fmMatch = markdown.match(/^(---\s*\n)([\s\S]*?)(\n---\s*\n)([\s\S]*)$/);
-  if (!fmMatch) return { markdown, changed: false };
-  const [, opening, fmBody, closing, body] = fmMatch;
-
   const pattern = new RegExp(
     `(/images/blog/)${oldSlug.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}(/)`,
     'g',
   );
-  const nextFm = fmBody.replace(pattern, `$1${newSlug}$2`);
-  if (nextFm === fmBody) return { markdown, changed: false };
-  return { markdown: opening + nextFm + closing + body, changed: true };
+  const next = markdown.replace(pattern, `$1${newSlug}$2`);
+  if (next === markdown) return { markdown, changed: false };
+  return { markdown: next, changed: true };
 }
 
 /**
  * Build the 301-redirect block for a slug rename, matching Netlify's
  * _redirects syntax as used in `src/sites/<site>/public/_redirects`.
- * Emits three lines to cover bare, trailing-slash, and splat variants.
+ *
+ * Emits two groups of redirects:
+ *
+ *   1. `/blog/<old>/*` → `/blog/<new>/:splat` — covers the page URL
+ *      in bare, trailing-slash, and splat shapes for inbound SEO.
+ *   2. `/images/blog/<old>/*` → `/images/blog/<new>/:splat` —
+ *      catches body-figure and feature-image URLs so cross-references
+ *      from OTHER posts (which this skill deliberately does not
+ *      rewrite) keep resolving, plus any external inbound image
+ *      links (OG previews, reader caches).
  */
 export function buildRedirectBlock(oldSlug: string, newSlug: string): string {
   return [
@@ -111,6 +119,7 @@ export function buildRedirectBlock(oldSlug: string, newSlug: string): string {
     `/blog/${oldSlug}        /blog/${newSlug}/          301`,
     `/blog/${oldSlug}/       /blog/${newSlug}/          301`,
     `/blog/${oldSlug}/*      /blog/${newSlug}/:splat    301`,
+    `/images/blog/${oldSlug}/*    /images/blog/${newSlug}/:splat    301`,
     '',
   ].join('\n');
 }
