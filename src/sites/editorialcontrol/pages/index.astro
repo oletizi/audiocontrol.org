@@ -144,20 +144,28 @@ const issueDate = today.toLocaleDateString('en-US', {
 
     <hr class="rule-single" />
 
-    <ol class="topic-list">
+    <ol class="dispatches">
       {recentDispatches.map((d, i) => (
-        <li class="topic-item">
-          <span class="topic-marker tabular">№ {String(i + 1).padStart(2, '0')}</span>
-          <div class="topic-body">
-            <h3 class="topic-name">
-              <a href={`/blog/${d.slug}/`} class="topic-link">{d.title}</a>
-            </h3>
-            <p class="topic-rationale">{d.description}</p>
-            <p class="topic-date tabular">{formatDispatchDate(d.datePublished)}</p>
-          </div>
+        <li class="dispatch-item">
+          <a class="dispatch-link" href={`/blog/${d.slug}/`}>
+            <div class="dispatch-meta">
+              <span class="dispatch-num tabular">No. {String(i + 1).padStart(2, '0')}</span>
+              <time class="dispatch-date tabular" datetime={d.datePublished}>
+                {formatDispatchDate(d.datePublished)}
+              </time>
+            </div>
+            <h3 class="dispatch-title-item">{d.title}</h3>
+            <p class="dispatch-description">{d.description}</p>
+          </a>
         </li>
       ))}
     </ol>
+
+    <p class="dispatches-footer">
+      <a href="/blog/" class="dispatches-more">
+        All dispatches on the desk <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </p>
   </section>
 
   {/* Dispatch / signup — quiet, typographic */}
@@ -327,81 +335,127 @@ const issueDate = today.toLocaleDateString('en-US', {
     margin: 0;
   }
 
-  .topic-list {
+  /* Dispatch listing on the homepage — mirrors the blog-index
+   * "Desk" item pattern (`pages/blog/index.astro`) so the
+   * publication reads as one register across surfaces: mono
+   * number + uppercase mono date in a meta row, Fraunces italic
+   * title (primary on hover), muted body description, hairline
+   * separator per item. Single-column block layout keeps the
+   * homepage section compact versus the heavier desk treatment. */
+  .dispatches {
     list-style: none;
     padding: 0;
     margin: 0;
-    counter-reset: topic;
   }
 
-  .topic-item {
-    display: grid;
-    grid-template-columns: 6.5rem 1fr;
-    gap: 1.5rem;
-    padding: 1.5rem 0;
+  .dispatch-item {
     border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .dispatch-item:first-child {
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .dispatch-link {
+    display: block;
+    padding: 1.75rem 0;
+    text-decoration: none;
+    color: inherit;
+    border: 0;
     transition: background 0.15s ease;
   }
 
-  .topic-item:hover {
-    background: hsl(var(--card-hover) / 0.35);
+  .dispatch-link:hover {
+    text-decoration: none;
+    background: hsl(var(--card-hover) / 0.28);
   }
 
-  @media (max-width: 640px) {
-    .topic-item {
-      grid-template-columns: 1fr;
-      gap: 0.4rem;
-    }
+  .dispatch-link:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 4px;
   }
 
-  .topic-marker {
+  .dispatch-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 1.25rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .dispatch-num {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     letter-spacing: 0.08em;
     color: hsl(var(--primary));
-    padding-top: 0.35rem;
   }
 
-  .topic-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
+  .dispatch-date {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
   }
 
-  .topic-name {
+  .dispatch-title-item {
     font-family: var(--font-display);
-    font-size: 1.4rem;
+    font-style: italic;
     font-weight: 500;
+    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
     line-height: 1.2;
     color: hsl(var(--foreground));
+    margin: 0 0 0.55rem 0;
+    max-width: 44rem;
+    transition: color 0.15s ease;
   }
 
-  .topic-rationale {
-    font-size: 0.95rem;
-    color: hsl(var(--muted-foreground));
-    line-height: 1.55;
-    max-width: 42rem;
-  }
-
-  .topic-link {
-    color: inherit;
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.15s ease, color 0.15s ease;
-  }
-
-  .topic-link:hover,
-  .topic-link:focus-visible {
+  .dispatch-link:hover .dispatch-title-item {
     color: hsl(var(--primary));
-    border-bottom-color: hsl(var(--primary) / 0.4);
   }
 
-  .topic-date {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
+  .dispatch-description {
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    line-height: 1.55;
     color: hsl(var(--muted-foreground));
-    margin-top: 0.1rem;
+    max-width: 44rem;
+    margin: 0;
+  }
+
+  /* Footer pointer to the full desk — keeps the homepage honest
+   * when the dispatch count is small (only 2 posts shipped means
+   * the listing is thin; the arrow sends readers to /blog/ where
+   * future posts will accumulate). */
+  .dispatches-footer {
+    margin: 1.75rem 0 0 0;
+  }
+
+  .dispatches-more {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    text-decoration: none;
+    border: 0;
+    padding: 0.3rem 0;
+  }
+
+  .dispatches-more:hover,
+  .dispatches-more:focus-visible {
+    text-decoration: none;
+    color: hsl(var(--primary));
+  }
+
+  .dispatches-more .arrow {
+    transition: transform 0.18s ease;
+  }
+
+  .dispatches-more:hover .arrow {
+    transform: translateX(3px);
   }
 
   /* ---- Dispatch ---- */
