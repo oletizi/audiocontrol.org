@@ -1,40 +1,49 @@
 ---
+import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import Logo from '../components/Logo.astro';
 
-interface Topic {
-  marker: string;
-  name: string;
-  rationale: string;
-}
+// Topic section (retained, currently hidden). Restore when the
+// publication has enough dispatches to back up the topic claims.
+// Until then the homepage lists actually-published dispatches in the
+// same visual slot; see the "Recent dispatches" section below.
+//
+// interface Topic {
+//   marker: string;
+//   name: string;
+//   rationale: string;
+// }
+//
+// const topics: Topic[] = [
+//   { marker: '§ 01', name: 'Workflow patterns', rationale: '...' },
+//   { marker: '§ 02', name: 'Editorial cadence', rationale: '...' },
+//   { marker: '§ 03', name: 'Automation that actually ships', rationale: '...' },
+//   { marker: '§ 04', name: 'Instrumenting the loop', rationale: '...' },
+//   { marker: '§ 05', name: 'Field notes from the desk', rationale: '...' },
+// ];
 
-const topics: Topic[] = [
-  {
-    marker: '§ 01',
-    name: 'Workflow patterns',
-    rationale: 'What it looks like when agents do the grunt work and humans review. Templates, branches, review loops.',
-  },
-  {
-    marker: '§ 02',
-    name: 'Editorial cadence',
-    rationale: 'Shipping writing on a schedule. Calendars, drafts, review, publication — run by agents, finished by a human.',
-  },
-  {
-    marker: '§ 03',
-    name: 'Automation that actually ships',
-    rationale: 'The difference between a cute demo and something you use every week without noticing.',
-  },
-  {
-    marker: '§ 04',
-    name: 'Instrumenting the loop',
-    rationale: 'Analytics, evals, audit trails. What feedback an agent needs to get sharper run over run.',
-  },
-  {
-    marker: '§ 05',
-    name: 'Field notes from the desk',
-    rationale: 'Specific sessions where the workflow worked, broke, or surprised us. No generalizations without a receipt.',
-  },
-];
+// Currently-published dispatches (newest first). Displayed in the
+// "Recent dispatches" homepage section until the topic list above
+// has enough backing articles to stand up.
+const entries = await getCollection('blog', ({ data }) =>
+  import.meta.env.PROD ? data.state === 'published' : true,
+);
+const recentDispatches = entries
+  .map((entry) => ({
+    slug: entry.id,
+    title: entry.data.title,
+    description: entry.data.description,
+    datePublished: entry.data.datePublished,
+  }))
+  .sort((a, b) => b.datePublished.localeCompare(a.datePublished));
+
+function formatDispatchDate(dateStr: string): string {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
 
 // Today's date, rendered in editorial masthead style.
 const today = new Date();
@@ -118,25 +127,33 @@ const issueDate = today.toLocaleDateString('en-US', {
     </article>
   </section>
 
-  {/* On the desk — topic listing */}
+  {/* Recent dispatches — replaces the aspirational "On the desk" topic
+      list while the publication builds a back catalog. Same visual slot
+      and numbered-marker register; content is actually-published posts
+      sorted newest-first. Restore the topic list from the commented
+      block at the top of this file once the dispatches can back up
+      the sections. */}
   <section class="schedule site-container">
     <div class="schedule-header">
-      <h2 class="schedule-title">On the desk</h2>
+      <h2 class="schedule-title">Recent dispatches</h2>
       <p class="schedule-note">
-        The running list of sections this publication is working on. Each one is a place we
-        expect to return to, not a one-shot post.
+        Each issue is slowly published, one dispatch at a time. Below is what's shipped so
+        far, newest first.
       </p>
     </div>
 
     <hr class="rule-single" />
 
     <ol class="topic-list">
-      {topics.map((t) => (
+      {recentDispatches.map((d, i) => (
         <li class="topic-item">
-          <span class="topic-marker tabular">{t.marker}</span>
+          <span class="topic-marker tabular">№ {String(i + 1).padStart(2, '0')}</span>
           <div class="topic-body">
-            <h3 class="topic-name">{t.name}</h3>
-            <p class="topic-rationale">{t.rationale}</p>
+            <h3 class="topic-name">
+              <a href={`/blog/${d.slug}/`} class="topic-link">{d.title}</a>
+            </h3>
+            <p class="topic-rationale">{d.description}</p>
+            <p class="topic-date tabular">{formatDispatchDate(d.datePublished)}</p>
           </div>
         </li>
       ))}
@@ -152,7 +169,7 @@ const issueDate = today.toLocaleDateString('en-US', {
       <p class="dispatch-lede">
         When the first issue ships, it goes out to a short list. Want it?
       </p>
-      <a class="dispatch-cta" href="mailto:orion@audiocontrol.org?subject=editorialcontrol%20dispatch">
+      <a class="dispatch-cta" href="mailto:orion@editorialcontrol.org?subject=editorialcontrol%20dispatch">
         Write to the editor
         <span class="arrow" aria-hidden="true">→</span>
       </a>
@@ -364,6 +381,27 @@ const issueDate = today.toLocaleDateString('en-US', {
     color: hsl(var(--muted-foreground));
     line-height: 1.55;
     max-width: 42rem;
+  }
+
+  .topic-link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .topic-link:hover,
+  .topic-link:focus-visible {
+    color: hsl(var(--primary));
+    border-bottom-color: hsl(var(--primary) / 0.4);
+  }
+
+  .topic-date {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: hsl(var(--muted-foreground));
+    margin-top: 0.1rem;
   }
 
   /* ---- Dispatch ---- */
