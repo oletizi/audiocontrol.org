@@ -41,5 +41,6 @@
   "parentEntryId": "c87c084e-7289-4dfe-b98c-285515940037",
   "site": "editorialcontrol",
   "overlayPosition": "bottom",
-  "overlayAlign": "auto"
+  "overlayAlign": "auto",
+  "appliedTo": "src/sites/editorialcontrol/content/blog/building-the-editorial-calendar-feature.md"
 }
