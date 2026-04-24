@@ -4,6 +4,60 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-24: Editorial Calendar — Phase 18 trilogy (UUID identity, rename-slug skill, directory-based content collections)
+
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar (branch `feature/editorial-calendar`)
+
+**Goal:** Make post-publish slug renames cheap. The editorialcontrol feature-image studio move shipped first (PR #115), then Phase 18 proper: stable UUID identity for calendar entries (so joins survive renames), the `/editorial-rename-slug` skill + studio affordance, and — surfaced mid-session by a real rename that partly broke — the deeper refactor to directory-based content collections with co-located assets, which collapses the rename to a single `mv`.
+
+**Accomplished:**
+
+- **Feature-image studio move shipped.** Earlier in the session PR #115 landed: feature-image studio (gallery, focus, bake, APIs, scratch outputs) relocated from audiocontrol to editorialcontrol so a single dev server serves every dev surface. Threaded `site` through the composite pipeline so each brand renders with its own favicon/logo (new editorialcontrol favicon — chartreuse ◆). Editorial Studio gained state-aware blog-link routing (Published → public URL, else → review surface), feature-image action column, workflow-drawer toggle fix, Apply button with Applied/archived state, font-size sliders, signature-based polling.
+- **Social-share preview page + studio chip wiring.** New `/dev/og-preview?site=<site>&slug=<slug>` mocks LinkedIn / X / Facebook / Slack link cards around the baked `feature-og.png` (image inlined as data URI so the preview works from either dev server). The `✓ feature image` chip on studio calendar rows is now a link to the preview.
+- **Phase 18a — stable UUID identity (PR #118, merged).** Added `id: UUID` to `CalendarEntry` and `entryId: UUID` to `DistributionRecord`. Both calendars grew a leading `UUID` column in every stage table (plus EntryID in the distribution table). Parser tolerates legacy rows and backfills in-memory; one `writeCalendar` fully migrates. Workflow contexts (feature-image + editorial-review) gained optional `entryId`; `matchesKey` / `findOpenByKey` / `handleGetWorkflow` prefer it with slug as fallback. `.claude/skills/editorial-approve/apply.ts` resolves slug → entryId via the calendar before looking up the workflow, so joins survive the rename. One-shot idempotent `scripts/editorial/backfill-uuids.ts` stamped 27 entries + 8 distributions + 14 workflow journals. New `test/editorial/phase18a.test.ts` (13 tests) covers parser backfill, writer emission, round-trip preservation, mutation stamping, and the new lookup helpers.
+- **Phase 18b — `/editorial-rename-slug` skill + studio affordance (PR #119).** `scripts/lib/editorial/rename-slug.ts` + `.claude/skills/editorial-rename-slug/`: skill that renames a slug. Drift-guard refusal when a blog entry's content path doesn't exist on disk (surfaced by a real failure where an orphan row from a prior git-level rename silently "succeeded"). Studio inline form per blog row — initially built as a centered modal, refactored to inline-in-row after the operator pointed at the design-system rule ("No modal — the composer lives inside the same sidebar … so the reading frame never gets pulled out from under the operator"; from `editorial-review-client.ts:354`).
+- **Phase 18c — directory-based content collections (PR #119).** Surfaced by the first real rename: body figures 404'd because `rewriteEmbeddedSlug` only touched frontmatter and the `/images/blog/<old>/*` redirect didn't cover the image dir. Migrated all 11 blog posts (3 editorialcontrol, 8 audiocontrol) from flat `content/blog/<slug>.md` to directory form `content/blog/<slug>/index.md`, with feature images + body figures moved in as siblings (git-detected renames, history preserved). `content.config.ts` on both sites switched to `**/index.md` glob + `generateId` + Astro's `image()` schema. Both `BlogLayout.astro` files render via `<Image>` for typed assets; audiocontrol's blog-index page too (bug surfaced as `<img src="[object Object]"`). `feature-image-apply/apply.ts` targets the new layout; writes relative frontmatter paths (`./feature-filtered.png`). `rename-slug.ts` simplified to directory rename + calendar update + single URL redirect; body rewrite + image-dir rename + image redirect all dropped.
+- **Two real renames landed on editorialcontrol.** `ai-doesnt-remember` → `automate-image-generation-in-claude-code`. `building-the-editorial-calendar-feature` → `build-and-run-your-editorial-calendar-in-your-ai-agent`. First one reconciled a pre-existing calendar drift (orphan row from April-20 git rename that never updated the calendar).
+- **Tests.** 281 → 278 across the 18c cleanup (dropped `rewriteEmbeddedSlug` tests as no longer meaningful; added body-rewrite / drift-guard / directory-form coverage). Both site builds clean under the new layout.
+
+**Didn't Work:**
+
+- **First rename-slug UI was a modal.** Centered `<dialog>` with inline form. Operator asked what the primary UX violation was; I initially guessed the copy-command-to-clipboard affordance (wrong — that's correct per the mechanical/cognitive action split in Phase 14's docs). Operator pointed at the no-modal rule. Refactored to per-row inline expansion matching the intake-form pattern.
+- **First rename silently succeeded on an orphaned calendar row.** The `feature-image-automation-feature` row had been detached from its content file since the April-20 git rename to `ai-doesnt-remember`. The skill renamed the orphan row (touching only the calendar + appending a useless redirect) without noticing the content file wasn't there. Added a drift guard that refuses on blog entries whose content file (later: whose content directory) is missing.
+- **First rename broke body figures.** The article had `![caption](/images/blog/building-the-editorial-calendar-feature/studio.png)` body refs. My `rewriteEmbeddedSlug` only rewrote frontmatter. My `/blog/<old>/*` redirect only covered page URLs, not `/images/blog/...`. Patch was to extend both (add body rewrite + add `/images/blog/` redirect). Worked short-term; then the operator asked the better question: "why are blog-local images not in the blog directory?" — which took the whole class of problem away by making assets co-located.
+- **Audiocontrol blog index broke after the 18c schema switch.** `post.image` interpolated as `{post.image}` in `<img src=>` stringified `ImageMetadata` objects as `[object Object]`. Fixed by routing through `<Image>` (same pattern as BlogLayout). Operator caught it on the deploy preview.
+- **Astro `image()` schema trips on absolute URL strings.** Two audiocontrol posts referenced `/images/s-330-feature.jpg` (a shared asset). First attempt used `z.union([image(), z.string()])` but `image()` eagerly tries to resolve the path at schema-load time and errors before the union falls back. Fix: copy the shared asset into each post's directory so every path is relative, then schema is just `image().optional()`.
+- **Astro content-collection data store is shared between dev servers.** `.astro/data-store.json` at the project root gets clobbered by whichever dev server reloaded last, so audiocontrol's blog routes 404'd in dev after editorialcontrol's collection reloaded. Not a 18c regression — a standing issue we'd already worked around by consolidating tools to the editorialcontrol dev server. Production builds run isolated per config, so deploy previews are unaffected.
+
+**Course Corrections:**
+
+- **[UX]** Modal → inline form. The design system's no-modal rule is explicit in the codebase (`editorial-review-client.ts:354`), but I went to modal anyway because it was the simplest shape for a shared-across-rows affordance. Inline-per-row is the right answer and keeps the operator's eye on the row they're acting on. Saved as memory after the operator made the correction.
+- **[PROCESS]** Silent "success" on drift. The first rename should have refused. Added a drift guard that names the exact path it expected and instructs the operator to reconcile the calendar row before re-running. This is the category of bug you can only find by running the thing on real data.
+- **[COMPLEXITY]** Patch vs restructure. The operator's "why are blog-local images not in the blog directory" question collapsed three patches (body rewrite in `rewriteEmbeddedSlug`, image redirect rule, shared-asset handling with `z.union`) into one structural change (co-located assets + `image()` schema) that eliminates every one of those patches. Small window of opportunity — worth taking on immediately rather than carrying the workable solution forward.
+- **[DOCUMENTATION]** Diagnosing "primary UX violation" is easier when the design system's rules are written down somewhere grep-able. The no-modal rule was a comment in a client-side file, not a CLAUDE.md principle. Fine, but the code-review version of this session would have benefited from the rule being surfaced more centrally.
+
+**Quantitative:**
+
+- Messages: ~80+
+- Commits: ~15 on this branch this session (on top of PRs #115/#118/#119)
+- PRs: 3 opened, 3 merged (#115, #118, #119)
+- Phases shipped: 18a, 18b, 18c
+- Calendar entries migrated to directory form: 11 (3 editorialcontrol + 8 audiocontrol)
+- Posts renamed end-to-end: 2 (editorialcontrol)
+- Tests: 261 → 278 (net +17 across three phases)
+- Corrections: 4 ([UX], [PROCESS], [COMPLEXITY], [DOCUMENTATION])
+
+**Insights:**
+
+- **Structural changes eat patches.** Phase 18c landed after three attempted patches for the rename problem (body rewrite, image redirect, shared-asset union). The structural fix was smaller than the sum of the patches would have been and made the code *simpler*, not more complex. The "operator catches the real question" move — "why are blog-local images not in the blog directory?" — is worth watching for on any feature where the patch list starts branching.
+- **UUID identity is cheap when every join site uses `.find(slug === slug)`.** The refactor worked because the existing codebase was consistent about the join shape. If the lookups had been scattered across different query styles the migration would have been painful. Lesson for future: consistent join idioms in data-layer code pay off when the identity column changes.
+- **Drift guards need real-world failure, not spec.** The orphan calendar row from an April-20 git rename was invisible until the rename tool silently operated on it. Adding a drift guard with a specific path + instruction is the kind of thing you only know to add after running the thing on data that has drifted.
+- **Co-location > paths.** Co-located assets eliminate a class of bugs that path-based reference + redirect schemes can't fully cover (body figures, cross-references from other posts, external inbound image links). The trade-off is asset paths embed a stable hash instead of the slug — fine for the web, done correctly by Astro's pipeline.
+- **Design-system rules want a single grep-able home.** The no-modal rule, the mechanical-vs-cognitive action split, the copy-command affordance rule — all documented in the codebase, but spread across different files. An index at `.claude/rules/` or `docs/design-system.md` might pay off.
+
+---
+
 ## 2026-04-23 (afternoon): Editorial Calendar — Phase 17f (studio intake flow, blog figures + lightbox, meta-article shipped)
 
 ### Feature: editorial-calendar

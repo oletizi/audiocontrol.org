@@ -38,9 +38,12 @@ src/sites/editorialcontrol/public/images/generated/
 # fix landed). Safe to delete; gitignored so nothing re-tracks them.
 public/images/generated/
 
-# playwright MCP / dev screenshots
+# playwright MCP / dev screenshots — all throwaway, stay out of git
 .playwright-mcp/
 redesign-*.png
+dispatches-*.png
+ticker-*.png
+*-preview-*.png
 
 # Claude Code per-session lock — ephemeral {sessionId, pid, acquiredAt}.
 # Held while a session is active, released on shutdown. Per-session,
