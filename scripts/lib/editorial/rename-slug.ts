@@ -23,7 +23,7 @@
 import { existsSync, readFileSync, renameSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { readCalendar, writeCalendar } from './calendar.js';
-import { type Site } from './types.js';
+import { effectiveContentType, type Site } from './types.js';
 
 export interface RenameSlugOptions {
   rootDir: string;
@@ -151,10 +151,24 @@ export function renameSlug(options: RenameSlugOptions): RenameSlugResult {
 
   const actions: RenameSlugPlanAction[] = [];
 
-  // 1. Content file
+  // 1. Content file. For blog entries the content file IS the article
+  // — if it's missing for a blog entry, the calendar row has drifted
+  // from disk (an earlier git-level rename that never updated the
+  // calendar, a deletion that wasn't reflected, or a row that points
+  // at content that never got scaffolded). Refuse rather than proceed
+  // with a partial rename that silently touches only the calendar +
+  // redirect. The operator needs to reconcile the row against disk
+  // first, then re-run the rename.
   const oldFile = contentPath(rootDir, site, oldSlug);
   const newFile = contentPath(rootDir, site, newSlug);
-  let fileExists = existsSync(oldFile);
+  const fileExists = existsSync(oldFile);
+  if (!fileExists && effectiveContentType(entry) === 'blog') {
+    throw new Error(
+      `calendar entry "${oldSlug}" is a blog post but no content file exists at ${oldFile}. ` +
+      `The calendar row has drifted from disk — reconcile the row's slug to match the actual ` +
+      `filename, then re-run the rename against the real slug.`,
+    );
+  }
   if (fileExists) {
     if (existsSync(newFile)) {
       throw new Error(`target content file already exists: ${newFile}`);

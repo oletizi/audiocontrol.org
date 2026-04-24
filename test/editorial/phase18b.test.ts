@@ -308,6 +308,20 @@ describe('Phase 18b: rename-slug helpers', () => {
       ).toThrow(/identical/);
     });
 
+    it('refuses when the blog content file is missing (drift guard)', () => {
+      // Remove the content file but leave the calendar row intact —
+      // mimics a pre-Phase-18b git rename that never updated the
+      // calendar. The helper should refuse rather than silently
+      // rename just the calendar + redirect.
+      rmSync(
+        join(rootDir, 'src', 'sites', SITE, 'content', 'blog', `${oldSlug}.md`),
+        { force: true },
+      );
+      expect(() =>
+        renameSlug({ rootDir, site: SITE, oldSlug, newSlug }),
+      ).toThrow(/drifted from disk|no content file/);
+    });
+
     it('rejects malformed new slug before touching disk', () => {
       expect(() =>
         renameSlug({ rootDir, site: SITE, oldSlug, newSlug: 'Not A Slug' }),
