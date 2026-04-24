@@ -13,8 +13,10 @@ export {
   type EditorialCalendar,
   assertSite,
   distributionsBySlug,
+  distributionsByEntryId,
   effectiveContentType,
   entriesByStage,
+  entryById,
   hasRepoContent,
   isContentType,
   isSite,
@@ -36,6 +38,7 @@ export {
   draftEntry,
   publishEntry,
   findEntry,
+  findEntryById,
 } from './calendar.js';
 
 export { scaffoldBlogPost, type ScaffoldResult } from './scaffold.js';

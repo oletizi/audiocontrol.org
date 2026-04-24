@@ -17,7 +17,8 @@
     "candidateTemplates": [
       "data-packet-network"
     ],
-    "notes": "audiocontrol post on a Raspberry Pi bridge that exposes SCSI commands to vintage hardware over HTTP/WebSocket. Template match on 'scsi' tag only — data-packet-network (already also used on the reverse-engineering-akai post). Both SCSI posts will share this template until fitness data differentiates; if the operator wants more distinct imagery, iterate with a bridge/interconnect angle (old bus → wireless packets) rather than a protocol-analysis angle."
+    "notes": "audiocontrol post on a Raspberry Pi bridge that exposes SCSI commands to vintage hardware over HTTP/WebSocket. Template match on 'scsi' tag only — data-packet-network (already also used on the reverse-engineering-akai post). Both SCSI posts will share this template until fitness data differentiates; if the operator wants more distinct imagery, iterate with a bridge/interconnect angle (old bus → wireless packets) rather than a protocol-analysis angle.",
+    "entryId": "1557a004-2477-4bea-9bdc-3727475d52c4"
   },
   "decision": {
     "decidedAt": "2026-04-24T02:22:20.653Z",

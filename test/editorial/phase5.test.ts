@@ -54,9 +54,12 @@ describe('Channel column on Distribution', () => {
     };
     cal.distributions.push(rec);
     const md = renderCalendar(cal);
-    expect(md).toContain('| Slug | Platform | URL | Shared | Channel | Notes |');
+    // Phase 18a added an EntryID column at the front of the distribution
+    // table; the Slug/Platform/... ordering still lines up after it.
+    expect(md).toContain('| EntryID | Slug | Platform | URL | Shared | Channel | Notes |');
     const re = parseCalendar(md);
-    expect(re.distributions).toEqual([rec]);
+    expect(re.distributions).toHaveLength(1);
+    expect(re.distributions[0]).toMatchObject(rec);
   });
 
   it('omits Channel column when no record uses it (backwards compat)', () => {
@@ -68,7 +71,7 @@ describe('Channel column on Distribution', () => {
       dateShared: '2026-04-10',
     });
     const md = renderCalendar(cal);
-    expect(md).toContain('| Slug | Platform | URL | Shared | Notes |');
+    expect(md).toContain('| EntryID | Slug | Platform | URL | Shared | Notes |');
     expect(md).not.toMatch(/\| Channel \|/);
   });
 
@@ -91,7 +94,7 @@ describe('Channel column on Distribution', () => {
     ].join('\n');
     const cal = parseCalendar(md);
     expect(cal.distributions).toHaveLength(1);
-    expect(cal.distributions[0]).toEqual({
+    expect(cal.distributions[0]).toMatchObject({
       slug: 'post-a',
       platform: 'reddit',
       url: 'https://reddit.com/r/x/1',
@@ -102,7 +105,7 @@ describe('Channel column on Distribution', () => {
 
   it('round-trips a mix of records with and without channel', () => {
     const cal = publishedCalendar('post-a');
-    cal.distributions.push(
+    const originals: DistributionRecord[] = [
       {
         slug: 'post-a',
         platform: 'reddit',
@@ -116,9 +119,13 @@ describe('Channel column on Distribution', () => {
         url: 'https://youtu.be/abc',
         dateShared: '2026-04-11',
       },
-    );
+    ];
+    cal.distributions.push(...originals);
     const reparsed = parseCalendar(renderCalendar(cal));
-    expect(reparsed.distributions).toEqual(cal.distributions);
+    expect(reparsed.distributions).toHaveLength(originals.length);
+    originals.forEach((rec, i) => {
+      expect(reparsed.distributions[i]).toMatchObject(rec);
+    });
   });
 });
 

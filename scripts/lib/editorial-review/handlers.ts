@@ -166,14 +166,20 @@ export function handleDecision(rootDir: string, body: unknown): HandlerResult {
 
 /**
  * Return a workflow plus its full version history. The client looks up
- * either by workflow id or by (site, slug, contentKind, platform?, channel?).
- * For the longform route, (site, slug) is the most natural lookup because
- * that's the URL.
+ * by one of (in priority order):
+ *   1. Workflow id — exact match on `DraftWorkflowItem.id`.
+ *   2. `entryId` — stable calendar-entry UUID; join survives slug renames.
+ *      Added in Phase 18a; preferred over slug when available.
+ *   3. (site, slug) — legacy lookup, still supported for pre-Phase-18
+ *      workflows that have no entryId stamped.
+ *
+ * All lookups can additionally filter by (contentKind, platform, channel).
  */
 export function handleGetWorkflow(
   rootDir: string,
   query: {
     id: string | null;
+    entryId?: string | null;
     site: string | null;
     slug: string | null;
     contentKind: string | null;
@@ -186,20 +192,34 @@ export function handleGetWorkflow(
     if (!workflow) return err(404, `unknown workflow id: ${query.id}`);
     return ok({ workflow, versions: readVersions(rootDir, workflow.id) });
   }
-  if (!query.site || !query.slug) {
-    return err(400, 'either id or (site & slug) query params are required');
+  if (!query.entryId && (!query.site || !query.slug)) {
+    return err(400, 'either id, entryId, or (site & slug) query params are required');
   }
   const contentKind = (query.contentKind ?? 'longform') as 'longform' | 'shortform' | 'outline';
   const candidates = readWorkflows(rootDir).filter(
-    w =>
-      w.site === (query.site as Site) &&
-      w.slug === query.slug &&
-      w.contentKind === contentKind &&
-      (w.platform ?? null) === (query.platform ?? null) &&
-      (w.channel ?? null) === (query.channel ?? null),
+    w => {
+      // Stable-identity join when entryId is present on both sides;
+      // fall back to (site, slug) for legacy workflows. Always still
+      // filter by contentKind + platform + channel to keep scope.
+      const identityMatch =
+        query.entryId && w.entryId
+          ? w.entryId === query.entryId
+          : query.site && query.slug
+            ? w.site === (query.site as Site) && w.slug === query.slug
+            : false;
+      return (
+        identityMatch &&
+        w.contentKind === contentKind &&
+        (w.platform ?? null) === (query.platform ?? null) &&
+        (w.channel ?? null) === (query.channel ?? null)
+      );
+    },
   );
   if (candidates.length === 0) {
-    return err(404, `no workflow for ${query.site}/${query.slug} (${contentKind})`);
+    const key = query.entryId
+      ? `entryId=${query.entryId}`
+      : `${query.site}/${query.slug}`;
+    return err(404, `no workflow for ${key} (${contentKind})`);
   }
   // When multiple workflows match — most commonly because an earlier
   // longform was cancelled and a fresh one was enqueued — prefer

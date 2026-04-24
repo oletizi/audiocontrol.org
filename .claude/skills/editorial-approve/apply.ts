@@ -223,8 +223,16 @@ function main(): void {
   // advances the calendar Outlining → Drafting instead of finalizing.
   const contentKind = args.platform ? 'shortform' : 'longform';
 
+  // Resolve slug → entryId via the calendar so the workflow join
+  // survives post-Phase-18 slug renames. If the calendar has no
+  // entry for this slug (fresh intake before /editorial-plan) we
+  // still get a legacy (site, slug) match inside handleGetWorkflow.
+  const calendar = readCalendar(rootDir, args.site);
+  const entryId = calendar.entries.find(e => e.slug === args.slug)?.id ?? null;
+
   const fetched = handleGetWorkflow(rootDir, {
     id: null,
+    entryId,
     site: args.site,
     slug: args.slug,
     contentKind,

@@ -70,20 +70,23 @@ describe('Distribution section', () => {
       ].join('\n');
       const cal = parseCalendar(md);
       expect(cal.distributions).toHaveLength(2);
-      expect(cal.distributions[0]).toEqual({
+      // Post-Phase-18 the parser sets entryId to '' for legacy rows
+      // whose slug doesn't match a known entry. Match only the semantic
+      // fields; entryId / missing-note shape is covered elsewhere.
+      expect(cal.distributions[0]).toMatchObject({
         slug: 'post-a',
         platform: 'reddit',
         url: 'https://reddit.com/r/x/1',
         dateShared: '2026-04-10',
         notes: 'r/x',
       });
-      // Second row has blank notes — parser drops the field rather than setting empty string
-      expect(cal.distributions[1]).toEqual({
+      expect(cal.distributions[1]).toMatchObject({
         slug: 'post-b',
         platform: 'youtube',
         url: 'https://youtu.be/abc',
         dateShared: '2026-04-11',
       });
+      expect(cal.distributions[1].notes).toBeUndefined();
     });
 
     it('drops rows with an unknown platform', () => {
@@ -120,7 +123,11 @@ describe('Distribution section', () => {
       });
       const md = renderCalendar(cal);
       const reparsed = parseCalendar(md);
-      expect(reparsed.distributions).toEqual(cal.distributions);
+      // Post-Phase-18 the write emits entryId and the reparse links
+      // records to the entry whose slug matches. Verify the semantic
+      // fields round-trip; entryId linkage verified in a dedicated test.
+      expect(reparsed.distributions).toHaveLength(1);
+      expect(reparsed.distributions[0]).toMatchObject(cal.distributions[0]);
     });
 
     it('round-trips multiple distributions preserving order', () => {
@@ -149,7 +156,10 @@ describe('Distribution section', () => {
       ];
       cal.distributions.push(...records);
       const reparsed = parseCalendar(renderCalendar(cal));
-      expect(reparsed.distributions).toEqual(records);
+      expect(reparsed.distributions).toHaveLength(records.length);
+      records.forEach((rec, i) => {
+        expect(reparsed.distributions[i]).toMatchObject(rec);
+      });
     });
   });
 

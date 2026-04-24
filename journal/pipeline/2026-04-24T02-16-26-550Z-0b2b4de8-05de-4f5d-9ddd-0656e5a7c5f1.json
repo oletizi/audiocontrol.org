@@ -18,6 +18,7 @@
       "data-packet-network",
       "schematic-fragment"
     ],
-    "notes": "audiocontrol post on reverse-engineering the Akai S3000XL MIDI-over-SCSI protocol. Template match on 'reverse-engineering' + 'scsi' tags; data-packet-network reads as protocol analysis without being literal. schematic-fragment is a good fallback if the network imagery feels too sci-fi — service-manual lineage fits the site's voice better. Both templates are unused (zero prior uses) so either will accumulate fitness data."
+    "notes": "audiocontrol post on reverse-engineering the Akai S3000XL MIDI-over-SCSI protocol. Template match on 'reverse-engineering' + 'scsi' tags; data-packet-network reads as protocol analysis without being literal. schematic-fragment is a good fallback if the network imagery feels too sci-fi — service-manual lineage fits the site's voice better. Both templates are unused (zero prior uses) so either will accumulate fitness data.",
+    "entryId": "4060dcc1-3726-4ace-98dc-70c21c86e897"
   }
 }

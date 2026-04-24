@@ -11,6 +11,14 @@ export type WorkflowType = 'feature-image-blog' | 'feature-image-iterate';
 export type WorkflowState = 'open' | 'decided' | 'applied' | 'cancelled';
 
 export interface WorkflowContext {
+  /**
+   * Stable UUID of the target calendar entry. Populated for any workflow
+   * enqueued after Phase 18a; sits alongside `slug` as the join key that
+   * survives slug renames. Optional so legacy journal records remain
+   * valid. Consumers that need the calendar entry should prefer this
+   * over slug when both are available.
+   */
+  entryId?: string;
   /** Path to the target blog post markdown file */
   postPath?: string;
   /** Slug derived from the post path */
