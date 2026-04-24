@@ -3,9 +3,7 @@
 **Status:** Phases 1-15 Complete + Phase 16 in flight (pipeline-drive: skill helpers, voice-skill consultation, body-state detection, first drafted dispatch, session-content archive) + Phase 17 shipped on branch (content collections, draft prod gate, outline stage, margin-note anchor rebasing, resolve/re-open, dev nav, quote-offset fix)
 **Feature Branch:** `feature/editorial-calendar`
 **GitHub Issue:** oletizi/audiocontrol.org#29 (parent)
-**Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7), #89 (content edits), #98 (Phases 8-13 editorial-review extension), #101 (editorial-review redesign), #104 (Phase 14 — studio as command center + journal migration), #106 (Phase 15 — UI fixes, dblclick-edit, manual, multi-site consolidation)
-**Open PR:** #115 (feature-image studio moves to editorialcontrol + studio state-aware routing + meta-dispatch feature image)
-**Unshipped commits on branch:** ~27 (Phase 16 + Phase 17 — see workplan)
+**Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7), #89 (content edits), #98 (Phases 8-13 editorial-review extension), #101 (editorial-review redesign), #104 (Phase 14 — studio as command center + journal migration), #106 (Phase 15 — UI fixes, dblclick-edit, manual, multi-site consolidation), #115 (feature-image studio moves to editorialcontrol), #118 (Phase 18a — stable UUID identity), #119 (Phases 18b+18c — rename-slug skill + co-located content assets)
 
 ## Overview
 
@@ -37,8 +35,8 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 17e | Iterate-loop helpers + disposition stamps + editor UX polish | Complete (PRs #111, #112, #113 merged) |
 | 17f | Studio intake flow + blog figures/lightbox/pull-quotes + 'Building the Editorial Calendar Feature' shipped | Complete on branch (intake form, signature polling, clipboard fallback, figure remark plugin, lightbox overlay; article approved at v19) |
 | 18a | Stable UUID identity for calendar entries + distribution records | Complete (PR #118 merged) |
-| 18b | `/editorial-rename-slug` skill + studio rename affordance | Complete on branch (PR #119 — helper, inline studio form, drift guard, first renames) |
-| 18c | Directory-based content collections with co-located assets | Complete on branch (PR #119 — migration of 11 posts, schema switch to `image()`, simplified rename to `mv`) |
+| 18b | `/editorial-rename-slug` skill + studio rename affordance | Complete (PR #119 merged) |
+| 18c | Directory-based content collections with co-located assets | Complete (PR #119 merged) |
 
 ## Dependencies
 
