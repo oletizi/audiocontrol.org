@@ -262,6 +262,8 @@ const issueDate = today.toLocaleDateString('en-US', {
     max-width: 48rem;
     color: hsl(var(--foreground));
     margin: 0;
+    /* Prevent one-word orphans on the last line. */
+    text-wrap: pretty;
   }
 
   .lede em {
