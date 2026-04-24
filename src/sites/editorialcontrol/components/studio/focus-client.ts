@@ -656,8 +656,54 @@ function wireActions(): void {
       case 'commit':  btn.addEventListener('click', () => void commit()); break;
       case 'approve': btn.addEventListener('click', () => void approve()); break;
       case 'reject':  btn.addEventListener('click', () => void reject()); break;
+      case 'copy-apply': btn.addEventListener('click', () => void copyApplyCommand(btn)); break;
     }
   });
+}
+
+/**
+ * Copy `/feature-image-apply` to the clipboard. The apply skill
+ * itself does the file-copy + frontmatter-upsert; this button is a
+ * process-motion affordance so the operator can see "approve → apply"
+ * as one motion inside the studio, instead of the apply step living
+ * only as an out-of-band command.
+ *
+ * Secure-context aware: falls back to execCommand('copy') on a hidden
+ * textarea when navigator.clipboard is unavailable (LAN HTTP dev).
+ */
+async function copyApplyCommand(btn: HTMLButtonElement): Promise<void> {
+  const cmd = btn.dataset.copy ?? '/feature-image-apply';
+  let ok = false;
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(cmd);
+      ok = true;
+    }
+  } catch { /* fall through to execCommand */ }
+  if (!ok) {
+    const ta = document.createElement('textarea');
+    ta.value = cmd;
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.left = '-1000px';
+    ta.setAttribute('readonly', '');
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, cmd.length);
+    try { ok = document.execCommand('copy'); }
+    finally { document.body.removeChild(ta); }
+  }
+  if (!ok) {
+    setStatusMessage('error', 'Clipboard unavailable');
+    return;
+  }
+  const original = btn.textContent;
+  btn.classList.add('copied');
+  btn.textContent = 'copied ✓';
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.textContent = original;
+  }, 1500);
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────

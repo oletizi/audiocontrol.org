@@ -319,6 +319,15 @@ function selectOptions(values: string[], selected: string): string {
               ? <button type="button" class="studio-btn" disabled>Rejected ✗</button>
               : <button type="button" class="studio-btn studio-btn--danger" data-action="reject">Reject</button>
             }
+            {entry.status === 'approved' && (
+              <button
+                type="button"
+                class="studio-btn studio-btn--primary"
+                data-action="copy-apply"
+                data-copy="/feature-image-apply"
+                title="copy /feature-image-apply to clipboard — run in Claude Code to bake files into the post"
+              >Apply →</button>
+            )}
           </div>
           <div class="studio-focus__status" data-focus-status></div>
         </div>

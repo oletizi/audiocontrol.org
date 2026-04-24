@@ -288,6 +288,17 @@ function cardHtml(entry: LogEntry): string {
     ? `<button type="button" class="studio-btn" disabled>Rejected ✗</button>`
     : `<button type="button" class="studio-btn studio-btn--danger" data-action="reject">Reject</button>`;
 
+  // Apply button — surfaces only on approved entries. Copies
+  // `/feature-image-apply` to the clipboard; the apply skill scans
+  // for pending decisions + approved entries and does the actual
+  // file-copy + frontmatter-upsert. The button is a process-motion
+  // affordance: the operator clicks Approve → Apply → paste in Claude
+  // Code. Making both visible on the card tells the story without
+  // hiding the last step behind an out-of-band command.
+  const applyBtn = isApproved
+    ? `<button type="button" class="studio-btn studio-btn--primary studio-copy-btn" data-action="copy-apply" data-copy="/feature-image-apply" title="copy /feature-image-apply to clipboard — run in Claude Code to bake files into the post">Apply →</button>`
+    : '';
+
   const archiveLabel = entry.archived ? 'Restore' : 'Archive';
 
   return `
@@ -331,6 +342,7 @@ function cardHtml(entry: LogEntry): string {
             <a class="studio-btn" href="/dev/studio/focus/${entry.id}">Focus →</a>
             ${approveBtn}
             ${rejectBtn}
+            ${applyBtn}
           </div>
           <div class="studio-card__status-row">
             <div class="studio-card__rating">${ratingHtml}</div>
@@ -565,21 +577,60 @@ async function approveEntry(entry: LogEntry): Promise<void> {
   }
 }
 
-async function copyAsInput(entry: LogEntry): Promise<void> {
+/**
+ * Copy text across both secure and insecure contexts. The async
+ * Clipboard API is gated on a secure context (HTTPS / localhost); LAN
+ * access via plain HTTP is blocked. Falls back to execCommand('copy')
+ * on a hidden textarea, which works in plain HTTP.
+ */
+async function copyTextToClipboardFlex(text: string): Promise<boolean> {
   try {
-    const text = [
-      `prompt: ${entry.prompt ?? ''}`,
-      `preset: ${entry.preset ?? ''}`,
-      `title: ${entry.title ?? ''}`,
-      `subtitle: ${entry.subtitle ?? ''}`,
-      `site: ${entry.site ?? 'audiocontrol'}`,
-    ].join('\n');
-    await navigator.clipboard.writeText(text);
-    toast('Copied prompt + params to clipboard');
-  } catch (err) {
-    console.error('copy failed', err);
-    toast('Copy failed — check console');
+    if (typeof navigator !== 'undefined' && navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch { /* fall through */ }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.top = '-1000px';
+  ta.style.left = '-1000px';
+  ta.setAttribute('readonly', '');
+  document.body.appendChild(ta);
+  ta.select();
+  ta.setSelectionRange(0, text.length);
+  let ok = false;
+  try { ok = document.execCommand('copy'); }
+  finally { document.body.removeChild(ta); }
+  return ok;
+}
+
+/** Copy text + flash a "copied ✓" badge on the triggering button. */
+async function copyToClipboard(text: string, btn: HTMLButtonElement): Promise<void> {
+  const ok = await copyTextToClipboardFlex(text);
+  if (!ok) {
+    toast('Copy failed — clipboard unavailable');
+    return;
   }
+  const original = btn.textContent;
+  btn.classList.add('copied');
+  btn.textContent = 'copied ✓';
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.textContent = original;
+  }, 1500);
+}
+
+async function copyAsInput(entry: LogEntry): Promise<void> {
+  const text = [
+    `prompt: ${entry.prompt ?? ''}`,
+    `preset: ${entry.preset ?? ''}`,
+    `title: ${entry.title ?? ''}`,
+    `subtitle: ${entry.subtitle ?? ''}`,
+    `site: ${entry.site ?? 'audiocontrol'}`,
+  ].join('\n');
+  const ok = await copyTextToClipboardFlex(text);
+  toast(ok ? 'Copied prompt + params to clipboard' : 'Copy failed — check console');
 }
 
 function saveAsTemplate(entry: LogEntry): void {
@@ -706,6 +757,11 @@ function onGalleryClick(event: MouseEvent): void {
       case 'save-template':
         saveAsTemplate(entry);
         break;
+      case 'copy-apply': {
+        const cmd = actionEl.dataset.copy ?? '/feature-image-apply';
+        void copyToClipboard(cmd, actionEl as HTMLButtonElement);
+        break;
+      }
       case 'overflow-toggle': {
         const overflow = actionEl.closest<HTMLElement>('.studio-card__overflow');
         if (overflow) {
