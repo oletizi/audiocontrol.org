@@ -7,8 +7,8 @@ dateModified: "2026-04-24"
 author: "Orion Letizi"
 tags: ["AI agents", "Editorial", "Workflow", "Claude"]
 state: published
-image: "/images/blog/building-the-editorial-calendar-feature/feature-filtered.png"
-socialImage: "/images/blog/building-the-editorial-calendar-feature/feature-og.png"
+image: "/images/blog/build-and-run-your-editorial-calendar-in-your-ai-agent/feature-filtered.png"
+socialImage: "/images/blog/build-and-run-your-editorial-calendar-in-your-ai-agent/feature-og.png"
 ---
 
 # Your Content Workflow Is Already Obsolete. Your AI Agent Is the Replacement.
