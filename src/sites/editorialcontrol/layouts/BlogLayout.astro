@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import Layout from './Layout.astro';
 import '../../../shared/blog-figure.css';
 
@@ -16,8 +18,11 @@ interface Props {
     datePublished?: string;
     dateModified?: string;
     author?: string;
-    image?: string;
-    socialImage?: string;
+    // After Phase 18c these are ImageMetadata objects (co-located
+    // assets resolved by Astro's image pipeline). String fallback is
+    // kept for back-compat with any caller passing a raw URL path.
+    image?: ImageMetadata | string;
+    socialImage?: ImageMetadata | string;
   };
   headings?: Heading[];
   title?: string;
@@ -26,6 +31,11 @@ interface Props {
   datePublished?: string;
   dateModified?: string;
   author?: string;
+}
+
+function urlOf(value: ImageMetadata | string | undefined): string | undefined {
+  if (!value) return undefined;
+  return typeof value === 'string' ? value : value.src;
 }
 
 const {
@@ -53,8 +63,8 @@ const pathSegments = Astro.url.pathname.split('/').filter(Boolean);
 const ogImageSlug = pathSegments.join('-');
 const autoOgImage = `/images/og/${ogImageSlug}.png`;
 const featureImage = frontmatter?.image;
-const socialImage = frontmatter?.socialImage ?? autoOgImage;
-const schemaImage = new URL(socialImage, Astro.site).toString();
+const socialImageUrl = urlOf(frontmatter?.socialImage) ?? autoOgImage;
+const schemaImage = new URL(socialImageUrl, Astro.site).toString();
 
 const blogPostingJsonLd = {
   '@context': 'https://schema.org',
@@ -88,7 +98,7 @@ const tocHeadings = headings.filter((h) => h.depth === 2);
 <Layout
   title={title}
   description={description}
-  image={socialImage}
+  image={socialImageUrl}
   type="article"
   jsonLd={blogPostingJsonLd}
 >
@@ -129,7 +139,10 @@ const tocHeadings = headings.filter((h) => h.depth === 2);
       <div class="essay-body">
         {featureImage && (
           <figure class="feature-image">
-            <img src={featureImage} alt="" />
+            {typeof featureImage === 'string'
+              ? <img src={featureImage} alt="" />
+              : <Image src={featureImage} alt="" />
+            }
           </figure>
         )}
         <slot />

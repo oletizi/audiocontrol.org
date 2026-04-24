@@ -5,10 +5,10 @@ date: "April 2026"
 datePublished: "2026-04-07"
 dateModified: "2026-04-24"
 author: "Orion Letizi"
-image: "/images/blog/scsi-over-wifi-raspberry-pi-bridge/feature-filtered.png"
+image: "./feature-filtered.png"
 tags: ["SCSI", "Raspberry Pi", "Open Source", "PiSCSI"]
 state: published
-socialImage: "/images/blog/scsi-over-wifi-raspberry-pi-bridge/feature-og.png"
+socialImage: "./feature-og.png"
 ---
 
 # SCSI Over WiFi: Talking to Vintage Hardware from Your Phone

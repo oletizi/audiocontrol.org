@@ -5,14 +5,14 @@ date: "February 2025"
 datePublished: "2025-02-15"
 dateModified: "2025-02-15"
 author: "Orion Letizi"
-image: "/images/s-330-feature.jpg"
+image: "./s-330-feature.jpg"
 tags: ["Roland", "S-330", "S-550", "S-770"]
 state: published
 ---
 
 # The Roland S-Series Samplers: From 12-Bit Character to 16-Bit Clarity
 
-![Roland S-330](/images/s-330-feature.jpg)
+![Roland S-330](./s-330-feature.jpg)
 
 Roland's S-series samplers represent one of the most cohesive product families in the history of digital sampling. Spanning from 1987 to the early 1990s, the line evolved from an affordable rack-mount entry point through a flagship 16-bit instrument, with each model sharing design philosophy, interface conventions, and — in the case of the 12-bit models — direct sound library compatibility.
 

@@ -5,14 +5,12 @@
 # Sitemap alias so external linkers hitting /sitemap.xml find the real one.
 /sitemap.xml  /sitemap-index.xml  301
 
-# Phase 18b: /blog/ai-doesnt-remember/ renamed to /blog/automate-image-generation-in-claude-code/
+# Slug rename: /blog/ai-doesnt-remember/ → /blog/automate-image-generation-in-claude-code/
 /blog/ai-doesnt-remember        /blog/automate-image-generation-in-claude-code/          301
 /blog/ai-doesnt-remember/       /blog/automate-image-generation-in-claude-code/          301
 /blog/ai-doesnt-remember/*      /blog/automate-image-generation-in-claude-code/:splat    301
-/images/blog/ai-doesnt-remember/*    /images/blog/automate-image-generation-in-claude-code/:splat    301
 
-# Phase 18b: /blog/building-the-editorial-calendar-feature/ renamed to /blog/build-and-run-your-editorial-calendar-in-your-ai-agent/
+# Slug rename: /blog/building-the-editorial-calendar-feature/ → /blog/build-and-run-your-editorial-calendar-in-your-ai-agent/
 /blog/building-the-editorial-calendar-feature        /blog/build-and-run-your-editorial-calendar-in-your-ai-agent/          301
 /blog/building-the-editorial-calendar-feature/       /blog/build-and-run-your-editorial-calendar-in-your-ai-agent/          301
 /blog/building-the-editorial-calendar-feature/*      /blog/build-and-run-your-editorial-calendar-in-your-ai-agent/:splat    301
-/images/blog/building-the-editorial-calendar-feature/*    /images/blog/build-and-run-your-editorial-calendar-in-your-ai-agent/:splat    301

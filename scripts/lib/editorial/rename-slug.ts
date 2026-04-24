@@ -1,26 +1,21 @@
 /**
- * Slug rename for Phase 18b.
+ * Slug rename, Phase-18c-simplified.
  *
- * Renames a published post's slug cleanly. With Phase 18a's UUID
- * identity in place (entry.id + distribution.entryId + workflow.entryId),
- * the rename only has to touch the public surface:
+ * Under Phase 18c each blog post lives as a directory at
+ * `src/sites/<site>/content/blog/<slug>/index.md` with its assets
+ * co-located. Renaming a slug then reduces to a single directory
+ * rename + a calendar slug update + a single `/blog/<old>/` → `/blog/<new>/`
+ * redirect. No body rewrite. No image redirect. No frontmatter path
+ * munging. The old `/images/blog/<slug>/...` absolute paths simply
+ * don't exist under this layout — Astro's image pipeline serves the
+ * co-located assets under hashed `/_astro/...` URLs that are
+ * insensitive to the slug.
  *
- *   1. Content file: src/sites/<site>/content/blog/<old>.md → <new>.md
- *   2. Image dir:    src/sites/<site>/public/images/blog/<old>/ → <new>/
- *   3. Frontmatter:  rewrite `image:` / `socialImage:` paths embedded
- *                    in the renamed content file
- *   4. Calendar:     entry.slug = <new> (entry.id unchanged)
- *   5. Distribution: cosmetic slug update on matching entryId
- *   6. _redirects:   append 301s for legacy URL variants (bare, slash,
- *                    splat) to the site's public/_redirects file
- *
- * No git operations. The operator reviews the diff and commits.
- *
- * Internal cross-link rewriting is out of scope — the 301 covers
- * inbound links. See workplan Phase 18b for the rationale.
+ * UUID identity (Phase 18a) keeps workflows, distribution records,
+ * and journal history joined through `entry.id` across the rename.
  */
 
-import { existsSync, readFileSync, renameSync, writeFileSync, appendFileSync } from 'node:fs';
+import { existsSync, renameSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { readCalendar, writeCalendar } from './calendar.js';
 import { effectiveContentType, type Site } from './types.js';
@@ -35,9 +30,7 @@ export interface RenameSlugOptions {
 
 export interface RenameSlugPlanAction {
   kind:
-    | 'file-rename'
     | 'dir-rename'
-    | 'frontmatter-rewrite'
     | 'calendar-slug-change'
     | 'distribution-slug-sync'
     | 'redirect-append';
@@ -61,12 +54,8 @@ export function validateSlug(slug: string): void {
   }
 }
 
-function contentPath(rootDir: string, site: Site, slug: string): string {
-  return join(rootDir, 'src', 'sites', site, 'content', 'blog', `${slug}.md`);
-}
-
-function imageDirPath(rootDir: string, site: Site, slug: string): string {
-  return join(rootDir, 'src', 'sites', site, 'public', 'images', 'blog', slug);
+function postDirPath(rootDir: string, site: Site, slug: string): string {
+  return join(rootDir, 'src', 'sites', site, 'content', 'blog', slug);
 }
 
 function redirectsPath(rootDir: string, site: Site): string {
@@ -74,59 +63,23 @@ function redirectsPath(rootDir: string, site: Site): string {
 }
 
 /**
- * Rewrite every `/images/blog/<oldSlug>/...` reference to use the new
- * slug — scans the whole markdown file (both frontmatter and body),
- * not just the frontmatter. Frontmatter covers `image:` /
- * `socialImage:`; body covers `![alt](...)` figure paths, inline HTML
- * `<img src>`, and any other reference that embeds the slug segment.
- *
- * Conservative on shape: only matches the `/images/blog/<slug>/`
- * prefix so unrelated paths (shared asset dirs, external URLs, the
- * slug appearing as plain prose) are untouched.
- */
-export function rewriteEmbeddedSlug(
-  markdown: string,
-  oldSlug: string,
-  newSlug: string,
-): { markdown: string; changed: boolean } {
-  const pattern = new RegExp(
-    `(/images/blog/)${oldSlug.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}(/)`,
-    'g',
-  );
-  const next = markdown.replace(pattern, `$1${newSlug}$2`);
-  if (next === markdown) return { markdown, changed: false };
-  return { markdown: next, changed: true };
-}
-
-/**
- * Build the 301-redirect block for a slug rename, matching Netlify's
- * _redirects syntax as used in `src/sites/<site>/public/_redirects`.
- *
- * Emits two groups of redirects:
- *
- *   1. `/blog/<old>/*` → `/blog/<new>/:splat` — covers the page URL
- *      in bare, trailing-slash, and splat shapes for inbound SEO.
- *   2. `/images/blog/<old>/*` → `/images/blog/<new>/:splat` —
- *      catches body-figure and feature-image URLs so cross-references
- *      from OTHER posts (which this skill deliberately does not
- *      rewrite) keep resolving, plus any external inbound image
- *      links (OG previews, reader caches).
+ * Build the 301 redirect block for a slug rename. Only covers the
+ * page URL; per-post images are served as hashed `/_astro/` URLs
+ * that don't embed the slug, so no image-path redirect is needed.
  */
 export function buildRedirectBlock(oldSlug: string, newSlug: string): string {
   return [
     '',
-    `# Phase 18b: /blog/${oldSlug}/ renamed to /blog/${newSlug}/`,
+    `# Slug rename: /blog/${oldSlug}/ → /blog/${newSlug}/`,
     `/blog/${oldSlug}        /blog/${newSlug}/          301`,
     `/blog/${oldSlug}/       /blog/${newSlug}/          301`,
     `/blog/${oldSlug}/*      /blog/${newSlug}/:splat    301`,
-    `/images/blog/${oldSlug}/*    /images/blog/${newSlug}/:splat    301`,
     '',
   ].join('\n');
 }
 
 /**
- * Execute (or dry-run) a slug rename. Returns the planned action list;
- * when `dryRun: true`, no writes happen.
+ * Execute (or dry-run) a slug rename.
  */
 export function renameSlug(options: RenameSlugOptions): RenameSlugResult {
   const { rootDir, site, oldSlug, newSlug, dryRun = false } = options;
@@ -159,73 +112,37 @@ export function renameSlug(options: RenameSlugOptions): RenameSlugResult {
   }
 
   const actions: RenameSlugPlanAction[] = [];
+  const oldDir = postDirPath(rootDir, site, oldSlug);
+  const newDir = postDirPath(rootDir, site, newSlug);
 
-  // 1. Content file. For blog entries the content file IS the article
-  // — if it's missing for a blog entry, the calendar row has drifted
-  // from disk (an earlier git-level rename that never updated the
-  // calendar, a deletion that wasn't reflected, or a row that points
-  // at content that never got scaffolded). Refuse rather than proceed
-  // with a partial rename that silently touches only the calendar +
-  // redirect. The operator needs to reconcile the row against disk
-  // first, then re-run the rename.
-  const oldFile = contentPath(rootDir, site, oldSlug);
-  const newFile = contentPath(rootDir, site, newSlug);
-  const fileExists = existsSync(oldFile);
-  if (!fileExists && effectiveContentType(entry) === 'blog') {
+  // 1. Directory rename. Under Phase 18c blog posts live as
+  //    directories at content/blog/<slug>/ with assets co-located,
+  //    so a single mv carries the markdown, feature images, and
+  //    any body figures in one atomic operation. For blog entries
+  //    the directory must exist — if it's missing the calendar row
+  //    has drifted from disk and the operator needs to reconcile
+  //    before rename can proceed.
+  const dirExists = existsSync(oldDir);
+  if (!dirExists && effectiveContentType(entry) === 'blog') {
     throw new Error(
-      `calendar entry "${oldSlug}" is a blog post but no content file exists at ${oldFile}. ` +
+      `calendar entry "${oldSlug}" is a blog post but no directory exists at ${oldDir}. ` +
       `The calendar row has drifted from disk — reconcile the row's slug to match the actual ` +
-      `filename, then re-run the rename against the real slug.`,
+      `directory name, then re-run the rename against the real slug.`,
     );
   }
-  if (fileExists) {
-    if (existsSync(newFile)) {
-      throw new Error(`target content file already exists: ${newFile}`);
-    }
-    actions.push({
-      kind: 'file-rename',
-      summary: `rename content file`,
-      details: `${oldFile}\n         → ${newFile}`,
-    });
-    if (!dryRun) renameSync(oldFile, newFile);
-  }
-
-  // 2. Image dir
-  const oldImageDir = imageDirPath(rootDir, site, oldSlug);
-  const newImageDir = imageDirPath(rootDir, site, newSlug);
-  let imageDirExists = existsSync(oldImageDir);
-  if (imageDirExists) {
-    if (existsSync(newImageDir)) {
-      throw new Error(`target image dir already exists: ${newImageDir}`);
+  if (dirExists) {
+    if (existsSync(newDir)) {
+      throw new Error(`target directory already exists: ${newDir}`);
     }
     actions.push({
       kind: 'dir-rename',
-      summary: `rename image dir`,
-      details: `${oldImageDir}\n         → ${newImageDir}`,
+      summary: 'rename post directory',
+      details: `${oldDir}\n         → ${newDir}`,
     });
-    if (!dryRun) renameSync(oldImageDir, newImageDir);
+    if (!dryRun) renameSync(oldDir, newDir);
   }
 
-  // 3. Frontmatter rewrite (only meaningful when the file was renamed)
-  if (fileExists) {
-    const target = dryRun ? oldFile : newFile;
-    const src = readFileSync(target, 'utf-8');
-    const { markdown: rewritten, changed } = rewriteEmbeddedSlug(
-      src,
-      oldSlug,
-      newSlug,
-    );
-    if (changed) {
-      actions.push({
-        kind: 'frontmatter-rewrite',
-        summary: `rewrite frontmatter image paths`,
-        details: `image: / socialImage: /images/blog/${oldSlug}/... → /images/blog/${newSlug}/...`,
-      });
-      if (!dryRun) writeFileSync(newFile, rewritten, 'utf-8');
-    }
-  }
-
-  // 4. Calendar entry slug change
+  // 2. Calendar entry slug change
   actions.push({
     kind: 'calendar-slug-change',
     summary: `calendar entry.slug: "${oldSlug}" → "${newSlug}"`,
@@ -235,7 +152,7 @@ export function renameSlug(options: RenameSlugOptions): RenameSlugResult {
     entry.slug = newSlug;
   }
 
-  // 5. Cosmetic slug sync on distributions with the same entryId
+  // 3. Cosmetic slug sync on distributions with the same entryId
   const matchingDistributions = calendar.distributions.filter(
     (d) => d.entryId === entry.id,
   );
@@ -256,7 +173,7 @@ export function renameSlug(options: RenameSlugOptions): RenameSlugResult {
     writeCalendar(rootDir, site, calendar);
   }
 
-  // 6. _redirects append
+  // 4. _redirects append
   const redirectsFile = redirectsPath(rootDir, site);
   const block = buildRedirectBlock(oldSlug, newSlug);
   actions.push({

@@ -1,10 +1,11 @@
 /**
- * Unit tests for Phase 18b: `/editorial-rename-slug` skill helper.
+ * Unit tests for the slug-rename skill helper (Phase 18b + 18c).
  *
- * Covers the slug-rename mutations and the pure helpers
- * (rewriteEmbeddedSlug, buildRedirectBlock, validateSlug). Each test
- * builds a throwaway fixture root under `os.tmpdir()` so the real
- * repo state is never touched.
+ * Post-18c the rename is a single directory move. Astro's image
+ * pipeline serves co-located assets from the new path with no path
+ * rewriting needed on our side. These tests exercise the validation
+ * rules, the drift-guard, the directory move, calendar updates, and
+ * the redirect append.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -16,7 +17,6 @@ import {
   buildRedirectBlock,
   readCalendar,
   renameSlug,
-  rewriteEmbeddedSlug,
   validateSlug,
   type Site,
 } from '../../scripts/lib/editorial/index.js';
@@ -30,59 +30,37 @@ function writeCalendar(rootDir: string, site: Site, markdown: string): void {
 }
 
 function scaffoldFixture(rootDir: string, oldSlug: string, entryId: string): void {
-  mkdirSync(
-    join(rootDir, 'src', 'sites', SITE, 'content', 'blog'),
-    { recursive: true },
-  );
-  mkdirSync(
-    join(rootDir, 'src', 'sites', SITE, 'public', 'images', 'blog', oldSlug),
-    { recursive: true },
-  );
-  mkdirSync(
-    join(rootDir, 'src', 'sites', SITE, 'public'),
-    { recursive: true },
-  );
+  const postDir = join(rootDir, 'src', 'sites', SITE, 'content', 'blog', oldSlug);
+  mkdirSync(postDir, { recursive: true });
+  mkdirSync(join(rootDir, 'src', 'sites', SITE, 'public'), { recursive: true });
 
-  const content = [
-    '---',
-    `title: "Example Post"`,
-    `description: "Example description."`,
-    `date: "April 2026"`,
-    `datePublished: "2026-04-01"`,
-    `dateModified: "2026-04-01"`,
-    `author: "Orion Letizi"`,
-    `image: "/images/blog/${oldSlug}/feature-filtered.png"`,
-    `socialImage: "/images/blog/${oldSlug}/feature-og.png"`,
-    `state: published`,
-    '---',
-    '',
-    '# Example Post',
-    '',
-    'Body text.',
-    '',
-  ].join('\n');
-
+  // Co-located content file + feature image in one directory.
   writeFileSync(
-    join(rootDir, 'src', 'sites', SITE, 'content', 'blog', `${oldSlug}.md`),
-    content,
+    join(postDir, 'index.md'),
+    [
+      '---',
+      `title: "Example Post"`,
+      `description: "Example description."`,
+      `date: "April 2026"`,
+      `datePublished: "2026-04-01"`,
+      `dateModified: "2026-04-01"`,
+      `author: "Orion Letizi"`,
+      `image: "./feature-filtered.png"`,
+      `socialImage: "./feature-og.png"`,
+      `state: published`,
+      '---',
+      '',
+      '# Example Post',
+      '',
+      'Body text.',
+      '',
+      '![a figure](./studio.png)',
+      '',
+    ].join('\n'),
     'utf-8',
   );
-
-  writeFileSync(
-    join(
-      rootDir,
-      'src',
-      'sites',
-      SITE,
-      'public',
-      'images',
-      'blog',
-      oldSlug,
-      'feature-og.png',
-    ),
-    'not-actually-a-png',
-    'utf-8',
-  );
+  writeFileSync(join(postDir, 'feature-og.png'), 'not-actually-a-png', 'utf-8');
+  writeFileSync(join(postDir, 'studio.png'), 'not-actually-a-png', 'utf-8');
 
   writeCalendar(
     rootDir,
@@ -105,7 +83,7 @@ function scaffoldFixture(rootDir: string, oldSlug: string, entryId: string): voi
     ].join('\n'),
   );
 
-  // Seed an existing _redirects file so the append-path is exercised.
+  // Seed an existing _redirects so the append-path is exercised.
   writeFileSync(
     join(rootDir, 'src', 'sites', SITE, 'public', '_redirects'),
     '# existing\n/sitemap.xml /sitemap-index.xml 301\n',
@@ -113,7 +91,7 @@ function scaffoldFixture(rootDir: string, oldSlug: string, entryId: string): voi
   );
 }
 
-describe('Phase 18b: rename-slug helpers', () => {
+describe('Phase 18b+c: rename-slug helpers', () => {
   describe('validateSlug', () => {
     it('accepts kebab-case', () => {
       expect(() => validateSlug('my-post-name')).not.toThrow();
@@ -129,64 +107,6 @@ describe('Phase 18b: rename-slug helpers', () => {
     });
   });
 
-  describe('rewriteEmbeddedSlug', () => {
-    it('rewrites image path in frontmatter', () => {
-      const src = [
-        '---',
-        'title: "t"',
-        'image: "/images/blog/old-slug/feature-og.png"',
-        '---',
-        '',
-        '# body',
-        '',
-      ].join('\n');
-      const { markdown, changed } = rewriteEmbeddedSlug(src, 'old-slug', 'new-slug');
-      expect(changed).toBe(true);
-      expect(markdown).toContain('/images/blog/new-slug/feature-og.png');
-      expect(markdown).not.toContain('/images/blog/old-slug/');
-    });
-
-    it('rewrites body figure paths too', () => {
-      const src = [
-        '---',
-        'title: "t"',
-        'image: "/images/blog/old-slug/feature-og.png"',
-        '---',
-        '',
-        '# body',
-        '',
-        '![caption](/images/blog/old-slug/studio.png)',
-        '',
-        'Inline ref: /images/blog/old-slug/extra.png',
-        '',
-      ].join('\n');
-      const { markdown, changed } = rewriteEmbeddedSlug(src, 'old-slug', 'new-slug');
-      expect(changed).toBe(true);
-      // Frontmatter reference rewritten
-      expect(markdown).toContain('/images/blog/new-slug/feature-og.png');
-      // Body reference rewritten
-      expect(markdown).toContain('/images/blog/new-slug/studio.png');
-      expect(markdown).toContain('/images/blog/new-slug/extra.png');
-      // No old-slug image paths remain
-      expect(markdown).not.toContain('/images/blog/old-slug/');
-    });
-
-    it('returns unchanged when slug is not embedded', () => {
-      const src = [
-        '---',
-        'title: "t"',
-        'image: "/images/shared/logo.png"',
-        '---',
-        '',
-        '# body',
-        '',
-      ].join('\n');
-      const { markdown, changed } = rewriteEmbeddedSlug(src, 'old-slug', 'new-slug');
-      expect(changed).toBe(false);
-      expect(markdown).toBe(src);
-    });
-  });
-
   describe('buildRedirectBlock', () => {
     it('emits blog URL redirects (bare / slash / splat)', () => {
       const block = buildRedirectBlock('old-post', 'new-post');
@@ -196,10 +116,11 @@ describe('Phase 18b: rename-slug helpers', () => {
       expect(block).toContain('/blog/new-post/:splat');
       expect(block).toContain('301');
     });
-    it('emits an /images/blog redirect too (for body figures + cross-refs)', () => {
+    it('does not emit an /images/blog redirect under Phase 18c', () => {
+      // Co-located assets are served at hashed /_astro/ URLs — no
+      // slug-keyed image path exists to redirect from.
       const block = buildRedirectBlock('old-post', 'new-post');
-      expect(block).toContain('/images/blog/old-post/*');
-      expect(block).toContain('/images/blog/new-post/:splat');
+      expect(block).not.toContain('/images/blog/');
     });
   });
 
@@ -210,7 +131,7 @@ describe('Phase 18b: rename-slug helpers', () => {
     const newSlug = 'new-example-post';
 
     beforeEach(() => {
-      rootDir = mkdtempSync(join(tmpdir(), 'phase18b-'));
+      rootDir = mkdtempSync(join(tmpdir(), 'phase18c-'));
       entryId = randomUUID();
       scaffoldFixture(rootDir, oldSlug, entryId);
     });
@@ -219,44 +140,38 @@ describe('Phase 18b: rename-slug helpers', () => {
       rmSync(rootDir, { recursive: true, force: true });
     });
 
+    const postDir = (r: string, slug: string) =>
+      join(r, 'src', 'sites', SITE, 'content', 'blog', slug);
+
     it('dry-run lists actions without writing', () => {
       const result = renameSlug({ rootDir, site: SITE, oldSlug, newSlug, dryRun: true });
       expect(result.dryRun).toBe(true);
       expect(result.entryId).toBe(entryId);
       expect(result.actions.length).toBeGreaterThan(0);
-      // Files unchanged
-      expect(
-        existsSync(join(rootDir, 'src', 'sites', SITE, 'content', 'blog', `${oldSlug}.md`)),
-      ).toBe(true);
-      expect(
-        existsSync(join(rootDir, 'src', 'sites', SITE, 'content', 'blog', `${newSlug}.md`)),
-      ).toBe(false);
+      // Directory unchanged
+      expect(existsSync(postDir(rootDir, oldSlug))).toBe(true);
+      expect(existsSync(postDir(rootDir, newSlug))).toBe(false);
     });
 
-    it('renames content file + image dir', () => {
+    it('renames the whole post directory', () => {
       renameSlug({ rootDir, site: SITE, oldSlug, newSlug });
-      expect(
-        existsSync(join(rootDir, 'src', 'sites', SITE, 'content', 'blog', `${oldSlug}.md`)),
-      ).toBe(false);
-      expect(
-        existsSync(join(rootDir, 'src', 'sites', SITE, 'content', 'blog', `${newSlug}.md`)),
-      ).toBe(true);
-      expect(
-        existsSync(join(rootDir, 'src', 'sites', SITE, 'public', 'images', 'blog', oldSlug)),
-      ).toBe(false);
-      expect(
-        existsSync(join(rootDir, 'src', 'sites', SITE, 'public', 'images', 'blog', newSlug)),
-      ).toBe(true);
+      expect(existsSync(postDir(rootDir, oldSlug))).toBe(false);
+      expect(existsSync(postDir(rootDir, newSlug))).toBe(true);
+      // Every file inside came along for the ride
+      expect(existsSync(join(postDir(rootDir, newSlug), 'index.md'))).toBe(true);
+      expect(existsSync(join(postDir(rootDir, newSlug), 'feature-og.png'))).toBe(true);
+      expect(existsSync(join(postDir(rootDir, newSlug), 'studio.png'))).toBe(true);
     });
 
-    it('rewrites embedded slug in frontmatter', () => {
+    it('leaves frontmatter ./ paths intact (co-located — no rewrite needed)', () => {
       renameSlug({ rootDir, site: SITE, oldSlug, newSlug });
-      const renamed = readFileSync(
-        join(rootDir, 'src', 'sites', SITE, 'content', 'blog', `${newSlug}.md`),
+      const markdown = readFileSync(
+        join(postDir(rootDir, newSlug), 'index.md'),
         'utf-8',
       );
-      expect(renamed).toContain(`/images/blog/${newSlug}/feature-og.png`);
-      expect(renamed).not.toContain(`/images/blog/${oldSlug}/`);
+      expect(markdown).toContain('image: "./feature-filtered.png"');
+      expect(markdown).toContain('socialImage: "./feature-og.png"');
+      expect(markdown).toContain('![a figure](./studio.png)');
     });
 
     it('updates calendar entry.slug and keeps entry.id stable', () => {
@@ -281,9 +196,7 @@ describe('Phase 18b: rename-slug helpers', () => {
         join(rootDir, 'src', 'sites', SITE, 'public', '_redirects'),
         'utf-8',
       );
-      // Original content preserved
       expect(redirects).toContain('/sitemap.xml /sitemap-index.xml 301');
-      // New block present
       expect(redirects).toContain(`/blog/${oldSlug}`);
       expect(redirects).toContain(`/blog/${newSlug}/`);
       expect(redirects).toContain(`/blog/${oldSlug}/*`);
@@ -323,28 +236,18 @@ describe('Phase 18b: rename-slug helpers', () => {
       ).toThrow(/identical/);
     });
 
-    it('refuses when the blog content file is missing (drift guard)', () => {
-      // Remove the content file but leave the calendar row intact —
-      // mimics a pre-Phase-18b git rename that never updated the
-      // calendar. The helper should refuse rather than silently
-      // rename just the calendar + redirect.
-      rmSync(
-        join(rootDir, 'src', 'sites', SITE, 'content', 'blog', `${oldSlug}.md`),
-        { force: true },
-      );
+    it('refuses when the blog post directory is missing (drift guard)', () => {
+      rmSync(postDir(rootDir, oldSlug), { recursive: true, force: true });
       expect(() =>
         renameSlug({ rootDir, site: SITE, oldSlug, newSlug }),
-      ).toThrow(/drifted from disk|no content file/);
+      ).toThrow(/drifted from disk|no directory/);
     });
 
     it('rejects malformed new slug before touching disk', () => {
       expect(() =>
         renameSlug({ rootDir, site: SITE, oldSlug, newSlug: 'Not A Slug' }),
       ).toThrow(/invalid slug/);
-      // File system untouched
-      expect(
-        existsSync(join(rootDir, 'src', 'sites', SITE, 'content', 'blog', `${oldSlug}.md`)),
-      ).toBe(true);
+      expect(existsSync(postDir(rootDir, oldSlug))).toBe(true);
     });
   });
 });

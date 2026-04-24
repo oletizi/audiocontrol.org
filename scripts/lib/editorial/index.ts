@@ -46,7 +46,6 @@ export { bodyState, PLACEHOLDER_MARKER, type BodyState } from './body-state.js';
 
 export {
   renameSlug,
-  rewriteEmbeddedSlug,
   buildRedirectBlock,
   validateSlug,
   type RenameSlugOptions,
