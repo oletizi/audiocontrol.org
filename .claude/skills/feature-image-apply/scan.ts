@@ -115,7 +115,14 @@ async function main() {
 
   // ── Approved log entries without appliedTo ──────────────────────────
   const log = await getJson<{ entries: LogEntry[] }>(`${base}/api/dev/feature-image/log`);
-  const approvedUnapplied = log.entries.filter(e => e.status === 'approved' && !e.appliedTo);
+  // Archive is the operator's "hide this from future work" signal —
+  // an entry an operator archived should drop out of the apply scan
+  // the same way it drops out of the gallery's default view. Without
+  // this filter, archived iteration entries kept showing up as
+  // pending apply candidates every run.
+  const approvedUnapplied = log.entries.filter(
+    e => e.status === 'approved' && !e.appliedTo && !e.archived,
+  );
 
   const summary = {
     decidedCount: decided.length,
