@@ -3,7 +3,7 @@
   "type": "feature-image-blog",
   "createdAt": "2026-04-20T21:34:28.344Z",
   "createdBy": "agent",
-  "state": "open",
+  "state": "cancelled",
   "context": {
     "postPath": "src/sites/editorialcontrol/pages/blog/building-the-editorial-calendar-feature/index.md",
     "slug": "building-the-editorial-calendar-feature",

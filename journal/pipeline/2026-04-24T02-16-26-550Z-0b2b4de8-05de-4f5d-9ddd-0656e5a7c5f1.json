@@ -1,0 +1,23 @@
+{
+  "id": "0b2b4de8-05de-4f5d-9ddd-0656e5a7c5f1",
+  "type": "feature-image-blog",
+  "createdAt": "2026-04-24T02:16:26.550Z",
+  "createdBy": "agent",
+  "state": "cancelled",
+  "context": {
+    "postPath": "src/sites/audiocontrol/content/blog/reverse-engineering-akai-s3000xl-midi-over-scsi.md",
+    "slug": "reverse-engineering-akai-s3000xl-midi-over-scsi",
+    "site": "audiocontrol",
+    "title": "Reverse-Engineering the Akai S3000XL MIDI-over-SCSI Protocol: An Odyssey",
+    "description": "How a failed attempt to run Akai's MESA II in a Mac OS 9 emulator led us through 38 disproven theories in five days of intense debugging, and ultimately to a standalone 68k emulator that cracked the protocol in four hours.",
+    "suggestedPrompt": "Abstract isometric illustration of layered translucent data packets flowing through a network of glowing wireframe nodes, cool teal cyan dominant with warm amber accent highlights on connection lines, deep shadow background suggesting intense focused analysis, thin glowing trace lines weaving between the nodes, minimalist editorial style, dark moody atmosphere, no objects no people no text no words no letters no typography no labels",
+    "suggestedPreset": "retro-crt",
+    "suggestedProvider": "flux",
+    "suggestedTemplateSlug": "data-packet-network",
+    "candidateTemplates": [
+      "data-packet-network",
+      "schematic-fragment"
+    ],
+    "notes": "audiocontrol post on reverse-engineering the Akai S3000XL MIDI-over-SCSI protocol. Template match on 'reverse-engineering' + 'scsi' tags; data-packet-network reads as protocol analysis without being literal. schematic-fragment is a good fallback if the network imagery feels too sci-fi — service-manual lineage fits the site's voice better. Both templates are unused (zero prior uses) so either will accumulate fitness data."
+  }
+}

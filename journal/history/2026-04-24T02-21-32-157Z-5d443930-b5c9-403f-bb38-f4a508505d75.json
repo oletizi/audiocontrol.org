@@ -1,0 +1,30 @@
+{
+  "id": "5d443930-b5c9-403f-bb38-f4a508505d75",
+  "timestamp": "2026-04-24T02:21:32.157Z",
+  "prompt": "Abstract vertical stripes of varying widths in warm phosphor\namber tones against a deep warm-ink background, suggesting\nperforated punch tape or edge-of-film sprocket holes, clean\ngeometric regularity with subtle variations in opacity and\nwidth, gentle phosphor bloom on the brightest stripes, top-\nheavy composition with near-empty negative space across the\nbottom third, dark warm near-black background with amber cast,\nvintage-computing aesthetic, no text no words no letters no\ntypography no labels no hardware no people no objects",
+  "provider": "flux",
+  "preset": "retro-crt",
+  "title": "SCSI Over WiFi: Talking to Vintage Hardware from Your Phone",
+  "subtitle": "An open-source Raspberry Pi bridge that lets you send SCSI commands to vintage samplers and computers over HTTP and WebSocket -- no SCSI card required.",
+  "formats": "og",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/editorialcontrol/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/5d443930-raw.png"
+    ],
+    "filtered": [
+      "/images/generated/5d443930-filtered.png"
+    ],
+    "composited": [
+      {
+        "provider": "flux",
+        "format": "og",
+        "path": "/images/generated/5d443930-og.png"
+      }
+    ]
+  },
+  "durationMs": 3594,
+  "status": "generated",
+  "templateSlug": "punch-tape",
+  "site": "audiocontrol"
+}

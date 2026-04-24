@@ -1,0 +1,36 @@
+{
+  "id": "94223cf7-a5da-4457-99b3-4aeb917d1b0f",
+  "type": "feature-image-blog",
+  "createdAt": "2026-04-24T02:20:17.829Z",
+  "createdBy": "agent",
+  "state": "applied",
+  "context": {
+    "postPath": "src/sites/audiocontrol/content/blog/scsi-over-wifi-raspberry-pi-bridge.md",
+    "slug": "scsi-over-wifi-raspberry-pi-bridge",
+    "site": "audiocontrol",
+    "title": "SCSI Over WiFi: Talking to Vintage Hardware from Your Phone",
+    "description": "An open-source Raspberry Pi bridge that lets you send SCSI commands to vintage samplers and computers over HTTP and WebSocket -- no SCSI card required.",
+    "suggestedPrompt": "Abstract isometric illustration of layered translucent data packets flowing through a network of glowing wireframe nodes, cool teal cyan dominant with warm amber accent highlights on connection lines, deep shadow background suggesting intense focused analysis, thin glowing trace lines weaving between the nodes, minimalist editorial style, dark moody atmosphere, no objects no people no text no words no letters no typography no labels",
+    "suggestedPreset": "retro-crt",
+    "suggestedProvider": "flux",
+    "suggestedTemplateSlug": "data-packet-network",
+    "candidateTemplates": [
+      "data-packet-network"
+    ],
+    "notes": "audiocontrol post on a Raspberry Pi bridge that exposes SCSI commands to vintage hardware over HTTP/WebSocket. Template match on 'scsi' tag only — data-packet-network (already also used on the reverse-engineering-akai post). Both SCSI posts will share this template until fitness data differentiates; if the operator wants more distinct imagery, iterate with a bridge/interconnect angle (old bus → wireless packets) rather than a protocol-analysis angle."
+  },
+  "decision": {
+    "decidedAt": "2026-04-24T02:22:20.653Z",
+    "logEntryId": "0b24d7c3-2aa3-4c6c-bc43-d6a89c4fa5a4"
+  },
+  "application": {
+    "appliedAt": "2026-04-24T02:22:57.163Z",
+    "changedFiles": [
+      "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/audiocontrol/public/images/blog/scsi-over-wifi-raspberry-pi-bridge/feature-og.png",
+      "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/audiocontrol/public/images/blog/scsi-over-wifi-raspberry-pi-bridge/feature-youtube.png",
+      "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/audiocontrol/public/images/blog/scsi-over-wifi-raspberry-pi-bridge/feature-instagram.png",
+      "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/audiocontrol/public/images/blog/scsi-over-wifi-raspberry-pi-bridge/feature-filtered.png",
+      "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/audiocontrol/public/images/blog/scsi-over-wifi-raspberry-pi-bridge/feature-raw.png"
+    ]
+  }
+}

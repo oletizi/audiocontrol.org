@@ -3,16 +3,15 @@ title: "SCSI Over WiFi: Talking to Vintage Hardware from Your Phone"
 description: "An open-source Raspberry Pi bridge that lets you send SCSI commands to vintage samplers and computers over HTTP and WebSocket -- no SCSI card required."
 date: "April 2026"
 datePublished: "2026-04-07"
-dateModified: "2026-04-07"
+dateModified: "2026-04-24"
 author: "Orion Letizi"
-image: "/images/scsi-over-wifi.png"
+image: "/images/blog/scsi-over-wifi-raspberry-pi-bridge/feature-filtered.png"
 tags: ["SCSI", "Raspberry Pi", "Open Source", "PiSCSI"]
 state: published
+socialImage: "/images/blog/scsi-over-wifi-raspberry-pi-bridge/feature-og.png"
 ---
 
 # SCSI Over WiFi: Talking to Vintage Hardware from Your Phone
-
-<img src="/images/scsi-over-wifi.png" alt="SCSI Over WiFi — Talking to Vintage Hardware from Your Phone" />
 
 If you own vintage SCSI hardware -- an Akai sampler, a Roland sampler, an old Mac, a SCSI hard drive -- you know the pain. Modern computers haven't had SCSI ports in twenty years. To connect to your gear, you need vintage Macs, SCSI-to-USB adapters (which are flaky and expensive), or elaborate workarounds involving floppy disks and prayer.
 

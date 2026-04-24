@@ -1,0 +1,46 @@
+{
+  "id": "0b24d7c3-2aa3-4c6c-bc43-d6a89c4fa5a4",
+  "timestamp": "2026-04-24T02:22:16.404Z",
+  "prompt": "Abstract vertical stripes of varying widths in warm phosphor\namber tones against a deep warm-ink background, suggesting\nperforated punch tape or edge-of-film sprocket holes, clean\ngeometric regularity with subtle variations in opacity and\nwidth, gentle phosphor bloom on the brightest stripes, top-\nheavy composition with near-empty negative space across the\nbottom third, dark warm near-black background with amber cast,\nvintage-computing aesthetic, no text no words no letters no\ntypography no labels no hardware no people no objects",
+  "provider": "dom-bake",
+  "preset": "retro-crt",
+  "filters": "{\"grade\":\"crt\",\"phosphor\":\"on\",\"vignette\":\"on\",\"scanlines\":\"on\",\"grain\":\"on\"}",
+  "title": "SCSI Over WiFi: Talking to Vintage Hardware from Your Phone",
+  "subtitle": "An open-source Raspberry Pi bridge that lets you send SCSI commands to vintage samplers and computers over HTTP and WebSocket -- no SCSI card required.",
+  "formats": "og,youtube,instagram",
+  "outputDir": "/Users/orion/work/audiocontrol-work/audiocontrol.org-editorial-calendar/src/sites/editorialcontrol/public/images/generated",
+  "outputs": {
+    "raw": [
+      "/images/generated/5d443930-raw.png"
+    ],
+    "filtered": [
+      "/images/generated/0b24d7c3-filtered.png"
+    ],
+    "composited": [
+      {
+        "provider": "dom",
+        "format": "og",
+        "path": "/images/generated/0b24d7c3-og.png"
+      },
+      {
+        "provider": "dom",
+        "format": "youtube",
+        "path": "/images/generated/0b24d7c3-youtube.png"
+      },
+      {
+        "provider": "dom",
+        "format": "instagram",
+        "path": "/images/generated/0b24d7c3-instagram.png"
+      }
+    ]
+  },
+  "durationMs": 4076,
+  "status": "approved",
+  "templateSlug": "punch-tape",
+  "notes": "rebaked from 5d443930 via DOM",
+  "parentEntryId": "5d443930-b5c9-403f-bb38-f4a508505d75",
+  "site": "audiocontrol",
+  "overlayPosition": "left-one-third",
+  "overlayAlign": "auto",
+  "appliedTo": "src/sites/audiocontrol/content/blog/scsi-over-wifi-raspberry-pi-bridge.md"
+}
