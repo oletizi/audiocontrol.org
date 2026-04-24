@@ -37,6 +37,8 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 18a | Stable UUID identity for calendar entries + distribution records | Complete (PR #118 merged) |
 | 18b | `/editorial-rename-slug` skill + studio rename affordance | Complete (PR #119 merged) |
 | 18c | Directory-based content collections with co-located assets | Complete (PR #119 merged) |
+| 19a | Scrapbook viewer + CRUD (standalone dev surface) | Planned (#122) |
+| 19b | Scrapbook in context (review/edit surface integration) | Planned (#123) — depends on 19a |
 
 ## Dependencies
 
