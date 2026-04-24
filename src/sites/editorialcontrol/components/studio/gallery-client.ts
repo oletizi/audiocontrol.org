@@ -747,6 +747,13 @@ function onWorkflowClick(event: MouseEvent): void {
   if (action === 'activate') {
     writeActiveWorkflowId(id);
     renderWorkflowPanel();
+    // Hand the operator off to Generate. Activating a workflow is a
+    // commitment to start producing images against it, and Generate
+    // is the immediate next step — its form auto-prefills from the
+    // active workflow's context (prompt, preset, template, site).
+    // Without this nav, activating just silently updates a list
+    // entry and leaves the operator wondering what to do next.
+    window.location.href = '/dev/studio/generate';
   } else if (action === 'deactivate') {
     writeActiveWorkflowId(null);
     renderWorkflowPanel();
