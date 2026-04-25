@@ -1,0 +1,22 @@
+{
+  "id": "b7219ada-e41d-431c-a365-4fd7d4663f70",
+  "timestamp": "2026-04-25T01:00:49.943Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T01:00:49.943Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "version": 3,
+      "range": {
+        "start": 956,
+        "end": 983
+      },
+      "text": "This is old framing where \"prompt engineering\" was placed in opposition to the socratic method. The entire enterprise is prompt engineering. The difference is between imperative/prescriptive prompts and leading questions. The rest of the conceding the consensus is good.",
+      "category": "other",
+      "anchor": "Prompt engineering is real.",
+      "id": "b7219ada-e41d-431c-a365-4fd7d4663f70",
+      "createdAt": "2026-04-25T01:00:49.943Z"
+    }
+  }
+}

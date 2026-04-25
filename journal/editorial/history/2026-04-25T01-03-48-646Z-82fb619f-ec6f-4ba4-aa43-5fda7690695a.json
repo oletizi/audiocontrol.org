@@ -1,0 +1,22 @@
+{
+  "id": "82fb619f-ec6f-4ba4-aa43-5fda7690695a",
+  "timestamp": "2026-04-25T01:03:48.646Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T01:03:48.646Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "version": 3,
+      "range": {
+        "start": 1643,
+        "end": 1779
+      },
+      "text": "This is a holdover from when you thought the agent should be asking the questions. The precision tendency is real, though. Over-prescribing can definitely lead to a false precision that can force the agent to commit unnatural acts to satisfy the letter of your command.",
+      "category": "other",
+      "anchor": "Data: 10 fabrication corrections in 76 sessions, all \"agent acted on a fact it invented\" (Google Drive creds, OPFS absence, file paths).",
+      "id": "82fb619f-ec6f-4ba4-aa43-5fda7690695a",
+      "createdAt": "2026-04-25T01:03:48.646Z"
+    }
+  }
+}

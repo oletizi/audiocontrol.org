@@ -12,7 +12,7 @@ state: draft
 
 ## Outline
 
-- **Thesis.** The Socratic method is an addition to the prompt-engineering toolkit, not a replacement for it. A precise imperative prompt is one shape of agent interaction — durable, repeatable, the foundation of skill design. Asking leading questions is a different shape, and one that uses the agent's own pattern-matching as a lever to arrive at better prompts and richer solution spaces than a purely prescriptive approach would surface alone. The dispatch's argument: keep writing prompts, *and* learn the question.
+- **Thesis.** The Socratic method is an ancient truth-finding discipline that can be a surprisingly effective addition to the prompt-engineering toolkit. A precise imperative prompt is one shape of agent interaction — durable, repeatable, the foundation of skill design. Asking leading questions is a different shape, and one that uses the agent's own pattern-matching as a lever to arrive at better prompts and richer solution spaces than a purely prescriptive approach would surface alone. The dispatch's argument: keep writing prompts, *and* learn the question.
 
 - **Hook.** Open with a real session beat that demonstrates the move. *"why did you push to netlify-deploy branch?"* (2026-03-28_de5bea43) — the operator didn't issue a directive; one question forced the agent to defend a quietly-made decision. The agent named what it had done, the operator saw the choice, the path corrected without a single new line of prompt.
 
