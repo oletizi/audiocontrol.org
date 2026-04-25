@@ -4,6 +4,79 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-04-25: Phase 19a scrapbook + Socratic dispatch outline → v1 body + /editorial-draft auto-enqueue fix
+
+### Feature: editorial-calendar
+### Worktree: audiocontrol.org-editorial-calendar (branch `feature/editorial-calendar`)
+
+**Goal:** Ship Phase 19a (scrapbook viewer + CRUD) and produce a publishable v1 body for the Socratic-method dispatch by exercising the full editorial pipeline (plan → outline → iterate → approve → draft → review). Use the run as a stress-test of the pipeline; fix gaps in skill plumbing as they surface.
+
+**Accomplished:**
+
+- **Phase 19a shipped (PR #124).** Reading-column scrapbook viewer + 7 CRUD endpoints (all 404 in PROD), studio chip (`scrapbook · N →`), `/editorial-plan` seeder for `scrapbook/README.md`, GFM table support in the tiny in-repo markdown renderer, 33 unit tests passing. Press-check desk aesthetic per `docs/design/scrapbook-phase-19a-design.md`. PR #124.
+- **Socratic dispatch full pipeline exercise.** From Ideas → Planned → Outlining → Drafting in one session:
+  - Renamed slug `socratic-coding-agents` → `socratic-prompt-engineering` mid-pipeline.
+  - Title iterated three times: "Don't Write a Better Prompt. Ask the Agent What It Heard." → "How the Socratic Method Can Lead to More Open-Ended Prompt Engineering" → "Prompt Engineering by Dialogue: Add the Socratic Method to Your Toolkit." Each rename touched the calendar entry, content-collection `index.md` (frontmatter + H1), scrapbook README, and (for the slug rename) the directory + workflow JSONs.
+  - Outline iterated v1 → v4 with the operator addressing 11 cumulative annotations. Major reshapes: oppositional framing → additive ("Socratic adds a shape to prompt engineering, not replaces it"); "failure modes" → "tendencies that narrow the solution space"; plan-mode-as-failure → plan-mode-hosts-Socratic; calibration edge dropped entirely (operator: "this is about the agent asking questions, not the Socratic method"); weak short-version examples replaced with stronger receipts.
+  - Outline approved at v4 via `/editorial-outline-approve`; calendar advanced Outlining → Drafting.
+  - **v1 body drafted** (~2,800 body-words) against the v4 outline, voice references consulted (`editorialcontrol-voice/SKILL.md` + `references/dispatch-longform.md`). Receipts pulled verbatim from session archive: Zustand/SysEx, plan-mode timeouts, agent-as-prompt-drafter, CLAUDE.md→scoped-skills longitudinal finding, worked-example cluster from session 2026-03-30_81e7c13f. Frontmatter description updated to match the v4 thesis.
+  - Longform review workflow enqueued for v1.
+- **Outline drawer pipeline-state-aware.** The outline-segregation logic in `[slug].astro` + `editorial-review-client.ts` was running unconditionally — making the outline read-only / unannotatable on outline-stage workflows. Gated on `contentKind === 'outline'`: skip splitOutline() in the page render, schedulePreview, and enterEdit so the outline IS the reading column when it IS the article. Longform behavior unchanged.
+- **Phase 18c scaffold-path follow-on.** Three skill helpers (`scaffold.ts`, `editorial-iterate/finalize.ts`, `editorial-draft-review/enqueue.ts`) were still computing `<slug>.md` (single-file, pre-Phase 18c). All three now resolve `<slug>/index.md` so dir-based posts with co-located scrapbook/feature-image assets work end-to-end. Caught when `/editorial-outline` errored on the second outline workflow attempt for the renamed dispatch.
+- **Symmetry fix on `/editorial-draft`.** SKILL.md step 9 was *recommending* `/editorial-draft-review` instead of running it — asymmetric with `/editorial-outline`, which auto-creates an outline workflow at scaffold time. Updated to RUN the enqueue helper directly. Step 8 also made idempotent for entries advanced from Outlining (don't re-flip the calendar). Each stage transition that produces reviewable content now opens its own review workflow without a second command.
+- **Kirk/Spock dispatch staged.** New entry on editorialcontrol calendar: `claude-is-kirk-codex-is-spock`, planned with 15 keywords, 3 topics, scrapbook seeded. Captured `audiocontrol-org/audiocontrol#315` (302 comments) into the scrapbook as `issue-315.md` (~756KB) + `issue-315.json` (~860KB) + mining hints in the README (Codex/Claude voices distinguishable by content prefix since both post via `oletizi`).
+- **Socratic dispatch scrapbook deeply mined.** Three layers of receipts in the scrapbook:
+  - First pass: `mine-patterns.mjs` over Haiku-classified analyses → coarse correction-category counts.
+  - Second pass: `mine-socratic-patterns.mjs` keyword-classifying `user_quote` fields against the operator's three-claim framework (open solution space / agent drafts the prompt / surface standards). Strong for (c), thin for (a)+(b) because Haiku only catches CORRECTIONS, and good Socratic moves don't produce corrections.
+  - Third pass: `mine-raw-transcripts.mjs` decrypting and grepping the raw transcripts. 76 hits across 23 sessions for operator-Socratic moves — primary receipt source for the dispatch.
+- **Worktree-name-vs-branch invariant honored.** `audiocontrol.org-editorial-calendar` worktree maps to `feature/editorial-calendar` branch as expected; no proliferation of side branches.
+
+**Didn't Work:**
+
+- **Initial dispatch frame conflated agent read-back with Socratic method.** I had been calling "ask the agent what it heard" the Socratic move. The operator pointed out the asymmetry: in Socratic dialogue, the *questioner* holds the frame and draws out the one with the gap. The agent restating what it heard is read-back / requirements elicitation, not Socratic. The actual Socratic move in my session archive is the OPERATOR asking the agent why it did what it did. Reframed thoroughly; old framing called out in scrapbook README so it doesn't sneak back in.
+- **Initial outline cited receipts I hadn't read.** When I claimed the dispatch had verbatim receipts from session transcripts, I was working from one-line summaries in the scrapbook README that I'd written earlier in the session — not from the actual transcripts. Operator caught it: *"did you look at any of the transcripts?"* I hadn't. Decrypted the archive, ran keyword classifiers, pulled real verbatim quotes with session ids. Every receipt in the v1 body resolves to a real transcript. The meta-move (operator asking that question) became the dispatch's closing meta-section.
+- **Initial title was oppositional.** "Don't Write a Better Prompt. Ask the Agent What It Heard." — operator pushed back: "Let's not pose this as an opposition to honing 'the better prompt.' Let's position it as an exploration of an addition tool in the prompt engineering toolkit." Title and §01 reframed; the additive frame propagated through the rest of the outline.
+- **Plan-mode framed as failure mode.** v1 outline called "the plan-mode proxy" a failure tendency. Operator: plan mode is GOOD when used to slow the agent down before it commits. The Socratic move HOSTS itself in plan mode. Reshape: plan-mode is now §03(b) — the natural host for Socratic asking, with the timeouts-research example as receipt.
+- **Calibration-edge section was off-topic.** §05 of v1 was "the limit (calibration edge)" — a receipt about the agent over-asking when the operator was directive. Operator: "this is about the agent asking questions, not about the Socratic method. It doesn't belong in the article." Section deleted entirely. The Codex-quiescence example the operator offered as a contrasting case was filed in the kirk-spock dispatch's scrapbook instead.
+- **Weak short-version example.** "Replace the directive with a question. *Delegate this* → *are you delegating?*" — operator: "These have the same outcome and don't open up or forestall the solution space either way... There are much better examples." Replaced with three stronger Socratic moves from the receipts: plan-mode-hosts-Socratic, probe-and-alternative, ask-for-the-proposal.
+- **Scrapbook script wrote files to wrong path due to CWD persistence.** During mining, I had `cd`'d into the scrapbook dir for an earlier bash command. When I subsequently used the Write tool with what I thought was an absolute path, the relative segment got resolved against the bash CWD, producing doubly-nested files at `<dir>/scrapbook/src/sites/.../scrapbook/<file>`. Caught after the commit. Follow-up commit (`ef05653`) used `git mv` to flatten.
+- **Long descriptions don't survive `npx tsx -e` quoting.** Tried to add the Kirk/Spock entry via inline tsx eval; em-dashes and quotes inside a multi-paragraph description blew up the bash quoting twice. Wrote `/tmp/add-kirk-spock.ts` as a one-shot file instead. Same pattern as the heredoc constraint in CLAUDE.md — when content has special chars, use a file.
+- **Issue #315 wasn't in this repo.** Operator referenced "issue 315 of this repo" for the Kirk/Spock receipts. `gh issue view 315` returned not-found here. Operator clarified: it's in the sibling `audiocontrol-org/audiocontrol` repo. Pulled from there.
+- **`/editorial-approve` refused outline workflow without redirect hint.** The skill is for longform/shortform only; outlines route through `/editorial-outline-approve`. The skill correctly refused, but the error message should suggest the right skill. Worth a UX tweak.
+
+**Course Corrections:**
+
+- **[DOCUMENTATION]** Operator caught the agent-read-back vs operator-Socratic conflation. The asymmetry is the whole point: I'm the one with the gap; the operator is the one drawing it out by asking. Reframed dispatch fully; old framing pinned in scrapbook README as the failure-mode-to-avoid for next time.
+- **[FABRICATION]** Initial outline cited receipts I hadn't actually read. *"did you look at any of the transcripts?"* The dispatch's central methodology — verbatim quotes with session ids — was being violated by the dispatch about exactly that move. Operator's question became the dispatch's meta-close. Saving the embarrassment to memory: when the dispatch promises receipts, GO READ THEM before claiming them.
+- **[DOCUMENTATION]** Operator pushed back on oppositional framing ("not X, instead Y") repeatedly across iterations. The corrected frame is additive throughout. The operator's word for what they wanted: "exploration of an addition tool in the prompt engineering toolkit." That construction was reused in the dispatch thesis verbatim.
+- **[DOCUMENTATION]** "Failure modes" → "tendencies that narrow the solution space." The site's signature shape (two-then-one) preserved; the framing reshaped from "these fail" to "these leave money on the table." A single-word substitution that changed the dispatch's stance toward operators who do prompt engineering well.
+- **[DOCUMENTATION]** Plan-mode reframe: from failure example to natural host for Socratic asking. The shape of the move is timeouts-research-in-plan-mode, which is exactly the productive use the operator described.
+- **[UX]** Outline drawer was segregating outline content during outline-stage review, making annotation and edit tools unavailable on the outline itself. Gated the segregation on `contentKind === 'outline'` so the outline IS the reading column when it IS the article being reviewed.
+- **[UX]** `/editorial-draft` was recommending instead of running `/editorial-draft-review`. Operator: "The article hasn't switched to a reviewable state in the editorial studio." Asymmetry with `/editorial-outline` (which auto-creates an outline workflow at scaffold time) was the smell. Closed: each stage transition that produces reviewable content now auto-opens its own review workflow.
+- **[PROCESS]** Phase 18c migration missed updating three skill helpers' file-path computations. Caught when `/editorial-outline` errored on the renamed dispatch's second pass. Fixed in the same session; symmetric path now everywhere.
+- **[PROCESS]** Bash CWD persistence + relative paths in Write tool → doubly-nested scrapbook files. The pattern: always pass absolute paths to Write when CWD has shifted earlier in the session. Cleaned up via `git mv` follow-up commit.
+- **[PROCESS]** `npx tsx -e` doesn't survive complex content (em-dashes, smart quotes, multi-paragraph descriptions) through bash quoting. Use `/tmp/<script>.ts` files instead — same constraint as the heredoc + `#` rule in CLAUDE.md.
+
+**Quantitative:**
+
+- Messages: ~50
+- Commits this session: 5 (`772256f` Phase 19a, `6c73cef` GFM tables, `4947a4c` seeder + workplan, `7294a0d` PR link, `ef05653` flatten nested files, `b23a0bf` outline v3, `373a96c` v1 body + draft fix). Plus the session-end commit to come.
+- PRs opened: 1 (#124)
+- Annotations addressed across outline iteration: 11 (8 on v1, 1 on v2, 2 on v3 — all `addressed`, 0 deferred, 0 wontfix)
+- Body words drafted: ~2,800 (Socratic dispatch v1)
+- Mining-script hits: 76 sessions / 98 corrections / 76 open-ended hits / 13 standards-surfacing hits / 3 agent-drafts hits
+- Files touched: ~20 (scrapbook viewer + endpoints, outline drawer fix, scaffold-path migration, dispatch content, kirk-spock scrapbook, skill prose)
+
+**Insights:**
+
+- **The dispatch becomes the dataset.** The session archive (76 sessions, 98 corrections, raw transcripts) is itself a tool for thinking about agent operations. Mining it for the Socratic dispatch produced both the receipts AND a sharper read on what the move actually is. Worth doing this on every dispatch that makes a quantified claim — the act of mining is the discipline that prevents fabrication.
+- **The pipeline IS the dispatch.** Going through Ideas → Planned → Outlining → iterate × N → Approved → Drafting → Review in one session, with the operator and agent in dialogue at every stage, IS the workflow the dispatch is about. The meta-close writes itself when the operator's interrogative move at one stage is what produced the next stage's content. Future dispatches that argue about agent operations should plan to use the pipeline as both production tool and worked example.
+- **Skill symmetry catches gaps.** The fix on `/editorial-draft` (recommend → run) was prompted by the operator noticing the studio didn't reflect the new draft as reviewable. The asymmetry with `/editorial-outline` was the explanatory frame: each stage that produces reviewable content should auto-open its own review surface. Pattern worth applying anywhere two skills are siblings — if one auto-creates and the other only recommends, the recommending one is probably wrong.
+- **Operator Socratic > agent read-back.** The session reinforced what the dispatch argues: the operator asking *"did you look at any of the transcripts?"* did more for the dispatch's quality than any number of imperative refinements would have. The agent re-stating what it heard is a check; the operator probing what the agent did is the lever.
+- **Scrapbook is now a working surface.** Phase 19a's CRUD viewer made the scrapbook usable for live work — capturing issue #315 mid-session, dropping mining scripts next to their output, updating the README inline as the dispatch took shape. The scrapbook earns its keep when it IS the desk during the work, not just a dump for finished receipts.
+
+---
+
 ## 2026-04-24 (afternoon): Editorialcontrol homepage polish + blog render cleanup
 
 ### Feature: editorial-calendar
