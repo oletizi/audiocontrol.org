@@ -1,0 +1,22 @@
+{
+  "id": "6ca33af7-c509-44c1-9600-fbb97ff1b869",
+  "timestamp": "2026-04-25T00:18:46.232Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:18:46.232Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "version": 1,
+      "range": {
+        "start": 4156,
+        "end": 4234
+      },
+      "text": "I'm not sure how the socratic method in this example is better than the imperative... they have the same outcome and don't open up or forestall the solution space either way. This just happens to be my style--because I want to give the agent room to push back on me with a reason why it's not delegating... but, that' s not a very strong example. There are much better examples.",
+      "category": "other",
+      "anchor": "Replace the directive with a question. \"Delegate this\" → \"are you delegating?\"",
+      "id": "6ca33af7-c509-44c1-9600-fbb97ff1b869",
+      "createdAt": "2026-04-25T00:18:46.232Z"
+    }
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "stats": {
+    "a_open_ended": 13,
+    "b_agent_drafts": 3,
+    "c_standards": 11,
+    "total_sessions_scanned": 78
+  },
+  "a_open_ended": [
+    {
+      "session": "2026-03-21_f95740db",
+      "where": "agent_strength",
+      "quote": null,
+      "desc": "Adapted plan based on user clarifications without re-planning from scratch"
+    },
+    {
+      "session": "2026-03-28_32828414",
+      "where": "agent_strength",
+      "quote": null,
+      "desc": "Followed detailed plan precisely without asking for clarification"
+    },
+    {
+      "session": "2026-03-28_de5bea43",
+      "where": "agent_strength",
+      "quote": null,
+      "desc": "Communicated progress clearly and asked clarifying questions about Netlify API limitations"
+    },
+    {
+      "session": "2026-04-11_095ccc74",
+      "where": "correction",
+      "category": "PROCESS",
+      "quote": "How do you know what I want in this feature? Should I have invoked a different skill to define the feature?",
+      "desc": "Agent created feature infrastructure (branch, worktree, docs directory) without first understanding what the feature was supposed to do. User redirected to define the feature first before building infrastructure."
+    },
+    {
+      "session": "2026-04-11_095ccc74",
+      "where": "agent_strength",
+      "quote": null,
+      "desc": "Structured interviews by proposing concrete options rather than asking open questions"
+    },
+    {
+      "session": "2026-04-11_095ccc74",
+      "where": "agent_strength",
+      "quote": null,
+      "desc": "Extracted information from user descriptions to avoid repetitive questioning"
+    },
+    {
+      "session": "2026-04-13_62a16914",
+      "where": "agent_strength",
+      "quote": null,
+      "desc": "Asked clarifying questions rather than proceeding with incomplete information"
+    },
+    {
+      "session": "2026-04-13_a8c1dd30",
+      "where": "agent_strength",
+      "quote": null,
+      "desc": "Clear summary communication — explained the proposed strategy, dependencies, and open questions before building"
+    },
+    {
+      "session": "2026-04-15_0689fde6",
+      "where": "agent_strength",
+      "quote": null,
+      "desc": "Structured interview process for feature definition (clear questions, iterative refinement)"
+    },
+    {
+      "session": "2026-04-17_eff0ef6b",
+      "where": "agent_strength",
+      "quote": null,
+      "desc": "Wrote comprehensive acceptance criteria and caught a scope clarification needed (tracking vs automated publishing)"
+    },
+    {
+      "session": "2026-04-18_cc425de3",
+      "where": "agent_strength",
+      "quote": null,
+      "desc": "Proposed multiple concrete next-step options rather than assuming a goal"
+    },
+    {
+      "session": "2026-04-19_d4df8ec4",
+      "where": "agent_strength",
+      "quote": null,
+      "desc": "Iterative clarification questions that narrowed scope and revealed constraints (audiocontrol.org's live calendar, need for incremental migration)"
+    },
+    {
+      "session": "2026-04-21_9827e073",
+      "where": "agent_strength",
+      "quote": null,
+      "desc": "Pragmatic scope management: recognized Phase 2 was large, proposed splitting it, but delivered most of it when user said 'go wide'"
+    }
+  ],
+  "b_agent_drafts": [
+    {
+      "session": "2026-03-30_81e7c13f",
+      "where": "correction",
+      "category": "PROCESS",
+      "quote": "the preferred way to delegate is to have the sub-agents do the research and propose what actions to take, then the main claude agent (you) executes those actions",
+      "desc": "Agent was sending sub-agents to execute changes directly instead of having them research/propose first, then main agent executes"
+    },
+    {
+      "session": "2026-03-30_f6329a25",
+      "where": "correction",
+      "category": "PROCESS",
+      "quote": "I've been reading about best practices regarding delegation to sub-agents and it seems like the preferred way to delegate is to have the sub-agents do the research and propose what actions to take, then the main claude agent (you) executes those actions.",
+      "desc": "User corrected my understanding of delegation - sub-agents should research and propose, then main agent executes. I was having sub-agents make changes directly without showing the user what would be changed first."
+    },
+    {
+      "session": "2026-03-30_fdf62c43",
+      "where": "pattern",
+      "quote": null,
+      "desc": "Failing to propose preventative measures (guards/checks) when discovering common failure modes"
+    }
+  ],
+  "c_standards": [
+    {
+      "session": "2026-03-21_b962c00e",
+      "where": "pattern",
+      "quote": null,
+      "desc": "CSS classes following ac- prefix convention with design tokens"
+    },
+    {
+      "session": "2026-03-28_de5bea43",
+      "where": "correction",
+      "category": "PROCESS",
+      "quote": "Use the netlify cli to investigate how the project is deployed and update the ## Deployment section in .claude/CLAUDE.md",
+      "desc": "User clarified that the netlify CLI should be used to investigate deployment instead of making assumptions, and to update CLAUDE.md accordingly"
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "where": "correction",
+      "category": "DOCUMENTATION",
+      "quote": "why doesn't CLAUDE.md say to run the tests via the canonical make target?",
+      "desc": "CLAUDE.md documented raw pnpm/script commands for e2e tests instead of canonical make targets"
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "where": "pattern",
+      "quote": null,
+      "desc": "Documentation gaps (CLAUDE.md) about canonical build/test commands"
+    },
+    {
+      "session": "2026-03-30_f6329a25",
+      "where": "correction",
+      "category": "DOCUMENTATION",
+      "quote": "why doesn't CLAUDE.md say to run the tests via the canonical make target?",
+      "desc": "CLAUDE.md referenced running e2e tests with pnpm commands and scripts directly, not the canonical make targets. User wanted the make targets documented since they handle all setup."
+    },
+    {
+      "session": "2026-03-30_fdf62c43",
+      "where": "pattern",
+      "quote": null,
+      "desc": "Not fully reading or referencing existing documentation (CLAUDE.md clearly stated devenv requirement)"
+    },
+    {
+      "session": "2026-04-15_09046a1d",
+      "where": "pattern",
+      "quote": null,
+      "desc": "Data-driven decision making: used encrypted session analysis (54 corrections across 37 sessions) to rank directive impact"
+    },
+    {
+      "session": "2026-04-16_bc965958",
+      "where": "pattern",
+      "quote": null,
+      "desc": "Permission gates on bash tools (heredoc #, sed -i, complex one-liners) triggered repeatedly despite being documented — need to add to CLAUDE.md early and reference in EVERY agent delegation"
+    },
+    {
+      "session": "2026-04-19_d4df8ec4",
+      "where": "correction",
+      "category": "PROCESS",
+      "quote": "why did you use mv instead of git mv?",
+      "desc": "User corrected the agent's use of plain `mv` instead of `git mv` when renaming the blog post directory. The agent should use git-aware tools to preserve version control history."
+    },
+    {
+      "session": "2026-04-21_81bfd33c",
+      "where": "pattern",
+      "quote": null,
+      "desc": "Agent over-asked for clarification when user provided directive; should have inferred from context"
+    },
+    {
+      "session": "2026-04-21_9827e073",
+      "where": "pattern",
+      "quote": null,
+      "desc": "Agent stayed below the 500-line-per-file guideline (calendar.ts = 408, others much smaller)"
+    }
+  ]
+}

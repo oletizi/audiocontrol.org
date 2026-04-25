@@ -1,0 +1,523 @@
+{
+  "stats": {
+    "sessions_scanned": 76,
+    "a_open_ended": 76,
+    "b_agent_drafts": 3,
+    "c_standards": 13,
+    "sessions_with_any": 23
+  },
+  "per_session": [
+    {
+      "session": "2026-02-19_3d171144",
+      "a": 0,
+      "b": 0,
+      "c": 1
+    },
+    {
+      "session": "2026-03-28_36d312ce",
+      "a": 2,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-03-28_de5bea43",
+      "a": 2,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-03-29_3db928d3",
+      "a": 1,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-03-29_593e17b4",
+      "a": 1,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-03-29_67252b19",
+      "a": 0,
+      "b": 0,
+      "c": 1
+    },
+    {
+      "session": "2026-03-29_9361ac41",
+      "a": 2,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-03-30_17fc89b3",
+      "a": 0,
+      "b": 0,
+      "c": 1
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "a": 5,
+      "b": 1,
+      "c": 4
+    },
+    {
+      "session": "2026-03-30_f6329a25",
+      "a": 1,
+      "b": 1,
+      "c": 1
+    },
+    {
+      "session": "2026-03-30_fdf62c43",
+      "a": 1,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "a": 38,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "a": 22,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-04-11_095ccc74",
+      "a": 1,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-04-11_3f12836f",
+      "a": 1,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-04-11_53907a57",
+      "a": 1,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-04-11_acfa4072",
+      "a": 1,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-04-11_b337c6fd",
+      "a": 5,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-04-12_35520c1c",
+      "a": 6,
+      "b": 1,
+      "c": 4
+    },
+    {
+      "session": "2026-04-13_5bd0b7a6",
+      "a": 1,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-04-16_bc965958",
+      "a": 0,
+      "b": 0,
+      "c": 1
+    },
+    {
+      "session": "2026-04-17_eff0ef6b",
+      "a": 1,
+      "b": 0,
+      "c": 0
+    },
+    {
+      "session": "2026-04-19_d4df8ec4",
+      "a": 1,
+      "b": 0,
+      "c": 0
+    }
+  ],
+  "a_open_ended": [
+    {
+      "session": "2026-03-28_36d312ce",
+      "text": "why do you need Zustand to find out if the device is connected? Why can't you send a SysEx ping and see if the device responds?"
+    },
+    {
+      "session": "2026-03-28_36d312ce",
+      "text": "why do you need the dev server running to find out if the device is connected?"
+    },
+    {
+      "session": "2026-03-28_de5bea43",
+      "text": "why did you push to netlify-deploy branch?"
+    },
+    {
+      "session": "2026-03-28_de5bea43",
+      "text": "What do you think the build command for the s330 site should be?"
+    },
+    {
+      "session": "2026-03-29_3db928d3",
+      "text": "what do you mean \"mock library\"? Why is anything mocked?"
+    },
+    {
+      "session": "2026-03-29_593e17b4",
+      "text": "what do you mean \"mock library\"? Why is anything mocked?"
+    },
+    {
+      "session": "2026-03-29_9361ac41",
+      "text": "1. Automated testing should not assume standard ports, since they need to be deterministic. The midi server should be configured such that the OS offers it a guaranteed free port to listen to--and that port configuration is propagated everywhere it needs to go; 2. why do you think there will be a 500 ms latency hit using the midi server?"
+    },
+    {
+      "session": "2026-03-29_9361ac41",
+      "text": "why do you have a special midi-e2e test?"
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "text": "why did you configure the development environment by hand? Environment provisioning should be part of the canonical Makefile target."
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "text": "why did you choose 15 seconds?"
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "text": "why did you bump the watchdog timeout to 10s?"
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "text": "What do you think requires a 5 second timeout?"
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "text": "why did you increase the test timeout to 120 seconds?"
+    },
+    {
+      "session": "2026-03-30_f6329a25",
+      "text": "why did you configure the development environment by hand? Environment provisioning should be part of the canonical Makefile target."
+    },
+    {
+      "session": "2026-03-30_fdf62c43",
+      "text": "THE ENTIRE POINT OF THIS EXERCISE IS TO TALK TO REAL HARDWARE. Why do you think the midi server isn't available?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why do you think the library path is incorrect?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why did you give up? do you have wvidence for your complaint?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why did it take you >5 min to find out the test was broken?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why did you set a 10 minute timeout?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "No... why does it take five minutes to run the preflight provisioning validation steps?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why does it redeploy everything every time like a dumbass instead of checking to see if the correct version is deployed and then redeploying it if it's not?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "so... why did you file an issue instead of fixing the problem?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why did you wait longer than the test ran?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why do you think samples 0-15 are natively loaded?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why do you need to write s3k-specific drum kit fixtures? Drum kits are common-area library objects. What do the project standards say about the library structure and code duplication?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "Why do you think the device needs more time?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why did you add a 10 second timeout?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "when you say #175 is more of a design question, what do you mean?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "what do you mean they're s1000 format? That's the only format the s3000xl reads and writes."
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why does it take so long to start showing disk contents?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why did you remove the download button?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "Also, why do you put in a defensive sleep between packets? Isn't the per packet ACK from the device definitive?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why did you wait for 2 minutes to find out it was stuck?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why do you think that?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why do you think the sampler is sending sds data?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why did you set a 5 minute timeout?"
+    },
+    {
+      "session": "2026-04-07_363f18a8",
+      "text": "why does it need an api key?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why do you think the library path is incorrect?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why did you give up? do you have wvidence for your complaint?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why did it take you >5 min to find out the test was broken?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why did you set a 10 minute timeout?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "No... why does it take five minutes to run the preflight provisioning validation steps?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why does it redeploy everything every time like a dumbass instead of checking to see if the correct version is deployed and then redeploying it if it's not?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "so... why did you file an issue instead of fixing the problem?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why did you wait longer than the test ran?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why do you think samples 0-15 are natively loaded?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why do you need to write s3k-specific drum kit fixtures? Drum kits are common-area library objects. What do the project standards say about the library structure and code duplication?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "Why do you think the device needs more time?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why did you add a 10 second timeout?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "when you say #175 is more of a design question, what do you mean?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "what do you mean they're s1000 format? That's the only format the s3000xl reads and writes."
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why does it take so long to start showing disk contents?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why did you remove the download button?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "Also, why do you put in a defensive sleep between packets? Isn't the per packet ACK from the device definitive?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why did you wait for 2 minutes to find out it was stuck?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why do you think that?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why do you think the sampler is sending sds data?"
+    },
+    {
+      "session": "2026-04-07_c629d574",
+      "text": "why did you set a 5 minute timeout?"
+    },
+    {
+      "session": "2026-04-11_095ccc74",
+      "text": "How do you know what I want in this feature? Should I have invoked a different skill to define the feature?"
+    },
+    {
+      "session": "2026-04-11_3f12836f",
+      "text": "how do we clean up worktrees that are feature complete?"
+    },
+    {
+      "session": "2026-04-11_53907a57",
+      "text": "If you are the orchestrator, what should you do?"
+    },
+    {
+      "session": "2026-04-11_acfa4072",
+      "text": "How do we get the latest changes to main?"
+    },
+    {
+      "session": "2026-04-11_b337c6fd",
+      "text": "The device memory \"save to library\" context menu option pops up a confirmation dialog. Why does it need further confirmation? Why doesn't it just do it?"
+    },
+    {
+      "session": "2026-04-11_b337c6fd",
+      "text": "why do you think the device memory context menus should have in them?"
+    },
+    {
+      "session": "2026-04-11_b337c6fd",
+      "text": "why did you stash the code?"
+    },
+    {
+      "session": "2026-04-11_b337c6fd",
+      "text": "Why do you think the error is from stale data?"
+    },
+    {
+      "session": "2026-04-11_b337c6fd",
+      "text": "I want to be able to save to the common area from the disk browser. Why did you remove that capability?"
+    },
+    {
+      "session": "2026-04-12_35520c1c",
+      "text": "Why do you think we shouldn't fix them?"
+    },
+    {
+      "session": "2026-04-12_35520c1c",
+      "text": "What do you think the icon sizes should be?"
+    },
+    {
+      "session": "2026-04-12_35520c1c",
+      "text": "what do you think you should do with that information?"
+    },
+    {
+      "session": "2026-04-12_35520c1c",
+      "text": "why do you think you don't have access to hardware?"
+    },
+    {
+      "session": "2026-04-12_35520c1c",
+      "text": "why do you think the @/ imports are broken?"
+    },
+    {
+      "session": "2026-04-12_35520c1c",
+      "text": "Why did you not follow CLAUDE.md guidance?"
+    },
+    {
+      "session": "2026-04-13_5bd0b7a6",
+      "text": "why do you have to set the port to run the ui test?"
+    },
+    {
+      "session": "2026-04-17_eff0ef6b",
+      "text": "how do we start the editorial calendar workflow?"
+    },
+    {
+      "session": "2026-04-19_d4df8ec4",
+      "text": "why did you use mv instead of git mv?"
+    }
+  ],
+  "b_agent_drafts": [
+    {
+      "session": "2026-03-30_81e7c13f",
+      "text": "I've been reading about best practices regarding delegation to sub-agents and it seems like the preferred way to delegate is to have the sub-agents do the research and propose what actions to take, then the main claude agent (you) executes those actions. Do I understand that correctly?"
+    },
+    {
+      "session": "2026-03-30_f6329a25",
+      "text": "I've been reading about best practices regarding delegation to sub-agents and it seems like the preferred way to delegate is to have the sub-agents do the research and propose what actions to take, then the main claude agent (you) executes those actions. Do I understand that correctly?"
+    },
+    {
+      "session": "2026-04-12_35520c1c",
+      "text": "The default behavior of the keygroups page is to suggest the user select a keygroup. Why isn't the default behavior to automatically select the first keygroup, like the program page does?"
+    }
+  ],
+  "c_standards": [
+    {
+      "session": "2026-02-19_3d171144",
+      "text": "does the CLAUDE.md for the mide-server project have a prohibition against claude attribution in pull requests?"
+    },
+    {
+      "session": "2026-03-29_67252b19",
+      "text": "what does CLAUDE.md say about running e2e tests"
+    },
+    {
+      "session": "2026-03-30_17fc89b3",
+      "text": "what's currently in .claude/CLAUDE.md"
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "text": "why doesn't CLAUDE.md say to run the tests via the canonical make target?"
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "text": "what does CLAUDE.md say about delegating?"
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "text": "How can we get you to follow the CLAUDE.md guidelines?"
+    },
+    {
+      "session": "2026-03-30_81e7c13f",
+      "text": "why aren't you delegating per your CLAUDE.md directives?"
+    },
+    {
+      "session": "2026-03-30_f6329a25",
+      "text": "why doesn't CLAUDE.md say to run the tests via the canonical make target?"
+    },
+    {
+      "session": "2026-04-12_35520c1c",
+      "text": "You are correct about dialogs. File a github issue to update CLAUDE.md with design system guidelines so agents don't continue to make the same dumb mistake. And, for  rename of an item in a list, wouldn't a better option be to use an inline text edit?"
+    },
+    {
+      "session": "2026-04-12_35520c1c",
+      "text": "why haven't you written the guidance to CLAUDE.md"
+    },
+    {
+      "session": "2026-04-12_35520c1c",
+      "text": "did you write the guidance to CLAUDE.md?"
+    },
+    {
+      "session": "2026-04-12_35520c1c",
+      "text": "Why did you not follow CLAUDE.md guidance?"
+    },
+    {
+      "session": "2026-04-16_bc965958",
+      "text": "Can you write it into CLAUDE.md"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "af24343a-7e90-4d12-8abb-722c2caddb6f",
+  "timestamp": "2026-04-25T00:34:13.524Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:34:13.524Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "commentId": "a1b2f225-ac2d-4925-aa02-a90f56ee8d66",
+      "version": 2,
+      "disposition": "addressed",
+      "reason": "Confirmed-strength annotation. Kept 'Operator tells; agent does' framing inside §02's pure-imperative-tendency description; 'information flows one direction' became the structural diagnosis.",
+      "id": "af24343a-7e90-4d12-8abb-722c2caddb6f",
+      "createdAt": "2026-04-25T00:34:13.524Z"
+    }
+  }
+}

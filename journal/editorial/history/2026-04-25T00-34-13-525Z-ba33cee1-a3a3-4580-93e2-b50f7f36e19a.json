@@ -1,0 +1,18 @@
+{
+  "id": "ba33cee1-a3a3-4580-93e2-b50f7f36e19a",
+  "timestamp": "2026-04-25T00:34:13.525Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:34:13.525Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "commentId": "39123692-a51a-460d-84dc-d5e3957b59db",
+      "version": 2,
+      "disposition": "addressed",
+      "reason": "Added longitudinal observation to §03(d): probing CLAUDE.md surfaces not just the rule but where the rule should live. Domain-specific standards belong in scoped skills (.claude/skills/<domain>/), not one mega-CLAUDE.md. The Socratic move reveals architecture, not just gaps.",
+      "id": "ba33cee1-a3a3-4580-93e2-b50f7f36e19a",
+      "createdAt": "2026-04-25T00:34:13.525Z"
+    }
+  }
+}

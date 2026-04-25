@@ -1,0 +1,18 @@
+{
+  "id": "fa8dc0e8-96e1-4f12-aa8e-4fa92f44def1",
+  "timestamp": "2026-04-25T00:34:13.523Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:34:13.523Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "commentId": "c8ba3911-44e4-4af2-ac62-d7786bb4761a",
+      "version": 2,
+      "disposition": "addressed",
+      "reason": "Reframed thesis as ADDITIVE — Socratic method is an addition to the prompt-engineering toolkit, not a replacement. The dispatch's argument is now: keep writing prompts AND learn the question. Title still oppositional — flagged in drafting notes for next iterate or pre-publish.",
+      "id": "fa8dc0e8-96e1-4f12-aa8e-4fa92f44def1",
+      "createdAt": "2026-04-25T00:34:13.523Z"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "6012fd37-00d4-4849-a06d-149ecaa2ae52",
+  "timestamp": "2026-04-25T00:51:34.822Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:51:34.822Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "version": 2,
+      "range": {
+        "start": 18,
+        "end": 37
+      },
+      "text": "Let's frame it like this: \"The Socratic method is an ancient truth-finding <mechanism> that can be a suprisingly effective addition to the prompt-engineering toolkit...\"",
+      "category": "other",
+      "anchor": "The Socratic method",
+      "id": "6012fd37-00d4-4849-a06d-149ecaa2ae52",
+      "createdAt": "2026-04-25T00:51:34.822Z"
+    }
+  }
+}

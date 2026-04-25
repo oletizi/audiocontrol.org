@@ -1,0 +1,22 @@
+{
+  "id": "bbf706df-c232-4707-b5cc-91aa315b8314",
+  "timestamp": "2026-04-25T00:06:46.049Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:06:46.049Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "version": 1,
+      "range": {
+        "start": 3677,
+        "end": 3848
+      },
+      "text": "This is about the agent asking questions, not about the socratic method. It doesn't belong in the article. One limit I've run into with Codex, though not with Claude, is asking Codex \"what are you waiting for?\" And Codex responds, \"nothing, I should be doing XYZ.\" And then, not offering to do it. I can sit in that loop all day with Codex.",
+      "category": "other",
+      "anchor": " — The limit (calibration edge). Over-asking is its own tax. Receipt: \"Agent over-asked for clarification when user provided directive; should have inferred from context.\"",
+      "id": "bbf706df-c232-4707-b5cc-91aa315b8314",
+      "createdAt": "2026-04-25T00:06:46.049Z"
+    }
+  }
+}

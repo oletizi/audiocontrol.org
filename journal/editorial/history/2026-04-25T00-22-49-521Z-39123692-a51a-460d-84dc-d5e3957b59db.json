@@ -1,0 +1,22 @@
+{
+  "id": "39123692-a51a-460d-84dc-d5e3957b59db",
+  "timestamp": "2026-04-25T00:22:49.521Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:22:49.521Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "version": 1,
+      "range": {
+        "start": 4343,
+        "end": 4400
+      },
+      "text": "This is good. I would note though that dumping all the project standards in CLAUDE.md ended up being decreasingly effective as more standards piled up--even though, I would ask claude \"how can I get you to remember this so that future agents won't forget?\" and it would tell me to stuff the directive in CLAUDE.md (or put it in a user-local memory, which doesn't help across development environments). What ended up working much better was using claude skills to encapsulate standards related to a particular activity domain.",
+      "category": "other",
+      "anchor": "Probe the standard. \"What does CLAUDE.md say about this?\"",
+      "id": "39123692-a51a-460d-84dc-d5e3957b59db",
+      "createdAt": "2026-04-25T00:22:49.521Z"
+    }
+  }
+}

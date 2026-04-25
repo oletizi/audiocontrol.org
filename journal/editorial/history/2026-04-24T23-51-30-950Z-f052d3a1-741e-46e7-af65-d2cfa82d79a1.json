@@ -1,0 +1,22 @@
+{
+  "id": "f052d3a1-741e-46e7-af65-d2cfa82d79a1",
+  "timestamp": "2026-04-24T23:51:30.950Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-24T23:51:30.950Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "version": 1,
+      "range": {
+        "start": 852,
+        "end": 871
+      },
+      "text": "I dont want to frame these as failure modes—they are more like tendencies that can lead you into a narrower solution space than what’s actually possible.",
+      "category": "other",
+      "anchor": "02 — Two failure mo",
+      "id": "f052d3a1-741e-46e7-af65-d2cfa82d79a1",
+      "createdAt": "2026-04-24T23:51:30.950Z"
+    }
+  }
+}

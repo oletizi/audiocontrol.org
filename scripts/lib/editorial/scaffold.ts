@@ -16,9 +16,11 @@ export function blogContentDir(site: Site): string {
   return `src/sites/${site}/content/blog`;
 }
 
-/** Path (relative to project root) of the markdown file for a given slug. */
+/** Path (relative to project root) of the markdown file for a given slug.
+ *  Dir-based content collection (Phase 18c): file lives at
+ *  `<slug>/index.md` inside the blog dir so per-post assets co-locate. */
 export function blogContentPath(site: Site, slug: string): string {
-  return `${blogContentDir(site)}/${slug}.md`;
+  return `${blogContentDir(site)}/${slug}/index.md`;
 }
 
 /** Format a date as "Month YYYY" for the `date` frontmatter field. */

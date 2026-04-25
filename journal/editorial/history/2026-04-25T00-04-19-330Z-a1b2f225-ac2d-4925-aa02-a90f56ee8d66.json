@@ -1,0 +1,22 @@
+{
+  "id": "a1b2f225-ac2d-4925-aa02-a90f56ee8d66",
+  "timestamp": "2026-04-25T00:04:19.330Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:04:19.330Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "version": 1,
+      "range": {
+        "start": 1740,
+        "end": 1766
+      },
+      "text": "This is exactly the right way to frame the anti-pattern.",
+      "category": "other",
+      "anchor": "Operator tells; agent does",
+      "id": "a1b2f225-ac2d-4925-aa02-a90f56ee8d66",
+      "createdAt": "2026-04-25T00:04:19.330Z"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "c8ba3911-44e4-4af2-ac62-d7786bb4761a",
+  "timestamp": "2026-04-24T23:45:38.285Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-24T23:45:38.285Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "version": 1,
+      "range": {
+        "start": 18,
+        "end": 92
+      },
+      "text": "Let's not pose this as an opposition to honing \"the better prompt.\" Let's position it as an exploration of an addition tool in the prompt engineering toolkit that can use an LLM's strengths as a lever to get to better prompts and more interesting opportunities than you might have otherwise with a more prescriptive/imperative approach.",
+      "category": "other",
+      "anchor": "The lever isn't a better prompt; it's the operator's interrogative stance.",
+      "id": "c8ba3911-44e4-4af2-ac62-d7786bb4761a",
+      "createdAt": "2026-04-24T23:45:38.285Z"
+    }
+  }
+}

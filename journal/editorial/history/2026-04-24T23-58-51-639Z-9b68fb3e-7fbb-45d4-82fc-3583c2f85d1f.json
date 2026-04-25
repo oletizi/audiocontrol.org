@@ -1,0 +1,22 @@
+{
+  "id": "9b68fb3e-7fbb-45d4-82fc-3583c2f85d1f",
+  "timestamp": "2026-04-24T23:58:51.639Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-24T23:58:51.639Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "version": 1,
+      "range": {
+        "start": 1288,
+        "end": 1632
+      },
+      "text": "I'm not sure I understand this one very well. I tend to use plan mode when I want to prevent the agent from leaping into action before we have fully understood the shape of the problem we trying to solve and/or the path forward to a solution.",
+      "category": "other",
+      "anchor": "(2) The plan-mode proxy. Operators leaning on \"plan mode\" or chain-of-thought to surface assumptions before action. Data: 68 PROCESS corrections, dominant shape \"are you delegating?\" / \"you are the orchestrator, not the implementation team\". A plan in response to a directive inherits the directive's hidden assumptions; it doesn't reveal them.",
+      "id": "9b68fb3e-7fbb-45d4-82fc-3583c2f85d1f",
+      "createdAt": "2026-04-24T23:58:51.639Z"
+    }
+  }
+}
