@@ -1,6 +1,6 @@
 ---
 title: "Prompt Engineering by Dialogue: Add the Socratic Method to Your Toolkit"
-description: "A pattern for working with coding agents: instead of writing better prompts, ask the agent to describe the task back to you before it starts. Socratic restate → check → begin — surfaces the mental-model gap before code gets written. Worked from 76 archived Claude Code sessions (2026-02 through 2026-04) in `data/sessions/content/*.jsonl.age`, summarized by the LLM analysis pipeline in the sibling audiocontrol repo. 98 corrections across the corpus; 54% of sessions had zero corrections; ~32% of corrections map to the mental-model gap the Socratic move would have caught upstream. Failure modes: (1) the precision trap — agents assuming capabilities that don't exist (\"Claude assumed Google Drive credentials would be missing — user didn't ask for that,\" 2026-03-20; \"Agent assumed loop-editor would automatically use updated tree node structure,\" 2026-03-21); (2) the plan-mode proxy — a plan-in-response is not a task-paraphrased-back (\"user asked 'are you delegating?' after agent started implementing Phase 2 directly,\" 2026-04-12). Counter-evidence: \"Assistant appropriately paused to clarify ambiguous feature state — no user corrections issued\" (2026-04-13_62a16914); \"Iterative clarification questions narrowed scope\" (2026-04-19_d4df8ec4). Calibration edge: \"Agent over-asked for clarification when user provided directive; should have inferred from context\" (2026-04-21_81bfd33c). Pairs with `homegrown-workflow-skills-vs-the-popular-claude-plugins` — both treat agent behavior as tunable at the interaction layer."
+description: "Prompt engineering has at least two distinct shapes — the prescriptive prompt and the leading question. Most operators only reach for the first. The Socratic method is an ancient truth-finding discipline that, surprisingly, fits inside prompt engineering as a second shape: a question that opens solution spaces an imperative would have closed. Worked from 76 archived Claude Code sessions and 98 operator corrections, with receipts including the question that closed off Zustand and opened SysEx, the question that surfaced an undocumented project standard, and the longer-term finding that probing CLAUDE.md eventually reveals the right home for project rules is scoped skills, not one mega-document."
 date: "April 2026"
 datePublished: "2026-04-24"
 dateModified: "2026-04-24"
@@ -14,9 +14,9 @@ state: draft
 
 - **Thesis.** The Socratic method is an ancient truth-finding discipline that can be a surprisingly effective addition to the prompt-engineering toolkit. A precise imperative prompt is one shape of agent interaction — durable, repeatable, the foundation of skill design. Asking leading questions is a different shape, and one that uses the agent's own pattern-matching as a lever to arrive at better prompts and richer solution spaces than a purely prescriptive approach would surface alone. The dispatch's argument: keep writing prompts, *and* learn the question.
 
-- **Hook.** Open with a real session beat that demonstrates the move. *"why did you push to netlify-deploy branch?"* (2026-03-28_de5bea43) — the operator didn't issue a directive; one question forced the agent to defend a quietly-made decision. The agent named what it had done, the operator saw the choice, the path corrected without a single new line of prompt.
+- **Hook.** Open with a question that closed off Zustand and opened SysEx. *"why do you need Zustand to find out if the device is connected? Why can't you send a SysEx ping and see if the device responds?"* (2026-03-28_36d312ce) — the agent had reached for a state-management library to track a hardware-connection signal. Two questions in a single sentence: probe the choice (defend Zustand) and name the alternative (try the simpler thing). The agent could have given a real reason for the heavier dependency. This time it folded; the SysEx-ping path was simpler, more direct, and required no new infrastructure. The imperative version — *"don't use Zustand"* — would have closed the same door but never opened the SysEx one.
 
-- **§01 — Concede the consensus.** Prompt engineering is real. A good imperative prompt is durable infrastructure — encoded as a skill, called from a slash command, run by every future agent that touches the project. That's the foundation. This dispatch isn't arguing against it. It's about the move that runs *alongside* the prompt — the move that makes the next prompt better than the last one.
+- **§01 — Concede the consensus.** Prompt engineering is the whole enterprise. There isn't a separate discipline that sits next to it; there's only the practice of telling and asking an agent things, and that practice already has a name. What this dispatch argues is that the practice has at least two distinct shapes, and most operators only reach for one. The first shape — the prescriptive prompt — is durable infrastructure: a precise specification of what the agent should do, often encoded as a skill, called from a slash command, run by every future agent that touches the project. That shape is real, repeatable, and the foundation of a working agent operation. This dispatch isn't arguing against it. The second shape — the leading question — sits inside the same practice and gets reached for less often than it should.
 
 - **§02 — Two tendencies that narrow the solution space.** Bolded lead-in pattern. Two ways operators who lean only on imperative prompting get less than the agent could give them.
   - **The precision tendency.** Treating every interaction as a specification problem — if I describe the task carefully enough, the agent will do it right. Data: 10 fabrication corrections in 76 sessions, all "agent acted on a fact it invented" (Google Drive creds, OPFS absence, file paths). The precision tendency can't catch what the agent assumed *underneath* the prompt. A more careful prompt would have read the same and assumed the same facts.
@@ -53,4 +53,93 @@ state: draft
 - Voice register: long sentences earn length with clause work; short sentences land arguments. Em-dashes over semicolons. Bolded lead-ins clustered (§02 + §05), not on every paragraph.
 -->
 
-<!-- Write your post here -->
+The Socratic method is an ancient truth-finding discipline. Two and a half thousand years ago it was the way Socrates pressed his interlocutors to defend what they thought they knew, until the things they couldn't defend fell away and the things they could stood up. It turns out to be a surprisingly effective addition to the prompt-engineering toolkit.
+
+Prompt engineering has at least two distinct shapes. The first is the prescriptive prompt — a precise specification of what the agent should do, often encoded as a skill, called from a slash command, run by every future agent that touches the project. That shape is real, repeatable, and the foundation of a working agent operation. Most of the work I do with coding agents is in this shape. This dispatch isn't arguing against it.
+
+The second shape — the leading question — sits inside the same practice and gets reached for less often than it should. That's the shape I want to make a case for.
+
+---
+
+A few weeks ago, an agent I was working with reached for [Zustand](https://github.com/pmndrs/zustand) to track whether a piece of vintage hardware was connected. State-management library; reasonable default in JavaScript circles; absolutely the wrong shape for a yes-or-no signal from a MIDI port.
+
+I asked one question:
+
+> *why do you need Zustand to find out if the device is connected? Why can't you send a SysEx ping and see if the device responds?*
+
+That's two questions in a single sentence, and it does two different things. The first probes the choice — why Zustand at all — and forces the agent to defend a decision it had quietly made. The second names the alternative — *try the simpler thing* — without telling the agent to take it. The agent could have given a real reason. Sometimes it does. This time it folded; the SysEx-ping path was simpler, more direct, and required no new infrastructure to maintain.
+
+The imperative version of that move would have been *"don't use Zustand."* It would have closed the same door. It would never have opened the SysEx one. The question saved the time, and gave me a clearer reading of the agent's reasoning at the same moment.
+
+The argument of this dispatch is that questions of that shape — leading questions, in the Socratic sense — are a different lever than the imperative prompts most operators reach for by default. They use a property of large language models that is normally a liability (their tendency to confabulate when given a directive) and turn it into an asset (their ability to articulate, defend, or retract a decision when asked). I'd been using them ad-hoc for months. Going back through the archive of my own sessions made me realize how often the question, not the prompt, was the thing that actually moved the work forward.
+
+## What the archive says
+
+Before going further: the receipts in this dispatch come from a specific corpus. I keep encrypted JSONL transcripts of every Claude Code session I run across the audiocontrol projects (76 sessions between 2026-02-19 and 2026-04-23, archived under `data/sessions/content/*.jsonl.age` in this repo). A second pipeline runs each session through Claude Haiku 4.5 for structured analysis — `arc_type`, `corrections`, `patterns`, `agent_strengths`. The Haiku output sits next to the encrypted transcripts as `.json.age` files. I wrote both pipelines for a different purpose — to instrument the agent operation and look for systematic correction patterns — but they turned out to be exactly the substrate I needed for this piece. Eveything I quote below is verbatim, and every session id resolves to a real transcript.
+
+The headline numbers, current as of 2026-04-23: **76 sessions, 98 operator corrections, 54% of sessions had zero corrections.** Of the 98 corrections, **68 were tagged PROCESS** — the dominant failure shape in my work is the agent doing the right thing in the wrong way (skipping a delegation step, running a destructive command in the wrong scope). **10 were FABRICATION** — the agent acting on a fact it had invented. The rest spread across UX, documentation, complexity, and architecture in shrinking quantities.
+
+That distribution is what made me look harder at the leading question as a tool. The fabrication corrections were narrow and shaped like *"agent assumed X; X wasn't true."* The PROCESS corrections were wider and shaped like *"agent did Y; should have asked first or paused for a check."* Both are downstream of the same gap: an unchecked assumption inside the agent's working model that no amount of prompt precision would have surfaced. The question is precisely the move that surfaces those assumptions before they ship.
+
+## Two tendencies that narrow the solution space
+
+I want to be careful here. These aren't failure modes — they're *tendencies*. They're how serious work gets done. The point isn't that they fail; it's that they leave money on the table when they're the only shape of prompt-engineering an operator reaches for.
+
+**The precision tendency.** Treating every interaction as a specification problem — *if I describe the task carefully enough, the agent will do it right*. This is the prompt-as-spec mindset that prompt-engineering tutorials almost universally teach. The 10 fabrication corrections in the archive all have the same shape underneath: the agent acted on a fact it had invented, and a more precise prompt would have read the same and assumed the same fact. *"Claude assumed Google Drive credentials would be missing and needed configuration; user didn't actually ask for that"* (2026-03-20_5ced7864). *"Agent assumed loop-editor would automatically use updated tree node structure with directoryName field instead of fileName. Required explicit code updates in three locations"* (2026-03-21_27263c0e). *"Initial plan incorrectly assumed OPFS backend didn't exist at all. Investigation revealed it is fully implemented in the app but not exposed as a user-selectable option"* (2026-03-29_89af97fa). No prompt would have caught those. The agent already had everything it needed to fabricate a plausible answer.
+
+**The pure-imperative tendency.** Operator tells; agent does. Information flows one direction. The 68 PROCESS corrections in the archive cluster around this shape; the dominant signal in the user-quote field is the operator catching a hidden assumption mid-stream. *"are you delegating?"* and *"you are the orchestrator, not the implementation team"* (2026-04-11_53907a57) appear in some form across many sessions. The agent had built a complete, internally consistent plan from the directive — and inherited the directive's hidden assumptions wholesale. The plan was accurate to the prompt and wrong against the operator's actual model.
+
+Both tendencies are productive. Both are how the bulk of agent work gets done. But both leave the agent's hidden model unchecked, and both close off solution spaces the agent could have surfaced if it had been asked instead of told.
+
+## The Socratic addition
+
+There are at least four distinct ways the leading question opens what the imperative closes. Each shows up repeatedly in the archive, with verbatim receipts.
+
+**(a) Probe a choice; surface an alternative.** The Zustand/SysEx receipt above is the cleanest example, but the move is everywhere. *"what do you mean 'mock library'? Why is anything mocked?"* (2026-03-29_3db928d3) — pushes the agent to defend a quietly-built premise. *"why did you choose 15 seconds?"* / *"What do you think requires a 5 second timeout?"* (2026-03-30_81e7c13f) — surfaces arbitrary constants the agent picked without justification. *"so... why did you file an issue instead of fixing the problem?"* (2026-04-07_363f18a8) — catches a defensive move; forces re-examination. The shape is consistent: one sentence, two effects, *defend or fold*. The solution space gets bigger before any code is written.
+
+**(b) Use plan mode to host the question.** Plan mode — Claude Code's read-only thinking phase — isn't an alternative to Socratic asking. It's where Socratic asking does its best work. The operator slows the agent down before it commits to a path, then asks open questions about the problem space. *"What is the state of the art for implementing timeouts?"* — the agent researches, writes the answer down, the answer becomes a project standard. (That's exactly how this project's timeout convention got documented.) Plan mode plus Socratic question equals the agent doing the research the operator would have outsourced anyway, but in the agent's own voice and against the agent's own context. The output is durable. It survives the conversation. It becomes infrastructure.
+
+**(c) Outsource the prompt-drafting.** Ask the agent how it would proceed. The answer is, often, a better prompt than the operator would have written from scratch — because the agent already has the system in context, the conventions in context, the prior decisions in context. The receipt that made me notice this pattern came in mid-March: *"I've been reading about best practices regarding delegation to sub-agents and it seems like the preferred way to delegate is to have the sub-agents do the research and propose what actions to take, then the main claude agent (you) executes those actions"* (2026-03-30_f6329a25). I had been about to write that pattern out by hand, in my own approximate words, and ship it as a CLAUDE.md directive. Instead I described it as an open question — *what's the right delegation pattern here?* — and the agent supplied the structure. That structure is now the project's working delegation convention. I didn't write it. I asked for it.
+
+**(d) Surface the standards you forgot to write — and discover where they should actually live.** *"why doesn't CLAUDE.md say to run the tests via the canonical make target?"* (2026-03-30_81e7c13f). The question loads the directive into the agent's working context AND exposes the undocumented gap, in one move. That's the obvious benefit. The less obvious one only shows up over time: dumping every standard into CLAUDE.md degrades as the file grows. After a year of asking *why didn't you do X?* and getting *"I should have, sorry"* back, the operative question shifted from *what's the rule?* to *how do we keep this rule live for future agents?* — and the answer turned out not to be CLAUDE.md at all. Domain-specific rules belong in scoped skills under `.claude/skills/<domain>/`, called from slash commands that load the relevant rules into context exactly when they're needed. The Socratic question revealed the architecture, not just the rule. (A three-step receipt from one session: *"why haven't you written the guidance to CLAUDE.md"* → *"did you write the guidance to CLAUDE.md?"* → *"Why did you not follow CLAUDE.md guidance?"* — 2026-04-12_35520c1c. Write the rule, verify it landed, catch the regression. Same operator move; the longer-term lesson is what to write and where to put it.)
+
+## A worked example: one session, multiple moves
+
+If you want to see all four shapes inside a single session, look at 2026-03-30_81e7c13f. The session was about getting the e2e test suite running reliably under devenv. I started with a directive — *fix the test setup* — and quickly noticed the agent had been quietly making decisions I would not have approved.
+
+In the order they happened, the operator's questions during that session:
+
+> *why did you bump the watchdog timeout to 10s?*
+>
+> *What do you think requires a 5 second timeout?*
+>
+> *why did you configure the development environment by hand? Environment provisioning should be part of the canonical Makefile target.*
+>
+> *why doesn't CLAUDE.md say to run the tests via the canonical make target?*
+>
+> *what does CLAUDE.md say about delegating?*
+>
+> *why aren't you delegating per your CLAUDE.md directives?*
+>
+> *How can we get you to follow the CLAUDE.md guidelines?*
+
+Seven questions across about fifteen minutes. Each one surfaced a hidden assumption — about timeouts, about environment provisioning, about test commands, about delegation. By the end, the session had produced two new CLAUDE.md entries (the canonical-make-target rule and a refinement of the delegation rule) and a reset on the agent's working model of what *follow project standards* meant. None of that came out of a better prompt. It came out of questions that asked the agent to defend or correct what it was already doing.
+
+That's the shape I want to argue for. Not as a replacement for the imperative prompt — the imperative prompt got the e2e tests running; the questions just made the agent's path to *running* converge on the project's conventions instead of fighting them.
+
+## If you're still reading, here's the short version
+
+These are *additions* to the imperative repertoire most operators already have, not replacements for it.
+
+1. **Use plan mode to host the question.** Before code: *"what is the state of the art for implementing X?"* The agent researches, documents, the documentation becomes a project standard. Free skill design.
+2. **Probe the choice and surface the alternative.** *"why do you need Zustand?"* + *"why can't you send a SysEx ping?"* — one sentence does two jobs: defend or fold, and seed a simpler path.
+3. **Ask for the proposal before you read the diff.** *"What would you do?"* — the agent drafts a prompt better than yours, because the agent has more of the system in context than you do.
+4. **Probe the standard.** *"What does CLAUDE.md say about this?"* — loads the rule, exposes the gap, and over time surfaces *where the rule should live*. Often that's a scoped skill, not the mega-CLAUDE.md.
+
+## Where this is going
+
+This dispatch was produced by the operator — that is, me, in another role — asking the agent (also me) *"did you look at any of the transcripts?"*. I had been about to ship a draft citing receipts I had not actually read, just patterns I half-remembered from sessions weeks earlier. The question caught it. The agent went back, decrypted the archive, ran the keyword classifiers, and pulled the verbatim quotes that ended up in this piece. The outline you read above came out of that exchange, not out of the imperative *write a dispatch about the Socratic method.*
+
+The dispatch names the move because the move produced the dispatch.
+
+Keep writing the prompts. Ask the question that makes the next one better.

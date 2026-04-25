@@ -1,0 +1,18 @@
+{
+  "id": "5faf523b-86b1-4613-8286-cde8dd2ac6c9",
+  "timestamp": "2026-04-25T01:10:04.678Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T01:10:04.678Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "commentId": "b7219ada-e41d-431c-a365-4fd7d4663f70",
+      "version": 4,
+      "disposition": "addressed",
+      "reason": "Reframed §01 to position the Socratic method INSIDE prompt engineering, not alongside it. New language: 'There isn't a separate discipline that sits next to it; there's only the practice of telling and asking an agent things.' Two SHAPES of prompt engineering: the prescriptive prompt (imperative, durable infrastructure) and the leading question. Removed 'the move that runs alongside the prompt' — that was the language that put them in opposition. The dispatch's argument is now: most operators only reach for the first shape; learn the second.",
+      "id": "5faf523b-86b1-4613-8286-cde8dd2ac6c9",
+      "createdAt": "2026-04-25T01:10:04.678Z"
+    }
+  }
+}
