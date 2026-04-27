@@ -14,7 +14,7 @@ async function strip(markdown: string): Promise<string> {
 }
 
 describe('remarkStripOutline', () => {
-  it('removes the ## Outline section through the next H2', async () => {
+  it('strips the outline through and including the first thematic break', async () => {
     const input = [
       '# Title',
       '',
@@ -23,7 +23,7 @@ describe('remarkStripOutline', () => {
       '- beat one',
       '- beat two',
       '',
-      '## 01 Real section',
+      '---',
       '',
       'Body prose here.',
       '',
@@ -32,25 +32,64 @@ describe('remarkStripOutline', () => {
     expect(output).not.toContain('Outline');
     expect(output).not.toContain('beat one');
     expect(output).toContain('# Title');
-    expect(output).toContain('## 01 Real section');
     expect(output).toContain('Body prose here.');
   });
 
-  it('removes the ## Outline section through end of file when no further H2', async () => {
+  it('preserves a subsequent thematic break used as a magazine divider in the body', async () => {
     const input = [
       '# Title',
       '',
-      'Opening paragraph.',
-      '',
       '## Outline',
       '',
-      'Draft shape notes.',
+      '- thesis beat',
+      '- hook beat',
+      '',
+      '<!-- drafting notes the operator left behind -->',
+      '',
+      '---',
+      '',
+      'Lede paragraph.',
+      '',
+      '---',
+      '',
+      'Section after a magazine divider.',
+      '',
+      '## What the archive says',
+      '',
+      'First body section.',
       '',
     ].join('\n');
     const output = await strip(input);
     expect(output).not.toContain('Outline');
-    expect(output).not.toContain('Draft shape notes');
-    expect(output).toContain('Opening paragraph.');
+    expect(output).not.toContain('thesis beat');
+    expect(output).not.toContain('drafting notes the operator');
+    expect(output).toContain('Lede paragraph.');
+    expect(output).toContain('Section after a magazine divider.');
+    expect(output).toContain('## What the archive says');
+    // The second `---` (magazine divider) survives.
+    expect(output).toContain('***');
+  });
+
+  it('strips an HTML comment between the outline heading and its bullet list', async () => {
+    const input = [
+      '# Title',
+      '',
+      '## Outline',
+      '',
+      '<!-- backfilled outline note -->',
+      '',
+      '- beat',
+      '',
+      '---',
+      '',
+      'Body lede paragraph.',
+      '',
+    ].join('\n');
+    const output = await strip(input);
+    expect(output).not.toContain('Outline');
+    expect(output).not.toContain('backfilled outline note');
+    expect(output).not.toContain('beat');
+    expect(output).toContain('Body lede paragraph.');
   });
 
   it('is a no-op when there is no ## Outline heading', async () => {
@@ -72,25 +111,23 @@ describe('remarkStripOutline', () => {
     expect(output).toContain('Prose.');
   });
 
-  it('stops stripping at the next H1 (not just H2)', async () => {
+  it('is a no-op when the outline has no terminating thematic break', async () => {
+    // Early-stage outline-only files have no `---` because no body
+    // has been drafted yet. The plugin leaves them alone; the
+    // outline still shows in dev (where draft posts are visible)
+    // and in prod the post is filtered out by state=draft anyway.
     const input = [
-      '# First title',
+      '# Title',
       '',
       '## Outline',
       '',
-      '- shape',
-      '',
-      '# Second title',
-      '',
-      '## Body',
-      '',
-      'Content.',
+      '- beat one',
+      '- beat two',
       '',
     ].join('\n');
     const output = await strip(input);
-    expect(output).not.toContain('shape');
-    expect(output).toContain('# Second title');
-    expect(output).toContain('## Body');
+    expect(output).toContain('## Outline');
+    expect(output).toContain('beat one');
   });
 
   it('ignores "Outline" text that is not at H2 depth', async () => {
@@ -118,6 +155,8 @@ describe('remarkStripOutline', () => {
       '## Outline — shape notes',
       '',
       '- beat',
+      '',
+      '---',
       '',
       '## Body',
       '',

@@ -1,0 +1,18 @@
+{
+  "id": "52f10a3c-b5cf-4812-82d7-8159033ebfe5",
+  "timestamp": "2026-04-27T19:16:05.629Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-27T19:16:05.629Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "ce2c2db8-cc0e-4da1-8ef1-4ae54a521972",
+      "commentId": "070421cb-c76d-422a-853b-1ba302f1a27e",
+      "version": 2,
+      "disposition": "addressed",
+      "reason": "Dropped the unsupported 'tutorials almost universally teach' claim; replaced with a structural label of the mindset (operator-as-requirements-doc / agent-as-implementer) so the move is named without a counted claim about teaching.",
+      "id": "52f10a3c-b5cf-4812-82d7-8159033ebfe5",
+      "createdAt": "2026-04-27T19:16:05.629Z"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "070421cb-c76d-422a-853b-1ba302f1a27e",
+  "timestamp": "2026-04-25T01:42:10.127Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T01:42:10.127Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "ce2c2db8-cc0e-4da1-8ef1-4ae54a521972",
+      "version": 1,
+      "range": {
+        "start": 3041,
+        "end": 3094
+      },
+      "text": "Do we have evidence for this \"most\" claim?",
+      "category": "other",
+      "anchor": "prompt-engineering tutorials almost universally teach",
+      "id": "070421cb-c76d-422a-853b-1ba302f1a27e",
+      "createdAt": "2026-04-25T01:42:10.127Z"
+    }
+  }
+}

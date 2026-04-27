@@ -29,10 +29,22 @@ export type BodyState = 'missing' | 'placeholder' | 'written';
 export const PLACEHOLDER_MARKER = '<!-- Write your post here -->';
 
 /**
- * Strip the `## Outline` section (heading + everything through the
- * next H2 or end-of-file) before we classify the body. The outline
- * is a legitimate authored artifact during Outlining; its presence
- * should not make the body look written.
+ * Strip the `## Outline` section before we classify the body. The
+ * outline is a legitimate authored artifact during Outlining; its
+ * presence should not make the body look written.
+ *
+ * Termination rule, in priority order:
+ *   1. The first `---` line (thematic break) after the heading —
+ *      the explicit convention used by the magazine voice.
+ *   2. The next `## ` heading.
+ *   3. End of file.
+ *
+ * Mirrors `remark-strip-outline.mjs` so this classifier and the
+ * public render agree on where the outline ends. The H2 / EOF
+ * fallbacks are deliberate: an early-Outlining-stage post may have
+ * an outline but no body separator yet, in which case we want to
+ * treat everything below `## Outline` as still-outlined and report
+ * 'placeholder' — not 'written'.
  *
  * Implemented line-wise (not by regex) because multiline + end-of-
  * string lookahead in JS regex has enough footguns to be worse
@@ -44,6 +56,10 @@ function stripOutlineSection(body: string): string {
   if (startIdx < 0) return body;
   let endIdx = lines.length;
   for (let i = startIdx + 1; i < lines.length; i++) {
+    if (/^---[ \t]*$/.test(lines[i])) {
+      endIdx = i + 1;
+      break;
+    }
     if (/^##[ \t]+/.test(lines[i])) {
       endIdx = i;
       break;

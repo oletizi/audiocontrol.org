@@ -1,0 +1,18 @@
+{
+  "id": "a861af54-4435-44a2-a59f-24b476376d62",
+  "timestamp": "2026-04-27T19:16:05.629Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-27T19:16:05.629Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "ce2c2db8-cc0e-4da1-8ef1-4ae54a521972",
+      "commentId": "3fc0318e-4483-4f75-a518-47eadb1017f9",
+      "version": 2,
+      "disposition": "addressed",
+      "reason": "Renamed first mention to 'the Claude Code session archive I keep' so the artifact is specific on first reference; the next paragraph still defines it fully (encrypted JSONL transcripts, 76 sessions). Section heading and later uses unchanged because the term is defined by then.",
+      "id": "a861af54-4435-44a2-a59f-24b476376d62",
+      "createdAt": "2026-04-27T19:16:05.629Z"
+    }
+  }
+}

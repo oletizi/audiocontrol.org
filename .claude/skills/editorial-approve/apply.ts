@@ -125,7 +125,9 @@ function applyLongform(
 
   // Sanity: the file should exist. If not, something went wrong
   // earlier in the pipeline (scaffold was removed, wrong slug, etc).
-  const blogFile = join(rootDir, 'src', 'sites', args.site, 'content', 'blog', `${args.slug}.md`);
+  // Post-Phase-18c, blog posts are directories with co-located assets;
+  // the markdown file is at <slug>/index.md.
+  const blogFile = join(rootDir, 'src', 'sites', args.site, 'content', 'blog', args.slug, 'index.md');
   if (!existsSync(blogFile)) {
     throw new Error(
       `Blog file missing at ${blogFile}.\n` +
