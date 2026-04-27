@@ -71,7 +71,10 @@ const formatDate = (iso: string): string => {
       ))}
     </ol>
 
-    <hr class="rule-double" />
+    <aside class="desk-tailpiece" aria-hidden="true">
+      <p class="tailpiece-mark">◆ ◆ ◆</p>
+      <p class="tailpiece-note">More dispatches in pre-press.</p>
+    </aside>
 
     <aside class="dispatch-card">
       <p class="dispatch-kicker">The dispatch</p>
@@ -227,9 +230,39 @@ const formatDate = (iso: string): string => {
     border: 1px solid hsl(var(--border));
   }
 
+  /* ---- Tailpiece (printer's mark closing the desk listing) ---- */
+  .desk-tailpiece {
+    text-align: center;
+    margin: 3.5rem 0 0 0;
+    padding: 0;
+  }
+
+  .tailpiece-mark {
+    /* Three diamonds spaced apart read as an editorial section break.
+     * The diamond is the site's brand mark; the trio + chartreuse +
+     * mono register make the role unambiguous. */
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.65em;
+    color: hsl(var(--primary));
+    margin: 0 0 1.1rem 0;
+    /* letter-spacing adds trailing space on the right side; offset for true centering */
+    padding-left: 0.65em;
+    line-height: 1;
+  }
+
+  .tailpiece-note {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
   /* ---- Dispatch card ---- */
   .dispatch-card {
-    padding: 2rem 0 0 0;
+    padding: 3rem 0 0 0;
   }
 
   .dispatch-kicker {
