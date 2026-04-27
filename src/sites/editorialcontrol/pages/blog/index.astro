@@ -14,7 +14,7 @@ const blogPosts = entries
   .sort((a, b) => {
     const dateA = new Date(a.frontmatter.datePublished);
     const dateB = new Date(b.frontmatter.datePublished);
-    return dateA.getTime() - dateB.getTime();
+    return dateB.getTime() - dateA.getTime();
   })
   .map((post, i) => ({
     number: `No. ${String(i + 1).padStart(2, '0')}`,

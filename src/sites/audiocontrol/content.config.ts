@@ -18,7 +18,7 @@ import { glob } from 'astro/loaders';
  */
 const blog = defineCollection({
   loader: glob({
-    pattern: '**/index.md',
+    pattern: '*/index.md',
     base: './src/sites/audiocontrol/content/blog',
     generateId: ({ entry }) => entry.replace(/\/index\.md$/, ''),
   }),

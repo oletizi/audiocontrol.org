@@ -1,0 +1,15 @@
+{
+  "id": "a749981a-6167-4360-b936-bc61a2ae42df",
+  "timestamp": "2026-04-27T19:18:50.223Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-27T19:18:50.223Z",
+    "annotation": {
+      "type": "approve",
+      "workflowId": "ce2c2db8-cc0e-4da1-8ef1-4ae54a521972",
+      "version": 2,
+      "id": "a749981a-6167-4360-b936-bc61a2ae42df",
+      "createdAt": "2026-04-27T19:18:50.223Z"
+    }
+  }
+}

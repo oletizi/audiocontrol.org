@@ -1,0 +1,18 @@
+{
+  "id": "8ee6f77e-ac57-4dc4-9258-f736adb6918b",
+  "timestamp": "2026-04-25T00:34:13.524Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:34:13.524Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "commentId": "bdac495e-e1ae-46bd-9a9d-9f4b15ab3aa4",
+      "version": 2,
+      "disposition": "addressed",
+      "reason": "Added the timeouts-research example as §03(b): operator asks 'what is the state of the art for implementing timeouts?' in plan mode → agent researches and documents → the documentation becomes a project standard. This is the productive Socratic-in-plan-mode pattern.",
+      "id": "8ee6f77e-ac57-4dc4-9258-f736adb6918b",
+      "createdAt": "2026-04-25T00:34:13.524Z"
+    }
+  }
+}

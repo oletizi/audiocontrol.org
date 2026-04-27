@@ -1,0 +1,22 @@
+{
+  "id": "5594a833-27c8-4d97-b0f1-0f500569594d",
+  "timestamp": "2026-04-25T00:58:11.964Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:58:11.964Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "version": 3,
+      "range": {
+        "start": 633,
+        "end": 677
+      },
+      "text": "This is a weak example. It's another example of a simple correction that could have been done imperatively. Can we find an example that actually opens up the solution space?",
+      "category": "other",
+      "anchor": "\"why did you push to netlify-deploy branch?\"",
+      "id": "5594a833-27c8-4d97-b0f1-0f500569594d",
+      "createdAt": "2026-04-25T00:58:11.964Z"
+    }
+  }
+}

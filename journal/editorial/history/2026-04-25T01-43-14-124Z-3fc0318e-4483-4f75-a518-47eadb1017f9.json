@@ -1,0 +1,22 @@
+{
+  "id": "3fc0318e-4483-4f75-a518-47eadb1017f9",
+  "timestamp": "2026-04-25T01:43:14.124Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T01:43:14.124Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "ce2c2db8-cc0e-4da1-8ef1-4ae54a521972",
+      "version": 1,
+      "range": {
+        "start": 3129,
+        "end": 3141
+      },
+      "text": "\"the claude code session archive\"",
+      "category": "other",
+      "anchor": " the archive",
+      "id": "3fc0318e-4483-4f75-a518-47eadb1017f9",
+      "createdAt": "2026-04-25T01:43:14.124Z"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "e14d1c56-c2e0-43b6-a389-757441edbcb6",
+  "timestamp": "2026-04-25T00:54:38.525Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:54:38.525Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "commentId": "6012fd37-00d4-4849-a06d-149ecaa2ae52",
+      "version": 3,
+      "disposition": "addressed",
+      "reason": "Reframed thesis opening with operator's construction. Filled <mechanism> with 'discipline' — engineering register matches 'prompt engineering' and avoids the redundancy of 'truth-finding method' (since 'Socratic method' is already in the sentence). Alternatives considered: practice (humble), technique (mechanical), dialogue (echoes title — flagged for next round if you'd prefer it). New opening sentence: 'The Socratic method is an ancient truth-finding discipline that can be a surprisingly effective addition to the prompt-engineering toolkit.' Rest of thesis paragraph preserved.",
+      "id": "e14d1c56-c2e0-43b6-a389-757441edbcb6",
+      "createdAt": "2026-04-25T00:54:38.525Z"
+    }
+  }
+}

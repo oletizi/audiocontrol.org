@@ -1,0 +1,18 @@
+{
+  "id": "9a4d4040-91a9-44cd-9d84-165ed58a5e48",
+  "timestamp": "2026-04-25T00:34:13.524Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:34:13.524Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "commentId": "bbf706df-c232-4707-b5cc-91aa315b8314",
+      "version": 2,
+      "disposition": "addressed",
+      "reason": "Removed §05 (calibration edge) entirely per operator: 'this is about the agent asking questions, not about the socratic method. It doesn't belong in the article.' Codex-quiescence example will go in the kirk-spock dispatch's scrapbook, where it fits the agent-pairing thesis.",
+      "id": "9a4d4040-91a9-44cd-9d84-165ed58a5e48",
+      "createdAt": "2026-04-25T00:34:13.524Z"
+    }
+  }
+}

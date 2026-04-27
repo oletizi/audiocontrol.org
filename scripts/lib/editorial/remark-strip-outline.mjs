@@ -10,14 +10,20 @@
  * `scripts/lib/editorial-review/render.ts` — so the outline stays
  * visible there for annotate-and-iterate work.
  *
- * Stripping shape: find the first H2 whose text starts with
- * "Outline", then remove that heading plus every subsequent top-
- * level node until the next H1 or H2 (non-inclusive) or the end
- * of the document. Matches the line-based stripper in
- * `scripts/lib/editorial/body-state.ts`; kept independent here
- * because mdast traversal beats regex on structured content.
+ * Stripping shape: find the H2 whose text starts with "Outline",
+ * then remove that heading plus everything up to and including the
+ * first thematic break (`---`) that follows. The `---` after the
+ * outline is the explicit terminator — a convention the magazine
+ * voice already uses as a section separator, so it costs nothing to
+ * load it with the additional meaning of "outline ends here." The
+ * operator may put any content inside the outline section (bullets,
+ * drafting-notes HTML comments, paragraphs explaining beats, etc.)
+ * without breaking the stripper.
  *
- * No-op when the document has no outline section.
+ * No-op when there is no `## Outline` heading, or when the heading
+ * exists but has no following thematic break — the latter only
+ * happens in early-stage outline-only files, which are draft state
+ * and filtered out of production by the content-collection query.
  */
 
 function hasOutlineHeading(node) {
@@ -33,14 +39,15 @@ export default function remarkStripOutline() {
     const start = children.findIndex(hasOutlineHeading);
     if (start < 0) return;
 
-    let end = children.length;
+    let terminator = -1;
     for (let i = start + 1; i < children.length; i++) {
-      const n = children[i];
-      if (n.type === 'heading' && n.depth <= 2) {
-        end = i;
+      if (children[i].type === 'thematicBreak') {
+        terminator = i;
         break;
       }
     }
-    children.splice(start, end - start);
+    if (terminator < 0) return;
+
+    children.splice(start, terminator - start + 1);
   };
 }

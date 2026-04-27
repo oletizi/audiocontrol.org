@@ -1,0 +1,18 @@
+{
+  "id": "07603fbe-7515-408c-86dc-526dc299c436",
+  "timestamp": "2026-04-25T01:10:04.678Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T01:10:04.678Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "commentId": "5594a833-27c8-4d97-b0f1-0f500569594d",
+      "version": 4,
+      "disposition": "addressed",
+      "reason": "Replaced the netlify-deploy-branch hook with the Zustand/SysEx receipt (2026-03-28_36d312ce). The new hook genuinely opens the solution space: the question 'why do you need Zustand?' is paired with 'why can't you send a SysEx ping?' — the first probes the choice, the second seeds the alternative. The imperative ('don't use Zustand') would close the same door but never open the SysEx one. Walks through what the imperative version would have lost — that's the demonstration the comment asked for.",
+      "id": "07603fbe-7515-408c-86dc-526dc299c436",
+      "createdAt": "2026-04-25T01:10:04.678Z"
+    }
+  }
+}

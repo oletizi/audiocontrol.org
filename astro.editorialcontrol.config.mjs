@@ -2,12 +2,16 @@
 import { defineConfig } from 'astro/config';
 
 import netlify from '@astrojs/netlify';
-
 import sitemap from '@astrojs/sitemap';
 
 import remarkStripOutline from './scripts/lib/editorial/remark-strip-outline.mjs';
 import remarkStripFirstH1 from './scripts/lib/editorial/remark-strip-first-h1.mjs';
 import remarkImageFigure from './scripts/lib/editorial/remark-image-figure.mjs';
+
+// Adapter is required at build time to package on-demand routes (the
+// dev-only API endpoints under /dev/*). Skipped in dev so the dev server
+// doesn't bootstrap Netlify Blobs sessions or other adapter machinery.
+const isDev = process.argv.includes('dev');
 
 // https://astro.build/config
 export default defineConfig({
@@ -16,7 +20,7 @@ export default defineConfig({
   publicDir: 'src/sites/editorialcontrol/public',
   outDir: 'dist/editorialcontrol',
   output: 'static',
-  adapter: netlify(),
+  ...(isDev ? {} : { adapter: netlify() }),
   integrations: [sitemap()],
   // Strip the operator-facing `## Outline` section from the public
   // render. The editorial-review surface has its own unified pipeline

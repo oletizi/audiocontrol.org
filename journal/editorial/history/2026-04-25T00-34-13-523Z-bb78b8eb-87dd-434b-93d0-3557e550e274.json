@@ -1,0 +1,18 @@
+{
+  "id": "bb78b8eb-87dd-434b-93d0-3557e550e274",
+  "timestamp": "2026-04-25T00:34:13.523Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:34:13.523Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "commentId": "f052d3a1-741e-46e7-af65-d2cfa82d79a1",
+      "version": 2,
+      "disposition": "addressed",
+      "reason": "Renamed §02 from 'failure modes' to 'tendencies that narrow the solution space.' Closing line of §02 says these are 'productive — they're how serious work gets done. The point isn't that they fail; it's that they leave money on the table.'",
+      "id": "bb78b8eb-87dd-434b-93d0-3557e550e274",
+      "createdAt": "2026-04-25T00:34:13.523Z"
+    }
+  }
+}

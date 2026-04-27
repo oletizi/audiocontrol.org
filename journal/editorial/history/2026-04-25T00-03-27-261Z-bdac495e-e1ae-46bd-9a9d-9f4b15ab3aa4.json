@@ -1,0 +1,22 @@
+{
+  "id": "bdac495e-e1ae-46bd-9a9d-9f4b15ab3aa4",
+  "timestamp": "2026-04-25T00:03:27.261Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:03:27.261Z",
+    "annotation": {
+      "type": "comment",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "version": 1,
+      "range": {
+        "start": 1707,
+        "end": 1738
+      },
+      "text": "This is interesting... I like the point, and I think it's correct. I'm not convinced the plan-mode thing is an example of this. Although, where the socratic method *is* good during plan mode is in prompting the agent to explore the solution space by asking it questions about the problem space. Like--\"what is the state of the art/best practices for implementing timeouts.\" (which is something I've had to ask claude code to look up and document as a project standard and remind it of many times (by way of asking the question, \"what do project standards say about implementing timeouts?\"))",
+      "category": "other",
+      "anchor": "information flows one direction",
+      "id": "bdac495e-e1ae-46bd-9a9d-9f4b15ab3aa4",
+      "createdAt": "2026-04-25T00:03:27.261Z"
+    }
+  }
+}

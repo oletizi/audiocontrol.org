@@ -1,0 +1,18 @@
+{
+  "id": "2cb1ad7b-cd46-4bb5-83b5-59b4fb530ef3",
+  "timestamp": "2026-04-25T00:34:13.525Z",
+  "entry": {
+    "kind": "annotation",
+    "at": "2026-04-25T00:34:13.525Z",
+    "annotation": {
+      "type": "address",
+      "workflowId": "9e4639e1-084e-43e3-a43a-72e7750d43a0",
+      "commentId": "6ca33af7-c509-44c1-9600-fbb97ff1b869",
+      "version": 2,
+      "disposition": "addressed",
+      "reason": "Dropped 'Replace the directive with a question. Delegate this → are you delegating?' from the short-version list. Replaced with stronger Socratic examples: plan-mode-hosts-the-question, probe-the-choice-with-an-alternative, and ask-for-the-proposal.",
+      "id": "2cb1ad7b-cd46-4bb5-83b5-59b4fb530ef3",
+      "createdAt": "2026-04-25T00:34:13.525Z"
+    }
+  }
+}

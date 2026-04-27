@@ -2,12 +2,16 @@
 import { defineConfig } from 'astro/config';
 
 import netlify from '@astrojs/netlify';
-
 import sitemap from '@astrojs/sitemap';
 
 import remarkStripOutline from './scripts/lib/editorial/remark-strip-outline.mjs';
 import remarkStripFirstH1 from './scripts/lib/editorial/remark-strip-first-h1.mjs';
 import remarkImageFigure from './scripts/lib/editorial/remark-image-figure.mjs';
+
+// Adapter is required at build time to package on-demand routes (the
+// dev-only API endpoints under /dev/*). Skipped in dev so the dev server
+// doesn't bootstrap Netlify Blobs sessions or other adapter machinery.
+const isDev = process.argv.includes('dev');
 
 // Last modified dates for sitemap
 const lastModified = {
@@ -33,7 +37,7 @@ export default defineConfig({
   publicDir: 'src/sites/audiocontrol/public',
   outDir: 'dist/audiocontrol',
   output: 'static',
-  adapter: netlify(),
+  ...(isDev ? {} : { adapter: netlify() }),
   integrations: [
     sitemap({
       customPages: [

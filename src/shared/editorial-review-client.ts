@@ -885,7 +885,11 @@ export function initEditorialReview(): void {
    * section (planning scaffold, not editorial copy). We strip the
    * same section here before rendering so the dev preview matches
    * the production render — no outline in the preview pane even
-   * when the caller passes the rejoined document. */
+   * when the caller passes the rejoined document.
+   *
+   * EXCEPTION: outline-stage workflows. The outline IS the article
+   * during outline review. Skip the strip so the preview shows what
+   * the operator is actually editing. */
   function schedulePreview(md: string): void {
     if (previewDebounce !== null) window.clearTimeout(previewDebounce);
     previewDebounce = window.setTimeout(async () => {
@@ -895,8 +899,11 @@ export function initEditorialReview(): void {
           import('./outline-split.ts'),
         ]);
         const parsed = parseDraftFrontmatter(md);
-        const bodyNoOutline = splitOutline(parsed.body).body;
-        const html = await renderMarkdownToHtml(bodyNoOutline);
+        const isOutlineKind = state.workflow.contentKind === 'outline';
+        const bodyForPreview = isOutlineKind
+          ? parsed.body
+          : splitOutline(parsed.body).body;
+        const html = await renderMarkdownToHtml(bodyForPreview);
         editPreviewHost.innerHTML = html;
       } catch (e) {
         editPreviewHost.innerHTML = `<p class="er-edit-preview-error">Preview failed: ${(e as Error).message}</p>`;
@@ -949,7 +956,15 @@ export function initEditorialReview(): void {
     const outlineMod = await import('./outline-split.ts');
     joinOutlineFn = outlineMod.joinOutline;
     const sourceMarkdown = state.currentVersion.markdown;
-    const split = outlineMod.splitOutline(sourceMarkdown);
+    // Outline-stage workflows: the outline IS the article. Don't
+    // stash anything — feed the full source to the editor so the
+    // operator can edit/annotate the outline directly. joinOutline
+    // with an empty stash is a no-op, so the save flow downstream
+    // is unchanged.
+    const isOutlineKind = state.workflow.contentKind === 'outline';
+    const split = isOutlineKind
+      ? { outline: '', body: sourceMarkdown, present: false, startLine: -1, endLine: -1 }
+      : outlineMod.splitOutline(sourceMarkdown);
     stashedOutline = split.outline;
 
     draftEdit.value = sourceMarkdown;

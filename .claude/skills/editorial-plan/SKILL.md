@@ -80,10 +80,20 @@ the `topics` keys in `docs/editorial-channels-<site>.json`.
 9. **Write the calendar**: `writeCalendar(process.cwd(), site, cal)`
    → `docs/editorial-calendar-<site>.md`.
 
-10. **Report**: Confirm the move and show the entry with its final
+10. **Seed the scrapbook** (blog entries only): call
+    `seedPlanScrapbook(process.cwd(), site, entry)` from
+    `scripts/lib/editorial/calendar.js` to drop a
+    `content/blog/<slug>/scrapbook/README.md` next to the article.
+    Idempotent — returns `null` if the file already exists. The
+    README carries an H1 + the article slug + skeleton sections for
+    receipts, notes, and references so there's an obvious home for
+    anything learned during planning that would otherwise be lost.
+
+11. **Report**: Confirm the move and show the entry with its final
     title, keyword count, topics, and any pairing notes pinned in
     the description. Mention the voice skill was consulted — that's
-    part of the record.
+    part of the record. If a scrapbook README was seeded, point the
+    operator at `/dev/scrapbook/<site>/<slug>`.
 
 ## Why consult the voice skill at planning time
 

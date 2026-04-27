@@ -126,18 +126,38 @@ The user provides the slug of a Planned entry:
 
 ### Common final steps
 
-8. **Update the calendar**: Move the entry from Planned to Drafting.
+8. **Update the calendar**: Move the entry from Planned to Drafting
+   if it isn't already there. Idempotent — entries advanced from
+   Outlining via `/editorial-outline-approve` are already in
+   Drafting and don't need a second flip.
    Write via `writeCalendar(process.cwd(), site, cal)` →
    `docs/editorial-calendar-<site>.md`.
 
-9. **Report**:
-   - For **blog**: file path scaffolded, and whether a v1 body
-     draft was written. If yes, recommend
-     `/editorial-draft-review --site <site> <slug>` to enqueue for
-     review. If no, mention the file is ready for the operator to
-     write into directly.
-   - For **youtube** / **tool**: confirm the stage flip and remind
-     about `contentUrl`.
+9. **Auto-enqueue the longform review workflow** (blog entries
+   only, when a v1 body draft was just written by the agent). This
+   is symmetric with `/editorial-outline`, which auto-creates an
+   outline workflow at scaffold time:
+
+   ```
+   npx tsx .claude/skills/editorial-draft-review/enqueue.ts --site <site> <slug>
+   ```
+
+   The helper is idempotent: if a non-terminal longform workflow
+   already exists for `(site, slug)`, the existing one is returned
+   and reported. Skip this step ONLY when the operator opted to
+   write the body by hand (body state remained `placeholder` after
+   step 7) — in that case the file isn't reviewable yet and the
+   operator will run `/editorial-draft-review` themselves once it
+   is.
+
+10. **Report**:
+    - For **blog**: file path, whether a v1 body draft was written,
+      and the review workflow URL printed by the enqueue helper. If
+      no draft was written, mention the file is ready for the
+      operator to write into directly and that they can run
+      `/editorial-draft-review` once the body is ready.
+    - For **youtube** / **tool**: confirm the stage flip and remind
+      about `contentUrl`.
 
 ## Why the voice skill is mandatory for drafting
 

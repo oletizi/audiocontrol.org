@@ -100,6 +100,17 @@ Phase 18 decouples internal identity (UUID) from the public handle (slug). Ships
 
 **Out of scope for Phase 18:** scanning other posts for `/blog/<old>/` link text and rewriting it (the 301 redirect covers inbound internal links), renaming the GitHub issue title on slug change, updating historical workflow slug fields (joins use entryId — slug in old journal entries is historical record), storing UUIDs anywhere other than the markdown calendar (no sidecar JSON; calendar stays single-source-of-truth).
 
+## In Scope (Phase 19 addition: article scrapbook — viewer, CRUD, and review-surface integration)
+
+Articles accumulate research, notes, references, and images before they ship — and today that work is scattered across `/tmp`, ad-hoc conversations, or the operator's head. Phase 18c's directory-based content collections opened the door to co-located pre-publish material: a `content/blog/<slug>/scrapbook/` subdirectory travels with the article through a slug rename and stays out of the public render (the content-collection glob was tightened from `**/index.md` to `*/index.md` in anticipation). Phase 19 makes that scrapbook actually usable — a web surface for viewing + CRUD on scrapbook items, plus contextual embedding inside the review/edit surfaces so notes and clippings sit next to the draft being written.
+
+Ships as two sub-phases.
+
+- **Phase 19a — Scrapbook viewer + CRUD (standalone dev surface).** New `/dev/scrapbook/<site>/<slug>` route reads the scrapbook dir, lists files, renders markdown inline, previews images. HTTP endpoints under `/api/dev/scrapbook/*` cover create / update / rename / delete / upload — markdown notes, images, data files. `/editorial-plan` seeds the scrapbook dir with a `README.md` template at plan time so every Planned article has a waiting scrapbook. Editorial-studio calendar rows gain a `scrapbook →` link + a small count badge. Look + feel designed via the `frontend-design` skill, in the press-check desk register already established elsewhere on the studio. No git operations — matches the `/dev/*` convention; operator stages scrapbook changes alongside article edits.
+- **Phase 19b — Scrapbook in context (review/edit integration).** The `/dev/editorial-review/<slug>` outline + draft surfaces gain a collapsible scrapbook rail showing the article's scrapbook items alongside the draft editor. A "quote into draft" affordance lets the operator insert a passage from a scrapbook note at the cursor. Cross-links from scrapbook items back to the review page. `frontend-design` continues driving the register across the two surfaces.
+
+**Out of scope for Phase 19:** versioning and history (git already handles that), search across scrapbooks from different articles, shared scrapbook items that inform multiple articles (each scrapbook stays per-article), any export / bundle of scrapbook material as part of the published site (scrapbooks are dev-only by construction — invisible to `getCollection('blog')` and never written into `dist/`).
+
 ## Deferred Scope
 
 - **Reddit auto-posting (Tier 3)**: programmatically submitting link posts to subreddits. Documented in detail in the [workplan](./workplan.md#deferred-tier-3--auto-posting-to-reddit). Deferred indefinitely — operational risk (bot bans, spam filters), per-subreddit rule complexity, and limited value-add over manual posting outweigh the automation benefit. A clipboard-helper alternative is proposed there if partial automation becomes interesting later.

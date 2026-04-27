@@ -82,7 +82,14 @@ if (fetched.status === 200 && isSuccessBody(fetched.body)) {
     // outline is available via the stowable drawer (same pattern
     // as the editor's outline drawer — reference material, not
     // part of the reading view).
-    const split = splitOutline(parsed.body);
+    //
+    // EXCEPTION: when this is an outline-stage workflow, the outline
+    // IS the article being reviewed. Skip the split so the operator
+    // gets the full annotation/edit surface against the outline
+    // itself — and leave the drawer empty.
+    const split = contentKind === 'outline'
+      ? { body: parsed.body, outline: '', present: false, startLine: -1, endLine: -1 }
+      : splitOutline(parsed.body);
     const bodyHtml = await render.renderMarkdownToHtml(split.body);
     // Inject the description (from frontmatter) as a dek paragraph
     // into #draft-body so it participates in the margin-note system

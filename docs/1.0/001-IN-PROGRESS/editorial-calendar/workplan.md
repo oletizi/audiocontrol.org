@@ -26,6 +26,8 @@
 | Phase 14: Studio as calendar command center + journal migration | oletizi/audiocontrol.org#102 |
 | Phase 18a: Stable UUID identity for calendar entries + distribution records | oletizi/audiocontrol.org#116 |
 | Phase 18b: /editorial-rename-slug skill + Netlify redirect management | oletizi/audiocontrol.org#117 |
+| Phase 19a: Scrapbook viewer + CRUD (standalone dev surface) | oletizi/audiocontrol.org#122 |
+| Phase 19b: Scrapbook in context (review/edit surface integration) | oletizi/audiocontrol.org#123 |
 
 ## Files Affected
 
@@ -1161,3 +1163,53 @@ File-based routing can't conditionally skip pages, so the gate requires content 
 - [x] Astro's image pipeline emits hashed `/_astro/...` URLs for all co-located assets on deploy preview.
 - [x] `rename-slug.ts` reduced to directory move + calendar + single URL redirect; no body path munging needed.
 - [x] Drift guard in the rename helper now checks the post directory (not a flat file).
+
+### Phase 19a: Scrapbook viewer + CRUD (standalone dev surface)
+
+**Deliverable:** Web UI over the per-article scrapbook directory (`content/blog/<slug>/scrapbook/`) — reads, renders, and lets the operator create, edit, rename, delete, and upload scrapbook items. Seeded at plan time. Surfaced from the editorial studio with a per-row link + count badge. UI designed via `frontend-design` skill.
+
+**Motivation:** Phase 18c's directory-based content collections made per-article co-located assets safe; the scrapbook convention we just landed (`content/blog/<slug>/scrapbook/` with the content-collection glob tightened to `*/index.md` so nothing in the scrapbook leaks to production) gives every article a private research drawer on disk. Without a UI, that drawer is reachable only through the filesystem and loses the "review + comment comfortably" property that motivated the editorial studio. Seeing the scrapbook as a reviewable surface is what turns the convention into a workflow.
+
+- [x] `src/sites/editorialcontrol/pages/dev/scrapbook/[site]/[slug].astro` (new) — read-and-render viewer. Lists files under `content/blog/<slug>/scrapbook/`; renders markdown inline via the existing remark/rehype pipeline; previews images; links other file types with type + size.
+- [x] `src/sites/editorialcontrol/pages/api/dev/scrapbook/*.ts` (new) — CRUD endpoints:
+  - `POST /api/dev/scrapbook/create` — new markdown note with optional frontmatter.
+  - `POST /api/dev/scrapbook/save` — update existing file (markdown only in v1).
+  - `POST /api/dev/scrapbook/rename` — rename file preserving contents.
+  - `POST /api/dev/scrapbook/delete` — delete a file.
+  - `POST /api/dev/scrapbook/upload` — multipart upload for images / data files.
+- [x] All endpoints 404 in prod (`if (import.meta.env.PROD) return new Response('Not Found', { status: 404 });` per `/dev/*` convention) — no production attack surface.
+- [x] `.claude/skills/editorial-plan/` seeds `content/blog/<slug>/scrapbook/README.md` at plan time using a template that names the article slug, the planning moment, and a skeleton for receipts/notes/references. Existing Planned articles without a scrapbook get one lazily on first visit.
+- [x] `src/sites/editorialcontrol/pages/dev/editorial-studio.astro` — per-row `scrapbook →` link on each calendar entry + a count badge (`scrapbook · N`) when the directory has content. Chip styling matches the existing `✓ feature image` chip register.
+- [x] `frontend-design` skill drives the viewer's visual treatment. Must sit in the press-check desk register (Fraunces italic titles, JetBrains Mono kickers, red-pencil accents) and respect the "no modal" rule from `editorial-review-client.ts:354` (inline affordances, not popups).
+- [x] Unit tests for the CRUD handlers (happy path + `..`-traversal rejection + site/slug validation).
+
+**Acceptance criteria — 19a:**
+
+- [x] `/dev/scrapbook/editorialcontrol/socratic-coding-agents` renders the existing scrapbook (README, patterns.json, mine-patterns.mjs, all-corrections.json) with correct file types and inline markdown rendering.
+- [x] Operator can create a new markdown note, rename it, edit its contents, and delete it — all through the viewer, with no CLI needed.
+- [x] Image upload works (drag-drop or file picker); uploaded images render inline alongside other scrapbook content.
+- [x] Studio calendar rows display a `scrapbook` link + count. Clicking jumps to the viewer for that site+slug.
+- [x] `/editorial-plan` on a fresh slug seeds `scrapbook/README.md` in the content-collection directory.
+- [x] Production build emits no `/dev/scrapbook/...` routes and no scrapbook content in `dist/<site>/`.
+- [x] All 19a endpoints return 404 in production.
+
+### Phase 19b: Scrapbook in context (review/edit surface integration)
+
+**Deliverable:** The `/dev/editorial-review/<slug>` outline + draft surfaces gain a collapsible scrapbook rail showing the article's scrapbook items side-by-side with the draft. A "quote into draft" affordance inserts a scrapbook passage at the cursor. Cross-links from scrapbook items back to the review page.
+
+**Motivation:** Phase 19a gives the scrapbook a home. Phase 19b puts the scrapbook next to the writing surface so the research actually informs the draft. The press-check desk's existing margin-rail affordances (annotations, disposition stamps) make this the natural place for scrapbook items to live while a draft is being shaped.
+
+- [ ] Scrapbook rail component on `/dev/editorial-review/<slug>` — collapsible, sits alongside the outline / draft editor. Items listed with the same file-type cues as the standalone viewer.
+- [ ] Expand / collapse individual scrapbook items inline; markdown renders without navigating away from the draft.
+- [ ] "Quote into draft" affordance — select a passage, click to insert at cursor in the editor. Quoting leaves a reverse-link marker in the scrapbook file (`<!-- quoted in draft at v<N> -->` or similar) so the origin of a block is traceable.
+- [ ] Cross-link shape — each scrapbook item can carry a `cites_versions` frontmatter list; rail shows which items have been quoted into which draft versions.
+- [ ] `frontend-design` continues driving UI. Stays inside the existing review-surface register; the scrapbook rail is a sibling to the margin-notes rail, not a replacement for it.
+- [ ] No modal. The rail is in-place; scrapbook item edits happen through the 19a CRUD endpoints.
+
+**Acceptance criteria — 19b:**
+
+- [ ] Opening `/dev/editorial-review/socratic-coding-agents` shows the scrapbook rail populated with the existing research.
+- [ ] Operator can expand a scrapbook item, quote a passage, and see it inserted into the draft at the cursor.
+- [ ] Reverse-link marker appears in the scrapbook file and points at the draft version that received the quote.
+- [ ] Scrapbook rail is collapsible and persists its collapsed state across page reloads (localStorage).
+- [ ] Production build excludes the scrapbook rail (it's part of a `/dev/*` page and already 404s in prod).

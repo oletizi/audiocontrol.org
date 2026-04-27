@@ -131,7 +131,9 @@ function loadDispositions(path: string): DispositionMap {
 }
 
 function blogFilePath(rootDir: string, site: Site, slug: string): string {
-  return join(rootDir, 'src', 'sites', site, 'content', 'blog', `${slug}.md`);
+  // Dir-based content collection (Phase 18c): file lives at
+  // <slug>/index.md so per-post assets co-locate.
+  return join(rootDir, 'src', 'sites', site, 'content', 'blog', slug, 'index.md');
 }
 
 function isSuccessBody(
