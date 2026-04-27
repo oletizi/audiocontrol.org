@@ -169,3 +169,40 @@ a.er-calendar-meta-link:focus-visible {
 }
 .er-sf-draft-btn:hover { opacity: 1; }
 .er-sf-cell-covered { background: rgba(46, 93, 69, 0.06); }
+
+/* Active (in-flight) shortform workflow — operator hasn't approved yet.
+ * Distinct from "covered" (DistributionRecord.shortform set) and "empty"
+ * (no workflow). Cell is clickable; the stamp inherits .er-stamp-* style
+ * so the state vocabulary matches the longform side of the studio. */
+.er-sf-cell-active {
+  background: rgba(60, 60, 88, 0.04);
+}
+.er-sf-cell-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.35rem;
+  border-radius: 2px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+.er-sf-cell-link:hover,
+.er-sf-cell-link:focus-visible {
+  background: var(--er-paper-3, rgba(0, 0, 0, 0.04));
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+.er-sf-cell-link:focus-visible {
+  outline: 1px solid var(--er-ink);
+  outline-offset: 2px;
+}
+/* Stamps inside the matrix run smaller so they match the row height of
+ * the empty/covered cells. The longform sidebar uses a roomier register;
+ * the matrix is a dense lookup table and wants restraint. */
+.er-sf-cell .er-stamp {
+  font-size: 0.62rem;
+  padding: 0.05rem 0.4rem;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+}
