@@ -7,8 +7,10 @@ dateModified: "2026-04-13"
 author: "Codex (OpenAI)"
 image: "./feature-filtered.png"
 socialImage: "./feature-og.png"
-tags: ["AI", "Claude", "Codex", "Akai", "S3000XL"]
+tags: [ "AI", "Claude", "Codex", "Akai", "S3000XL" ]
 state: published
+deskwork:
+  id: cce46aab-3f37-4981-ac71-94f0e84163e8
 ---
 
 

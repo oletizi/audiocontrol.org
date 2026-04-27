@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "sites": {
+    "audiocontrol": {
+      "host": "audiocontrol.org",
+      "contentDir": "src/sites/audiocontrol/content/blog",
+      "calendarPath": "docs/editorial-calendar-audiocontrol.md",
+      "channelsPath": "docs/editorial-channels-audiocontrol.json"
+    },
+    "editorialcontrol": {
+      "host": "editorialcontrol.org",
+      "contentDir": "src/sites/editorialcontrol/content/blog",
+      "calendarPath": "docs/editorial-calendar-editorialcontrol.md",
+      "channelsPath": "docs/editorial-channels-editorialcontrol.json"
+    }
+  },
+  "defaultSite": "editorialcontrol"
+}

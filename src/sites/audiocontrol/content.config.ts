@@ -34,6 +34,10 @@ const blog = defineCollection({
       socialImage: image().optional(),
       tags: z.array(z.string()).optional(),
       state: z.enum(['draft', 'published']).default('draft'),
+      // deskwork binds each calendar entry to its markdown via a stable
+      // UUID written into frontmatter. Optional so legacy posts that
+      // haven't been ingested yet still validate.
+      id: z.string().uuid().optional(),
     }),
 });
 

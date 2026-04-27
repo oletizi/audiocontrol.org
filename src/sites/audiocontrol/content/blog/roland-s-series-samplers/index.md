@@ -6,8 +6,10 @@ datePublished: "2025-02-15"
 dateModified: "2025-02-15"
 author: "Orion Letizi"
 image: "./s-330-feature.jpg"
-tags: ["Roland", "S-330", "S-550", "S-770"]
+tags: [ "Roland", "S-330", "S-550", "S-770" ]
 state: published
+deskwork:
+  id: 1e7a47a4-371d-4ff2-90da-607077af5497
 ---
 
 # The Roland S-Series Samplers: From 12-Bit Character to 16-Bit Clarity

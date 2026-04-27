@@ -5,10 +5,12 @@ date: "April 2026"
 datePublished: "2026-04-18"
 dateModified: "2026-04-24"
 author: "Orion Letizi"
-tags: ["AI agents", "Editorial", "Workflow", "Claude"]
+tags: [ "AI agents", "Editorial", "Workflow", "Claude" ]
 state: published
 image: "./feature-filtered.png"
 socialImage: "./feature-og.png"
+deskwork:
+  id: fc4716b3-344d-49a4-ab8b-b230a0f7b1fd
 ---
 
 # Your Content Workflow Is Already Obsolete. Your AI Agent Is the Replacement.
