@@ -2,10 +2,10 @@
 title: "Prompt Engineering by Dialogue: Add the Socratic Method to Your Toolkit"
 description: "It's tempting to tell your agent what to do based on your instincts for how achieve a particular goal. The prescriptive prompt may be the most obvious way to get your agent's attention, but I'm here to argue for adding leading questions to the prompt engineering toolbox."
 date: "April 2026"
-datePublished: "2026-04-24"
-dateModified: "2026-04-24"
+datePublished: "2026-04-27"
+dateModified: "2026-04-27"
 author: "Orion Letizi"
-state: draft
+state: published
 ---
 
 # Prompt Engineering by Dialogue: Add the Socratic Method to Your Toolkit
