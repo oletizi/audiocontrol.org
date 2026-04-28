@@ -153,6 +153,18 @@ Each editorial action is a separate Claude Code skill, composed like UNIX tools.
 | `/editorial-shortform-draft` | 11 | Draft a short-form post (Reddit/YouTube desc/LinkedIn/newsletter) for a published entry |
 | `/editorial-review-report` | 12 | Aggregate annotation categories across approved drafts; surface voice-drift signals |
 
+## In Scope (Phase 20 addition: deskwork migration + mothball)
+
+The in-house editorial pipeline matured into a workflow-shape that's been productized as the [deskwork plugin](https://github.com/audiocontrol-org/deskwork) (`@deskwork/deskwork` + `@deskwork/deskwork-studio`), packaged for distribution outside this repo. Phase 20 transitions this project onto the deskwork plugin and decommissions the in-house equivalents. Calendars at `docs/editorial-calendar-{audiocontrol,editorialcontrol}.md` remain the source of truth and are read/written by both pipelines during the transition.
+
+- **Phase 20a — Adopt deskwork side-by-side.** Install `deskwork@deskwork` + `deskwork-studio@deskwork` plugins, patch the host content schemas to accept the `deskwork` namespace block, run `deskwork doctor --fix=missing-frontmatter-id` to bind existing posts to their calendar UUIDs, drive new content through deskwork. The in-house pipeline stays running for features deskwork doesn't yet cover.
+- **Phase 20b — Close the platform-coverage gap.** Deskwork is content-pipeline-only by design — it doesn't reach external platforms (Reddit API, GA4, Search Console). The features that DO (`/editorial-reddit-sync`, `/editorial-reddit-opportunities`, `/editorial-cross-link-review`, `/editorial-performance`, `/editorial-suggest`, `/editorial-social-review`) need a future home. Decision required: upstream into deskwork, in-repo plugin layered on deskwork's data, or sibling plugin. Default proposal: in-repo plugin, since the features are project-shape-specific and would expand deskwork's scope.
+- **Phase 20c — Decommission the in-house pipeline.** Delete the in-house `.claude/skills/editorial-*` skills, the dev-only Astro pages (`pages/dev/editorial-{review,review-shortform,studio,help,scrapbook}/`), the API endpoints (`pages/api/dev/editorial-review/*`), the shared client + editor + CSS modules (`src/shared/editorial-review-*`), the TypeScript libraries (`scripts/lib/editorial/`, `scripts/lib/editorial-review/`), and the in-house workflow journal (`journal/editorial/`). Public-build remark plugins and the calendar markdown files stay.
+
+**Out of scope for Phase 20:** the feature-image studio (`pages/dev/feature-image-*`, `pages/dev/studio/`) — feature-image generation is a separate concern and not absorbed by deskwork. Voice skills (`audiocontrol-voice`, `editorialcontrol-voice`) — content-quality skills used by both pipelines; no migration needed.
+
+Tracking: oletizi/audiocontrol.org#126 captures the parity audit, dual-pipeline holding pattern, and the per-phase decommission checklist.
+
 ### Calendar Format
 
 Structured markdown file with tables per stage. Each entry includes: title, slug, target keywords, source (manual or analytics-suggested), status, publish date, performance notes. Format is both human-readable and machine-parseable.
