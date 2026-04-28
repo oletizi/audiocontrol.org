@@ -1,9 +1,9 @@
 # Editorial Calendar
 
-**Status:** Phases 1–18c Complete + Phase 19a shipped (PR #124 merged) + Phase 19b planned + Phase 20 in flight (deskwork plugin adopted; mothball plan tracked at #126)
+**Status:** Phases 1–19a Complete (PR #124 merged) + Phase 19b planned + Phase 20a mostly complete on branch (PR #127 in review) + Phase 20b/c planned (mothball tracked at #126)
 **Feature Branch:** `feature/editorial-calendar`
 **GitHub Issue:** oletizi/audiocontrol.org#29 (parent)
-**Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7), #89 (content edits), #98 (Phases 8-13 editorial-review extension), #101 (editorial-review redesign), #104 (Phase 14 — studio as command center + journal migration), #106 (Phase 15 — UI fixes, dblclick-edit, manual, multi-site consolidation), #115 (feature-image studio moves to editorialcontrol), #118 (Phase 18a — stable UUID identity), #119 (Phases 18b+18c — rename-slug skill + co-located content assets), #120 (editorialcontrol homepage polish — editor email, recent dispatches listing, marginalia pattern, text-wrap orphan fix), #121 (strip body's leading H1 from blog render)
+**Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7), #89 (content edits), #98 (Phases 8-13 editorial-review extension), #101 (editorial-review redesign), #104 (Phase 14 — studio as command center + journal migration), #106 (Phase 15 — UI fixes, dblclick-edit, manual, multi-site consolidation), #115 (feature-image studio moves to editorialcontrol), #118 (Phase 18a — stable UUID identity), #119 (Phases 18b+18c — rename-slug skill + co-located content assets), #120 (editorialcontrol homepage polish — editor email, recent dispatches listing, marginalia pattern, text-wrap orphan fix), #121 (strip body's leading H1 from blog render), #124 (Phase 19a — scrapbook viewer + outline-stripper `---` terminator + Socratic dispatch publish), #125 (desk page tailpiece replaces floating rule-double)
 
 ## Overview
 
@@ -37,9 +37,9 @@ Phases 8-12 extend the feature with `editorial-review` — an analog of the feat
 | 18a | Stable UUID identity for calendar entries + distribution records | Complete (PR #118 merged) |
 | 18b | `/editorial-rename-slug` skill + studio rename affordance | Complete (PR #119 merged) |
 | 18c | Directory-based content collections with co-located assets | Complete (PR #119 merged) |
-| 19a | Scrapbook viewer + CRUD (standalone dev surface) | In Review — PR #124 (#122) |
+| 19a | Scrapbook viewer + CRUD (standalone dev surface) | Complete (PR #124 merged) |
 | 19b | Scrapbook in context (review/edit surface integration) | Planned (#123) — depends on 19a |
-| 20a | Adopt deskwork side-by-side with the in-house pipeline | In Flight (#126) |
+| 20a | Adopt deskwork side-by-side with the in-house pipeline | Mostly Complete on branch — PR #127 in review (#126) |
 | 20b | Close platform-coverage gap (Reddit / analytics / cross-links / suggest) | Planned (#126) — depends on 20a |
 | 20c | Decommission in-house pipeline | Planned (#126) — depends on 20a + 20b |
 
