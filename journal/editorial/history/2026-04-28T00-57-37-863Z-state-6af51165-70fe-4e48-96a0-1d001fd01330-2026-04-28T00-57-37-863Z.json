@@ -1,0 +1,11 @@
+{
+  "id": "state-6af51165-70fe-4e48-96a0-1d001fd01330-2026-04-28T00-57-37-863Z",
+  "timestamp": "2026-04-28T00:57:37.863Z",
+  "entry": {
+    "kind": "workflow-state",
+    "at": "2026-04-28T00:57:37.863Z",
+    "workflowId": "6af51165-70fe-4e48-96a0-1d001fd01330",
+    "from": "open",
+    "to": "cancelled"
+  }
+}
