@@ -6,6 +6,8 @@ datePublished: "2026-04-21"
 dateModified: "2026-04-21"
 author: "Orion Letizi"
 state: draft
+deskwork:
+  id: be702116-5a0b-4cf9-b6c9-737c94f0e7ee
 ---
 
 # You Don't Need a Better Prompt. You Need Selection Pressure.

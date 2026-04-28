@@ -5,10 +5,12 @@ date: "April 2026"
 datePublished: "2026-04-18"
 dateModified: "2026-04-20"
 author: "Orion Letizi"
-tags: ["AI", "Automation", "Design", "Workflow"]
+tags: [ "AI", "Automation", "Design", "Workflow" ]
 image: "./feature-filtered.png"
 socialImage: "./feature-og.png"
 state: published
+deskwork:
+  id: b3d50392-6312-4046-8b9e-6ac2570f8778
 ---
 
 # Your Brand Survives the First Generation. Does It Survive the Hundredth?

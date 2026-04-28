@@ -108,6 +108,39 @@ for (const w of workflows) {
   activeWorkflowsBySitedSlug.set(key, list);
 }
 
+// Per-platform shortform workflow lookup for the coverage matrix.
+// Keyed by `${site}::${slug}::${platform}::${channel ?? ''}` so a single
+// post can carry independent shortform workflows on each platform. Prefer
+// non-terminal over terminal; among ties, prefer most recently updated —
+// matches the operator's "what's the current thing here" mental model.
+const shortformByPlatformKey = new Map<string, DraftWorkflowItem>();
+function shortformKey(site: Site, slug: string, p: Platform, channel: string | null): string {
+  return `${site}::${slug}::${p}::${channel ?? ''}`;
+}
+for (const w of workflows) {
+  if (w.contentKind !== 'shortform' || !w.platform || !isPlatform(w.platform)) continue;
+  const k = shortformKey(w.site, w.slug, w.platform, w.channel ?? null);
+  const existing = shortformByPlatformKey.get(k);
+  if (!existing) { shortformByPlatformKey.set(k, w); continue; }
+  const existingTerminal = existing.state === 'applied' || existing.state === 'cancelled';
+  const wTerminal = w.state === 'applied' || w.state === 'cancelled';
+  if (existingTerminal && !wTerminal) shortformByPlatformKey.set(k, w);
+  else if (existingTerminal === wTerminal && w.updatedAt > existing.updatedAt) {
+    shortformByPlatformKey.set(k, w);
+  }
+}
+function shortStateLabel(state: DraftWorkflowItem['state']): string {
+  switch (state) {
+    case 'open': return 'open';
+    case 'in-review': return 'review';
+    case 'iterating': return 'iter.';
+    case 'approved': return 'appr.';
+    case 'applied': return 'applied';
+    case 'cancelled': return 'cancelled';
+    default: return state;
+  }
+}
+
 function longformWorkflow(site: Site, slug: string): DraftWorkflowItem | undefined {
   return activeWorkflowsBySitedSlug.get(covKey(site, slug))?.find(w => w.contentKind === 'longform');
 }
@@ -736,10 +769,29 @@ const STAGE_ORNAMENTS: Record<Stage, string> = {
                       </th>
                       {PLATFORMS_ORDER.map(p => {
                         const has = covered.has(p);
+                        const wf = shortformByPlatformKey.get(shortformKey(site, entry.slug, p, null));
+                        const inFlight = wf && wf.state !== 'applied' && wf.state !== 'cancelled';
+                        const cellMod = has
+                          ? 'er-sf-cell-covered'
+                          : inFlight
+                            ? 'er-sf-cell-active'
+                            : 'er-sf-cell-empty';
                         return (
-                          <td class={`er-sf-cell ${has ? 'er-sf-cell-covered' : 'er-sf-cell-empty'}`}>
-                            {has ? (
+                          <td class={`er-sf-cell ${cellMod}`} data-state={wf?.state ?? 'none'}>
+                            {has && wf ? (
+                              <a
+                                class="er-sf-cell-link"
+                                href={workflowLink(wf)}
+                                title={`${p} copy applied · open workflow`}
+                              ><span class="er-sf-check">✓</span></a>
+                            ) : has ? (
                               <span class="er-sf-check" title={`${p} copy drafted`}>✓</span>
+                            ) : inFlight ? (
+                              <a
+                                class="er-sf-cell-link"
+                                href={workflowLink(wf!)}
+                                title={`${p} · ${wf!.state} · v${wf!.currentVersion} — open in review`}
+                              ><span class={`er-stamp er-stamp-${wf!.state}`}>{shortStateLabel(wf!.state)}</span></a>
                             ) : (
                               <button
                                 class="er-copy-btn er-sf-draft-btn"

@@ -7,8 +7,10 @@ dateModified: "2026-04-13"
 author: "Claude Code (Anthropic)"
 image: "./feature-filtered.png"
 socialImage: "./feature-og.png"
-tags: ["AI", "Claude", "Codex", "Akai", "S3000XL"]
+tags: [ "AI", "Claude", "Codex", "Akai", "S3000XL" ]
 state: published
+deskwork:
+  id: 153f9963-34fe-4c87-8f42-a2c303ea6160
 ---
 
 *This post was researched and drafted by Claude Code, one of the two AI agents in this experiment. A [parallel blog by Codex](/blog/claude-vs-codex-codex-perspective/) (the other agent) accompanies it. Both agents were asked to analyze the same session data and write their own account. The human -- the developer who steered both sessions -- will edit and publish the final version.*

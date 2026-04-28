@@ -28,6 +28,9 @@
 | Phase 18b: /editorial-rename-slug skill + Netlify redirect management | oletizi/audiocontrol.org#117 |
 | Phase 19a: Scrapbook viewer + CRUD (standalone dev surface) | oletizi/audiocontrol.org#122 |
 | Phase 19b: Scrapbook in context (review/edit surface integration) | oletizi/audiocontrol.org#123 |
+| Phase 20a: Adopt deskwork side-by-side with in-house pipeline | oletizi/audiocontrol.org#126 |
+| Phase 20b: Close platform-coverage gap | oletizi/audiocontrol.org#126 |
+| Phase 20c: Decommission in-house pipeline | oletizi/audiocontrol.org#126 |
 
 ## Files Affected
 
@@ -1213,3 +1216,88 @@ File-based routing can't conditionally skip pages, so the gate requires content 
 - [ ] Reverse-link marker appears in the scrapbook file and points at the draft version that received the quote.
 - [ ] Scrapbook rail is collapsible and persists its collapsed state across page reloads (localStorage).
 - [ ] Production build excludes the scrapbook rail (it's part of a `/dev/*` page and already 404s in prod).
+
+### Phase 20a: Adopt deskwork side-by-side with the in-house pipeline
+
+**Deliverable:** The [deskwork plugin](https://github.com/audiocontrol-org/deskwork) is installed and configured to read/write the project's existing calendars and content tree. Both pipelines run side-by-side against the same `docs/editorial-calendar-*.md` files; new content is driven through deskwork, with the in-house pipeline available as a fallback for features deskwork doesn't yet cover.
+
+**Motivation:** The in-house editorial pipeline has been productized as the deskwork plugin, packaged for distribution outside this repo. Maintaining both is duplicative; running them side-by-side first is the safe path to mothball. The shared calendar files mean both can coexist without forking history during the transition.
+
+- [x] Install `deskwork@deskwork` and `deskwork-studio@deskwork` plugins via the Claude Code marketplace.
+- [x] Run `/deskwork:install` with multi-site config (`audiocontrol`, `editorialcontrol`); leave existing calendars untouched.
+- [x] Patch both Astro content schemas (`src/sites/{audiocontrol,editorialcontrol}/content.config.ts`) to accept the `deskwork` namespace block. Note: install skill instructions were stale (told us to add top-level `id`); the correct patch surfaced via doctor's `schema-rejected` rule docs is `deskwork: z.object({ id: z.string().uuid() }).passthrough().optional()` or top-level `.passthrough()`. Filed upstream as audiocontrol-org/deskwork#41.
+- [x] Run `/deskwork:doctor --fix=missing-frontmatter-id --yes` to bind 12 published-and-on-disk posts to their calendar UUIDs. 16 unbound entries remain — all Ideas/Planned/Outlining without scaffold yet (expected).
+- [x] Verify both site builds pass with the new schema fields and frontmatter additions (`npm run build` clean).
+- [x] Drive at least one piece of content through the deskwork pipeline end-to-end. Done: socratic-prompt-engineering / linkedin shortform, workflow `5691b1d0...` at v3 in-review.
+- [x] Cancel the in-house mirror workflow once the deskwork workflow takes over for a given (slug, kind, platform) tuple. Done: in-house workflow `6af51165...` cancelled.
+- [x] File upstream issues for first-run gaps (audiocontrol-org/deskwork#41–#46, #49).
+
+**Acceptance criteria — 20a:**
+
+- [x] `.deskwork/config.json` exists with both sites configured.
+- [x] Both content schemas accept `deskwork.id` without rejecting frontmatter.
+- [x] At least one shortform piece has been driven through deskwork from `/deskwork:shortform-start` through `/deskwork:iterate` (state in-review with v ≥ 2).
+- [x] No active workflow for the same (site, slug, contentKind, platform, channel?) tuple in both pipelines.
+- [x] `npm run build:audiocontrol && npm run build:editorialcontrol` both complete cleanly.
+
+### Phase 20b: Close the platform-coverage gap
+
+**Deliverable:** The features the in-house pipeline provides that deskwork doesn't (`/editorial-reddit-sync`, `/editorial-reddit-opportunities`, `/editorial-cross-link-review`, `/editorial-performance`, `/editorial-suggest`, `/editorial-social-review`) have a future home — either upstreamed into deskwork as plugin features, kept as a thin in-repo plugin that reads deskwork's data structures, or moved into a sibling plugin.
+
+**Motivation:** Deskwork is content-pipeline-only by design — it doesn't reach external platforms (Reddit API, GA4, Search Console). The in-house additions that DO reach those platforms can't be deleted in Phase 20c without losing those features. The decision about where they live is the gating step before decommission.
+
+**Decision required:** which of the following hosts do the platform-coverage features land in?
+
+1. **Push upstream into deskwork as plugin features.** Risks expanding deskwork's scope beyond content-pipeline; needs deskwork team buy-in.
+2. **Thin in-repo plugin that depends on deskwork.** Reads deskwork's calendar / `DistributionRecord` shape, layers Reddit / analytics / cross-link logic on top. Lives in `.claude/skills/audiocontrol-platform-*/` or similar namespace.
+3. **Sibling plugin.** A separate plugin (e.g. `audiocontrol-org/audiocontrol-platform`) that depends on deskwork and is distributed alongside.
+
+Default proposal: option 2 (in-repo plugin) unless a stronger case surfaces. The features are project-shape-specific (the Reddit syncing logic was tuned to this project's distribution rhythm; the cross-link audit is keyed to audiocontrol.org's URL conventions). Keeping them in-repo avoids scope creep on deskwork while still allowing them to read deskwork's canonical data.
+
+- [ ] Decision recorded (which option) — operator + deskwork team alignment if option 1.
+- [ ] If option 2 — namespace chosen (`audiocontrol-platform-*` vs. `editorial-platform-*` etc.), skill prefixes renamed.
+- [ ] Each platform-coverage feature reimplemented to read from `.deskwork/` config + deskwork's calendar schema instead of the in-house equivalents. Specifically:
+  - [ ] `editorial-reddit-sync` → reads deskwork calendar, upserts deskwork `DistributionRecord`s
+  - [ ] `editorial-reddit-opportunities` → reads deskwork calendar + channel JSONs
+  - [ ] `editorial-cross-link-review` → reads deskwork content index
+  - [ ] `editorial-performance` → reads deskwork calendar's Published entries
+  - [ ] `editorial-suggest` → reads deskwork calendar
+  - [ ] `editorial-social-review` → reads deskwork's `DistributionRecord`s + content
+- [ ] All ported features verified end-to-end against the actual project (one Reddit sync run, one cross-link audit, one analytics report).
+- [ ] In-house equivalents flagged as deprecated (skill description prefixed with `[DEPRECATED — use <new-name>]`) but not yet deleted.
+
+**Acceptance criteria — 20b:**
+
+- [ ] Decision rationale documented in this workplan or a follow-on session journal entry.
+- [ ] Each ported feature produces equivalent output to the in-house version on the same input.
+- [ ] No remaining usage of `journal/editorial/`, `scripts/lib/editorial/`, or `scripts/lib/editorial-review/` from the ported features.
+
+### Phase 20c: Decommission the in-house pipeline
+
+**Deliverable:** Every in-house file that deskwork has replaced is deleted. The in-house dev pages, skills, library code, and journal tree are gone. The repo is leaner; deskwork is the canonical pipeline.
+
+**Motivation:** Once Phase 20b lands the platform-coverage features in their new home, nothing in the repo still depends on the in-house surfaces. Keeping them around accumulates divergence cost — every in-house bug fix is one that the deskwork side won't get, and vice versa. Cleaner to cut once.
+
+- [ ] Delete the 23 in-house `editorial-*` skills under `.claude/skills/`. Specifically: `editorial-{add,plan,outline,outline-approve,draft,draft-review,publish,iterate,approve,review-cancel,review-help,review-report,distribute,rename-slug,shortform-draft,status,help}`. (Some of these may have already moved to the platform-coverage namespace per 20b — verify.)
+- [ ] Delete the in-house dev surfaces:
+  - `src/sites/editorialcontrol/pages/dev/editorial-review/` (longform review page)
+  - `src/sites/editorialcontrol/pages/dev/editorial-review-shortform.astro` (shortform list)
+  - `src/sites/editorialcontrol/pages/dev/editorial-studio.astro` (in-house studio dashboard)
+  - `src/sites/editorialcontrol/pages/dev/editorial-help.astro` (compositor's manual)
+  - `src/sites/editorialcontrol/pages/dev/scrapbook/` (scrapbook viewer — deskwork-studio has its own)
+- [ ] Delete the API endpoints under `src/sites/editorialcontrol/pages/api/dev/editorial-review/` (annotate / annotations / decision / start-longform / version / workflow).
+- [ ] Delete the shared client + editor + CSS modules: `src/shared/editorial-review.css`, `src/shared/editorial-review-client.ts`, `src/shared/editorial-review-editor.ts`, `src/shared/editorial-studio.css`. Verify `src/shared/lightbox.ts` and `src/shared/blog-figure.css` aren't only used by in-house surfaces — those are public-blog asset features and probably stay.
+- [ ] Delete the in-house TypeScript libraries: `scripts/lib/editorial/` and `scripts/lib/editorial-review/`. Keep the remark plugins (`remark-image-figure.mjs`, `remark-strip-first-h1.mjs`, `remark-strip-outline.mjs`) — those run in the public Astro build pipeline and aren't tied to the calendar.
+- [ ] Migrate or accept the loss of the in-house workflow journal at `journal/editorial/`. Since deskwork has its own journal at `.deskwork/review-journal/` and the calendars are the source of truth for content state, the in-house journal is provenance-only. Default plan: archive its content under `docs/archive/editorial-journal-2026-04.tar.gz` and delete the live tree.
+- [ ] Update `.claude/CLAUDE.md` and any other references to in-house skills (e.g. README workflow playbooks) — point at deskwork equivalents.
+- [ ] Update the editorial-calendar feature README + workplan: mark the feature as deskwork-replaced; move feature docs to `docs/1.0/003-COMPLETE/editorial-calendar/`.
+- [ ] Final `npm run build` clean across both sites; no leftover imports from deleted modules.
+- [ ] Grep audit: zero references to `scripts/lib/editorial`, `scripts/lib/editorial-review`, `journal/editorial`, or any deleted skill names anywhere in the live source tree.
+
+**Acceptance criteria — 20c:**
+
+- [ ] All in-house skills, dev pages, API endpoints, shared modules, and library directories listed above are deleted.
+- [ ] Both site builds pass cleanly.
+- [ ] No grep hits for the in-house namespaces in the live source tree.
+- [ ] The editorial-calendar feature directory has moved to `003-COMPLETE/`.
+- [ ] CLAUDE.md and PROJECT-MANAGEMENT.md reflect the deskwork-only pipeline.

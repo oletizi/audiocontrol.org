@@ -5,8 +5,10 @@ date: "February 2026"
 datePublished: "2026-02-09"
 dateModified: "2026-02-09"
 author: "Orion Letizi"
-tags: ["Roland", "S-330", "Release"]
+tags: [ "Roland", "S-330", "Release" ]
 state: published
+deskwork:
+  id: 3cf826e6-f915-4747-bfdc-3cab146f1652
 ---
 
 # What's New in the S-330 Web Editor

@@ -7,8 +7,10 @@ dateModified: "2026-04-17"
 author: "Orion Letizi"
 image: "./feature-filtered.png"
 socialImage: "./feature-og.png"
-tags: ["AI", "Claude", "Workflow", "Process"]
+tags: [ "AI", "Claude", "Workflow", "Process" ]
 state: published
+deskwork:
+  id: 4e6499b5-77a9-4329-a112-66b954cedce2
 ---
 # Instructions Are Not Enough: What 2,400 Sessions Taught Us About AI Agent Workflow
 

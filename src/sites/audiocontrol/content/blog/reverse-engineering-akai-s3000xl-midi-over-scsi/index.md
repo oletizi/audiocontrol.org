@@ -7,8 +7,10 @@ dateModified: "2026-04-07"
 author: "Orion Letizi"
 image: "./feature-filtered.png"
 socialImage: "./feature-og.png"
-tags: ["Akai", "S3000XL", "SCSI", "Reverse Engineering"]
+tags: [ "Akai", "S3000XL", "SCSI", "Reverse Engineering" ]
 state: published
+deskwork:
+  id: 4060dcc1-3726-4ace-98dc-70c21c86e897
 ---
 
 # Reverse-Engineering the Akai S3000XL MIDI-over-SCSI Protocol

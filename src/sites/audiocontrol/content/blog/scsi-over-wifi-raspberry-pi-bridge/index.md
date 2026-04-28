@@ -6,9 +6,11 @@ datePublished: "2026-04-07"
 dateModified: "2026-04-24"
 author: "Orion Letizi"
 image: "./feature-filtered.png"
-tags: ["SCSI", "Raspberry Pi", "Open Source", "PiSCSI"]
+tags: [ "SCSI", "Raspberry Pi", "Open Source", "PiSCSI" ]
 state: published
 socialImage: "./feature-og.png"
+deskwork:
+  id: 1557a004-2477-4bea-9bdc-3727475d52c4
 ---
 
 # SCSI Over WiFi: Talking to Vintage Hardware from Your Phone

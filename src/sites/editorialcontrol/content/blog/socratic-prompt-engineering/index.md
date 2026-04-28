@@ -6,6 +6,8 @@ datePublished: "2026-04-27"
 dateModified: "2026-04-27"
 author: "Orion Letizi"
 state: published
+deskwork:
+  id: c19c1dfc-90c3-4196-ad1e-58349be77688
 ---
 
 # Prompt Engineering by Dialogue: Add the Socratic Method to Your Toolkit
