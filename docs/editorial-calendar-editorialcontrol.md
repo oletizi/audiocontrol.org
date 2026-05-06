@@ -21,7 +21,9 @@
 
 ## Outlining
 
-*No entries.*
+| UUID | Slug | Title | Description | Keywords | Topics | Source |
+|------|------|------|------|------|------|------|
+| c9e53780-cf12-4623-a624-bc284d5c5afd | dogfooding-deskwork | Dogfooding deskwork | Dogfooding the deskwork plugin from inside its own development. Recursive layers: (1) deskwork-plugin runs editorial-pipeline patterns on itself (DEVELOPMENT-NOTES.md journal, /feature-ship, calendar-style phases, sub-agent dispatch); (2) the plugin tests itself against a vendored .audiocontrol.org sandbox; (3) Phase 20 plans a true deskwork content sandbox where the plugin manages content about itself; (4) the audiocontrol.org-editorial-calendar (where this entry lives) is being eaten by its own offspring — the plugin extracted from this repo is now displacing the in-house pipeline here. Headline thesis is the project's own agent-discipline rule: Use the deskwork plugin only through the publicly-advertised distribution channel — operator quote: "No fair using it in ways that other, non-privileged users can't." If the public path is broken, the only valid response is to fix the public path; pushing is the final mile of fixed. Sibling rule: Packaging is UX — never paper over install bugs. The agent-discipline rule itself is dogfood output — forged by repeated correction during dogfooding sessions (see deskwork issue 49: bundled marketplace path was fine; workspace-linked dev path crashed; the fix was to fix the public path, not work around it). Title candidates (pick at /deskwork:plan time): 1) "No fair: dogfooding deskwork without privileged shortcuts" (operator quote leads); 2) "Packaging is UX: notes from the public path"; 3) "The friction is the data"; 4) "Pushing is the final mile of fixed"; 5) "How not to dogfood your own tool" (contrarian); 6) "The dogfood discipline: what gets surfaced when you use the public path". Default site: editorialcontrol (magazine voice, AI-agents-craft register). | using agents to improve agent workflow, AI agents managing AI agents, meta-tooling for AI agents, agent workflow self-improvement, recursive agent tooling, agent conduct rules, agent-built agent infrastructure, Claude Code agent workflow, dogfooding AI agent tools, agent discipline emerges from dogfooding, AI agent project rules, no fair using privileged paths, packaging is UX, fix the public path, agent-driven plugin development, agent-managed dev process, AI agent self-hosting, friction surfaces design, agent workflow project journal, recursive dogfooding | ai-agents, claude, agent-as-workflow | manual |
 
 ## Drafting
 
@@ -30,6 +32,10 @@
 | be702116-5a0b-4cf9-b6c9-737c94f0e7ee | evolution-by-artificial-selection-for-prompt-generation | You Don't Need a Better Prompt. You Need Selection Pressure. | The **theory / strategic-framework** half of a pair. Selection pressure as the default workflow posture, with feature-image prompts as the worked example (fitness from user ratings, lineage through forks, fitness×recency weighting). The broader claim: AI agents make selection infrastructure (rating UIs, fitness signals, side-by-side review apps) cheap enough to build weekly, so the operator's skill is noticing where variation + selection can replace engineering. The evolutionary mindset is the skill; the agent is what makes it practical. Pairs with `feature-image-automation-evolution-gallery-claude-code` (the applied half — how the framework plays out in practice); the two should cross-link. Close uses the meta move: this dispatch was itself reframed mid-planning by consulting the `editorialcontrol-voice` skill. | selection pressure workflow, evolutionary mindset AI, artificial selection workflow, feature image generator prompts, feature image prompt library, prompt library evolution, brand consistency AI image generation, AI agent custom software, agent-written review UIs, fitness signals AI workflow, side-by-side review Claude Code, rating UI prompts, prompt lineage forks, population-based prompt search, human-in-the-loop selection | content-marketing, ai-agents, claude, agent-as-workflow | manual |
 
 ## Review
+
+*No entries.*
+
+## Paused
 
 *No entries.*
 
