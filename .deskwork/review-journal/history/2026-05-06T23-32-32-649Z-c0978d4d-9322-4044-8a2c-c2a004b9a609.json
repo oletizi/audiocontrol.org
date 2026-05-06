@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T23:32:32.649Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 2,
+    "range": {
+      "start": 4025,
+      "end": 4032
+    },
+    "text": "... with an Application inside.",
+    "category": "other",
+    "anchor": "an .app",
+    "id": "64ff6a45-a878-4a1a-8f8e-073ca7b604ca",
+    "createdAt": "2026-05-06T23:32:32.649Z"
+  }
+}

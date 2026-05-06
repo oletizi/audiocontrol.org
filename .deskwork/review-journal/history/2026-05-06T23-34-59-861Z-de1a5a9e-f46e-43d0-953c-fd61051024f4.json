@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T23:34:59.861Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 2,
+    "range": {
+      "start": 4182,
+      "end": 4191
+    },
+    "text": "Change this to \"Download now ›\" and hyperlink that text, don't show the raw URL. That's what hyperlinks are for.",
+    "category": "other",
+    "anchor": "Download:",
+    "id": "3b42707b-fbed-4eb5-8388-ca5cc12036c4",
+    "createdAt": "2026-05-06T23:34:59.861Z"
+  }
+}

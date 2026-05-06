@@ -1,0 +1,8 @@
+{
+  "kind": "iteration",
+  "at": "2026-05-06T20:49:31.951Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "stage": "Outlining",
+  "version": 2,
+  "markdown": "---\ndeskwork:\n  id: 721d5212-c023-41fd-afa8-3fbd75ec6fbf\ntitle: \"MIDI to MCU: Teaching the Roland MC-500mkII to Drive Your DAW\"\ndescription: \"A service that bridges the Roland MC-500mkII (1988 · 8-track · Super MRC OS) to any MCU-compatible DAW. Transport, jog, and 99 location markers from the MC-500's panel run the DAW. Verified on Logic Pro, Ableton Live, and LUNA.\"\ndate: April 2026\ndatePublished: \"2026-04-30\"\ndateModified: \"2026-04-30\"\nauthor: Orion Letizi\n---\n\n# MIDI to MCU: Teaching the Roland MC-500mkII to Drive Your DAW\n\n<!-- Body is drafted at the Drafting stage. Outline lives at scrapbook/outline.md. -->\n"
+}

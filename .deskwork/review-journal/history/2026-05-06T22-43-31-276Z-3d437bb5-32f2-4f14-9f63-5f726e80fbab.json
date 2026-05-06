@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:43:31.276Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 7,
+    "range": {
+      "start": 9446,
+      "end": 9464
+    },
+    "text": "I have one downstairs. I'll check in parallel.",
+    "category": "other",
+    "anchor": "MC-50 verification",
+    "id": "f13687a3-e3b2-43e7-a00c-1ca9aaa0bb1d",
+    "createdAt": "2026-05-06T22:43:31.276Z"
+  }
+}

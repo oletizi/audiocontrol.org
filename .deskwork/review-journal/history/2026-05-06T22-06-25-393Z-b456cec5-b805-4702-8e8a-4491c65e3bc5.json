@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:06:25.393Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 4,
+    "range": {
+      "start": 1690,
+      "end": 1704
+    },
+    "text": "Musicians won't understand the ASCII diagram.",
+    "category": "other",
+    "anchor": "ASCII diagram:",
+    "id": "a4e34029-7479-4f70-a016-ecda26aa89ad",
+    "createdAt": "2026-05-06T22:06:25.393Z"
+  }
+}

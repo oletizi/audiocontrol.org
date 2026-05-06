@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T23:33:08.128Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 2,
+    "range": {
+      "start": 4041,
+      "end": 4076
+    },
+    "text": "Drag the Application",
+    "category": "other",
+    "anchor": "Mount the disk image, drag the .app",
+    "id": "05701a61-caff-4d1e-a2ce-847c99322ca2",
+    "createdAt": "2026-05-06T23:33:08.128Z"
+  }
+}

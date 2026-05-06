@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T23:30:11.568Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 2,
+    "range": {
+      "start": 2424,
+      "end": 2663
+    },
+    "text": "Delete",
+    "category": "other",
+    "anchor": "The MC-500mkII sits on the desk next to the laptop. The bridge is running. The MC-500 is connected to the computer over MIDI; the laptop runs LUNA — or Logic, or Live. The MC-500's console is, at this moment, a control surface for the DAW.",
+    "id": "16a5d0dd-5f06-48db-8b96-fff4fe83cc8e",
+    "createdAt": "2026-05-06T23:30:11.568Z"
+  }
+}

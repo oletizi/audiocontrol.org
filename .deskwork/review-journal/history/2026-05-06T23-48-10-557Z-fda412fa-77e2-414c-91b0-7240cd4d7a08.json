@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T23:48:10.557Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 4,
+    "range": {
+      "start": 2594,
+      "end": 2824
+    },
+    "text": "Delete. It's redundant.",
+    "category": "other",
+    "anchor": "In Use\nIn case you skipped the video, here's how it works: hit play on the MC-500's transport and your DAW's transport rolls — your recorded audio tracks play back from the DAW, your recorded MIDI tracks play back from the MC-500.",
+    "id": "5d778b63-df36-42f8-a513-7682fae528d8",
+    "createdAt": "2026-05-06T23:48:10.557Z"
+  }
+}

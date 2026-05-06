@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T20:33:21.471Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 1,
+    "range": {
+      "start": 119,
+      "end": 132
+    },
+    "text": "I've confirmed it only works on the Roland MC-500mkII, not the original MC-500 (it needs the Super MRC operating system, I think). It *probably* works on the later MC-50, which is smaller and cheaper, but I haven't actually tested it. \n\nAlso, we have to remember to frame this as theoretically working with any DAW that supports MCU, but we've only tested it on Logic, Ableton Live, and LUNA.\n\nIt's also available for download from github at https://github.com/audiocontrol-org/audiocontrol/releases; There are pre-compiled binaries for linux and MacOS, plus homebrew support, plus a MacOS app you can download and copy into your Applications folder if you don't want to use a terminal.\n\nYou can use the VO script from the video overlay we just made as a guide for the voice and what we want to say in this article.",
+    "category": "other",
+    "anchor": "Roland MC-500",
+    "id": "1a08f687-ac22-4e24-8c4c-fab2d733be02",
+    "createdAt": "2026-05-06T20:33:21.471Z"
+  }
+}

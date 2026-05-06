@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:35:43.905Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 6,
+    "range": {
+      "start": 8805,
+      "end": 8821
+    },
+    "text": "Keep. It's a good idea to explain to the nerds how it works.",
+    "category": "other",
+    "anchor": "protocol-pointer",
+    "id": "cfa992ac-6615-4819-9384-9def72c35e95",
+    "createdAt": "2026-05-06T22:35:43.905Z"
+  }
+}

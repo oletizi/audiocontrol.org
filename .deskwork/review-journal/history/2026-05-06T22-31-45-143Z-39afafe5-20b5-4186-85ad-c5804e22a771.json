@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:31:45.143Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 6,
+    "range": {
+      "start": 6061,
+      "end": 6075
+    },
+    "text": "The macOS download is actually a disk image that contains an App you drag into your Applications folder.",
+    "category": "other",
+    "anchor": "macOS download",
+    "id": "1d178017-81df-47e4-8edd-8e2149c91447",
+    "createdAt": "2026-05-06T22:31:45.143Z"
+  }
+}

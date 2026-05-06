@@ -32,6 +32,7 @@ const blog = defineCollection({
       author: z.string().optional(),
       image: image().optional(),
       socialImage: image().optional(),
+      hideFeatureImage: z.boolean().optional(),
       tags: z.array(z.string()).optional(),
       state: z.enum(['draft', 'published']).default('draft'),
       // deskwork binds each calendar entry to its markdown via a stable

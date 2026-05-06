@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T21:52:33.935Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 4,
+    "range": {
+      "start": 787,
+      "end": 805
+    },
+    "text": "I don't want this blog to be about the implementation (beyond a cursory discussion in a callout somewhere). I want this blog to be about the journey from \"two great things that can't talk\" to \"two great things that go great together\". You need to change the whole outline to be about the story of wanting to be able to control your DAW with the already great things that already exist, but just don't quite work yet. That's more in line with the mission of the audiocontrol project: to provide modern tooling for great vintage gear",
+    "category": "other",
+    "anchor": "Dek (one sentence)",
+    "id": "ae9922d9-dc73-4721-8a53-91ff64f6895c",
+    "createdAt": "2026-05-06T21:52:33.935Z"
+  }
+}

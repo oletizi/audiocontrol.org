@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:01:06.249Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 4,
+    "range": {
+      "start": 5264,
+      "end": 5269
+    },
+    "text": "See the marginalia note at the top of this document about the name.",
+    "category": "other",
+    "anchor": "Title",
+    "id": "1ce8c394-a448-4108-8738-b8831557fe68",
+    "createdAt": "2026-05-06T22:01:06.249Z"
+  }
+}

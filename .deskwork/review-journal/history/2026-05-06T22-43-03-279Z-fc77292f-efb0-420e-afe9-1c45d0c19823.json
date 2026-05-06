@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:43:03.279Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 7,
+    "range": {
+      "start": 9320,
+      "end": 9339
+    },
+    "text": "I'm working on it.",
+    "category": "other",
+    "anchor": "Screenshot for §02.",
+    "id": "325f2abb-18bb-40c1-a1a6-b277eb2b6005",
+    "createdAt": "2026-05-06T22:43:03.279Z"
+  }
+}

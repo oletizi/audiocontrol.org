@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T23:30:55.036Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 2,
+    "range": {
+      "start": 2700,
+      "end": 2839
+    },
+    "text": "Delete",
+    "category": "other",
+    "anchor": "LUNA's transport rolls. The DAW's playhead moves; the meters light up; the takes you laid down play back. Hands never touched the trackpad.",
+    "id": "722db6fd-d387-4e24-b3dd-0f03c7c092cb",
+    "createdAt": "2026-05-06T23:30:55.036Z"
+  }
+}

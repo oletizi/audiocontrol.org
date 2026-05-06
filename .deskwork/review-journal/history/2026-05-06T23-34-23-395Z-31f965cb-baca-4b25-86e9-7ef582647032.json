@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T23:34:23.395Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 2,
+    "range": {
+      "start": 4192,
+      "end": 4249
+    },
+    "text": "This URL is missing the query string that filters just the midi-macro-bridge releases. I gave you an explicit url and I want you to use that.",
+    "category": "other",
+    "anchor": "https://github.com/audiocontrol-org/audiocontrol/releases",
+    "id": "9e615750-09d2-4a82-9faf-bf7b421ec20f",
+    "createdAt": "2026-05-06T23:34:23.395Z"
+  }
+}

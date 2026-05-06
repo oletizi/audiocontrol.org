@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:27:50.731Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 6,
+    "range": {
+      "start": 2351,
+      "end": 2365
+    },
+    "text": "Most musicians don't have an MC-500 in their studio. This will be interesting to the very few people who have the MC-500, but potentially very interesting to people interested getting away from staring at their laptops to make music--people who are interested in a DAWless workflow. This is a new way to add \"DAWless\" style workflow without giving up the power of the DAW.",
+    "category": "other",
+    "anchor": "in your studio",
+    "id": "cd61a8f5-813a-40c4-a971-efbcca8f7570",
+    "createdAt": "2026-05-06T22:27:50.731Z"
+  }
+}

@@ -2,6 +2,7 @@
   "uuid": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
   "slug": "midi-to-mcu-macro-bridge",
   "title": "MIDI Song Position to MCU: Teaching a 1987 Roland MC-500 to Drive Logic Pro",
+  "description": "A module inside audiocontrol that translates MIDI song position pointer + start/stop/continue from vintage sequencers (Roland MC-500 and similar) into MCU (Mackie Control Universal) transport messages for DAW hosts. Worked example: driving Logic Pro's timeline from the MC-500's transport. Covers the MCU protocol message shapes (play/stop/FF/rewind + timeline scrub), the SPP-to-timecode conversion, and the macOS CoreMIDI virtual-port plumbing. Pairs with the reverse-engineering post set — same methodology (service manual + working hardware + small focused software module).",
   "keywords": [
     "MIDI Song Position Pointer",
     "SPP to MCU",
@@ -19,10 +20,13 @@
     "audiocontrol MIDI tooling"
   ],
   "source": "manual",
-  "currentStage": "Outlining",
-  "iterationByStage": {},
+  "currentStage": "Drafting",
+  "iterationByStage": {
+    "Outlining": 8,
+    "Drafting": 11
+  },
+  "reviewState": "in-review",
+  "artifactPath": "src/sites/audiocontrol/content/blog/midi-to-mcu-macro-bridge/index.md",
   "createdAt": "2026-05-06T18:34:54.188Z",
-  "updatedAt": "2026-05-06T18:34:54.188Z",
-  "description": "A module inside audiocontrol that translates MIDI song position pointer + start/stop/continue from vintage sequencers (Roland MC-500 and similar) into MCU (Mackie Control Universal) transport messages for DAW hosts. Worked example: driving Logic Pro's timeline from the MC-500's transport. Covers the MCU protocol message shapes (play/stop/FF/rewind + timeline scrub), the SPP-to-timecode conversion, and the macOS CoreMIDI virtual-port plumbing. Pairs with the reverse-engineering post set — same methodology (service manual + working hardware + small focused software module).",
-  "artifactPath": "src/sites/audiocontrol/content/blog/midi-to-mcu-macro-bridge/index.md"
+  "updatedAt": "2026-05-06T23:56:50.675Z"
 }

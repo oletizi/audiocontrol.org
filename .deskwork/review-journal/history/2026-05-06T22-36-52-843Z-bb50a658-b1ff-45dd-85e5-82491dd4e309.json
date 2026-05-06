@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:36:52.843Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 6,
+    "range": {
+      "start": 9151,
+      "end": 9165
+    },
+    "text": "A more appropriate term is \"control surface\". That is pretty universally understood to mean a DAW controller using the MCU protocol, even to people who don't know what the MCU protocol is.",
+    "category": "other",
+    "anchor": "MCU controller",
+    "id": "f9aeb269-6918-41a3-9e4c-92eda2942a70",
+    "createdAt": "2026-05-06T22:36:52.843Z"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:05:39.427Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 4,
+    "range": {
+      "start": 1570,
+      "end": 1599
+    },
+    "text": "Describe it the way you would describe it to a musician: something like, \"it's a way to use the MC-500mkII (and, likely, the MC-500) as a control surface for your DAW. Musician's barely know what MIDI is. They definitely don't know what MCU is.",
+    "category": "other",
+    "anchor": "Bridge process on the laptop.",
+    "id": "dd8bfb84-8af6-42f0-91b6-b6e17cd32b36",
+    "createdAt": "2026-05-06T22:05:39.427Z"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:30:22.557Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 6,
+    "range": {
+      "start": 5541,
+      "end": 5560
+    },
+    "text": "the original MC-500 does *not* work.",
+    "category": "other",
+    "anchor": "the original MC-500",
+    "id": "f6c339c4-7530-4bd4-a53f-06fff2a0f0d9",
+    "createdAt": "2026-05-06T22:30:22.557Z"
+  }
+}

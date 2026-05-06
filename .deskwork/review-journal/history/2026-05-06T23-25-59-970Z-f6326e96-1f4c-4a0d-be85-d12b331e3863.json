@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T23:25:59.970Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 2,
+    "range": {
+      "start": 2007,
+      "end": 2061
+    },
+    "text": "You can also use the numeric keypad to directly enter the bar number to teleport to",
+    "category": "other",
+    "anchor": "The 99 location memories become jump-to-marker buttons",
+    "id": "35afd0af-a041-434f-b2a2-565fcb128940",
+    "createdAt": "2026-05-06T23:25:59.970Z"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:01:45.266Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 4,
+    "range": {
+      "start": 5391,
+      "end": 5410
+    },
+    "text": "No one cares about the code. We don't want to talk about the code at all. This is for musicians, not software engineers.",
+    "category": "other",
+    "anchor": "Embedded code block",
+    "id": "359417a8-03a9-4f11-9211-151225578cd9",
+    "createdAt": "2026-05-06T22:01:45.266Z"
+  }
+}
