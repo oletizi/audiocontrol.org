@@ -1,0 +1,12 @@
+{
+  "uuid": "b61b7b79-828d-428d-beda-8e4a7d673502",
+  "slug": "homegrown-workflow-skills-vs-the-popular-claude-plugins",
+  "title": "Homegrown Workflow Skills vs. the Popular Claude Plugins",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Ideas",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "A side-by-side look at our homegrown session-lifecycle and feature-workflow skills — the /session-start, /feature-define, /feature-ship, /editorial-* families plus DEVELOPMENT-NOTES and feature workplans — against the widely-used Claude plugins that purport to do the same job. Where did homegrown win? Where would a plugin have served better? Criteria: fit-for-purpose, extensibility, maintenance burden, composability with the rest of the skill stack."
+}

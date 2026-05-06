@@ -1,0 +1,12 @@
+{
+  "uuid": "6d858243-0783-4dad-9e8f-f3b6e614c262",
+  "slug": "codex-parallel-implementation-and-work-checking-on-mesa-ii",
+  "title": "Codex Parallel Implementation and Work Checking on MESA II",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Ideas",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "Running Claude Code and Codex against the same MESA II reverse-engineering problem in parallel, using each to cross-check the other. How disagreement between agents surfaces real bugs; how agreement gives higher confidence than a single agent alone."
+}

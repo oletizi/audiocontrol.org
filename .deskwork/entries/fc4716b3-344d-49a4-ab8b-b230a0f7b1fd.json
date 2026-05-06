@@ -1,0 +1,19 @@
+{
+  "uuid": "fc4716b3-344d-49a4-ab8b-b230a0f7b1fd",
+  "slug": "build-and-run-your-editorial-calendar-in-your-ai-agent",
+  "title": "Building the Editorial Calendar Feature",
+  "keywords": [
+    "AI content workflow automation",
+    "flexible editorial calendar for content teams",
+    "ship content faster with AI",
+    "build your own AI content stack"
+  ],
+  "source": "manual",
+  "currentStage": "Published",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "A writeup of the editorial-calendar feature itself — why ad-hoc content creation needed a system, how the Ideas→Published lifecycle works, and how analytics, Reddit, and YouTube got wired into one virtuous loop.",
+  "datePublished": "2026-04-18T00:00:00.000Z",
+  "artifactPath": "src/sites/editorialcontrol/content/blog/build-and-run-your-editorial-calendar-in-your-ai-agent/index.md"
+}

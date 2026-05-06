@@ -1,0 +1,28 @@
+{
+  "uuid": "c19c1dfc-90c3-4196-ad1e-58349be77688",
+  "slug": "socratic-prompt-engineering",
+  "title": "Prompt Engineering by Dialogue: Add the Socratic Method to Your Toolkit",
+  "keywords": [
+    "Socratic prompting technique",
+    "AI coding agent comprehension check",
+    "Claude Code session analysis",
+    "mining AI session transcripts",
+    "prompt engineering bottleneck",
+    "agent paraphrase task before coding",
+    "prompt iteration vs comprehension gap",
+    "coding agent mental model",
+    "upfront specification vs dialogue",
+    "LLM task understanding gap",
+    "agent-described vs agent-told",
+    "session archive pattern mining",
+    "calibrated clarification for agents"
+  ],
+  "source": "manual",
+  "currentStage": "Published",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "A pattern for working with coding agents: instead of writing better prompts, ask the agent to describe the task back to you before it starts. Socratic restate → check → begin — surfaces the mental-model gap before code gets written. Worked from 76 archived Claude Code sessions (2026-02 through 2026-04) in `data/sessions/content/*.jsonl.age`, summarized by the LLM analysis pipeline in the sibling audiocontrol repo. 98 corrections across the corpus; 54% of sessions had zero corrections; ~32% of corrections map to the mental-model gap the Socratic move would have caught upstream. Failure modes: (1) the precision trap — agents assuming capabilities that don't exist (\"Claude assumed Google Drive credentials would be missing — user didn't ask for that,\" 2026-03-20; \"Agent assumed loop-editor would automatically use updated tree node structure,\" 2026-03-21); (2) the plan-mode proxy — a plan-in-response is not a task-paraphrased-back (\"user asked 'are you delegating?' after agent started implementing Phase 2 directly,\" 2026-04-12). Counter-evidence: \"Assistant appropriately paused to clarify ambiguous feature state — no user corrections issued\" (2026-04-13_62a16914); \"Iterative clarification questions narrowed scope\" (2026-04-19_d4df8ec4). Calibration edge: \"Agent over-asked for clarification when user provided directive; should have inferred from context\" (2026-04-21_81bfd33c). Pairs with `homegrown-workflow-skills-vs-the-popular-claude-plugins` — both treat agent behavior as tunable at the interaction layer.",
+  "datePublished": "2026-04-27T00:00:00.000Z",
+  "artifactPath": "src/sites/editorialcontrol/content/blog/socratic-prompt-engineering/index.md"
+}

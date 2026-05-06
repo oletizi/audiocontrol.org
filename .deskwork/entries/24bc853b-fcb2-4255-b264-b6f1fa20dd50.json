@@ -1,0 +1,12 @@
+{
+  "uuid": "24bc853b-fcb2-4255-b264-b6f1fa20dd50",
+  "slug": "editorial-studio-for-editorial-calendar",
+  "title": "The Editorial Studio: Calendar, Review, and Voice-Drift in One Desk",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Ideas",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "Building the Editorial Studio on top of the Claude-based editorial calendar — modeled after the Feature Image Studio. Press-check desk aesthetic, unified surface for calendar stages + longform/shortform review + voice-drift feedback. How a dev-only review dashboard halves the friction of taking a draft from agent output to approved file."
+}

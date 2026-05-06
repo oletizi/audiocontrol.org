@@ -1,0 +1,12 @@
+{
+  "uuid": "fdb68375-45c8-42d5-ad91-64702126523b",
+  "slug": "video-demo-feature",
+  "title": "Video Demo Feature",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Ideas",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "Making YouTube videos a first-class content type alongside blog posts — same lifecycle, same cross-link audit, same distribution tracking. How treating videos as editorial entries (not marketing afterthoughts) changes the content workflow."
+}

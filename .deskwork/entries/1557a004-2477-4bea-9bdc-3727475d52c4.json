@@ -1,0 +1,14 @@
+{
+  "uuid": "1557a004-2477-4bea-9bdc-3727475d52c4",
+  "slug": "scsi-over-wifi-raspberry-pi-bridge",
+  "title": "SCSI Over WiFi: Talking to Vintage Hardware from Your Phone",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Published",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "An open-source Raspberry Pi bridge that lets you send SCSI commands to vintage samplers and computers over HTTP and WebSocket -- no SCSI card required.",
+  "datePublished": "2026-04-07T00:00:00.000Z",
+  "artifactPath": "src/sites/audiocontrol/content/blog/scsi-over-wifi-raspberry-pi-bridge/index.md"
+}
