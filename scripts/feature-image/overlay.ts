@@ -21,6 +21,8 @@ const BRAND = {
   panelBackground: 'rgba(10, 12, 16, 0.82)',
 };
 
+export type OverlayPosition = 'bottom' | 'left';
+
 interface OverlayConfig {
   title: string;
   subtitle?: string;
@@ -36,6 +38,10 @@ interface OverlayConfig {
    * feature images.
    */
   site: 'audiocontrol' | 'editorialcontrol';
+  /** Where the panel sits. Default: 'bottom'. */
+  overlayPosition?: OverlayPosition;
+  /** Panel background opacity 0–1. Default: 0.82. */
+  panelOpacity?: number;
 }
 
 interface FontData {
@@ -105,8 +111,9 @@ function computeTitleFontSize(
  * Generate a text overlay SVG using satori, then composite it onto the background.
  */
 async function renderOverlay(config: OverlayConfig): Promise<Buffer> {
-  const { title, subtitle, format } = config;
+  const { title, subtitle, format, overlayPosition = 'bottom', panelOpacity = 0.82 } = config;
   const { width, height } = format;
+  const panelBackground = `rgba(10, 12, 16, ${panelOpacity})`;
 
   const fonts = await loadFonts();
   if (!cachedLogoUri[config.site]) {
@@ -114,8 +121,11 @@ async function renderOverlay(config: OverlayConfig): Promise<Buffer> {
   }
   const logoUri = cachedLogoUri[config.site]!;
 
+  const isLeft = overlayPosition === 'left';
   const panelPadding = Math.round(width * 0.05);
-  const maxTextWidth = width - panelPadding * 2;
+  // Left panel takes 40% of image width; bottom panel spans full width.
+  const panelWidth = isLeft ? Math.round(width * 0.4) : width;
+  const maxTextWidth = panelWidth - panelPadding * 2;
   const titleSize = computeTitleFontSize(title, maxTextWidth, 52, 28);
   const subtitleSize = Math.round(titleSize * 0.58);
   const logoSize = Math.round(titleSize * 0.55);
@@ -129,22 +139,31 @@ async function renderOverlay(config: OverlayConfig): Promise<Buffer> {
           height: '100%',
           width: '100%',
           display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-end',
+          flexDirection: isLeft ? 'row' : 'column',
+          justifyContent: isLeft ? 'flex-start' : 'flex-end',
           background: 'transparent',
         },
         children: [
-          // Bottom panel with text
+          // Panel with text — left-side vertical band or bottom horizontal band
           {
             type: 'div',
             props: {
               style: {
                 display: 'flex',
                 flexDirection: 'column',
+                justifyContent: 'flex-end',
                 gap: `${Math.round(titleSize * 0.3)}px`,
                 padding: `${panelPadding}px`,
-                background: BRAND.panelBackground,
-                borderTop: `3px solid ${BRAND.primary}`,
+                background: panelBackground,
+                ...(isLeft
+                  ? {
+                      width: `${panelWidth}px`,
+                      height: `${height}px`,
+                      borderRight: `3px solid ${BRAND.primary}`,
+                    }
+                  : {
+                      borderTop: `3px solid ${BRAND.primary}`,
+                    }),
               },
               children: [
                 // Title

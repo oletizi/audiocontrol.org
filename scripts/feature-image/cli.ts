@@ -32,6 +32,8 @@ Options:
   --formats      Comma-separated output formats: og,youtube,instagram (default: all)
   --filters      Comma-separated filter names: scanlines,vignette,grain,grade
   --preset       Named preset: ${Object.keys(PRESETS).join(', ')}
+  --overlay-position  Where the text panel sits: bottom (default) | left
+  --panel-opacity     Panel background opacity 0–1 (default: 0.82)
   --output       Output directory (default: src/sites/editorialcontrol/public/images/generated)
   --name         Base filename for output (default: generated)
   --width        Generation width in pixels (default: 1792)
@@ -56,6 +58,8 @@ async function main(): Promise<void> {
       width: { type: 'string', default: '1792' },
       height: { type: 'string', default: '1024' },
       site: { type: 'string', default: 'editorialcontrol' },
+      'overlay-position': { type: 'string', default: 'bottom' },
+      'panel-opacity': { type: 'string' },
       help: { type: 'boolean', default: false },
     },
     strict: true,
@@ -93,6 +97,8 @@ async function main(): Promise<void> {
     baseName: values.name as string,
     formats: values.formats as string,
     site: values.site as 'audiocontrol' | 'editorialcontrol',
+    overlayPosition: values['overlay-position'] as 'bottom' | 'left',
+    panelOpacity: values['panel-opacity'] !== undefined ? parseFloat(values['panel-opacity'] as string) : undefined,
   });
 
   if (result.filtersApplied.length > 0) {
