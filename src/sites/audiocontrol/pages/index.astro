@@ -55,6 +55,17 @@ const availableProjects: Project[] = [
   },
 ];
 
+const bridgeProjects: Project[] = [
+  {
+    name: 'MIDI Macro Bridge',
+    description: 'Use the Roland MC-500mkII as a hardware control surface for Logic Pro, Ableton Live, or LUNA — transport, jog wheel, and 99 location memories drive the DAW.',
+    meta: 'Mac · MC-500mkII · DAW Control',
+    status: 'available',
+    href: '/bridges/midi-macro-bridge/',
+    image: '/images/bridges/mc-500.jpg',
+  },
+];
+
 const pendingProjects: Project[] = [
   {
     name: 'Akai S3000XL',
@@ -141,6 +152,18 @@ const pendingCount = pendingProjects.length;
     </header>
     <div class="projects-grid projects-grid--featured">
       {availableProjects.map((project) => (
+        <ProjectCard {...project} />
+      ))}
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="bridges-label">
+    <header class="block-header">
+      <h2 id="bridges-label" class="panel-label panel-label--accent">Bridges</h2>
+      <p class="block-note">Native software that drives a modern DAW from vintage hardware on the desk.</p>
+    </header>
+    <div class="projects-grid">
+      {bridgeProjects.map((project) => (
         <ProjectCard {...project} />
       ))}
     </div>

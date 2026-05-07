@@ -1,0 +1,761 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+
+interface CompatRow {
+  label: string;
+  value: string;
+  status: 'confirmed' | 'likely' | 'unsupported' | 'note';
+  note?: string;
+}
+
+const hardwareRows: CompatRow[] = [
+  { label: 'Roland MC-500mkII', value: '1988', status: 'confirmed', note: 'Primary target. Built and tested against this unit.' },
+  { label: 'Roland MC-50', value: '1989', status: 'likely', note: 'Smaller, cheaper sibling — same family. Untested. If you have one, file an issue with what you find.' },
+  { label: 'Roland MC-500 (original)', value: '1986', status: 'unsupported', note: 'Different operating system, different transport behavior. Does not work.' },
+];
+
+const dawRows: CompatRow[] = [
+  { label: 'Logic Pro', value: 'macOS', status: 'confirmed' },
+  { label: 'Ableton Live', value: 'macOS', status: 'confirmed' },
+  { label: 'Universal Audio LUNA', value: 'macOS', status: 'confirmed' },
+  { label: 'Other DAWs', value: 'Mackie Control', status: 'note', note: 'If your DAW takes a hardware control surface for transport, this is one. If it does not, this is not.' },
+];
+
+const platformRows: CompatRow[] = [
+  { label: 'macOS', value: 'Universal binary', status: 'confirmed' },
+  { label: 'Linux', value: 'Builds; untested', status: 'note', note: 'The Linux build runs but has not been exercised against a DAW.' },
+  { label: 'Windows', value: 'Not yet', status: 'unsupported' },
+];
+
+const downloadHref = 'https://github.com/audiocontrol-org/audiocontrol/releases?q=midi-macro-bridge';
+const sourceHref = 'https://github.com/audiocontrol-org/audiocontrol';
+const dispatchHref = '/blog/midi-to-mcu-macro-bridge/';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'MIDI Macro Bridge',
+  applicationCategory: 'MultimediaApplication',
+  applicationSubCategory: 'DAW Control Surface Bridge',
+  operatingSystem: 'macOS',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  url: 'https://audiocontrol.org/bridges/midi-macro-bridge/',
+  downloadUrl: downloadHref,
+  description:
+    'Free, open source bridge that turns a Roland MC-500mkII into a hardware control surface for Logic Pro, Ableton Live, or LUNA. Transport, jog wheel, and 99 location memories drive the DAW.',
+  publisher: { '@type': 'Organization', name: 'audiocontrol.org', url: 'https://audiocontrol.org' },
+  isAccessibleForFree: true,
+  license: 'https://opensource.org/licenses/MIT',
+};
+---
+
+<Layout
+  title="MIDI Macro Bridge — DAW Control Surface for Roland MC-500mkII"
+  description="Drive Logic Pro, Ableton Live, or LUNA from a Roland MC-500mkII. Transport, jog wheel, and 99 location memories become a hardware control surface. Free, open source, macOS download."
+  image="/images/bridges/control-surface.png"
+  type="website"
+  jsonLd={jsonLd}
+>
+  <article class="product">
+    <header class="hero" aria-labelledby="product-title">
+      <p class="hero-eyebrow">
+        <span class="signal-led" aria-hidden="true"></span>
+        <span>Bridge</span>
+        <span class="hero-sep" aria-hidden="true">·</span>
+        <span>v1 · macOS</span>
+      </p>
+      <h1 id="product-title" class="hero-title">
+        MIDI Macro Bridge<br />
+        <span class="phosphor">DAW control from the rack.</span>
+      </h1>
+      <p class="hero-body">
+        The Roland MC-500mkII (1988) is a sequencer made for the hands —
+        eight tracks of MIDI, a data wheel, 99 location memories, and a
+        screen the size of a postage stamp because the controls are this
+        clear. The bridge turns it into a hardware control surface for a
+        modern DAW. You hit play on the box, the DAW plays. You spin the
+        wheel, the DAW jogs. You recall a location, the DAW seeks.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href={downloadHref} rel="noopener">
+          <span class="btn-arrow" aria-hidden="true">↓</span>
+          <span>Download for macOS</span>
+        </a>
+        <a class="btn btn-ghost" href={dispatchHref}>
+          <span class="btn-arrow" aria-hidden="true">→</span>
+          <span>Read the dispatch</span>
+        </a>
+        <a class="btn btn-ghost" href={sourceHref} rel="noopener">
+          <span class="btn-arrow" aria-hidden="true">↳</span>
+          <span>Source on GitHub</span>
+        </a>
+      </div>
+
+      <hr class="rule-ticked" />
+
+      <dl class="hero-stats" aria-label="Bridge specifications">
+        <div>
+          <dt>Hardware</dt>
+          <dd>MC-500mkII</dd>
+        </div>
+        <div>
+          <dt>DAWs</dt>
+          <dd>Logic · Live · LUNA</dd>
+        </div>
+        <div>
+          <dt>Protocol</dt>
+          <dd>Mackie Control · MIDI SPP</dd>
+        </div>
+        <div>
+          <dt>Cost</dt>
+          <dd>Free · Open source</dd>
+        </div>
+      </dl>
+    </header>
+
+    <figure class="product-figure">
+      <img
+        src="/images/bridges/control-surface.png"
+        alt="The MIDI Macro Bridge control surface — MC-500 routing live through the bridge to the DAW via MCU. Status display: PLAYING / BAR 8 / MCU heartbeat 48s."
+        loading="lazy"
+      />
+      <figcaption>MC-500 → bridge → DAW. Status: PLAYING · BAR 8 · MCU heartbeat 48s.</figcaption>
+    </figure>
+
+    <section class="block" aria-labelledby="what-it-does-label">
+      <header class="block-header">
+        <h2 id="what-it-does-label" class="panel-label">What it does</h2>
+      </header>
+      <div class="capabilities">
+        <div class="capability">
+          <p class="capability-tag">Transport</p>
+          <h3 class="capability-title">Play, stop, record, locate from the box.</h3>
+          <p class="capability-body">
+            The MC-500's transport buttons drive the DAW transport. Eyes on the
+            room, hands on the buttons your fingers already know.
+          </p>
+        </div>
+        <div class="capability">
+          <p class="capability-tag">Jog</p>
+          <h3 class="capability-title">The data wheel becomes the jog wheel.</h3>
+          <p class="capability-body">
+            Spin the wheel; the DAW scrubs. The same gesture you've used for
+            decades — re-pointed at a modern session.
+          </p>
+        </div>
+        <div class="capability">
+          <p class="capability-tag">Locate</p>
+          <h3 class="capability-title">99 location memories as jump-to-marker buttons.</h3>
+          <p class="capability-body">
+            Pre-configure verse, chorus, bridge as MC-500 locations. One press
+            on the console and the DAW seeks. Or punch a bar number into the
+            keypad — the DAW teleports there. Years of muscle memory finally
+            paying rent.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="compat-label">
+      <header class="block-header">
+        <h2 id="compat-label" class="panel-label panel-label--accent">Compatibility</h2>
+        <p class="block-note">What's confirmed, what's likely, and what isn't.</p>
+      </header>
+
+      <div class="compat-group">
+        <p class="compat-group-label">Hardware</p>
+        <ul class="compat-list">
+          {hardwareRows.map((row) => (
+            <li class={`compat-row compat-row--${row.status}`}>
+              <span class="compat-status" aria-hidden="true">
+                {row.status === 'confirmed' && '✓'}
+                {row.status === 'likely' && '?'}
+                {row.status === 'unsupported' && '✕'}
+                {row.status === 'note' && '·'}
+              </span>
+              <span class="compat-label">{row.label}</span>
+              <span class="compat-value">{row.value}</span>
+              {row.note && <span class="compat-note">{row.note}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="compat-group">
+        <p class="compat-group-label">DAWs</p>
+        <ul class="compat-list">
+          {dawRows.map((row) => (
+            <li class={`compat-row compat-row--${row.status}`}>
+              <span class="compat-status" aria-hidden="true">
+                {row.status === 'confirmed' && '✓'}
+                {row.status === 'likely' && '?'}
+                {row.status === 'unsupported' && '✕'}
+                {row.status === 'note' && '·'}
+              </span>
+              <span class="compat-label">{row.label}</span>
+              <span class="compat-value">{row.value}</span>
+              {row.note && <span class="compat-note">{row.note}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="compat-group">
+        <p class="compat-group-label">Platform</p>
+        <ul class="compat-list">
+          {platformRows.map((row) => (
+            <li class={`compat-row compat-row--${row.status}`}>
+              <span class="compat-status" aria-hidden="true">
+                {row.status === 'confirmed' && '✓'}
+                {row.status === 'likely' && '?'}
+                {row.status === 'unsupported' && '✕'}
+                {row.status === 'note' && '·'}
+              </span>
+              <span class="compat-label">{row.label}</span>
+              <span class="compat-value">{row.value}</span>
+              {row.note && <span class="compat-note">{row.note}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <section class="block install" aria-labelledby="install-label">
+      <header class="block-header">
+        <h2 id="install-label" class="panel-label">Install</h2>
+      </header>
+      <ol class="install-steps">
+        <li>
+          <span class="install-step-num" aria-hidden="true">01</span>
+          <p>
+            <a href={downloadHref} rel="noopener">Download the disk image</a> from the
+            audiocontrol GitHub releases. The release tag begins with <code>midi-macro-bridge</code>.
+          </p>
+        </li>
+        <li>
+          <span class="install-step-num" aria-hidden="true">02</span>
+          <p>Open the DMG and drag the application into <code>/Applications</code>.</p>
+        </li>
+        <li>
+          <span class="install-step-num" aria-hidden="true">03</span>
+          <p>
+            Launch the app, point your DAW at it as a hardware control surface
+            (Mackie Control protocol), and you're running.
+          </p>
+        </li>
+      </ol>
+
+      <div class="install-cta">
+        <a class="btn btn-primary" href={downloadHref} rel="noopener">
+          <span class="btn-arrow" aria-hidden="true">↓</span>
+          <span>Download for macOS</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="block roadmap" aria-labelledby="roadmap-label">
+      <header class="block-header">
+        <h2 id="roadmap-label" class="panel-label">In flight</h2>
+        <p class="block-note">Other bridges already on the bench.</p>
+      </header>
+      <ul class="roadmap-list">
+        <li>
+          <span class="roadmap-tag">Next</span>
+          <p>
+            <strong>Novation LaunchControl XL mk3 → LUNA mixer.</strong>
+            LUNA doesn't ship LaunchControl support out of the box. We do.
+            Dispatch with video in flight.
+          </p>
+        </li>
+        <li>
+          <span class="roadmap-tag">After</span>
+          <p>More vintage gear, more DAWs, more of the console mapped — as bench needs surface them.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="block report" aria-labelledby="report-label">
+      <header class="block-header">
+        <h2 id="report-label" class="panel-label">If it breaks</h2>
+      </header>
+      <p class="report-body">
+        Got an MC-500mkII (or an MC-50) and a supported DAW? Try it. If it
+        breaks on your setup,
+        <a href="https://github.com/audiocontrol-org/audiocontrol/issues/new" rel="noopener">file an issue</a>
+        with what gear, what DAW, and what you saw. The protocol details — MIDI
+        Song Position, Mackie Control, the bridge architecture — are
+        <a href={sourceHref} rel="noopener">on GitHub</a>.
+      </p>
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .product {
+    padding-bottom: 2rem;
+  }
+
+  /* --- Hero --------------------------------------------------------- */
+
+  .hero {
+    padding: 3rem 0 2.5rem;
+    max-width: 52rem;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 1.5rem 0;
+  }
+
+  .hero-eyebrow .signal-led {
+    width: 7px;
+    height: 7px;
+  }
+
+  .hero-sep {
+    opacity: 0.5;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.85rem, 4vw, 3rem);
+    font-weight: 400;
+    line-height: 1.15;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .hero-title .phosphor {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 22px hsl(var(--primary) / 0.35);
+  }
+
+  .hero-body {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: hsl(var(--muted-foreground));
+    max-width: 42rem;
+    margin: 1.5rem 0 2rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 0 0 2.5rem 0;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.8rem 1.25rem;
+    border: 1px solid hsl(var(--border));
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .btn-arrow {
+    color: hsl(var(--primary));
+    transition: transform 0.2s ease;
+  }
+
+  .btn-primary {
+    background: hsl(var(--primary) / 0.08);
+    border-color: hsl(var(--primary) / 0.5);
+    color: hsl(var(--foreground));
+  }
+
+  .btn-primary:hover {
+    background: hsl(var(--primary) / 0.14);
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 24px hsl(var(--primary) / 0.15);
+  }
+
+  .btn-primary:hover .btn-arrow {
+    transform: translateY(2px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .btn-ghost:hover {
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border-hover));
+  }
+
+  .btn-ghost:hover .btn-arrow {
+    transform: translateX(3px);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 3px;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem 2rem;
+    margin: 1.5rem 0 0 0;
+  }
+
+  .hero-stats > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .hero-stats dt {
+    font-family: var(--font-display);
+    font-size: 0.64rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .hero-stats dd {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: hsl(var(--foreground));
+    margin: 0;
+  }
+
+  @media (max-width: 720px) {
+    .hero {
+      padding: 2rem 0 1.5rem;
+    }
+    .hero-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* --- Figure ------------------------------------------------------- */
+
+  .product-figure {
+    position: relative;
+    margin: 0 0 2.5rem 0;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    overflow: hidden;
+  }
+
+  .product-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .product-figure figcaption {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  /* --- Block scaffolding ------------------------------------------- */
+
+  .block {
+    padding: 2rem 0;
+  }
+
+  .block-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 1.25rem 0;
+    flex-wrap: wrap;
+  }
+
+  .block-header .panel-label {
+    margin: 0;
+  }
+
+  .block-note {
+    font-size: 0.9rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  /* --- Capabilities ------------------------------------------------- */
+
+  .capabilities {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 900px) {
+    .capabilities {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .capability {
+    padding: 1.25rem;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+  }
+
+  .capability-tag {
+    font-family: var(--font-display);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    margin: 0 0 0.65rem 0;
+  }
+
+  .capability-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1.02rem;
+    color: hsl(var(--foreground));
+    margin: 0 0 0.5rem 0;
+    line-height: 1.35;
+  }
+
+  .capability-body {
+    font-size: 0.9rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* --- Compatibility ----------------------------------------------- */
+
+  .compat-group + .compat-group {
+    margin-top: 1.5rem;
+  }
+
+  .compat-group-label {
+    font-family: var(--font-display);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 0.6rem 0;
+  }
+
+  .compat-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .compat-row {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(11rem, 18rem) minmax(8rem, 14rem) 1fr;
+    align-items: baseline;
+    gap: 0.85rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .compat-status {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  .compat-row--confirmed .compat-status {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 8px hsl(var(--primary) / 0.4);
+  }
+
+  .compat-row--likely .compat-status {
+    color: hsl(var(--accent));
+  }
+
+  .compat-row--unsupported .compat-status {
+    color: hsl(var(--muted-foreground));
+    opacity: 0.7;
+  }
+
+  .compat-row--note .compat-status {
+    color: hsl(var(--muted-foreground));
+    opacity: 0.55;
+  }
+
+  .compat-row--unsupported {
+    opacity: 0.65;
+  }
+
+  .compat-label {
+    font-family: var(--font-body);
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-size: 0.95rem;
+  }
+
+  .compat-value {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+  }
+
+  .compat-note {
+    font-size: 0.88rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.5;
+  }
+
+  @media (max-width: 720px) {
+    .compat-row {
+      grid-template-columns: 1.5rem 1fr;
+      grid-template-rows: auto auto auto;
+      row-gap: 0.25rem;
+    }
+    .compat-status {
+      grid-row: 1 / 4;
+    }
+    .compat-value {
+      grid-column: 2;
+    }
+    .compat-note {
+      grid-column: 2;
+    }
+  }
+
+  /* --- Install ----------------------------------------------------- */
+
+  .install-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: step;
+  }
+
+  .install-steps li {
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 1rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .install-steps li:first-child {
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .install-step-num {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: hsl(var(--primary));
+    letter-spacing: 0.05em;
+  }
+
+  .install-steps p {
+    margin: 0;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: hsl(var(--foreground));
+  }
+
+  .install-steps code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    padding: 0.05rem 0.35rem;
+    color: hsl(var(--primary));
+  }
+
+  .install-steps a {
+    color: hsl(var(--primary));
+    text-decoration: underline;
+    text-decoration-color: hsl(var(--primary) / 0.45);
+    text-underline-offset: 2px;
+  }
+
+  .install-cta {
+    margin: 1.5rem 0 0 0;
+  }
+
+  /* --- Roadmap ----------------------------------------------------- */
+
+  .roadmap-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .roadmap-list li {
+    display: grid;
+    grid-template-columns: 5rem 1fr;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .roadmap-list li:first-child {
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .roadmap-tag {
+    font-family: var(--font-display);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+  }
+
+  .roadmap-list p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .roadmap-list strong {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+  }
+
+  /* --- Report ------------------------------------------------------ */
+
+  .report-body {
+    max-width: 46rem;
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .report-body a {
+    color: hsl(var(--primary));
+    text-decoration: underline;
+    text-decoration-color: hsl(var(--primary) / 0.45);
+    text-underline-offset: 2px;
+  }
+</style>

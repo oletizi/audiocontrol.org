@@ -1,0 +1,175 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+
+interface Bridge {
+  name: string;
+  description: string;
+  status: 'available' | 'coming-soon';
+  meta: string;
+  slug?: string;
+  image?: string;
+}
+
+const bridges: Bridge[] = [
+  {
+    name: 'MIDI Macro Bridge',
+    description: 'Drive a modern DAW from a Roland MC-500mkII. Transport, jog wheel, and 99 location memories become a hardware control surface for Logic Pro, Ableton Live, or LUNA.',
+    status: 'available',
+    meta: 'Mac · MC-500mkII · DAW Control',
+    slug: '/bridges/midi-macro-bridge/',
+    image: '/images/bridges/mc-500.jpg',
+  },
+];
+
+const available = bridges.filter((b) => b.status === 'available');
+const pending = bridges.filter((b) => b.status === 'coming-soon');
+---
+
+<Layout
+  title="Bridges — audiocontrol.org"
+  description="Native software bridges that turn vintage Roland and Akai hardware into hands-on control surfaces for modern DAWs."
+  image="/images/og/index.png"
+>
+  <header class="page-header">
+    <p class="panel-label">Bridges</p>
+    <h1 class="page-title">Hands on the box. Eyes on the room.</h1>
+    <p class="page-note">
+      Hardware sits beautifully on the desk; the DAW does what the DAW does
+      well. A bridge is a small piece of native software that lets a vintage
+      box drive a modern session — transport, jog, locate, mixer — without
+      giving up the editor on the screen.
+    </p>
+    <hr class="rule-ticked" />
+  </header>
+
+  <section class="block" aria-labelledby="available-label">
+    <header class="block-header">
+      <h2 id="available-label" class="panel-label panel-label--accent">Available Now</h2>
+      <p class="block-note">Bridges you can download and run today.</p>
+    </header>
+    <div class="projects-grid">
+      {available.map((bridge) => (
+        <ProjectCard
+          name={bridge.name}
+          description={bridge.description}
+          status={bridge.status}
+          href={bridge.slug}
+          image={bridge.image}
+          meta={bridge.meta}
+        />
+      ))}
+    </div>
+  </section>
+
+  {pending.length > 0 && (
+    <section class="block" aria-labelledby="pending-label">
+      <header class="block-header">
+        <h2 id="pending-label" class="panel-label">In Development</h2>
+        <p class="block-note">Bridges on the bench. Follow the GitHub org for progress.</p>
+      </header>
+      <div class="projects-grid projects-grid--small">
+        {pending.map((bridge) => (
+          <ProjectCard
+            name={bridge.name}
+            description={bridge.description}
+            status={bridge.status}
+            meta={bridge.meta}
+          />
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="block bridges-note" aria-labelledby="philosophy-label">
+    <header class="block-header">
+      <h2 id="philosophy-label" class="panel-label">Why bridges</h2>
+    </header>
+    <p class="bridges-paragraph">
+      The best old hardware was built for the hands. Buttons under your
+      fingertips, a data wheel, a screen the size of a postage stamp because
+      you don't need a big screen when the controls are this clear. The DAW
+      brought modern editing power and gave away that tactile vocabulary.
+      Bridges put it back — without asking you to leave the DAW.
+    </p>
+  </section>
+</Layout>
+
+<style>
+  .page-header {
+    padding: 2.5rem 0 1.5rem;
+    max-width: 46rem;
+  }
+
+  .page-header .panel-label {
+    margin: 0 0 0.75rem 0;
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.2;
+    color: hsl(var(--foreground));
+    margin: 0 0 0.85rem 0;
+  }
+
+  .page-note {
+    font-size: 1rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.6;
+    margin: 0 0 1.75rem 0;
+  }
+
+  .block {
+    padding: 1.75rem 0 2.5rem;
+  }
+
+  .block-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 1.5rem 0;
+    flex-wrap: wrap;
+  }
+
+  .block-header .panel-label {
+    margin: 0;
+  }
+
+  .block-note {
+    font-size: 0.9rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .projects-grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 720px) {
+    .projects-grid--featured {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .projects-grid--small {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .bridges-note {
+    border-top: 1px solid hsl(var(--border));
+    margin-top: 1rem;
+    padding-top: 2.5rem;
+  }
+
+  .bridges-paragraph {
+    max-width: 46rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.65;
+    font-size: 0.98rem;
+    margin: 0;
+  }
+</style>
