@@ -59,6 +59,24 @@ const pages = defineCollection({
     z.object({
       description: z.string(),
       socialImage: image().optional(),
+      /**
+       * Optional list of cards rendered on index-style pages (e.g. the
+       * /bridges/ page lists each bridge as a card here). Card data
+       * lives in frontmatter so adding a new entry to an index page is
+       * a markdown-only edit, no .astro touch required.
+       */
+      bridges: z
+        .array(
+          z.object({
+            name: z.string(),
+            description: z.string(),
+            status: z.enum(['available', 'coming-soon']),
+            meta: z.string(),
+            slug: z.string().optional(),
+            image: z.string().optional(),
+          }),
+        )
+        .optional(),
       deskwork: z
         .object({ id: z.string().uuid() })
         .passthrough()

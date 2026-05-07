@@ -1,0 +1,909 @@
+---
+import { getEntry } from 'astro:content';
+import Layout from '../../../layouts/Layout.astro';
+import {
+  parsePageSlots,
+  renderSlotBlock,
+  renderSlotInline,
+} from '../../../../../shared/page-slots';
+
+interface CompatRow {
+  label: string;
+  value: string;
+  status: 'confirmed' | 'likely' | 'unsupported' | 'note';
+  note?: string;
+}
+
+const hardwareRows: CompatRow[] = [
+  { label: 'Novation LaunchControl XL mk3', value: '2024', status: 'confirmed', note: 'Primary target. Built and tested against this unit.' },
+  { label: 'Novation LaunchControl XL mk2', value: '2014/2018', status: 'likely', note: 'Older sibling. Untested but the bridge\'s MIDI mapping should adapt with minor tweaks.' },
+  { label: 'Other Novation Launch*', value: 'Launchpad · Launchkey · FLkey', status: 'note', note: 'Different control families. This bridge is LCXL-specific.' },
+];
+
+const dawRows: CompatRow[] = [
+  { label: 'Universal Audio LUNA', value: 'macOS', status: 'confirmed', note: 'Primary target.' },
+  { label: 'Logic Pro', value: 'macOS', status: 'likely', note: 'LUNA\'s MCU is close enough to Logic\'s that the bridge should drive it. Untested but should work.' },
+  { label: 'Other DAWs', value: 'Mackie Control', status: 'note', note: 'If your DAW takes Mackie Control, this can drive it. LUNA was the primary target.' },
+];
+
+const platformRows: CompatRow[] = [
+  { label: 'macOS', value: 'Universal binary', status: 'confirmed' },
+  { label: 'Linux', value: 'Builds; untested', status: 'note', note: 'The Linux build runs but has not been exercised against a DAW.' },
+  { label: 'Windows', value: 'Not yet', status: 'unsupported' },
+];
+
+const downloadHref = 'https://github.com/audiocontrol-org/audiocontrol/releases?q=launchcontrol-bridge';
+const sourceHref = 'https://github.com/audiocontrol-org/audiocontrol';
+const dispatchHref = '/blog/';
+
+const entry = await getEntry('pages', 'bridges/launchcontrol-xl-bridge');
+if (!entry) {
+  throw new Error('Missing content entry: pages/bridges/launchcontrol-xl-bridge. Expected src/sites/audiocontrol/content/pages/bridges/launchcontrol-xl-bridge/index.md');
+}
+const slots = parsePageSlots(entry.body ?? '');
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'LaunchControl Bridge',
+  applicationCategory: 'MultimediaApplication',
+  applicationSubCategory: 'DAW Control Surface Bridge',
+  operatingSystem: 'macOS',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  url: 'https://audiocontrol.org/bridges/launchcontrol-xl-bridge/',
+  downloadUrl: downloadHref,
+  description: entry.data.description,
+  publisher: { '@type': 'Organization', name: 'audiocontrol.org', url: 'https://audiocontrol.org' },
+  isAccessibleForFree: true,
+  license: 'https://opensource.org/licenses/MIT',
+};
+---
+
+<Layout
+  title={slots.raw.metaTitle ?? 'LaunchControl Bridge'}
+  description={entry.data.description}
+  image="/images/bridges/launchcontrol-xl-mk3.png"
+  type="website"
+  jsonLd={jsonLd}
+>
+  <article class="product">
+    <header class="hero" aria-labelledby="product-title">
+      <div class="hero-content">
+        <p class="hero-eyebrow">
+          <span class="signal-led" aria-hidden="true"></span>
+          <span set:html={renderSlotInline(slots, 'heroKind')} />
+          <span class="hero-sep" aria-hidden="true">·</span>
+          <span set:html={renderSlotInline(slots, 'heroVersion')} />
+        </p>
+        <h1 id="product-title" class="hero-title">
+          <span set:html={renderSlotInline(slots, 'heroTitle')} /><br />
+          <span class="phosphor" set:html={renderSlotInline(slots, 'heroPhosphor')} />
+        </h1>
+        <div class="hero-body" set:html={renderSlotBlock(slots, 'heroBody')} />
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" href={downloadHref} rel="noopener">
+            <span class="btn-arrow" aria-hidden="true">↓</span>
+            <span set:html={renderSlotInline(slots, 'ctaDownload')} />
+          </a>
+          <a class="btn btn-ghost" href={dispatchHref}>
+            <span class="btn-arrow" aria-hidden="true">→</span>
+            <span set:html={renderSlotInline(slots, 'ctaDispatch')} />
+          </a>
+          <a class="btn btn-ghost" href={sourceHref} rel="noopener">
+            <span class="btn-arrow" aria-hidden="true">↳</span>
+            <span set:html={renderSlotInline(slots, 'ctaSource')} />
+          </a>
+        </div>
+
+        <hr class="rule-ticked" />
+
+        <dl class="hero-stats" aria-label="Bridge specifications">
+          <div>
+            <dt set:html={renderSlotInline(slots, 'statHardwareLabel')} />
+            <dd set:html={renderSlotInline(slots, 'statHardwareValue')} />
+          </div>
+          <div>
+            <dt set:html={renderSlotInline(slots, 'statDawsLabel')} />
+            <dd set:html={renderSlotInline(slots, 'statDawsValue')} />
+          </div>
+          <div>
+            <dt set:html={renderSlotInline(slots, 'statProtocolLabel')} />
+            <dd set:html={renderSlotInline(slots, 'statProtocolValue')} />
+          </div>
+          <div>
+            <dt set:html={renderSlotInline(slots, 'statCostLabel')} />
+            <dd set:html={renderSlotInline(slots, 'statCostValue')} />
+          </div>
+        </dl>
+      </div>
+
+      <aside class="hero-aside">
+        <figure class="screen-frame">
+          <header class="screen-frame-head">
+            <span class="screen-frame-led" aria-hidden="true"></span>
+            <span class="screen-frame-fig" set:html={renderSlotInline(slots, 'heroPhotoLabel')} />
+            <span class="screen-frame-sep" aria-hidden="true">·</span>
+            <span class="screen-frame-subject" set:html={renderSlotInline(slots, 'heroPhotoSubject')} />
+          </header>
+          <div class="screen-frame-body">
+            <img
+              class="hero-photo"
+              src="/images/bridges/launchcontrol-xl-mk3.png"
+              alt={slots.raw.heroFigureAlt ?? ''}
+              loading="eager"
+              decoding="async"
+            />
+            <div class="screen-frame-overlay" aria-hidden="true"></div>
+            <span class="screen-frame-corner screen-frame-corner--tl" aria-hidden="true"></span>
+            <span class="screen-frame-corner screen-frame-corner--tr" aria-hidden="true"></span>
+            <span class="screen-frame-corner screen-frame-corner--bl" aria-hidden="true"></span>
+            <span class="screen-frame-corner screen-frame-corner--br" aria-hidden="true"></span>
+          </div>
+          <figcaption class="screen-frame-foot" set:html={renderSlotInline(slots, 'heroPhotoMeta')} />
+        </figure>
+      </aside>
+    </header>
+
+    <section class="block" aria-labelledby="what-it-does-label">
+      <header class="block-header">
+        <h2 id="what-it-does-label" class="panel-label" set:html={renderSlotInline(slots, 'capabilitiesLabel')} />
+      </header>
+      <div class="capabilities">
+        <div class="capability">
+          <p class="capability-tag" set:html={renderSlotInline(slots, 'capability1Tag')} />
+          <h3 class="capability-title" set:html={renderSlotInline(slots, 'capability1Title')} />
+          <div class="capability-body" set:html={renderSlotBlock(slots, 'capability1Body')} />
+        </div>
+        <div class="capability">
+          <p class="capability-tag" set:html={renderSlotInline(slots, 'capability2Tag')} />
+          <h3 class="capability-title" set:html={renderSlotInline(slots, 'capability2Title')} />
+          <div class="capability-body" set:html={renderSlotBlock(slots, 'capability2Body')} />
+        </div>
+        <div class="capability">
+          <p class="capability-tag" set:html={renderSlotInline(slots, 'capability3Tag')} />
+          <h3 class="capability-title" set:html={renderSlotInline(slots, 'capability3Title')} />
+          <div class="capability-body" set:html={renderSlotBlock(slots, 'capability3Body')} />
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="compat-label">
+      <header class="block-header">
+        <h2 id="compat-label" class="panel-label panel-label--accent" set:html={renderSlotInline(slots, 'compatLabel')} />
+        {slots.raw.compatNote && (
+          <div class="block-note" set:html={renderSlotBlock(slots, 'compatNote')} />
+        )}
+      </header>
+
+      <div class="compat-group">
+        <p class="compat-group-label">Hardware</p>
+        <ul class="compat-list">
+          {hardwareRows.map((row) => (
+            <li class={`compat-row compat-row--${row.status}`}>
+              <span class="compat-status" aria-hidden="true">
+                {row.status === 'confirmed' && '✓'}
+                {row.status === 'likely' && '?'}
+                {row.status === 'unsupported' && '✕'}
+                {row.status === 'note' && '·'}
+              </span>
+              <span class="compat-label">{row.label}</span>
+              <span class="compat-value">{row.value}</span>
+              {row.note && <span class="compat-note">{row.note}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="compat-group">
+        <p class="compat-group-label">DAWs</p>
+        <ul class="compat-list">
+          {dawRows.map((row) => (
+            <li class={`compat-row compat-row--${row.status}`}>
+              <span class="compat-status" aria-hidden="true">
+                {row.status === 'confirmed' && '✓'}
+                {row.status === 'likely' && '?'}
+                {row.status === 'unsupported' && '✕'}
+                {row.status === 'note' && '·'}
+              </span>
+              <span class="compat-label">{row.label}</span>
+              <span class="compat-value">{row.value}</span>
+              {row.note && <span class="compat-note">{row.note}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="compat-group">
+        <p class="compat-group-label">Platform</p>
+        <ul class="compat-list">
+          {platformRows.map((row) => (
+            <li class={`compat-row compat-row--${row.status}`}>
+              <span class="compat-status" aria-hidden="true">
+                {row.status === 'confirmed' && '✓'}
+                {row.status === 'likely' && '?'}
+                {row.status === 'unsupported' && '✕'}
+                {row.status === 'note' && '·'}
+              </span>
+              <span class="compat-label">{row.label}</span>
+              <span class="compat-value">{row.value}</span>
+              {row.note && <span class="compat-note">{row.note}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <section class="block install" aria-labelledby="install-label">
+      <header class="block-header">
+        <h2 id="install-label" class="panel-label" set:html={renderSlotInline(slots, 'installLabel')} />
+      </header>
+      <ol class="install-steps">
+        <li>
+          <span class="install-step-num" aria-hidden="true">01</span>
+          <div class="install-step-body" set:html={renderSlotBlock(slots, 'installStep1')} />
+        </li>
+        <li>
+          <span class="install-step-num" aria-hidden="true">02</span>
+          <div class="install-step-body" set:html={renderSlotBlock(slots, 'installStep2')} />
+        </li>
+        <li>
+          <span class="install-step-num" aria-hidden="true">03</span>
+          <div class="install-step-body" set:html={renderSlotBlock(slots, 'installStep3')} />
+        </li>
+      </ol>
+
+      <div class="install-cta">
+        <a class="btn btn-primary" href={downloadHref} rel="noopener">
+          <span class="btn-arrow" aria-hidden="true">↓</span>
+          <span set:html={renderSlotInline(slots, 'installCta')} />
+        </a>
+      </div>
+    </section>
+
+    <section class="block roadmap" aria-labelledby="roadmap-label">
+      <header class="block-header">
+        <h2 id="roadmap-label" class="panel-label" set:html={renderSlotInline(slots, 'roadmapLabel')} />
+        {slots.raw.roadmapNote && (
+          <div class="block-note" set:html={renderSlotBlock(slots, 'roadmapNote')} />
+        )}
+      </header>
+      <ul class="roadmap-list">
+        <li>
+          <span class="roadmap-tag" set:html={renderSlotInline(slots, 'roadmap1Tag')} />
+          <div class="roadmap-body" set:html={renderSlotBlock(slots, 'roadmap1Body')} />
+        </li>
+        <li>
+          <span class="roadmap-tag" set:html={renderSlotInline(slots, 'roadmap2Tag')} />
+          <div class="roadmap-body" set:html={renderSlotBlock(slots, 'roadmap2Body')} />
+        </li>
+      </ul>
+    </section>
+
+    <section class="block report" aria-labelledby="report-label">
+      <header class="block-header">
+        <h2 id="report-label" class="panel-label" set:html={renderSlotInline(slots, 'reportLabel')} />
+      </header>
+      <div class="report-body" set:html={renderSlotBlock(slots, 'reportBody')} />
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .product {
+    padding-bottom: 2rem;
+  }
+
+  /* --- Hero --------------------------------------------------------- */
+
+  .hero {
+    padding: 3rem 0 2.5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: clamp(1.5rem, 3vw, 3rem);
+    align-items: start;
+  }
+
+  .hero-content {
+    max-width: 38rem;
+  }
+
+  .hero-aside {
+    align-self: stretch;
+    display: flex;
+    min-height: 0;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 1.5rem 0;
+  }
+
+  .hero-eyebrow .signal-led {
+    width: 7px;
+    height: 7px;
+  }
+
+  .hero-sep {
+    opacity: 0.5;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.85rem, 4vw, 3rem);
+    font-weight: 400;
+    line-height: 1.15;
+    margin: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .hero-title .phosphor {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 22px hsl(var(--primary) / 0.35);
+  }
+
+  .hero-body {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: hsl(var(--muted-foreground));
+    max-width: 42rem;
+    margin: 1.5rem 0 2rem;
+  }
+
+  .hero-body :global(p) {
+    margin: 0 0 1em 0;
+  }
+
+  .hero-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 0 0 2.5rem 0;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.8rem 1.25rem;
+    border: 1px solid hsl(var(--border));
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .btn-arrow {
+    color: hsl(var(--primary));
+    transition: transform 0.2s ease;
+  }
+
+  .btn-primary {
+    background: hsl(var(--primary) / 0.08);
+    border-color: hsl(var(--primary) / 0.5);
+    color: hsl(var(--foreground));
+  }
+
+  .btn-primary:hover {
+    background: hsl(var(--primary) / 0.14);
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 24px hsl(var(--primary) / 0.15);
+  }
+
+  .btn-primary:hover .btn-arrow {
+    transform: translateY(2px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .btn-ghost:hover {
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border-hover));
+  }
+
+  .btn-ghost:hover .btn-arrow {
+    transform: translateX(3px);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 3px;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem 2rem;
+    margin: 1.5rem 0 0 0;
+  }
+
+  .hero-stats > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .hero-stats dt {
+    font-family: var(--font-display);
+    font-size: 0.64rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .hero-stats dd {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: hsl(var(--foreground));
+    margin: 0;
+  }
+
+  @media (max-width: 720px) {
+    .hero {
+      padding: 2rem 0 1.5rem;
+    }
+    .hero-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* --- Screen frame (CRT-overlay photo) --------------------------- */
+
+  .screen-frame {
+    flex: 1;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow:
+      0 0 0 1px hsl(var(--background)) inset,
+      0 18px 38px -22px rgba(0, 0, 0, 0.75);
+  }
+
+  .screen-frame-head,
+  .screen-frame-foot {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.7rem 1rem;
+    font-family: var(--font-display);
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .screen-frame-head {
+    border-bottom: 1px dashed hsl(var(--border));
+  }
+
+  .screen-frame-foot {
+    border-top: 1px dashed hsl(var(--border));
+    margin: 0;
+  }
+
+  .screen-frame-led {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 9px hsl(var(--primary) / 0.65);
+    flex-shrink: 0;
+  }
+
+  .screen-frame-fig {
+    color: hsl(var(--primary));
+    letter-spacing: 0.22em;
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.35);
+  }
+
+  .screen-frame-sep {
+    opacity: 0.5;
+  }
+
+  .screen-frame-subject {
+    color: hsl(var(--foreground));
+    letter-spacing: 0.14em;
+  }
+
+  .screen-frame-body {
+    position: relative;
+    flex: 1;
+    min-height: 320px;
+    overflow: hidden;
+    background: #0a0a0a;
+  }
+
+  .hero-photo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    filter:
+      contrast(1.03)
+      saturate(0.95)
+      brightness(0.97)
+      hue-rotate(-2deg);
+  }
+
+  .screen-frame-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.22) 0,
+        rgba(0, 0, 0, 0.22) 1px,
+        transparent 1px,
+        transparent 6px
+      ),
+      radial-gradient(
+        ellipse 80% 75% at 50% 48%,
+        transparent 45%,
+        rgba(0, 0, 0, 0.10) 75%,
+        rgba(0, 0, 0, 0.32) 100%
+      );
+    mix-blend-mode: multiply;
+  }
+
+  .screen-frame-body::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      transparent 82%,
+      hsl(var(--primary) / 0.05) 94%,
+      hsl(var(--primary) / 0.09) 100%
+    );
+  }
+
+  .screen-frame-corner {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    border-color: hsl(var(--primary) / 0.55);
+    border-style: solid;
+    border-width: 0;
+    pointer-events: none;
+  }
+  .screen-frame-corner--tl { top: 8px; left: 8px; border-top-width: 1px; border-left-width: 1px; }
+  .screen-frame-corner--tr { top: 8px; right: 8px; border-top-width: 1px; border-right-width: 1px; }
+  .screen-frame-corner--bl { bottom: 8px; left: 8px; border-bottom-width: 1px; border-left-width: 1px; }
+  .screen-frame-corner--br { bottom: 8px; right: 8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  @media (max-width: 900px) {
+    .hero {
+      grid-template-columns: 1fr;
+    }
+    .hero-aside {
+      order: -1;
+      max-width: 32rem;
+    }
+    .screen-frame-body {
+      min-height: 240px;
+      max-height: 380px;
+    }
+  }
+
+  /* --- Block scaffolding ------------------------------------------- */
+
+  .block {
+    padding: 2rem 0;
+  }
+
+  .block-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 1.25rem 0;
+    flex-wrap: wrap;
+  }
+
+  .block-header .panel-label {
+    margin: 0;
+  }
+
+  .block-note {
+    font-size: 0.9rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .block-note :global(p) {
+    margin: 0;
+  }
+
+  /* --- Capabilities ------------------------------------------------- */
+
+  .capabilities {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 900px) {
+    .capabilities {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .capability {
+    padding: 1.25rem;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+  }
+
+  .capability-tag {
+    font-family: var(--font-display);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    margin: 0 0 0.65rem 0;
+  }
+
+  .capability-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1.02rem;
+    color: hsl(var(--foreground));
+    margin: 0 0 0.5rem 0;
+    line-height: 1.35;
+  }
+
+  .capability-body {
+    font-size: 0.9rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .capability-body :global(p) {
+    margin: 0;
+  }
+
+  /* --- Compatibility ----------------------------------------------- */
+
+  .compat-group + .compat-group {
+    margin-top: 1.5rem;
+  }
+
+  .compat-group-label {
+    font-family: var(--font-display);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    margin: 0 0 0.6rem 0;
+  }
+
+  .compat-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .compat-row {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(11rem, 18rem) minmax(8rem, 14rem) 1fr;
+    align-items: baseline;
+    gap: 0.85rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .compat-status {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  .compat-row--confirmed .compat-status {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 8px hsl(var(--primary) / 0.4);
+  }
+
+  .compat-row--likely .compat-status {
+    color: hsl(var(--accent));
+  }
+
+  .compat-row--unsupported .compat-status {
+    color: hsl(var(--muted-foreground));
+    opacity: 0.7;
+  }
+
+  .compat-row--note .compat-status {
+    color: hsl(var(--muted-foreground));
+    opacity: 0.55;
+  }
+
+  .compat-row--unsupported {
+    opacity: 0.65;
+  }
+
+  .compat-label {
+    font-family: var(--font-body);
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-size: 0.95rem;
+  }
+
+  .compat-value {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+  }
+
+  .compat-note {
+    font-size: 0.88rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.5;
+  }
+
+  @media (max-width: 720px) {
+    .compat-row {
+      grid-template-columns: 1.5rem 1fr;
+      grid-template-rows: auto auto auto;
+      row-gap: 0.25rem;
+    }
+    .compat-status {
+      grid-row: 1 / 4;
+    }
+    .compat-value {
+      grid-column: 2;
+    }
+    .compat-note {
+      grid-column: 2;
+    }
+  }
+
+  /* --- Install ----------------------------------------------------- */
+
+  .install-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: step;
+  }
+
+  .install-steps li {
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 1rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .install-steps li:first-child {
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .install-step-num {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: hsl(var(--primary));
+    letter-spacing: 0.05em;
+  }
+
+  .install-step-body :global(p) {
+    margin: 0;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: hsl(var(--foreground));
+  }
+
+  .install-step-body :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    padding: 0.05rem 0.35rem;
+    color: hsl(var(--primary));
+  }
+
+  .install-step-body :global(a) {
+    color: hsl(var(--primary));
+    text-decoration: underline;
+    text-decoration-color: hsl(var(--primary) / 0.45);
+    text-underline-offset: 2px;
+  }
+
+  .install-cta {
+    margin: 1.5rem 0 0 0;
+  }
+
+  /* --- Roadmap ----------------------------------------------------- */
+
+  .roadmap-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .roadmap-list li {
+    display: grid;
+    grid-template-columns: 5rem 1fr;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .roadmap-list li:first-child {
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .roadmap-tag {
+    font-family: var(--font-display);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+  }
+
+  .roadmap-body :global(p) {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .roadmap-body :global(strong) {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+  }
+
+  /* --- Report ------------------------------------------------------ */
+
+  .report-body {
+    max-width: 46rem;
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .report-body :global(p) {
+    margin: 0;
+  }
+
+  .report-body :global(a) {
+    color: hsl(var(--primary));
+    text-decoration: underline;
+    text-decoration-color: hsl(var(--primary) / 0.45);
+    text-underline-offset: 2px;
+  }
+</style>

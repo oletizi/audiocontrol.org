@@ -18,6 +18,7 @@ const lastModified = {
   '/': '2026-05-07',
   '/bridges/': '2026-05-07',
   '/bridges/midi-macro-bridge/': '2026-05-07',
+  '/bridges/launchcontrol-xl-bridge/': '2026-05-07',
   '/blog/free-roland-s330-sampler-editor/': '2025-01-15',
   '/blog/roland-s-series-samplers/': '2025-01-15',
   '/blog/roland-s330-sampler-editor-feb-2026-update/': '2026-02-09',

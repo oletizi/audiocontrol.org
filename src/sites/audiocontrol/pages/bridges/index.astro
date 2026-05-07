@@ -8,34 +8,15 @@ import {
   renderSlotInline,
 } from '../../../../shared/page-slots';
 
-interface Bridge {
-  name: string;
-  description: string;
-  status: 'available' | 'coming-soon';
-  meta: string;
-  slug?: string;
-  image?: string;
-}
-
-const bridges: Bridge[] = [
-  {
-    name: 'MIDI Macro Bridge',
-    description: 'Drive a modern DAW from a Roland MC-500mkII. Transport, jog wheel, and 99 location memories become a hardware control surface for Logic Pro, Ableton Live, or LUNA.',
-    status: 'available',
-    meta: 'Mac · MC-500mkII · DAW Control',
-    slug: '/bridges/midi-macro-bridge/',
-    image: '/images/bridges/mc-500.jpg',
-  },
-];
-
-const available = bridges.filter((b) => b.status === 'available');
-const pending = bridges.filter((b) => b.status === 'coming-soon');
-
 const entry = await getEntry('pages', 'bridges');
 if (!entry) {
   throw new Error('Missing content entry: pages/bridges. Expected src/sites/audiocontrol/content/pages/bridges/index.md');
 }
 const slots = parsePageSlots(entry.body ?? '');
+
+const bridges = entry.data.bridges ?? [];
+const available = bridges.filter((b) => b.status === 'available');
+const pending = bridges.filter((b) => b.status === 'coming-soon');
 ---
 
 <Layout
@@ -63,7 +44,7 @@ const slots = parsePageSlots(entry.body ?? '');
         <div class="block-note" set:html={renderSlotBlock(slots, 'availableNote')} />
       )}
     </header>
-    <div class="projects-grid">
+    <div class="projects-grid projects-grid--featured">
       {available.map((bridge) => (
         <ProjectCard
           name={bridge.name}
