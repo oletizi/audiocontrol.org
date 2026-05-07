@@ -21,7 +21,9 @@
 
 ## Drafting
 
-*No entries.*
+| UUID | Slug | Title | Description | Keywords | Source |
+|------|------|------|------|------|------|
+| afa2d36f-dc0a-498f-8954-c171514ab48b | bridges | Hands on the box. Eyes on the room. | Native software bridges that turn vintage Roland and Akai hardware into hands-on control surfaces for modern DAWs. |  | manual |
 
 ## Review
 

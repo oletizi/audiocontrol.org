@@ -1,0 +1,31 @@
+{
+  "id": "afa2d36f-dc0a-498f-8954-c171514ab48b",
+  "timestamp": "2026-05-07T17:43:19.226Z",
+  "event": "ingest",
+  "slug": "bridges",
+  "entryId": "afa2d36f-dc0a-498f-8954-c171514ab48b",
+  "site": "audiocontrol",
+  "stage": "Drafting",
+  "sourceFile": "src/sites/audiocontrol/content/pages/bridges/index.md",
+  "frontmatterSnapshot": {
+    "title": "Hands on the box. Eyes on the room.",
+    "metaTitle": "Bridges — audiocontrol.org",
+    "description": "Native software bridges that turn vintage Roland and Akai hardware into hands-on control surfaces for modern DAWs.",
+    "kicker": "Bridges",
+    "intro": "Hardware sits beautifully on the desk; the DAW does what the DAW does well. A bridge is a small piece of native software that lets a vintage box drive a modern session — transport, jog, locate, mixer — without giving up the editor on the screen.",
+    "availableLabel": "Available Now",
+    "availableNote": "Bridges you can download and run today.",
+    "pendingLabel": "In Development",
+    "pendingNote": "Bridges on the bench. Follow the GitHub org for progress.",
+    "closingLabel": "Why bridges",
+    "closingBody": "The best old hardware was built for the hands. Buttons under your fingertips, a data wheel, a screen the size of a postage stamp because you don't need a big screen when the controls are this clear. The DAW brought modern editing power and gave away that tactile vocabulary. Bridges put it back — without asking you to leave the DAW.",
+    "deskwork": {
+      "id": "afa2d36f-dc0a-498f-8954-c171514ab48b"
+    }
+  },
+  "derivation": {
+    "slug": "explicit",
+    "state": "explicit",
+    "date": "mtime"
+  }
+}

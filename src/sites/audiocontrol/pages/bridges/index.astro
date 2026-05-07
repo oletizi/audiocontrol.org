@@ -1,6 +1,12 @@
 ---
+import { getEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
+import {
+  parsePageSlots,
+  renderSlotBlock,
+  renderSlotInline,
+} from '../../../../shared/page-slots';
 
 interface Bridge {
   name: string;
@@ -24,29 +30,38 @@ const bridges: Bridge[] = [
 
 const available = bridges.filter((b) => b.status === 'available');
 const pending = bridges.filter((b) => b.status === 'coming-soon');
+
+const entry = await getEntry('pages', 'bridges');
+if (!entry) {
+  throw new Error('Missing content entry: pages/bridges. Expected src/sites/audiocontrol/content/pages/bridges/index.md');
+}
+const slots = parsePageSlots(entry.body ?? '');
 ---
 
 <Layout
-  title="Bridges — audiocontrol.org"
-  description="Native software bridges that turn vintage Roland and Akai hardware into hands-on control surfaces for modern DAWs."
+  title={slots.raw.metaTitle ?? slots.raw.title ?? entry.data.description}
+  description={entry.data.description}
   image="/images/og/index.png"
 >
   <header class="page-header">
-    <p class="panel-label">Bridges</p>
-    <h1 class="page-title">Hands on the box. Eyes on the room.</h1>
-    <p class="page-note">
-      Hardware sits beautifully on the desk; the DAW does what the DAW does
-      well. A bridge is a small piece of native software that lets a vintage
-      box drive a modern session — transport, jog, locate, mixer — without
-      giving up the editor on the screen.
-    </p>
+    {slots.raw.kicker && (
+      <p class="panel-label" set:html={renderSlotInline(slots, 'kicker')} />
+    )}
+    {slots.raw.title && (
+      <h1 class="page-title" set:html={renderSlotInline(slots, 'title')} />
+    )}
+    {slots.raw.intro && (
+      <div class="page-note" set:html={renderSlotBlock(slots, 'intro')} />
+    )}
     <hr class="rule-ticked" />
   </header>
 
   <section class="block" aria-labelledby="available-label">
     <header class="block-header">
-      <h2 id="available-label" class="panel-label panel-label--accent">Available Now</h2>
-      <p class="block-note">Bridges you can download and run today.</p>
+      <h2 id="available-label" class="panel-label panel-label--accent" set:html={renderSlotInline(slots, 'availableLabel')} />
+      {slots.raw.availableNote && (
+        <div class="block-note" set:html={renderSlotBlock(slots, 'availableNote')} />
+      )}
     </header>
     <div class="projects-grid">
       {available.map((bridge) => (
@@ -65,8 +80,10 @@ const pending = bridges.filter((b) => b.status === 'coming-soon');
   {pending.length > 0 && (
     <section class="block" aria-labelledby="pending-label">
       <header class="block-header">
-        <h2 id="pending-label" class="panel-label">In Development</h2>
-        <p class="block-note">Bridges on the bench. Follow the GitHub org for progress.</p>
+        <h2 id="pending-label" class="panel-label" set:html={renderSlotInline(slots, 'pendingLabel')} />
+        {slots.raw.pendingNote && (
+          <div class="block-note" set:html={renderSlotBlock(slots, 'pendingNote')} />
+        )}
       </header>
       <div class="projects-grid projects-grid--small">
         {pending.map((bridge) => (
@@ -81,18 +98,14 @@ const pending = bridges.filter((b) => b.status === 'coming-soon');
     </section>
   )}
 
-  <section class="block bridges-note" aria-labelledby="philosophy-label">
-    <header class="block-header">
-      <h2 id="philosophy-label" class="panel-label">Why bridges</h2>
-    </header>
-    <p class="bridges-paragraph">
-      The best old hardware was built for the hands. Buttons under your
-      fingertips, a data wheel, a screen the size of a postage stamp because
-      you don't need a big screen when the controls are this clear. The DAW
-      brought modern editing power and gave away that tactile vocabulary.
-      Bridges put it back — without asking you to leave the DAW.
-    </p>
-  </section>
+  {slots.raw.closingLabel && slots.raw.closing && (
+    <section class="block bridges-note" aria-labelledby="philosophy-label">
+      <header class="block-header">
+        <h2 id="philosophy-label" class="panel-label" set:html={renderSlotInline(slots, 'closingLabel')} />
+      </header>
+      <div class="bridges-paragraph" set:html={renderSlotBlock(slots, 'closing')} />
+    </section>
+  )}
 </Layout>
 
 <style>
@@ -121,6 +134,14 @@ const pending = bridges.filter((b) => b.status === 'coming-soon');
     margin: 0 0 1.75rem 0;
   }
 
+  .page-note :global(p) {
+    margin: 0 0 1em 0;
+  }
+
+  .page-note :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
   .block {
     padding: 1.75rem 0 2.5rem;
   }
@@ -141,6 +162,10 @@ const pending = bridges.filter((b) => b.status === 'coming-soon');
   .block-note {
     font-size: 0.9rem;
     color: hsl(var(--muted-foreground));
+    margin: 0;
+  }
+
+  .block-note :global(p) {
     margin: 0;
   }
 
@@ -171,5 +196,13 @@ const pending = bridges.filter((b) => b.status === 'coming-soon');
     line-height: 1.65;
     font-size: 0.98rem;
     margin: 0;
+  }
+
+  .bridges-paragraph :global(p) {
+    margin: 0 0 1em 0;
+  }
+
+  .bridges-paragraph :global(p:last-child) {
+    margin-bottom: 0;
   }
 </style>

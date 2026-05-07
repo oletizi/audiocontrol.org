@@ -42,4 +42,28 @@ const blog = defineCollection({
     }),
 });
 
-export const collections = { blog };
+/**
+ * Static pages (e.g. /bridges/, /about/) keep their structural HTML in
+ * .astro files but lift editable copy into per-page markdown entries
+ * so a copywriter — or the deskwork studio — can iterate on prose
+ * without touching component code. Same directory-per-entry shape as
+ * blog so co-located assets stay an option later.
+ */
+const pages = defineCollection({
+  loader: glob({
+    pattern: '*/index.md',
+    base: './src/sites/audiocontrol/content/pages',
+    generateId: ({ entry }) => entry.replace(/\/index\.md$/, ''),
+  }),
+  schema: ({ image }) =>
+    z.object({
+      description: z.string(),
+      socialImage: image().optional(),
+      deskwork: z
+        .object({ id: z.string().uuid() })
+        .passthrough()
+        .optional(),
+    }),
+});
+
+export const collections = { blog, pages };

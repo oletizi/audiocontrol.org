@@ -4,7 +4,8 @@
   "sites": {
     "audiocontrol": {
       "host": "audiocontrol.org",
-      "contentDir": "src/sites/audiocontrol/content/blog",
+      "contentDir": "src/sites/audiocontrol/content",
+      "blogFilenameTemplate": "blog/{slug}/index.md",
       "calendarPath": "docs/editorial-calendar-audiocontrol.md",
       "channelsPath": "docs/editorial-channels-audiocontrol.json"
     },
