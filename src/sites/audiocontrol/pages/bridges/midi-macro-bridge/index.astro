@@ -69,53 +69,81 @@ const jsonLd = {
 >
   <article class="product">
     <header class="hero" aria-labelledby="product-title">
-      <p class="hero-eyebrow">
-        <span class="signal-led" aria-hidden="true"></span>
-        <span set:html={renderSlotInline(slots, 'heroKind')} />
-        <span class="hero-sep" aria-hidden="true">·</span>
-        <span set:html={renderSlotInline(slots, 'heroVersion')} />
-      </p>
-      <h1 id="product-title" class="hero-title">
-        <span set:html={renderSlotInline(slots, 'heroTitle')} /><br />
-        <span class="phosphor" set:html={renderSlotInline(slots, 'heroPhosphor')} />
-      </h1>
-      <div class="hero-body" set:html={renderSlotBlock(slots, 'heroBody')} />
+      <div class="hero-content">
+        <p class="hero-eyebrow">
+          <span class="signal-led" aria-hidden="true"></span>
+          <span set:html={renderSlotInline(slots, 'heroKind')} />
+          <span class="hero-sep" aria-hidden="true">·</span>
+          <span set:html={renderSlotInline(slots, 'heroVersion')} />
+        </p>
+        <h1 id="product-title" class="hero-title">
+          <span set:html={renderSlotInline(slots, 'heroTitle')} /><br />
+          <span class="phosphor" set:html={renderSlotInline(slots, 'heroPhosphor')} />
+        </h1>
+        <div class="hero-body" set:html={renderSlotBlock(slots, 'heroBody')} />
 
-      <div class="hero-actions">
-        <a class="btn btn-primary" href={downloadHref} rel="noopener">
-          <span class="btn-arrow" aria-hidden="true">↓</span>
-          <span set:html={renderSlotInline(slots, 'ctaDownload')} />
-        </a>
-        <a class="btn btn-ghost" href={dispatchHref}>
-          <span class="btn-arrow" aria-hidden="true">→</span>
-          <span set:html={renderSlotInline(slots, 'ctaDispatch')} />
-        </a>
-        <a class="btn btn-ghost" href={sourceHref} rel="noopener">
-          <span class="btn-arrow" aria-hidden="true">↳</span>
-          <span set:html={renderSlotInline(slots, 'ctaSource')} />
-        </a>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href={downloadHref} rel="noopener">
+            <span class="btn-arrow" aria-hidden="true">↓</span>
+            <span set:html={renderSlotInline(slots, 'ctaDownload')} />
+          </a>
+          <a class="btn btn-ghost" href={dispatchHref}>
+            <span class="btn-arrow" aria-hidden="true">→</span>
+            <span set:html={renderSlotInline(slots, 'ctaDispatch')} />
+          </a>
+          <a class="btn btn-ghost" href={sourceHref} rel="noopener">
+            <span class="btn-arrow" aria-hidden="true">↳</span>
+            <span set:html={renderSlotInline(slots, 'ctaSource')} />
+          </a>
+        </div>
+
+        <hr class="rule-ticked" />
+
+        <dl class="hero-stats" aria-label="Bridge specifications">
+          <div>
+            <dt set:html={renderSlotInline(slots, 'statHardwareLabel')} />
+            <dd set:html={renderSlotInline(slots, 'statHardwareValue')} />
+          </div>
+          <div>
+            <dt set:html={renderSlotInline(slots, 'statDawsLabel')} />
+            <dd set:html={renderSlotInline(slots, 'statDawsValue')} />
+          </div>
+          <div>
+            <dt set:html={renderSlotInline(slots, 'statProtocolLabel')} />
+            <dd set:html={renderSlotInline(slots, 'statProtocolValue')} />
+          </div>
+          <div>
+            <dt set:html={renderSlotInline(slots, 'statCostLabel')} />
+            <dd set:html={renderSlotInline(slots, 'statCostValue')} />
+          </div>
+        </dl>
       </div>
 
-      <hr class="rule-ticked" />
-
-      <dl class="hero-stats" aria-label="Bridge specifications">
-        <div>
-          <dt set:html={renderSlotInline(slots, 'statHardwareLabel')} />
-          <dd set:html={renderSlotInline(slots, 'statHardwareValue')} />
-        </div>
-        <div>
-          <dt set:html={renderSlotInline(slots, 'statDawsLabel')} />
-          <dd set:html={renderSlotInline(slots, 'statDawsValue')} />
-        </div>
-        <div>
-          <dt set:html={renderSlotInline(slots, 'statProtocolLabel')} />
-          <dd set:html={renderSlotInline(slots, 'statProtocolValue')} />
-        </div>
-        <div>
-          <dt set:html={renderSlotInline(slots, 'statCostLabel')} />
-          <dd set:html={renderSlotInline(slots, 'statCostValue')} />
-        </div>
-      </dl>
+      <aside class="hero-aside">
+        <figure class="screen-frame">
+          <header class="screen-frame-head">
+            <span class="screen-frame-led" aria-hidden="true"></span>
+            <span class="screen-frame-fig" set:html={renderSlotInline(slots, 'heroPhotoLabel')} />
+            <span class="screen-frame-sep" aria-hidden="true">·</span>
+            <span class="screen-frame-subject" set:html={renderSlotInline(slots, 'heroPhotoSubject')} />
+          </header>
+          <div class="screen-frame-body">
+            <img
+              class="hero-photo"
+              src="/images/bridges/mc-500.jpg"
+              alt={slots.raw.heroFigureAlt ?? ''}
+              loading="eager"
+              decoding="async"
+            />
+            <div class="screen-frame-overlay" aria-hidden="true"></div>
+            <span class="screen-frame-corner screen-frame-corner--tl" aria-hidden="true"></span>
+            <span class="screen-frame-corner screen-frame-corner--tr" aria-hidden="true"></span>
+            <span class="screen-frame-corner screen-frame-corner--bl" aria-hidden="true"></span>
+            <span class="screen-frame-corner screen-frame-corner--br" aria-hidden="true"></span>
+          </div>
+          <figcaption class="screen-frame-foot" set:html={renderSlotInline(slots, 'heroPhotoMeta')} />
+        </figure>
+      </aside>
     </header>
 
     <figure class="product-figure">
@@ -280,7 +308,172 @@ const jsonLd = {
 
   .hero {
     padding: 3rem 0 2.5rem;
-    max-width: 52rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: clamp(1.5rem, 3vw, 3rem);
+    align-items: start;
+  }
+
+  .hero-content {
+    max-width: 38rem;
+  }
+
+  .hero-aside {
+    align-self: stretch;
+    display: flex;
+    min-height: 0;
+  }
+
+  /* --- Screen frame (CRT-overlay photo) --------------------------- */
+
+  .screen-frame {
+    flex: 1;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow:
+      0 0 0 1px hsl(var(--background)) inset,
+      0 18px 38px -22px rgba(0, 0, 0, 0.75);
+  }
+
+  .screen-frame-head,
+  .screen-frame-foot {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.7rem 1rem;
+    font-family: var(--font-display);
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .screen-frame-head {
+    border-bottom: 1px dashed hsl(var(--border));
+  }
+
+  .screen-frame-foot {
+    border-top: 1px dashed hsl(var(--border));
+    margin: 0;
+  }
+
+  .screen-frame-led {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 9px hsl(var(--primary) / 0.65);
+    flex-shrink: 0;
+  }
+
+  .screen-frame-fig {
+    color: hsl(var(--primary));
+    letter-spacing: 0.22em;
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.35);
+  }
+
+  .screen-frame-sep {
+    opacity: 0.5;
+  }
+
+  .screen-frame-subject {
+    color: hsl(var(--foreground));
+    letter-spacing: 0.14em;
+  }
+
+  .screen-frame-body {
+    position: relative;
+    flex: 1;
+    min-height: 320px;
+    overflow: hidden;
+    background: #0a0a0a;
+  }
+
+  .hero-photo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+    /* Cool CRT grade: very slight desaturation, faint cool push */
+    filter:
+      contrast(1.03)
+      saturate(0.95)
+      brightness(0.97)
+      hue-rotate(-2deg);
+  }
+
+  /* CRT overlay — scanlines + radial vignette. Tuned to read as
+     ambient atmosphere rather than literal scanlines. */
+  .screen-frame-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      /* fine scanlines: 1px line, 5px gap, low opacity */
+      repeating-linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.22) 0,
+        rgba(0, 0, 0, 0.22) 1px,
+        transparent 1px,
+        transparent 6px
+      ),
+      /* gentle radial vignette */
+      radial-gradient(
+        ellipse 80% 75% at 50% 48%,
+        transparent 45%,
+        rgba(0, 0, 0, 0.10) 75%,
+        rgba(0, 0, 0, 0.32) 100%
+      );
+    mix-blend-mode: multiply;
+  }
+
+  /* Faint chartreuse phosphor bloom along the bottom edge — the
+     "tube glow" that peeks from below the visible image area. */
+  .screen-frame-body::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      transparent 82%,
+      hsl(var(--primary) / 0.05) 94%,
+      hsl(var(--primary) / 0.09) 100%
+    );
+  }
+
+  /* Service-manual corner brackets — same vocabulary as the project
+     cards, just sized smaller and inset onto the photo. */
+  .screen-frame-corner {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    border-color: hsl(var(--primary) / 0.55);
+    border-style: solid;
+    border-width: 0;
+    pointer-events: none;
+  }
+  .screen-frame-corner--tl { top: 8px; left: 8px; border-top-width: 1px; border-left-width: 1px; }
+  .screen-frame-corner--tr { top: 8px; right: 8px; border-top-width: 1px; border-right-width: 1px; }
+  .screen-frame-corner--bl { bottom: 8px; left: 8px; border-bottom-width: 1px; border-left-width: 1px; }
+  .screen-frame-corner--br { bottom: 8px; right: 8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  @media (max-width: 900px) {
+    .hero {
+      grid-template-columns: 1fr;
+    }
+    .hero-aside {
+      order: -1;
+      max-width: 32rem;
+    }
+    .screen-frame-body {
+      min-height: 240px;
+      max-height: 380px;
+    }
   }
 
   .hero-eyebrow {

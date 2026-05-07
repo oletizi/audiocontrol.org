@@ -6,7 +6,7 @@ deskwork:
 
 ---slot: metaTitle
 
-MIDI Macro Bridge — DAW Control Surface for Roland MC-500mkII
+Drive your DAW with a rock-solid Roland sequencer
 
 ---
 
@@ -18,7 +18,7 @@ Bridge
 
 ---slot: heroVersion
 
-v1 · macOS
+<!--nothing-->
 
 ---
 
@@ -30,7 +30,7 @@ MIDI Macro Bridge
 
 ---slot: heroPhosphor
 
-DAW control from the rack.
+Drive your DAW with a Roland MC-500mkII
 
 ---
 
@@ -47,7 +47,7 @@ wheel, the DAW jogs. You recall a location, the DAW seeks.
 
 ---slot: ctaDownload
 
-Download for macOS
+Download
 
 ---
 
@@ -108,6 +108,30 @@ Cost
 ---slot: statCostValue
 
 Free · Open source
+
+---
+
+---slot: heroFigureAlt
+
+A Roland MC-500mkII MIDI sequencer on the desk — the 1988 hardware that drives the modern DAW.
+
+---
+
+---slot: heroPhotoLabel
+
+FIG.01
+
+---
+
+---slot: heroPhotoSubject
+
+Roland MC-500mkII
+
+---
+
+---slot: heroPhotoMeta
+
+1988 · 8 tracks · 99 locations
 
 ---
 
@@ -226,7 +250,7 @@ Launch the app, point your DAW at it as a hardware control surface (Mackie Contr
 
 ---slot: installCta
 
-Download for macOS
+Download from GitHub
 
 ---
 
