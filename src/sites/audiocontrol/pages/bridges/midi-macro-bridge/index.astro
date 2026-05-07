@@ -146,14 +146,68 @@ const jsonLd = {
       </aside>
     </header>
 
-    <figure class="product-figure">
-      <img
-        src="/images/bridges/control-surface.png"
-        alt={slots.raw.figureAlt ?? ''}
-        loading="lazy"
-      />
-      <figcaption set:html={renderSlotInline(slots, 'figureCaption')} />
-    </figure>
+    <section class="block" aria-labelledby="bench-label">
+      <header class="block-header">
+        <h2 id="bench-label" class="panel-label" set:html={renderSlotInline(slots, 'benchLabel')} />
+        {slots.raw.benchNote && (
+          <div class="block-note" set:html={renderSlotBlock(slots, 'benchNote')} />
+        )}
+      </header>
+
+      <div class="demo-pair">
+        <figure class="demo-frame">
+          <header class="demo-frame-head">
+            <span class="demo-frame-led" aria-hidden="true"></span>
+            <span class="demo-frame-fig" set:html={renderSlotInline(slots, 'videoLabel')} />
+            <span class="demo-frame-sep" aria-hidden="true">·</span>
+            <span class="demo-frame-subject" set:html={renderSlotInline(slots, 'videoSubject')} />
+          </header>
+          {slots.raw.videoBlurb && (
+            <div class="demo-frame-blurb" set:html={renderSlotBlock(slots, 'videoBlurb')} />
+          )}
+          <div class="demo-frame-body demo-frame-body--video">
+            <iframe
+              class="demo-frame-iframe"
+              src="https://www.youtube.com/embed/IIhBlliWr9k"
+              title={slots.raw.videoTitle ?? 'Demo video'}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+              loading="lazy"
+            ></iframe>
+            <span class="demo-frame-corner demo-frame-corner--tl" aria-hidden="true"></span>
+            <span class="demo-frame-corner demo-frame-corner--tr" aria-hidden="true"></span>
+            <span class="demo-frame-corner demo-frame-corner--bl" aria-hidden="true"></span>
+            <span class="demo-frame-corner demo-frame-corner--br" aria-hidden="true"></span>
+          </div>
+          <figcaption class="demo-frame-foot" set:html={renderSlotInline(slots, 'videoCaption')} />
+        </figure>
+
+        <figure class="demo-frame">
+          <header class="demo-frame-head">
+            <span class="demo-frame-led" aria-hidden="true"></span>
+            <span class="demo-frame-fig" set:html={renderSlotInline(slots, 'figureLabel')} />
+            <span class="demo-frame-sep" aria-hidden="true">·</span>
+            <span class="demo-frame-subject" set:html={renderSlotInline(slots, 'figureSubject')} />
+          </header>
+          {slots.raw.figureBlurb && (
+            <div class="demo-frame-blurb" set:html={renderSlotBlock(slots, 'figureBlurb')} />
+          )}
+          <div class="demo-frame-body demo-frame-body--still">
+            <img
+              class="demo-frame-image"
+              src="/images/bridges/control-surface.png"
+              alt={slots.raw.figureAlt ?? ''}
+              loading="lazy"
+            />
+            <span class="demo-frame-corner demo-frame-corner--tl" aria-hidden="true"></span>
+            <span class="demo-frame-corner demo-frame-corner--tr" aria-hidden="true"></span>
+            <span class="demo-frame-corner demo-frame-corner--bl" aria-hidden="true"></span>
+            <span class="demo-frame-corner demo-frame-corner--br" aria-hidden="true"></span>
+          </div>
+          <figcaption class="demo-frame-foot" set:html={renderSlotInline(slots, 'figureCaption')} />
+        </figure>
+      </div>
+    </section>
 
     <section class="block" aria-labelledby="what-it-does-label">
       <header class="block-header">
@@ -632,30 +686,145 @@ const jsonLd = {
     }
   }
 
-  /* --- Figure ------------------------------------------------------- */
+  /* --- Demo pair (video + runtime screenshot) --------------------- */
 
-  .product-figure {
-    position: relative;
+  .demo-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(1rem, 2.4vw, 1.75rem);
     margin: 0 0 2.5rem 0;
+  }
+
+  .demo-frame {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
-    overflow: hidden;
+    box-shadow:
+      0 0 0 1px hsl(var(--background)) inset,
+      0 16px 32px -22px rgba(0, 0, 0, 0.7);
   }
 
-  .product-figure img {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-
-  .product-figure figcaption {
+  .demo-frame-head,
+  .demo-frame-foot {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.7rem 1rem;
     font-family: var(--font-display);
-    font-size: 0.68rem;
-    letter-spacing: 0.14em;
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: hsl(var(--muted-foreground));
-    padding: 0.85rem 1.25rem;
-    border-top: 1px solid hsl(var(--border));
+  }
+
+  .demo-frame-head {
+    border-bottom: 1px dashed hsl(var(--border));
+  }
+
+  .demo-frame-foot {
+    border-top: 1px dashed hsl(var(--border));
+    margin: 0;
+  }
+
+  .demo-frame-led {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 9px hsl(var(--primary) / 0.65);
+    flex-shrink: 0;
+  }
+
+  .demo-frame-fig {
+    color: hsl(var(--primary));
+    letter-spacing: 0.22em;
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.35);
+  }
+
+  .demo-frame-sep {
+    opacity: 0.5;
+  }
+
+  .demo-frame-subject {
+    color: hsl(var(--foreground));
+    letter-spacing: 0.14em;
+  }
+
+  /* Editorial blurb between FIG header and media. Uses body type (not
+     monospace display) so it reads as figure-caption prose, not as
+     telemetry. Sits flush against the dashed register above. */
+  .demo-frame-blurb {
+    padding: 0.95rem 1.1rem 1.05rem;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+    background:
+      linear-gradient(
+        to right,
+        hsl(var(--primary) / 0.04),
+        transparent 40%
+      );
+    border-left: 2px solid hsl(var(--primary) / 0.55);
+  }
+
+  .demo-frame-blurb :global(p) {
+    margin: 0;
+  }
+
+  .demo-frame-blurb :global(p) + :global(p) {
+    margin-top: 0.55em;
+  }
+
+  .demo-frame-body {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .demo-frame-iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .demo-frame-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    background: #000;
+    display: block;
+  }
+
+  /* Match the hero's corner-bracket vocabulary so the page reads as
+     one register. Inset onto the media area, chartreuse, low alpha. */
+  .demo-frame-corner {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    border-color: hsl(var(--primary) / 0.55);
+    border-style: solid;
+    border-width: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .demo-frame-corner--tl { top: 8px; left: 8px; border-top-width: 1px; border-left-width: 1px; }
+  .demo-frame-corner--tr { top: 8px; right: 8px; border-top-width: 1px; border-right-width: 1px; }
+  .demo-frame-corner--bl { bottom: 8px; left: 8px; border-bottom-width: 1px; border-left-width: 1px; }
+  .demo-frame-corner--br { bottom: 8px; right: 8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  @media (max-width: 900px) {
+    .demo-pair {
+      grid-template-columns: 1fr;
+    }
   }
 
   /* --- Block scaffolding ------------------------------------------- */

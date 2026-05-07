@@ -135,6 +135,66 @@ Roland MC-500mkII
 
 ---
 
+---slot: benchLabel
+
+On the bench
+
+---
+
+---slot: benchNote
+
+What it looks like, and what it does.
+
+---
+
+---slot: videoLabel
+
+FIG.02
+
+---
+
+---slot: videoSubject
+
+Demo · LUNA
+
+---
+
+---slot: videoTitle
+
+Roland MC-500mkII driving LUNA
+
+---
+
+---slot: videoBlurb
+
+Two minutes of the MC-500 driving LUNA. Transport, jog, locate — every gesture you'd expect, all of them landing on the timeline.
+
+---
+
+---slot: videoCaption
+
+MC-500mkII → MIDI Macro Bridge → LUNA timeline.
+
+---
+
+---slot: figureLabel
+
+FIG.03
+
+---
+
+---slot: figureSubject
+
+Bridge · runtime
+
+---
+
+---slot: figureBlurb
+
+The bridge's status panel — source channels in, DAW destination out, MCU heartbeat alive. What flows through, made visible.
+
+---
+
 ---slot: figureAlt
 
 The MIDI Macro Bridge control surface — MC-500 routing live through the bridge to the DAW via MCU. Status display: PLAYING / BAR 8 / MCU heartbeat 48s.
