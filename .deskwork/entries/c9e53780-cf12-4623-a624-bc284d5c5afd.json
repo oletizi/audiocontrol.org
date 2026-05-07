@@ -2,6 +2,7 @@
   "uuid": "c9e53780-cf12-4623-a624-bc284d5c5afd",
   "slug": "dogfooding-deskwork",
   "title": "Dogfooding deskwork",
+  "description": "Dogfooding the deskwork plugin from inside its own development. Recursive layers: (1) deskwork-plugin runs editorial-pipeline patterns on itself (DEVELOPMENT-NOTES.md journal, /feature-ship, calendar-style phases, sub-agent dispatch); (2) the plugin tests itself against a vendored .audiocontrol.org sandbox; (3) Phase 20 plans a true deskwork content sandbox where the plugin manages content about itself; (4) the audiocontrol.org-editorial-calendar (where this entry lives) is being eaten by its own offspring — the plugin extracted from this repo is now displacing the in-house pipeline here. Headline thesis is the project's own agent-discipline rule: Use the deskwork plugin only through the publicly-advertised distribution channel — operator quote: \"No fair using it in ways that other, non-privileged users can't.\" If the public path is broken, the only valid response is to fix the public path; pushing is the final mile of fixed. Sibling rule: Packaging is UX — never paper over install bugs. The agent-discipline rule itself is dogfood output — forged by repeated correction during dogfooding sessions (see deskwork issue 49: bundled marketplace path was fine; workspace-linked dev path crashed; the fix was to fix the public path, not work around it). Title candidates (pick at /deskwork:plan time): 1) \"No fair: dogfooding deskwork without privileged shortcuts\" (operator quote leads); 2) \"Packaging is UX: notes from the public path\"; 3) \"The friction is the data\"; 4) \"Pushing is the final mile of fixed\"; 5) \"How not to dogfood your own tool\" (contrarian); 6) \"The dogfood discipline: what gets surfaced when you use the public path\". Default site: editorialcontrol (magazine voice, AI-agents-craft register).",
   "keywords": [
     "using agents to improve agent workflow",
     "AI agents managing AI agents",
@@ -26,9 +27,11 @@
   ],
   "source": "manual",
   "currentStage": "Outlining",
-  "iterationByStage": {},
+  "iterationByStage": {
+    "Outlining": 1
+  },
+  "artifactPath": "src/sites/editorialcontrol/content/blog/dogfooding-deskwork/index.md",
   "createdAt": "2026-05-06T18:34:54.188Z",
-  "updatedAt": "2026-05-06T18:34:54.188Z",
-  "description": "Dogfooding the deskwork plugin from inside its own development. Recursive layers: (1) deskwork-plugin runs editorial-pipeline patterns on itself (DEVELOPMENT-NOTES.md journal, /feature-ship, calendar-style phases, sub-agent dispatch); (2) the plugin tests itself against a vendored .audiocontrol.org sandbox; (3) Phase 20 plans a true deskwork content sandbox where the plugin manages content about itself; (4) the audiocontrol.org-editorial-calendar (where this entry lives) is being eaten by its own offspring — the plugin extracted from this repo is now displacing the in-house pipeline here. Headline thesis is the project's own agent-discipline rule: Use the deskwork plugin only through the publicly-advertised distribution channel — operator quote: \"No fair using it in ways that other, non-privileged users can't.\" If the public path is broken, the only valid response is to fix the public path; pushing is the final mile of fixed. Sibling rule: Packaging is UX — never paper over install bugs. The agent-discipline rule itself is dogfood output — forged by repeated correction during dogfooding sessions (see deskwork issue 49: bundled marketplace path was fine; workspace-linked dev path crashed; the fix was to fix the public path, not work around it). Title candidates (pick at /deskwork:plan time): 1) \"No fair: dogfooding deskwork without privileged shortcuts\" (operator quote leads); 2) \"Packaging is UX: notes from the public path\"; 3) \"The friction is the data\"; 4) \"Pushing is the final mile of fixed\"; 5) \"How not to dogfood your own tool\" (contrarian); 6) \"The dogfood discipline: what gets surfaced when you use the public path\". Default site: editorialcontrol (magazine voice, AI-agents-craft register).",
-  "artifactPath": "src/sites/editorialcontrol/content/blog/dogfooding-deskwork/index.md"
+  "updatedAt": "2026-05-07T00:18:10.935Z",
+  "reviewState": "in-review"
 }
