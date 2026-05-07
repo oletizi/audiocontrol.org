@@ -1,0 +1,21 @@
+{
+  "id": "5fa5cdd5-d3fc-4900-a544-0bf17afb34cc",
+  "timestamp": "2026-05-07T18:42:52.560Z",
+  "event": "ingest",
+  "slug": "midi-macro-bridge",
+  "entryId": "5fa5cdd5-d3fc-4900-a544-0bf17afb34cc",
+  "site": "audiocontrol",
+  "stage": "Drafting",
+  "sourceFile": "src/sites/audiocontrol/content/pages/bridges/midi-macro-bridge/index.md",
+  "frontmatterSnapshot": {
+    "description": "Drive Logic Pro, Ableton Live, or LUNA from a Roland MC-500mkII. Transport, jog wheel, and 99 location memories become a hardware control surface. Free, open source, macOS download.",
+    "deskwork": {
+      "id": "5fa5cdd5-d3fc-4900-a544-0bf17afb34cc"
+    }
+  },
+  "derivation": {
+    "slug": "explicit",
+    "state": "explicit",
+    "date": "mtime"
+  }
+}

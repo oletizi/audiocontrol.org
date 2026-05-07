@@ -24,6 +24,7 @@
 | UUID | Slug | Title | Description | Keywords | Source |
 |------|------|------|------|------|------|
 | afa2d36f-dc0a-498f-8954-c171514ab48b | bridges | Hands on the box. Eyes on the room. | Native software bridges that turn vintage Roland and Akai hardware into hands-on control surfaces for modern DAWs. |  | manual |
+| 5fa5cdd5-d3fc-4900-a544-0bf17afb34cc | midi-macro-bridge | Midi Macro Bridge | Drive Logic Pro, Ableton Live, or LUNA from a Roland MC-500mkII. Transport, jog wheel, and 99 location memories become a hardware control surface. Free, open source, macOS download. |  | manual |
 
 ## Review
 

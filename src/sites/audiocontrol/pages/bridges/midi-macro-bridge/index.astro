@@ -1,5 +1,11 @@
 ---
+import { getEntry } from 'astro:content';
 import Layout from '../../../layouts/Layout.astro';
+import {
+  parsePageSlots,
+  renderSlotBlock,
+  renderSlotInline,
+} from '../../../../../shared/page-slots';
 
 interface CompatRow {
   label: string;
@@ -31,6 +37,12 @@ const downloadHref = 'https://github.com/audiocontrol-org/audiocontrol/releases?
 const sourceHref = 'https://github.com/audiocontrol-org/audiocontrol';
 const dispatchHref = '/blog/midi-to-mcu-macro-bridge/';
 
+const entry = await getEntry('pages', 'bridges/midi-macro-bridge');
+if (!entry) {
+  throw new Error('Missing content entry: pages/bridges/midi-macro-bridge. Expected src/sites/audiocontrol/content/pages/bridges/midi-macro-bridge/index.md');
+}
+const slots = parsePageSlots(entry.body ?? '');
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -41,8 +53,7 @@ const jsonLd = {
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   url: 'https://audiocontrol.org/bridges/midi-macro-bridge/',
   downloadUrl: downloadHref,
-  description:
-    'Free, open source bridge that turns a Roland MC-500mkII into a hardware control surface for Logic Pro, Ableton Live, or LUNA. Transport, jog wheel, and 99 location memories drive the DAW.',
+  description: entry.data.description,
   publisher: { '@type': 'Organization', name: 'audiocontrol.org', url: 'https://audiocontrol.org' },
   isAccessibleForFree: true,
   license: 'https://opensource.org/licenses/MIT',
@@ -50,8 +61,8 @@ const jsonLd = {
 ---
 
 <Layout
-  title="MIDI Macro Bridge — DAW Control Surface for Roland MC-500mkII"
-  description="Drive Logic Pro, Ableton Live, or LUNA from a Roland MC-500mkII. Transport, jog wheel, and 99 location memories become a hardware control surface. Free, open source, macOS download."
+  title={slots.raw.metaTitle ?? 'MIDI Macro Bridge'}
+  description={entry.data.description}
   image="/images/bridges/control-surface.png"
   type="website"
   jsonLd={jsonLd}
@@ -60,35 +71,28 @@ const jsonLd = {
     <header class="hero" aria-labelledby="product-title">
       <p class="hero-eyebrow">
         <span class="signal-led" aria-hidden="true"></span>
-        <span>Bridge</span>
+        <span set:html={renderSlotInline(slots, 'heroKind')} />
         <span class="hero-sep" aria-hidden="true">·</span>
-        <span>v1 · macOS</span>
+        <span set:html={renderSlotInline(slots, 'heroVersion')} />
       </p>
       <h1 id="product-title" class="hero-title">
-        MIDI Macro Bridge<br />
-        <span class="phosphor">DAW control from the rack.</span>
+        <span set:html={renderSlotInline(slots, 'heroTitle')} /><br />
+        <span class="phosphor" set:html={renderSlotInline(slots, 'heroPhosphor')} />
       </h1>
-      <p class="hero-body">
-        The Roland MC-500mkII (1988) is a sequencer made for the hands —
-        eight tracks of MIDI, a data wheel, 99 location memories, and a
-        screen the size of a postage stamp because the controls are this
-        clear. The bridge turns it into a hardware control surface for a
-        modern DAW. You hit play on the box, the DAW plays. You spin the
-        wheel, the DAW jogs. You recall a location, the DAW seeks.
-      </p>
+      <div class="hero-body" set:html={renderSlotBlock(slots, 'heroBody')} />
 
       <div class="hero-actions">
         <a class="btn btn-primary" href={downloadHref} rel="noopener">
           <span class="btn-arrow" aria-hidden="true">↓</span>
-          <span>Download for macOS</span>
+          <span set:html={renderSlotInline(slots, 'ctaDownload')} />
         </a>
         <a class="btn btn-ghost" href={dispatchHref}>
           <span class="btn-arrow" aria-hidden="true">→</span>
-          <span>Read the dispatch</span>
+          <span set:html={renderSlotInline(slots, 'ctaDispatch')} />
         </a>
         <a class="btn btn-ghost" href={sourceHref} rel="noopener">
           <span class="btn-arrow" aria-hidden="true">↳</span>
-          <span>Source on GitHub</span>
+          <span set:html={renderSlotInline(slots, 'ctaSource')} />
         </a>
       </div>
 
@@ -96,20 +100,20 @@ const jsonLd = {
 
       <dl class="hero-stats" aria-label="Bridge specifications">
         <div>
-          <dt>Hardware</dt>
-          <dd>MC-500mkII</dd>
+          <dt set:html={renderSlotInline(slots, 'statHardwareLabel')} />
+          <dd set:html={renderSlotInline(slots, 'statHardwareValue')} />
         </div>
         <div>
-          <dt>DAWs</dt>
-          <dd>Logic · Live · LUNA</dd>
+          <dt set:html={renderSlotInline(slots, 'statDawsLabel')} />
+          <dd set:html={renderSlotInline(slots, 'statDawsValue')} />
         </div>
         <div>
-          <dt>Protocol</dt>
-          <dd>Mackie Control · MIDI SPP</dd>
+          <dt set:html={renderSlotInline(slots, 'statProtocolLabel')} />
+          <dd set:html={renderSlotInline(slots, 'statProtocolValue')} />
         </div>
         <div>
-          <dt>Cost</dt>
-          <dd>Free · Open source</dd>
+          <dt set:html={renderSlotInline(slots, 'statCostLabel')} />
+          <dd set:html={renderSlotInline(slots, 'statCostValue')} />
         </div>
       </dl>
     </header>
@@ -117,50 +121,41 @@ const jsonLd = {
     <figure class="product-figure">
       <img
         src="/images/bridges/control-surface.png"
-        alt="The MIDI Macro Bridge control surface — MC-500 routing live through the bridge to the DAW via MCU. Status display: PLAYING / BAR 8 / MCU heartbeat 48s."
+        alt={slots.raw.figureAlt ?? ''}
         loading="lazy"
       />
-      <figcaption>MC-500 → bridge → DAW. Status: PLAYING · BAR 8 · MCU heartbeat 48s.</figcaption>
+      <figcaption set:html={renderSlotInline(slots, 'figureCaption')} />
     </figure>
 
     <section class="block" aria-labelledby="what-it-does-label">
       <header class="block-header">
-        <h2 id="what-it-does-label" class="panel-label">What it does</h2>
+        <h2 id="what-it-does-label" class="panel-label" set:html={renderSlotInline(slots, 'capabilitiesLabel')} />
       </header>
       <div class="capabilities">
         <div class="capability">
-          <p class="capability-tag">Transport</p>
-          <h3 class="capability-title">Play, stop, record, locate from the box.</h3>
-          <p class="capability-body">
-            The MC-500's transport buttons drive the DAW transport. Eyes on the
-            room, hands on the buttons your fingers already know.
-          </p>
+          <p class="capability-tag" set:html={renderSlotInline(slots, 'capability1Tag')} />
+          <h3 class="capability-title" set:html={renderSlotInline(slots, 'capability1Title')} />
+          <div class="capability-body" set:html={renderSlotBlock(slots, 'capability1Body')} />
         </div>
         <div class="capability">
-          <p class="capability-tag">Jog</p>
-          <h3 class="capability-title">The data wheel becomes the jog wheel.</h3>
-          <p class="capability-body">
-            Spin the wheel; the DAW scrubs. The same gesture you've used for
-            decades — re-pointed at a modern session.
-          </p>
+          <p class="capability-tag" set:html={renderSlotInline(slots, 'capability2Tag')} />
+          <h3 class="capability-title" set:html={renderSlotInline(slots, 'capability2Title')} />
+          <div class="capability-body" set:html={renderSlotBlock(slots, 'capability2Body')} />
         </div>
         <div class="capability">
-          <p class="capability-tag">Locate</p>
-          <h3 class="capability-title">99 location memories as jump-to-marker buttons.</h3>
-          <p class="capability-body">
-            Pre-configure verse, chorus, bridge as MC-500 locations. One press
-            on the console and the DAW seeks. Or punch a bar number into the
-            keypad — the DAW teleports there. Years of muscle memory finally
-            paying rent.
-          </p>
+          <p class="capability-tag" set:html={renderSlotInline(slots, 'capability3Tag')} />
+          <h3 class="capability-title" set:html={renderSlotInline(slots, 'capability3Title')} />
+          <div class="capability-body" set:html={renderSlotBlock(slots, 'capability3Body')} />
         </div>
       </div>
     </section>
 
     <section class="block" aria-labelledby="compat-label">
       <header class="block-header">
-        <h2 id="compat-label" class="panel-label panel-label--accent">Compatibility</h2>
-        <p class="block-note">What's confirmed, what's likely, and what isn't.</p>
+        <h2 id="compat-label" class="panel-label panel-label--accent" set:html={renderSlotInline(slots, 'compatLabel')} />
+        {slots.raw.compatNote && (
+          <div class="block-note" set:html={renderSlotBlock(slots, 'compatNote')} />
+        )}
       </header>
 
       <div class="compat-group">
@@ -223,70 +218,55 @@ const jsonLd = {
 
     <section class="block install" aria-labelledby="install-label">
       <header class="block-header">
-        <h2 id="install-label" class="panel-label">Install</h2>
+        <h2 id="install-label" class="panel-label" set:html={renderSlotInline(slots, 'installLabel')} />
       </header>
       <ol class="install-steps">
         <li>
           <span class="install-step-num" aria-hidden="true">01</span>
-          <p>
-            <a href={downloadHref} rel="noopener">Download the disk image</a> from the
-            audiocontrol GitHub releases. The release tag begins with <code>midi-macro-bridge</code>.
-          </p>
+          <div class="install-step-body" set:html={renderSlotBlock(slots, 'installStep1')} />
         </li>
         <li>
           <span class="install-step-num" aria-hidden="true">02</span>
-          <p>Open the DMG and drag the application into <code>/Applications</code>.</p>
+          <div class="install-step-body" set:html={renderSlotBlock(slots, 'installStep2')} />
         </li>
         <li>
           <span class="install-step-num" aria-hidden="true">03</span>
-          <p>
-            Launch the app, point your DAW at it as a hardware control surface
-            (Mackie Control protocol), and you're running.
-          </p>
+          <div class="install-step-body" set:html={renderSlotBlock(slots, 'installStep3')} />
         </li>
       </ol>
 
       <div class="install-cta">
         <a class="btn btn-primary" href={downloadHref} rel="noopener">
           <span class="btn-arrow" aria-hidden="true">↓</span>
-          <span>Download for macOS</span>
+          <span set:html={renderSlotInline(slots, 'installCta')} />
         </a>
       </div>
     </section>
 
     <section class="block roadmap" aria-labelledby="roadmap-label">
       <header class="block-header">
-        <h2 id="roadmap-label" class="panel-label">In flight</h2>
-        <p class="block-note">Other bridges already on the bench.</p>
+        <h2 id="roadmap-label" class="panel-label" set:html={renderSlotInline(slots, 'roadmapLabel')} />
+        {slots.raw.roadmapNote && (
+          <div class="block-note" set:html={renderSlotBlock(slots, 'roadmapNote')} />
+        )}
       </header>
       <ul class="roadmap-list">
         <li>
-          <span class="roadmap-tag">Next</span>
-          <p>
-            <strong>Novation LaunchControl XL mk3 → LUNA mixer.</strong>
-            LUNA doesn't ship LaunchControl support out of the box. We do.
-            Dispatch with video in flight.
-          </p>
+          <span class="roadmap-tag" set:html={renderSlotInline(slots, 'roadmap1Tag')} />
+          <div class="roadmap-body" set:html={renderSlotBlock(slots, 'roadmap1Body')} />
         </li>
         <li>
-          <span class="roadmap-tag">After</span>
-          <p>More vintage gear, more DAWs, more of the console mapped — as bench needs surface them.</p>
+          <span class="roadmap-tag" set:html={renderSlotInline(slots, 'roadmap2Tag')} />
+          <div class="roadmap-body" set:html={renderSlotBlock(slots, 'roadmap2Body')} />
         </li>
       </ul>
     </section>
 
     <section class="block report" aria-labelledby="report-label">
       <header class="block-header">
-        <h2 id="report-label" class="panel-label">If it breaks</h2>
+        <h2 id="report-label" class="panel-label" set:html={renderSlotInline(slots, 'reportLabel')} />
       </header>
-      <p class="report-body">
-        Got an MC-500mkII (or an MC-50) and a supported DAW? Try it. If it
-        breaks on your setup,
-        <a href="https://github.com/audiocontrol-org/audiocontrol/issues/new" rel="noopener">file an issue</a>
-        with what gear, what DAW, and what you saw. The protocol details — MIDI
-        Song Position, Mackie Control, the bridge architecture — are
-        <a href={sourceHref} rel="noopener">on GitHub</a>.
-      </p>
+      <div class="report-body" set:html={renderSlotBlock(slots, 'reportBody')} />
     </section>
   </article>
 </Layout>
@@ -344,6 +324,14 @@ const jsonLd = {
     color: hsl(var(--muted-foreground));
     max-width: 42rem;
     margin: 1.5rem 0 2rem;
+  }
+
+  .hero-body :global(p) {
+    margin: 0 0 1em 0;
+  }
+
+  .hero-body :global(p:last-child) {
+    margin-bottom: 0;
   }
 
   .hero-actions {
@@ -502,6 +490,10 @@ const jsonLd = {
     margin: 0;
   }
 
+  .block-note :global(p) {
+    margin: 0;
+  }
+
   /* --- Capabilities ------------------------------------------------- */
 
   .capabilities {
@@ -544,6 +536,10 @@ const jsonLd = {
     font-size: 0.9rem;
     color: hsl(var(--muted-foreground));
     line-height: 1.55;
+    margin: 0;
+  }
+
+  .capability-body :global(p) {
     margin: 0;
   }
 
@@ -674,14 +670,14 @@ const jsonLd = {
     letter-spacing: 0.05em;
   }
 
-  .install-steps p {
+  .install-step-body :global(p) {
     margin: 0;
     font-size: 0.98rem;
     line-height: 1.6;
     color: hsl(var(--foreground));
   }
 
-  .install-steps code {
+  .install-step-body :global(code) {
     font-family: var(--font-mono);
     font-size: 0.85em;
     background: hsl(var(--card));
@@ -690,7 +686,7 @@ const jsonLd = {
     color: hsl(var(--primary));
   }
 
-  .install-steps a {
+  .install-step-body :global(a) {
     color: hsl(var(--primary));
     text-decoration: underline;
     text-decoration-color: hsl(var(--primary) / 0.45);
@@ -730,14 +726,14 @@ const jsonLd = {
     color: hsl(var(--primary));
   }
 
-  .roadmap-list p {
+  .roadmap-body :global(p) {
     margin: 0;
     font-size: 0.95rem;
     line-height: 1.55;
     color: hsl(var(--muted-foreground));
   }
 
-  .roadmap-list strong {
+  .roadmap-body :global(strong) {
     color: hsl(var(--foreground));
     font-weight: 600;
   }
@@ -752,7 +748,11 @@ const jsonLd = {
     margin: 0;
   }
 
-  .report-body a {
+  .report-body :global(p) {
+    margin: 0;
+  }
+
+  .report-body :global(a) {
     color: hsl(var(--primary));
     text-decoration: underline;
     text-decoration-color: hsl(var(--primary) / 0.45);

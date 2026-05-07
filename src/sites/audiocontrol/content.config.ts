@@ -51,7 +51,7 @@ const blog = defineCollection({
  */
 const pages = defineCollection({
   loader: glob({
-    pattern: '*/index.md',
+    pattern: '**/index.md',
     base: './src/sites/audiocontrol/content/pages',
     generateId: ({ entry }) => entry.replace(/\/index\.md$/, ''),
   }),
