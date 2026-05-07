@@ -1,0 +1,10 @@
+{
+  "kind": "stage-transition",
+  "at": "2026-05-07T00:05:08.000Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "from": "Final",
+  "to": "Published",
+  "metadata": {
+    "datePublished": "2026-05-07T00:00:00.000Z"
+  }
+}

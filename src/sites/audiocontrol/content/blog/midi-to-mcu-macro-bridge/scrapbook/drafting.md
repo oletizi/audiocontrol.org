@@ -1,10 +1,9 @@
 ---
 title: "Control Your DAW with this Rock-Solid Roland Sequencer"
 description: "DAWless-style workflow without giving up the power of the DAW. The Roland MC-500mkII (1988) — the kind of beautiful, tactile box you can run without looking — drives your DAW's transport, jog wheel, and 99 location memories. A small bridge does the connecting."
-date: "May 2026"
-datePublished: "2026-05-07"
-dateModified: "2026-05-07"
-state: "published"
+date: "April 2026"
+datePublished: "2026-04-30"
+dateModified: "2026-04-30"
 author: "Orion Letizi"
 image: "./mc-500.jpg"
 socialImage: "./mc-500-feature-og.png"
