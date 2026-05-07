@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:07:30.962Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 4,
+    "range": {
+      "start": 1558,
+      "end": 1569
+    },
+    "text": "We need a screenshot of the control interface in this section.",
+    "category": "other",
+    "anchor": " What it is",
+    "id": "be81dc94-9a13-4bb1-aac5-dc06dbe3bf6f",
+    "createdAt": "2026-05-06T22:07:30.962Z"
+  }
+}

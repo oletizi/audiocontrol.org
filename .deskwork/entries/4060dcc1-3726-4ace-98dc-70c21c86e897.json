@@ -1,0 +1,14 @@
+{
+  "uuid": "4060dcc1-3726-4ace-98dc-70c21c86e897",
+  "slug": "reverse-engineering-akai-s3000xl-midi-over-scsi",
+  "title": "Reverse-Engineering the Akai S3000XL MIDI-over-SCSI Protocol: An Odyssey",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Published",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "How a failed attempt to run Akai's MESA II in a Mac OS 9 emulator led us through 38 disproven theories in five days of intense debugging, and ultimately to a standalone 68k emulator that cracked the protocol in four hours.",
+  "datePublished": "2026-04-07T00:00:00.000Z",
+  "artifactPath": "src/sites/audiocontrol/content/blog/reverse-engineering-akai-s3000xl-midi-over-scsi/index.md"
+}

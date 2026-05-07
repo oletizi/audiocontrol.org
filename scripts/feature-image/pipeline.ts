@@ -48,6 +48,10 @@ export interface GenerateRequest {
    * up on the OG image.
    */
   site?: 'audiocontrol' | 'editorialcontrol';
+  /** Where the text panel sits on the composited overlay. Default: 'bottom'. */
+  overlayPosition?: 'bottom' | 'left';
+  /** Panel background opacity 0–1. Default: 0.82. */
+  panelOpacity?: number;
 }
 
 export interface CompositedOutput {
@@ -138,6 +142,8 @@ export async function generateFeatureImage(request: GenerateRequest): Promise<Ge
     // host site since the feature-image infra moved. Callers that
     // know the real target pass `site` explicitly.
     site = 'editorialcontrol',
+    overlayPosition = 'bottom',
+    panelOpacity,
   } = request;
 
   if (!prompt && !backgroundPath) {
@@ -218,6 +224,8 @@ export async function generateFeatureImage(request: GenerateRequest): Promise<Ge
           backgroundBuffer: bg.buffer,
           format,
           site,
+          overlayPosition,
+          panelOpacity,
         });
         writeFileSync(outPath, buffer);
         result.composited.push({

@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:03:40.068Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 4,
+    "range": {
+      "start": 1256,
+      "end": 1272
+    },
+    "text": "It's not a \"hard problem.\" It's a about how cool it would be if you could use this great device with your DAW.",
+    "category": "other",
+    "anchor": "The hard problem",
+    "id": "f1ea59dd-6228-473e-b5da-7dbd016213cd",
+    "createdAt": "2026-05-06T22:03:40.068Z"
+  }
+}

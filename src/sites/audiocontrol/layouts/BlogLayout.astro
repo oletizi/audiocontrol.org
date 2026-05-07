@@ -24,6 +24,7 @@ interface Props {
     // per-post (e.g. `/images/s-330-feature.jpg`).
     image?: ImageMetadata | string;
     socialImage?: ImageMetadata | string;
+    hideFeatureImage?: boolean;
   };
   headings?: Heading[];
   title?: string;
@@ -62,8 +63,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const pathSegments = Astro.url.pathname.split('/').filter(Boolean);
 const ogImageSlug = pathSegments.join('-');
 const autoOgImage = `/images/og/${ogImageSlug}.png`;
-// `image` is for inline display only. `socialImage` overrides the OG/sharing image.
-const featureImage = frontmatter?.image;
+// `image` doubles as the blog-roll card thumbnail and the inline post hero.
+// `hideFeatureImage: true` suppresses the inline hero (e.g. when the post
+// opens with a video embed that would duplicate the thumbnail). The card
+// thumbnail and OG metadata still see `image` regardless.
+// `socialImage` overrides the OG/sharing image.
+const featureImage = frontmatter?.hideFeatureImage ? undefined : frontmatter?.image;
 const socialImageUrl = urlOf(frontmatter?.socialImage) ?? autoOgImage;
 const schemaImage = new URL(socialImageUrl, Astro.site).toString();
 

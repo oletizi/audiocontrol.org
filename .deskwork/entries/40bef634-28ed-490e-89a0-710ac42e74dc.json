@@ -1,0 +1,12 @@
+{
+  "uuid": "40bef634-28ed-490e-89a0-710ac42e74dc",
+  "slug": "videocontrol-demo-video-automation-overlay",
+  "title": "Videocontrol: Demo-Video Automation and Overlay Rendering",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Ideas",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "How the videocontrol pipeline turns hardware-demo footage into finished YouTube videos with branded overlays, title cards, and audio-aligned cuts. Same lightweight-dev-tool pattern as feature-image and editorial — Claude Code skills + a JSON-backed queue + a small dev-only preview app."
+}

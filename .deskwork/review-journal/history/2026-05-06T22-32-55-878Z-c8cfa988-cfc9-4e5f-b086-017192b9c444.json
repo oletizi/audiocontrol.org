@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:32:55.878Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 6,
+    "range": {
+      "start": 6287,
+      "end": 6312
+    },
+    "text": "What already works is support for the Novation LaunchControlXL mk3 in Universal Audio's LUNA, which Novation doesn't currently support out of the box.  We'll be doing a video and a blog on that next.",
+    "category": "other",
+    "anchor": "more vintage gear support",
+    "id": "508bfb10-a063-4c02-bae0-903d4261c596",
+    "createdAt": "2026-05-06T22:32:55.878Z"
+  }
+}

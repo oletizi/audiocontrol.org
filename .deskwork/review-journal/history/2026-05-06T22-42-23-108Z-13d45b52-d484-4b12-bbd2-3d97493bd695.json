@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:42:23.108Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 7,
+    "range": {
+      "start": 8773,
+      "end": 8796
+    },
+    "text": "Good. Keep.",
+    "category": "other",
+    "anchor": "three-paragraph opening",
+    "id": "3b363a1f-1507-4f40-9aa8-7fd805280085",
+    "createdAt": "2026-05-06T22:42:23.108Z"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "uuid": "4e6499b5-77a9-4329-a112-66b954cedce2",
+  "slug": "what-2400-session-taught-us-about-agent-workflow",
+  "title": "Instructions Are Not Enough: What 2,400 Sessions Taught Us About AI Agent Workflow",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Published",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "Telling an AI agent what to do is easy. Getting it to reliably follow process requires something structural — skills, session journals, and correction-driven guardrails.",
+  "datePublished": "2026-04-17T00:00:00.000Z",
+  "artifactPath": "src/sites/audiocontrol/content/blog/what-2400-session-taught-us-about-agent-workflow/index.md"
+}

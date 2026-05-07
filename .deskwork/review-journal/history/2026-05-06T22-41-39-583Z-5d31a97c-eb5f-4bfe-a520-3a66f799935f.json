@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:41:39.583Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 7,
+    "range": {
+      "start": 5606,
+      "end": 5623
+    },
+    "text": "Don't assume the reader actually watched the video. This is more of an \"in case you skipped the video\" description of what happens",
+    "category": "other",
+    "anchor": "What you watched:",
+    "id": "30aa0555-f0ae-4809-bfc7-1b1f9f254159",
+    "createdAt": "2026-05-06T22:41:39.583Z"
+  }
+}

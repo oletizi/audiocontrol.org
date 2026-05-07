@@ -1,0 +1,12 @@
+{
+  "uuid": "c95305bc-08ad-4437-9901-b0ed9f5681aa",
+  "slug": "custom-copywriter-skills",
+  "title": "Custom Copywriter Skills: Growing a Site Voice Inside Claude Code",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Ideas",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "A pattern for capturing a publication's voice as a reusable Claude skill. Not \"prompt engineering\" — closer to a style guide with structure. How the audiocontrol-voice and editorialcontrol-voice skills are built, what the iteration loop looks like (voice-drift report → skill update → re-run), and how the register survives across a hundred drafts."
+}

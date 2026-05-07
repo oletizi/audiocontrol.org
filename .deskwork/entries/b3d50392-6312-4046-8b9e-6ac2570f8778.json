@@ -1,0 +1,19 @@
+{
+  "uuid": "b3d50392-6312-4046-8b9e-6ac2570f8778",
+  "slug": "automate-image-generation-in-claude-code",
+  "title": "AI Doesn't Remember",
+  "keywords": [
+    "automated blog feature image generation",
+    "AI content marketing workflow",
+    "Claude Code skills image pipeline",
+    "lightweight content automation"
+  ],
+  "source": "manual",
+  "currentStage": "Published",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "Brand consistency is an in-process problem. On the in-process infrastructure that keeps AI-assisted content from drifting off-brand across a hundred independent sessions.",
+  "datePublished": "2026-04-18T00:00:00.000Z",
+  "artifactPath": "src/sites/editorialcontrol/content/blog/automate-image-generation-in-claude-code/index.md"
+}

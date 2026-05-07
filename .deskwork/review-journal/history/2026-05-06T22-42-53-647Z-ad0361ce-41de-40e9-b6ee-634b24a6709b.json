@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:42:53.647Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 7,
+    "range": {
+      "start": 8981,
+      "end": 9003
+    },
+    "text": "Keep for now.",
+    "category": "other",
+    "anchor": "Cash-register language",
+    "id": "c0489c44-8a48-4d7c-bf0b-a34e5c817e5d",
+    "createdAt": "2026-05-06T22:42:53.647Z"
+  }
+}

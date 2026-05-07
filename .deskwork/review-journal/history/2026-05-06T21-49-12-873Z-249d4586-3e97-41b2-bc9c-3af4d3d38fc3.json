@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T21:49:12.873Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 4,
+    "range": {
+      "start": 476,
+      "end": 499
+    },
+    "text": "Something like \"Control Your DAW with this Rock-Solid Roland Sequencer\"",
+    "category": "other",
+    "anchor": "Working title finalists",
+    "id": "9464011d-4fcd-47dc-8960-657e11144877",
+    "createdAt": "2026-05-06T21:49:12.873Z"
+  }
+}

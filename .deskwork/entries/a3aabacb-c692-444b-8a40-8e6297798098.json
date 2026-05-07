@@ -1,0 +1,12 @@
+{
+  "uuid": "a3aabacb-c692-444b-8a40-8e6297798098",
+  "slug": "analytics-automation-feature",
+  "title": "Analytics Automation Feature",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Ideas",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "How the automated-analytics feature turns Umami / GA4 / Search Console into actionable recommendations — the scorecard, striking-distance queries, CTR opportunities, and the feedback loop into the editorial calendar."
+}

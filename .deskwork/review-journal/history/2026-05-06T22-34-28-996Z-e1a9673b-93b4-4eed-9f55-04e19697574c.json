@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:34:28.996Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 6,
+    "range": {
+      "start": 8479,
+      "end": 8485
+    },
+    "text": "I meant the MC-50, which is a later iteration that's much smaller and cheaper.",
+    "category": "other",
+    "anchor": "MC-500",
+    "id": "9d68a753-5329-4f9b-af12-5baf9f5c976f",
+    "createdAt": "2026-05-06T22:34:28.996Z"
+  }
+}

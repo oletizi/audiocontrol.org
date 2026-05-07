@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:29:54.319Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 6,
+    "range": {
+      "start": 4438,
+      "end": 4447
+    },
+    "text": "I wouldn't call the MC-500 a \"panel\". It's more like a cash register or an adding machine than an equipment panel.",
+    "category": "other",
+    "anchor": "the panel",
+    "id": "351cfd80-b234-4aa3-b4f3-fbbd9b0fa42b",
+    "createdAt": "2026-05-06T22:29:54.319Z"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "uuid": "d89e0b40-f80f-4999-ad6e-f8d2320c6652",
+  "slug": "akai-reverse-engineering-mesa-scsi-sysex-disk-tools",
+  "title": "Reverse-Engineering Akai: MESA II, the SCSI-over-WiFi Bridge, SysEx Protocols, and a Browser-Based Disk Parser",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Ideas",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "The long-form account of the Akai S-series reverse-engineering work: running MESA II inside a standalone 68k emulator, the Raspberry Pi SCSI-over-WiFi bridge, SysEx protocol archaeology, and the Akai disk parser + browser that reads legacy sampler volumes in the browser. Written for search — SCSI-protocol deep dive, MIDI-over-SCSI, MESA II emulation, Akai disk image format."
+}

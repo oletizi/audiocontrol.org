@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T23:36:13.849Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 2,
+    "range": {
+      "start": 4802,
+      "end": 4842
+    },
+    "text": "Use hyperlinked text, not bare urls. The hyperlinked text should be something like: the source is up on github here ›",
+    "category": "other",
+    "anchor": "github.com/audiocontrol-org/audiocontrol",
+    "id": "b9f9dc06-bf6f-4e25-a865-2471caafa5ee",
+    "createdAt": "2026-05-06T23:36:13.849Z"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:00:26.820Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 4,
+    "range": {
+      "start": 5156,
+      "end": 5176
+    },
+    "text": "Put above the fold.",
+    "category": "other",
+    "anchor": "Demo video placement",
+    "id": "232b1cd0-8a68-45cf-b1be-ff6b788d6be7",
+    "createdAt": "2026-05-06T22:00:26.820Z"
+  }
+}

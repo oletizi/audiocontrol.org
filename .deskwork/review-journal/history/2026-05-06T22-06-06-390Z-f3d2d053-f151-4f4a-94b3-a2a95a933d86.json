@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:06:06.390Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 4,
+    "range": {
+      "start": 1600,
+      "end": 1630
+    },
+    "text": "This is MacOS specific. Also, not interesting to the reader. Just cut it.",
+    "category": "other",
+    "anchor": "Opens a CoreMIDI virtual port;",
+    "id": "49765795-4fc6-4e16-87f6-78a0b4bd86a4",
+    "createdAt": "2026-05-06T22:06:06.390Z"
+  }
+}

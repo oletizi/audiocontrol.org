@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T22:44:19.526Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 7,
+    "range": {
+      "start": 9753,
+      "end": 9778
+    },
+    "text": "I hope to get the LCXL3 dispatch out as soon as I can record the video (2-3 days).",
+    "category": "other",
+    "anchor": "more than a few weeks out",
+    "id": "3d199db4-f079-4f78-b16f-6aeaf56a3f67",
+    "createdAt": "2026-05-06T22:44:19.526Z"
+  }
+}

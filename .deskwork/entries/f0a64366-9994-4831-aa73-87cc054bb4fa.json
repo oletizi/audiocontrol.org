@@ -1,0 +1,28 @@
+{
+  "uuid": "f0a64366-9994-4831-aa73-87cc054bb4fa",
+  "slug": "claude-is-kirk-codex-is-spock",
+  "title": "Claude Is Kirk. Codex Is Spock. Run Them in Pairs.",
+  "keywords": [
+    "Claude Code and Codex pairing",
+    "multi-agent AI coding workflow",
+    "AI agent fact verification",
+    "Claude hallucination correction",
+    "Codex CLI use cases",
+    "AI agent skepticism",
+    "agent-to-agent dialogue coding",
+    "AI pair programming with two agents",
+    "Claude Code reliability problems",
+    "coding agent confidence calibration",
+    "AI agent cross-checking",
+    "Codex as code reviewer",
+    "agent-to-agent fact-check loop",
+    "when AI agents lie to themselves",
+    "Star Trek coding metaphor"
+  ],
+  "source": "manual",
+  "currentStage": "Planned",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "Two-agent pairing as a working pattern. Claude (Kirk) is the actor — fast at implementation, prone to confusion loops on hard analysis, sometimes believing its own invented \"truths\" that it secretly documents somewhere. Codex (Spock) is the skeptic — ultra-conservative, will not act without explicit instruction, naturally assumes the analytical role of figuring out whether claims are evidence-based. The dispatch argues for putting them in dialogue rather than picking one. Worked example: GitHub issue #315 in this repo — long Claude/Codex back-and-forth on a real problem; Codex breaks Claude out of a death spiral and demands evidence. Failure modes the dispatch will name: (1) operator picks one agent and rationalizes its weaknesses; (2) operator runs both but in parallel rather than dialogue, missing the audit. Pairs naturally with `socratic-coding-agents` — both are about agent behavior at the interaction layer."
+}

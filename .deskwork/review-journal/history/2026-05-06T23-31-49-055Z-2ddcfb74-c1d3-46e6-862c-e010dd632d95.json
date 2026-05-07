@@ -1,0 +1,19 @@
+{
+  "kind": "entry-annotation",
+  "at": "2026-05-06T23:31:49.055Z",
+  "entryId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+  "annotation": {
+    "type": "comment",
+    "workflowId": "721d5212-c023-41fd-afa8-3fbd75ec6fbf",
+    "version": 2,
+    "range": {
+      "start": 3348,
+      "end": 3431
+    },
+    "text": "Delete",
+    "category": "other",
+    "anchor": "\"hit play on the MC-500, and you get the transport, which I think is pretty great.\"",
+    "id": "ebcfaeb6-f116-4a8f-8873-b56eb83fd66c",
+    "createdAt": "2026-05-06T23:31:49.055Z"
+  }
+}

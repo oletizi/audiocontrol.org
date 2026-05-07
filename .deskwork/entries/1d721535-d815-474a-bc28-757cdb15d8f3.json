@@ -1,0 +1,12 @@
+{
+  "uuid": "1d721535-d815-474a-bc28-757cdb15d8f3",
+  "slug": "feature-image-automation-evolution-gallery-claude-code",
+  "title": "Feature-Image Automation, One Year On: Evolution by Selection, the Gallery, and Why You Stay in Claude Code",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Ideas",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "The **applied / practice** half of a pair. Follow-up to the original feature-image-automation piece. What changed: evolution by artificial selection for prompts (fitness × recency, lineage forks), a lightweight gallery app for side-by-side review, and the deeper framing that the whole thing works because you don't leave Claude Code — the agent is the workflow, not a feature bolted onto one. Pairs with `evolution-by-artificial-selection-for-prompt-generation` (the theory/framework half); the two should cross-link."
+}

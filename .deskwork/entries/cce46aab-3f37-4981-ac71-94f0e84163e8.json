@@ -1,0 +1,14 @@
+{
+  "uuid": "cce46aab-3f37-4981-ac71-94f0e84163e8",
+  "slug": "claude-vs-codex-codex-perspective",
+  "title": "What Happened When We Asked Claude and Codex to Build the Same Feature",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Published",
+  "iterationByStage": {},
+  "createdAt": "2026-05-06T18:34:54.188Z",
+  "updatedAt": "2026-05-06T18:34:54.188Z",
+  "description": "We asked two AI coding agents to implement the same draggable zone editing feature for the Akai S3000XL editor. The most useful comparison wasn't about code quality -- it was about failure modes.",
+  "datePublished": "2026-04-13T00:00:00.000Z",
+  "artifactPath": "src/sites/audiocontrol/content/blog/claude-vs-codex-codex-perspective/index.md"
+}
