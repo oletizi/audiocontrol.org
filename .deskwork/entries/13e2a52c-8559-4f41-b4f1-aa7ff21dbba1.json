@@ -1,0 +1,13 @@
+{
+  "uuid": "13e2a52c-8559-4f41-b4f1-aa7ff21dbba1",
+  "slug": "launchcontrol-xl-bridge",
+  "title": "Launchcontrol Xl Bridge",
+  "description": "Drive LUNA's mixer from a Novation LaunchControl XL mk3. Eight faders, twenty-four knobs, sixteen buttons — the mixer surface LUNA doesn't ship with.",
+  "keywords": [],
+  "source": "manual",
+  "currentStage": "Drafting",
+  "iterationByStage": {},
+  "artifactPath": "src/sites/audiocontrol/content/pages/bridges/launchcontrol-xl-bridge/index.md",
+  "createdAt": "2026-05-07T23:54:25.356Z",
+  "updatedAt": "2026-05-07T23:54:25.356Z"
+}
