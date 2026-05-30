@@ -1,3 +1,7 @@
+---
+deskwork:
+  id: e81225b3-42ad-4e11-838c-876795316af5
+---
 # Mothball the in-house editorial pipeline (deskwork cutover)
 
 Date: 2026-05-29

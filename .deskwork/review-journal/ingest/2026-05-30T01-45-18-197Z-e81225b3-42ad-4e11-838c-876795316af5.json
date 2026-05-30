@@ -1,0 +1,16 @@
+{
+  "id": "e81225b3-42ad-4e11-838c-876795316af5",
+  "timestamp": "2026-05-30T01:45:18.197Z",
+  "event": "ingest",
+  "slug": "mothball-editorial-pipeline-design",
+  "entryId": "e81225b3-42ad-4e11-838c-876795316af5",
+  "site": "editorialcontrol",
+  "stage": "Drafting",
+  "sourceFile": "docs/superpowers/specs/2026-05-29-mothball-editorial-pipeline-design.md",
+  "frontmatterSnapshot": {},
+  "derivation": {
+    "slug": "path",
+    "state": "default",
+    "date": "mtime"
+  }
+}
