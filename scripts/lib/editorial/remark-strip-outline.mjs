@@ -4,11 +4,9 @@
  *
  * Applied to Astro's markdown pipeline (astro.*.config.mjs) so the
  * outline section an operator iterates during the Outlining stage
- * disappears from the public `/blog/<slug>/` render. The editorial
- * review surface at `/dev/editorial-review/<slug>` does NOT go
- * through this plugin — it has its own unified pipeline in
- * `scripts/lib/editorial-review/render.ts` — so the outline stays
- * visible there for annotate-and-iterate work.
+ * disappears from the public `/blog/<slug>/` render. Review now
+ * happens in the deskwork studio rather than an in-repo surface, so
+ * this plugin only governs the public site build.
  *
  * Stripping shape: find the H2 whose text starts with "Outline",
  * then remove that heading plus everything up to and including the
