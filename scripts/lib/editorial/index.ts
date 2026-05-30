@@ -41,9 +41,6 @@ export {
   findEntryById,
 } from './calendar.js';
 
-export { scaffoldBlogPost, type ScaffoldResult } from './scaffold.js';
-export { bodyState, PLACEHOLDER_MARKER, type BodyState } from './body-state.js';
-
 export {
   renameSlug,
   buildRedirectBlock,

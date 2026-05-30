@@ -89,13 +89,15 @@ has to happen atomically to avoid broken state: filename, URL,
 redirect, and calendar row all have to move together. Bundling it
 into `scripts/lib/editorial/rename-slug.ts` gives callers one
 stable entry point, testable deterministic behavior, one place to
-fix bugs. Same pattern as `.claude/skills/editorial-approve/apply.ts`.
+fix bugs.
 
-## Related skills
+## Related workflow
 
-- `/editorial-plan <slug>` — set target keywords + topics at plan
-  time (usually the first place to get the slug right).
-- `/editorial-publish <slug>` — mark an entry Published. Renames
-  after this point are the primary use case for this skill.
-- `/editorial-status` — inspect the calendar to verify the rename
-  landed.
+The content lifecycle (ideas → planned → drafting → published) now
+runs through the deskwork plugin:
+
+- Set the slug right at capture/plan time — usually the cheapest place
+  to get it right — via `/deskwork:add` and `/deskwork:approve`.
+- `/deskwork:publish <slug>` — mark an entry Published. Renames after
+  this point are the primary use case for this skill.
+- `/deskwork:status` — inspect the calendar to verify the rename landed.

@@ -66,7 +66,7 @@ New records:
 
 ## Important
 
-- **Idempotent**: running twice in a row must insert zero records on the second run. The test for "already present" is (slug, platform, normalized channel, url) — not by Reddit submission ID — so we're robust to users adding records manually via `/editorial-distribute` before syncing.
+- **Idempotent**: running twice in a row must insert zero records on the second run. The test for "already present" is (slug, platform, normalized channel, url) — not by Reddit submission ID — so we're robust to users adding records manually via `/deskwork:distribute` before syncing.
 - **Use the Write tool** to persist the updated calendar.
 - **Error messages must be specific**: if Reddit returns 429 (rate-limited), say so and suggest waiting before retrying. If a submission's URL doesn't parse, skip it and include the reason in the report tail.
 - Do **not** post anything. This skill is strictly read-only.

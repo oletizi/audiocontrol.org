@@ -1301,3 +1301,31 @@ Default proposal: option 2 (in-repo plugin) unless a stronger case surfaces. The
 - [ ] No grep hits for the in-house namespaces in the live source tree.
 - [ ] The editorial-calendar feature directory has moved to `003-COMPLETE/`.
 - [ ] CLAUDE.md and PROJECT-MANAGEMENT.md reflect the deskwork-only pipeline.
+
+---
+
+## Closing note — superseded by deskwork (mothball, #126)
+
+The in-house editorial **lifecycle** described above is superseded by the
+[deskwork plugin](https://github.com/audiocontrol-org/deskwork). Execution
+followed the two-PR mothball plan at
+`docs/superpowers/plans/2026-05-29-mothball-editorial-pipeline.md`:
+
+- **PR-A (#130, merged)** — non-destructive carve-out: renamed the six
+  platform-reach survivors `editorial-* → platform-*`; library unchanged.
+- **PR-B** — destructive decommission: deleted the 16 lifecycle skills +
+  `editorial-social-review`, the dev review/studio/scrapbook surfaces + their
+  API routes, and the pipeline-only libraries (`editorial-review/`,
+  `editorial-calendar-actions/`, and `editorial/{scaffold,body-state,scrapbook}.ts`).
+
+**Kept in-repo:** the `platform-*` survivor skills; the shared calendar markdown
+(`docs/editorial-calendar-*.md`); the `scripts/lib/editorial/` modules those skills
+read (`calendar`, `types`, `channels`, `crosslinks`, `suggest`, `rename-slug`); and
+the public-build remark plugins (`remark-image-figure`, `remark-strip-first-h1`,
+`remark-strip-outline`) — these run in the Astro markdown pipeline, not the
+editorial pipeline. The `platform-rename-slug` skill stays in-house until deskwork
+ships an equivalent (upstream gap: audiocontrol-org/deskwork#370).
+
+The Phase 20c acceptance criteria above (feature-dir move to `003-COMPLETE/`,
+`journal/editorial/` archival, PROJECT-MANAGEMENT.md updates) are deferred to a
+post-merge `/feature-complete` pass — PR-B is scoped to the code decommission.

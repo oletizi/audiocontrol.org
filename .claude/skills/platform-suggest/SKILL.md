@@ -27,7 +27,7 @@ Accepts `--site <slug>` (default: `audiocontrol`). Valid sites: `audiocontrol`, 
    1. "SCSI protocol tutorial" — 450 impressions, position 12, no page targets this
    2. "Roland S-550 vs S-330" — 200 impressions, position 18, striking distance
    ```
-7. **Accept suggestions**: If the user picks suggestions to add, use `/editorial-add --site=<site>` to add them to Ideas with `source: analytics`
+7. **Accept suggestions**: If the user picks suggestions to add, use `/deskwork:add` to add them to the deskwork Ideas stage
 
 ## Implementation
 

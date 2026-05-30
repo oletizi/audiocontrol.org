@@ -18,27 +18,9 @@ interface DevSection {
   links: DevLink[];
 }
 
+// The in-house editorial pipeline dev surfaces were decommissioned in favor of
+// the deskwork plugin (#126); editorial review now lives in the deskwork studio.
 const sections: DevSection[] = [
-  {
-    heading: 'Editorial pipeline',
-    links: [
-      {
-        href: '/dev/editorial-studio',
-        title: 'Editorial studio',
-        blurb: 'Unified dashboard: calendar stages, active review workflows, per-row actions.',
-      },
-      {
-        href: '/dev/editorial-review-shortform',
-        title: 'Shortform review',
-        blurb: 'List of shortform (social copy) workflows in flight.',
-      },
-      {
-        href: '/dev/editorial-help',
-        title: 'Editorial help',
-        blurb: 'Skill catalogue + workflow overview. Start here if the pipeline feels opaque.',
-      },
-    ],
-  },
   {
     heading: 'Feature-image pipeline',
     links: [
