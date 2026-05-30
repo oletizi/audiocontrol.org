@@ -1296,11 +1296,11 @@ Default proposal: option 2 (in-repo plugin) unless a stronger case surfaces. The
 
 **Acceptance criteria — 20c:**
 
-- [ ] All in-house skills, dev pages, API endpoints, shared modules, and library directories listed above are deleted.
-- [ ] Both site builds pass cleanly.
-- [ ] No grep hits for the in-house namespaces in the live source tree.
-- [ ] The editorial-calendar feature directory has moved to `003-COMPLETE/`.
-- [ ] CLAUDE.md and PROJECT-MANAGEMENT.md reflect the deskwork-only pipeline.
+- [x] All in-house skills, dev pages, API endpoints, shared modules, and library directories listed above are deleted. _(PR #131; remark plugins + the survivor `scripts/lib/editorial/` modules intentionally kept.)_
+- [x] Both site builds pass cleanly. _(PR #131 — `npm run build` green both sites.)_
+- [ ] No grep hits for the in-house namespaces in the live source tree. _(Functional refs cleared; explanatory comments in kept files + public `about.astro` / voice-skill examples still mention retired commands — deferred as a content/editorial call.)_
+- [ ] The editorial-calendar feature directory has moved to `003-COMPLETE/`. _(Deferred to a post-merge `/feature-complete` pass.)_
+- [ ] CLAUDE.md and PROJECT-MANAGEMENT.md reflect the deskwork-only pipeline. _(CLAUDE.md had no editorial-skill refs; PROJECT-MANAGEMENT.md update deferred to `/feature-complete`.)_
 
 ---
 

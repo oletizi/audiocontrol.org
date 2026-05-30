@@ -4,6 +4,55 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-05-29: Mothball the in-house editorial pipeline (PR-A + PR-B both merged)
+
+### Feature: editorial-calendar (Phase 20 — mothball)
+### Worktree: audiocontrol.org-mothball-editorial-pipeline (branch `feature/mothball-editorial-pipeline`)
+
+**Goal:** Execute the two-PR mothball plan (`docs/superpowers/plans/2026-05-29-mothball-editorial-pipeline.md`): cut audiocontrol.org over to the deskwork plugin for the content lifecycle, keep the platform-reach skills as renamed in-repo `platform-*` survivors, and delete every in-house editorial skill, dev surface, API route, and library deskwork now covers. Tracked at #126.
+
+**Accomplished:**
+
+- **PR-A (#130, merged) — non-destructive carve-out.** `git mv` six survivor skills `editorial-* → platform-*` (reddit-sync, reddit-opportunities, cross-link-review, performance, suggest, rename-slug); fixed each skill's `name:` frontmatter + self-refs (incl. `rename.ts` path + stderr prefix) and the one live cross-ref in the kept `editorialcontrol-voice` receipt example. Lib untouched. Build green both sites. Filed upstream gap deskwork#370 (no deskwork rename-slug equivalent → keep `platform-rename-slug` in-house) and commented the link on #126.
+- **`editorial-social-review` decision (A5):** deferred to PR-B deletion rather than kept — deskwork's `/deskwork:distribute` + studio dashboard cover the published×platform coverage matrix. Recorded in spec + plan.
+- **PR-B (#131, merged) — destructive decommission.** Deleted the 16 lifecycle skills + `editorial-social-review`; the dev review/studio/scrapbook surfaces + their API routes + 7 shared CSS/TS modules; the pipeline-only libs (`editorial-review/`, `editorial-calendar-actions/`, `editorial/{scaffold,body-state,scrapbook}.ts`); trimmed the editorial barrel and removed the now-dead `seedPlanScrapbook` from the kept `calendar.ts`; dropped the tests for deleted surfaces; pruned dead links from `pages/dev/index.astro`. Net across both PRs: ~16,300 deletions. Repointed the `platform-*` survivors' prose at deskwork verbs. Build green both sites; 173 tests pass. `#126` auto-closed.
+
+**Didn't Work / plan was wrong:**
+
+- **Plan B3 listed the three `remark-*.mjs` plugins for deletion — they're build-critical.** Both `astro.*.config.mjs` import them as active `remarkPlugins` (outline strip, first-H1 strip, image-figure); deleting them breaks both site builds. KEPT them. (The feature's own Phase-20c note agreed they stay — the superpowers plan's deletion list was the outlier.)
+- **Plan under-listed deletions.** `pages/api/dev/scrapbook/` (7 routes — the scrapbook editor's API backing) was missing from B2; folded into B3. The kept `calendar.ts` imported `seedScrapbookReadme` from the to-be-deleted `scrapbook.ts`, so deleting it required removing the dead `seedPlanScrapbook` wrapper first.
+- **No `node_modules` in the worktree** — had to `npm install` (844 pkgs) to run the build gate.
+
+**Course Corrections:**
+
+- **[PROCESS]** dw-lifecycle bookkeeping (open-findings gate, hygiene helper) is keyed to `docs/*/001-IN-PROGRESS/<slug>/` + `.dw-lifecycle/config.json`, neither of which exists for this superpowers-plan-driven feature. Used `editorial-calendar` as the gate slug (clean) and the superpowers plan as the workplan; composed the hygiene block manually since `session-end-hygiene` requires a config the project never installed.
+- **[COMPLEXITY]** Verified each "pipeline-only" lib's importers BEFORE deleting rather than trusting the plan's deletion list — caught the remark-plugin and `scrapbook.ts`/`calendar.ts` couplings before they could break the build.
+- **[DOCUMENTATION]** Left `editorialcontrol-voice/references/*.md` and public `about.astro` references to retired `/editorial-*` commands untouched — voice skill is on the plan's do-not-touch list and those are illustrative / published-content examples (an editorial call, flagged for the operator).
+
+**Quantitative:**
+
+- Commits this session: 11 (5 PR-A + 6 PR-B) across two merged PRs (#130, #131), plus this session-end commit.
+- PRs: 2 opened + merged (#130, #131). Issues: #126 closed; deskwork#370 filed upstream.
+- Deletions: ~16,300 lines; 17 skills, the dev review/studio/scrapbook surfaces + API routes, 3 pipeline-only lib dirs/sets, 9 test files.
+- Tests: 173 pass; 2 pre-existing `editor-proxy` network failures (untouched by this branch).
+
+**Insights:**
+
+- **Verify importers before honoring a deletion list.** Three of the plan's "delete these pipeline-only libs" entries were actually load-bearing for the public site build or the kept lifeline module. A grep of `astro.*.config.mjs` + the survivor import graph caught all three before any breakage. "The plan says delete it" is a hypothesis, not a fact.
+- **"Pipeline" is ambiguous — site-build vs editorial-workflow.** The remark plugins live under `scripts/lib/editorial/` but run in the Astro markdown pipeline, not the editorial review pipeline. Co-location misled the plan; the import graph disambiguated.
+
+### Hygiene observations
+
+- One `defer` marker in the session range (`c513f50` — social-review deferred to PR-B); **resolved** when PR-B merged. No outstanding deferrals.
+- Issues touched: #126 (closed by PR-B), #130 + #131 (merged), deskwork#370 (open upstream — keep `platform-rename-slug` until it ships).
+- Stale worktree: `audiocontrol.org-mothball-editorial-pipeline` (branch `feature/mothball-editorial-pipeline`) is fully merged — a `/dw-lifecycle:teardown` candidate.
+
+### Next session recommendation (hygiene)
+
+**Triage** the deferred Phase-20c housekeeping via `/dw-lifecycle:complete` (or `/feature-complete`) on `editorial-calendar`: move the feature dir to `003-COMPLETE/`, archive `journal/editorial/`, update PROJECT-MANAGEMENT.md, and decide the editorial-content edits (`editorialcontrol-voice/references/*.md`, `about.astro`) that still cite retired `/editorial-*` commands. Then tear down the merged mothball worktree.
+
+---
+
 ## 2026-04-27 / 28: Socratic dispatch ships + outline-stripper `---` terminator + deskwork plugin adopted + Phase 20 migration plan
 
 ### Feature: editorial-calendar
