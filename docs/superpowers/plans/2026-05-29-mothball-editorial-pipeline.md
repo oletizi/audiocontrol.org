@@ -342,9 +342,10 @@ git rm -r \
   .claude/skills/editorial-review-help \
   .claude/skills/editorial-review-report \
   .claude/skills/editorial-status \
-  .claude/skills/editorial-help
+  .claude/skills/editorial-help \
+  .claude/skills/editorial-social-review
 ```
-*(If Task A5 deferred `editorial-social-review` to deletion, append `.claude/skills/editorial-social-review` here.)*
+*(Task A5 RESOLVED: `editorial-social-review` deferred to deletion — appended above. deskwork-studio's dashboard coverage matrix + `/deskwork:distribute` cover the use case.)*
 
 - [ ] **Step 2: Verify only survivors + voice skills remain on the `editorial`/`platform` axis**
 

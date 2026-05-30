@@ -199,5 +199,10 @@ contract.
 
 ## Open question still pending
 
-- `editorial-social-review` keep-vs-delete — resolved during PR-A step 4 by
-  verifying deskwork-studio coverage.
+- `editorial-social-review` keep-vs-delete — **RESOLVED (PR-A, Task A5): delete in PR-B.**
+  `editorial-social-review` is a read-only published-posts × {reddit, youtube, linkedin,
+  instagram} coverage matrix built from the shared calendar's Published + Distribution
+  sections. deskwork covers this use case: `/deskwork:distribute` records shortform URLs
+  and surfaces them on the studio dashboard's coverage matrix. Decision: do NOT rename to
+  `platform-social-review`; instead delete `editorial-social-review` in PR-B (added to the
+  Task B1 deletion list).
