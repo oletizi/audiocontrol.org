@@ -1,13 +1,13 @@
 #!/usr/bin/env -S npx tsx
 /*
- * rename.ts — helper for the /editorial-rename-slug skill.
+ * rename.ts — helper for the /platform-rename-slug skill.
  *
  * Renames a published post's slug cleanly, relying on Phase 18a's
  * stable UUID identity so joins (workflows, distributions, journal
  * history) don't need rewriting.
  *
  * Usage:
- *   npx tsx .claude/skills/editorial-rename-slug/rename.ts \\
+ *   npx tsx .claude/skills/platform-rename-slug/rename.ts \\
  *     --site <site> <old-slug> <new-slug> [--dry-run]
  *
  * Exits non-zero on validation failure with a message that names the
@@ -109,6 +109,6 @@ try {
   main();
 } catch (err) {
   const message = err instanceof Error ? err.message : String(err);
-  process.stderr.write(`editorial-rename-slug: ${message}\n`);
+  process.stderr.write(`platform-rename-slug: ${message}\n`);
   process.exit(1);
 }

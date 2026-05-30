@@ -1,5 +1,5 @@
 ---
-name: editorial-reddit-sync
+name: platform-reddit-sync
 description: "Pull recent Reddit submissions via API and upsert DistributionRecords for any that reference the site's blog posts or YouTube videos."
 user_invocable: true
 ---

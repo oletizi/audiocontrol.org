@@ -64,7 +64,7 @@ Good receipts from the site:
 - "between January 2025 and March 2026, this site shipped three posts. In the first eighteen days of April 2026... it shipped seven."
 - "Time elapsed: an afternoon."
 - "`.claude/skills/`" (specific file path).
-- "`/editorial-reddit-sync` has been rewritten twice and extended a third time."
+- "`/platform-reddit-sync` has been rewritten twice and extended a third time."
 
 ### 5. The meta move: the piece describes itself
 

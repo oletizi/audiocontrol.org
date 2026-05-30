@@ -1,5 +1,5 @@
 ---
-name: editorial-cross-link-review
+name: platform-cross-link-review
 description: "Audit bidirectional linking between blog posts and YouTube videos; flag missing reciprocal links."
 user_invocable: true
 ---
