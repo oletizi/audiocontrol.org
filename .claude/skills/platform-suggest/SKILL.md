@@ -1,5 +1,5 @@
 ---
-name: editorial-suggest
+name: platform-suggest
 description: "Pull analytics data and suggest content opportunities for the editorial calendar."
 user_invocable: true
 ---

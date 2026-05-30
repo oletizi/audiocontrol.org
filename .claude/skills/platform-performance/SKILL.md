@@ -1,5 +1,5 @@
 ---
-name: editorial-performance
+name: platform-performance
 description: "Show analytics metrics for published posts and flag underperformers needing updates."
 user_invocable: true
 ---

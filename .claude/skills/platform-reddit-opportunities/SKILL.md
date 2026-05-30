@@ -1,5 +1,5 @@
 ---
-name: editorial-reddit-opportunities
+name: platform-reddit-opportunities
 description: "For a published post, list relevant subreddits grouped into already-shared (do not duplicate) and unshared candidates enriched with subscriber count and self-promo hints."
 user_invocable: true
 ---
@@ -14,7 +14,7 @@ Accepts `--site <slug>` (default: `audiocontrol`). Valid sites: `audiocontrol`, 
 
 ## Input
 
-`<slug>` as the skill argument. If omitted, prompt for one and show Published slugs as hints. Example: `/editorial-reddit-opportunities --site=editorialcontrol agent-as-workflow`.
+`<slug>` as the skill argument. If omitted, prompt for one and show Published slugs as hints. Example: `/platform-reddit-opportunities --site=editorialcontrol agent-as-workflow`.
 
 ## Steps
 
@@ -58,5 +58,5 @@ Curated notes:
 - **The "Already shared" section must always be shown first and visually distinct** (the "DO NOT DUPLICATE" label). The whole point of this skill is to prevent the user from cross-posting to the same subreddit twice.
 - Channel comparison is case-insensitive and normalized — `r/SynthDIY`, `/r/synthdiy`, and `https://reddit.com/r/SynthDIY/` all collapse to the same key. Use `normalizeChannel` from `scripts/lib/editorial/channels.ts` when in doubt.
 - If Reddit credentials for the target site are not configured (file missing, or no entry for `--site`), degrade gracefully: skip the enrichment step and report candidates without subscriber counts. Do not fail the whole skill. If the file uses the old flat schema, `loadConfig` throws a migration hint — surface that to the user so they know to update the file.
-- This skill is **read-only**. It does not add distribution records — the user records shares via `/editorial-distribute` or `/editorial-reddit-sync`.
+- This skill is **read-only**. It does not add distribution records — the user records shares via `/editorial-distribute` or `/platform-reddit-sync`.
 - If the post's topics aren't in the curated file at all, report `(no candidates — topics X, Y not found in docs/editorial-channels-<site>.json)` and optionally suggest the user adds them.

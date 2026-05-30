@@ -9,8 +9,8 @@ rename without rewriting.
 ## Usage
 
 ```
-/editorial-rename-slug --site <site> <old-slug> <new-slug>
-/editorial-rename-slug --site <site> <old-slug> <new-slug> --dry-run
+/platform-rename-slug --site <site> <old-slug> <new-slug>
+/platform-rename-slug --site <site> <old-slug> <new-slug> --dry-run
 ```
 
 ## Steps
@@ -18,7 +18,7 @@ rename without rewriting.
 1. **Run the rename helper** (all validation + writes live here):
 
    ```
-   npx tsx .claude/skills/editorial-rename-slug/rename.ts \
+   npx tsx .claude/skills/platform-rename-slug/rename.ts \
      --site <site> <old-slug> <new-slug> [--dry-run]
    ```
 
