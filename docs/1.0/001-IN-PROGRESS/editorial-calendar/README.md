@@ -5,6 +5,18 @@
 **GitHub Issue:** oletizi/audiocontrol.org#29 (parent)
 **Shipped PRs:** #46 (Phases 1-3), #55 (Phase 4), #58 (Phase 5), #60 (Phase 6), #61 (Phase 7), #89 (content edits), #98 (Phases 8-13 editorial-review extension), #101 (editorial-review redesign), #104 (Phase 14 — studio as command center + journal migration), #106 (Phase 15 — UI fixes, dblclick-edit, manual, multi-site consolidation), #115 (feature-image studio moves to editorialcontrol), #118 (Phase 18a — stable UUID identity), #119 (Phases 18b+18c — rename-slug skill + co-located content assets), #120 (editorialcontrol homepage polish — editor email, recent dispatches listing, marginalia pattern, text-wrap orphan fix), #121 (strip body's leading H1 from blog render), #124 (Phase 19a — scrapbook viewer + outline-stripper `---` terminator + Socratic dispatch publish), #125 (desk page tailpiece replaces floating rule-double)
 
+> **⚠️ Mothballed — replaced by the deskwork plugin.** The in-house editorial
+> *lifecycle* (the `editorial-*` skills, the dev review/studio/scrapbook surfaces
+> and their API routes, and the pipeline-only libraries) was decommissioned in
+> favor of the [deskwork plugin](https://github.com/audiocontrol-org/deskwork).
+> Carve-out (PR #130) renamed the platform-reach survivors to `platform-*`;
+> the destructive decommission is PR-B (mothball tracked at #126). What remains
+> in-repo: the `platform-reddit-sync`, `platform-reddit-opportunities`,
+> `platform-cross-link-review`, `platform-performance`, `platform-suggest`, and
+> `platform-rename-slug` skills, the shared calendar markdown + the kept
+> `scripts/lib/editorial/` modules they read, and the public-build remark plugins.
+> Most of the Phase Status table below describes the now-retired in-house pipeline.
+
 ## Overview
 
 Structured editorial calendar that tracks content through its lifecycle (idea through publication), automates post scaffolding, and wires into the automated-analytics feature to create a virtuous content improvement cycle.
