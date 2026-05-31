@@ -20,7 +20,7 @@ a comprehensive, operator-approved discovery pass.
 
 | Phase | Description | Status |
 |---|---|---|
-| 1 | Discovery (GATE) | Not started |
+| 1 | Discovery (GATE) | Synthesized — awaiting operator approval |
 | 2 | Protocol + governance wiring | Not started |
 | 3 | Per-site design systems | Not started |
 | 4 | Homepage pilot (under the discipline) | Not started |

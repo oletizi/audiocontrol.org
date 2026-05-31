@@ -18,31 +18,31 @@ this two-property repo and validate it by executing the audiocontrol homepage re
 **Deliverable:** A reviewed `discovery-findings.md` in this feature dir; operator sign-off.
 
 ### Task 1: Inventory both sites' design languages
-- [ ] Catalogue every token in `src/sites/audiocontrol/{brand.ts,styles/design-tokens.css}`
-- [ ] Catalogue every token in `src/sites/editorialcontrol/{brand.ts,styles/design-tokens.css}`
-- [ ] Record typography scales, color roles, spacing/radii/shadows, and code-only aesthetic rules
+- [x] Catalogue every token in `src/sites/audiocontrol/{brand.ts,styles/design-tokens.css}`
+- [x] Catalogue every token in `src/sites/editorialcontrol/{brand.ts,styles/design-tokens.css}`
+- [x] Record typography scales, color roles, spacing/radii/shadows, and code-only aesthetic rules
 
 ### Task 2: UI-surface census (both sites)
-- [ ] Enumerate every page in `src/sites/<site>/pages/` and every component in `components/` + `src/shared/`
-- [ ] Note which surfaces are user-facing vs dev-only
+- [x] Enumerate every page in `src/sites/<site>/pages/` and every component in `components/` + `src/shared/`
+- [x] Note which surfaces are user-facing vs dev-only
 
 ### Task 3: Study the monorepo discipline (do not copy)
-- [ ] Extract transferable governance from `DESIGN-SYSTEM.md` + `DESIGN-DECISIONS-PROTOCOL.md`
-- [ ] Identify editor-app-specific content that must NOT come over (CAPABILITIES-AS-CONTRACTS, control primitives, MIDI/connection UI, TESTING-UI specifics)
+- [x] Extract transferable governance from `DESIGN-SYSTEM.md` + `DESIGN-DECISIONS-PROTOCOL.md`
+- [x] Identify editor-app-specific content that must NOT come over (CAPABILITIES-AS-CONTRACTS, control primitives, MIDI/connection UI, TESTING-UI specifics)
 
 ### Task 4: Mine prior design decisions
-- [ ] Scan `DEVELOPMENT-NOTES.md`, `docs/design/`, git history for settled/relitigated choices to seed the archive
+- [x] Scan `DEVELOPMENT-NOTES.md`, `docs/design/`, git history for settled/relitigated choices to seed the archive
 
 ### Task 5: Homepage-pilot recon + screenshot-viability probe
-- [ ] Document current homepage / `/editors` / `/hardware` card data, `ProjectCard` shape, `public/images/` conventions, the unused `s550-thumbnail.jpg`, hero-count logic
-- [ ] Probe: do live S-330/S-550 editors render a populated UI without hardware? Can `modules/akai-s3k-editor` run locally for an S3000XL shot?
+- [x] Document current homepage / `/editors` / `/hardware` card data, `ProjectCard` shape, `public/images/` conventions, the unused `s550-thumbnail.jpg`, hero-count logic
+- [x] Probe: do live S-330/S-550 editors render a populated UI without hardware? Can `modules/akai-s3k-editor` run locally for an S3000XL shot?
 
 ### Task 6: Synthesize + gate
-- [ ] Write `discovery-findings.md` (single source; any sub-agents Write their parts to disk)
-- [ ] **Operator reviews and approves before Phase 2**
+- [x] Write `discovery-findings.md` (single source; any sub-agents Write their parts to disk)
+- [ ] **Operator reviews and approves before Phase 2** ← awaiting sign-off
 
 **Acceptance Criteria:**
-- [ ] `discovery-findings.md` covers all six discovery dimensions and is operator-approved.
+- [ ] `discovery-findings.md` covers all six discovery dimensions and is operator-approved. (Covers all six; **awaiting operator approval**.)
 
 ## Phase 2: Protocol + governance wiring
 
