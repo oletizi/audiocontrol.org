@@ -41,6 +41,7 @@ Each feature directory contains: `prd.md`, `workplan.md`, `README.md`, and optio
 - [ ] No ad-hoc test infrastructure left behind?
 - [ ] No fabricated claims (all data verified from source)?
 - [ ] Documentation updated if behavior changed?
+- [ ] For UI/design changes: read the per-site `DESIGN-SYSTEM.md` first, and updated it in the same commit if a global pattern changed? (See [Design Discipline](rules/design-discipline.md).)
 - [ ] No secrets, `.env` files, or build artifacts staged?
 - [ ] Commit message is descriptive and has no Claude attribution?
 
@@ -107,6 +108,10 @@ Never implement fallbacks or use mock data outside of test code. Throw errors wi
 - Never commit temporary files or build artifacts
 
 ## Astro Conventions
+
+> **Before any UI/design work**, follow [Design Discipline](rules/design-discipline.md): read the
+> relevant per-site `DESIGN-SYSTEM.md` and the repo-root `DESIGN-DECISIONS-PROTOCOL.md`, and update
+> the design system in the same commit on any global-pattern change.
 
 - Use `.astro` files for pages and components
 - Use TypeScript in frontmatter

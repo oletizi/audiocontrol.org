@@ -53,15 +53,15 @@ this two-property repo and validate it by executing the audiocontrol homepage re
 > decision table and the append-only change-log discipline (too much ceremony for a content site).
 
 ### Task 1: Author the protocol
-- [ ] Repo-root `DESIGN-DECISIONS-PROTOCOL.md`, two-site aware, adapted to `docs/<version>/<status>/<slug>/`
-- [ ] Define the per-feature `explorations/{ACCEPTED,REJECTED}/` archive layout + `brief.md` contract
-- [ ] Lightweight: include read/update governance rule; exclude the decision table + change-log sections
+- [x] Repo-root `DESIGN-DECISIONS-PROTOCOL.md`, two-site aware, adapted to `docs/<version>/<status>/<slug>/`
+- [x] Define the per-feature `explorations/{ACCEPTED,REJECTED}/` archive layout + `brief.md` contract
+- [x] Lightweight: include read/update governance rule; exclude the decision table + change-log sections
 
 ### Task 2: Wire the discipline in
-- [ ] Update `.claude/CLAUDE.md` and/or `.claude/rules/` to direct agents to read the relevant per-site DESIGN-SYSTEM (and the protocol) before any UI work
+- [x] Update `.claude/CLAUDE.md` and/or `.claude/rules/` to direct agents to read the relevant per-site DESIGN-SYSTEM (and the protocol) before any UI work — added `.claude/rules/design-discipline.md` + CLAUDE.md pointers
 
 **Acceptance Criteria:**
-- [ ] Protocol exists at root, covers both sites, and is referenced from `.claude/`.
+- [x] Protocol exists at root, covers both sites, and is referenced from `.claude/`.
 
 ## Phase 3: Per-site design systems
 
