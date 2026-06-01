@@ -71,10 +71,10 @@ this two-property repo and validate it by executing the audiocontrol homepage re
 > low-risk drift surfaced in discovery. Higher-risk drift stays documented-only and is noted.
 
 ### Task 1: audiocontrol DESIGN-SYSTEM.md
-- [ ] `src/sites/audiocontrol/DESIGN-SYSTEM.md` from existing tokens/typography/vocabulary/components (incl. `ProjectCard`; note orphaned `DeviceCard`/`SpecsTable`)
+- [x] `src/sites/audiocontrol/DESIGN-SYSTEM.md` from existing tokens/typography/vocabulary/components (incl. `ProjectCard`; note orphaned `DeviceCard`/`SpecsTable`)
 
 ### Task 2: editorialcontrol DESIGN-SYSTEM.md
-- [ ] `src/sites/editorialcontrol/DESIGN-SYSTEM.md` from its existing tokens/components
+- [x] `src/sites/editorialcontrol/DESIGN-SYSTEM.md` from its existing tokens/components
 
 ### Task 3: Fix safe token drift (document the fix in-place)
 - [ ] Dedupe the duplicated `design-tokens.css` values into a real shared layer (`src/shared`), keeping each site's distinct values; build green for both sites
@@ -82,8 +82,17 @@ this two-property repo and validate it by executing the audiocontrol homepage re
 - [ ] Higher-risk drift (e.g. missing `@font-face` for `--font-mono`) documented-only, not fixed
 
 **Acceptance Criteria:**
-- [ ] Both docs describe what *is* (no invented standards); cross-linked from the protocol.
+- [x] Both docs describe what *is* (no invented standards); cross-linked from the protocol.
 - [ ] Safe drift fixed (shared-token dedupe + type-scale/radius tokens); build green; no behavior change.
+
+> **Task-3 scoping note (2026-06-01).** Empirical read of both `design-tokens.css` files: token
+> *values* mostly differ legitimately per site (`--container-max-width` 1400 vs 1280, all colors,
+> display fonts). The genuinely-shared surface is small: identical structural tokens
+> (`--container-padding`, `--rule-hairline/medium`, `--measure-narrow`, `--font-mono`,
+> `--font-heading` pattern, `color-scheme`) + four byte-identical utility classes (`.site-container`,
+> `.rule-double`, `.card-glow`/`:hover`, `@keyframes ticker`). The dedupe = extract those into a
+> shared CSS file both Layouts import; type-scale/radius = additive. Touches live-site CSS →
+> requires build + visual verification (awaiting operator greenlight on the narrowed scope).
 
 ## Phase 4: Homepage pilot (audiocontrol) — under the discipline
 
