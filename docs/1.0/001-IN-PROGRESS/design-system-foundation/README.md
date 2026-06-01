@@ -20,8 +20,8 @@ a comprehensive, operator-approved discovery pass.
 
 | Phase | Description | Status |
 |---|---|---|
-| 1 | Discovery (GATE) | Synthesized — awaiting operator approval |
-| 2 | Protocol + governance wiring | Not started |
+| 1 | Discovery (GATE) | ✅ Complete — approved 2026-06-01 (4 gate decisions in prd.md) |
+| 2 | Protocol + governance wiring | In progress |
 | 3 | Per-site design systems | Not started |
 | 4 | Homepage pilot (under the discipline) | Not started |
 | 5 | Verification + retro | Not started |
