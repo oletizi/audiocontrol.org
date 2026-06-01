@@ -22,7 +22,7 @@ a comprehensive, operator-approved discovery pass.
 |---|---|---|
 | 1 | Discovery (GATE) | ✅ Complete — approved 2026-06-01 (4 gate decisions in prd.md) |
 | 2 | Protocol + governance wiring | ✅ Complete |
-| 3 | Per-site design systems | Not started |
+| 3 | Per-site design systems | ✅ Complete — both DESIGN-SYSTEM.md docs + shared-token dedupe / type-scale-radius fix (build green, visually verified) |
 | 4 | Homepage pilot (under the discipline) | Not started |
 | 5 | Verification + retro | Not started |
 

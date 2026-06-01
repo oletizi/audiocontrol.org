@@ -77,13 +77,13 @@ this two-property repo and validate it by executing the audiocontrol homepage re
 - [x] `src/sites/editorialcontrol/DESIGN-SYSTEM.md` from its existing tokens/components
 
 ### Task 3: Fix safe token drift (document the fix in-place)
-- [ ] Dedupe the duplicated `design-tokens.css` values into a real shared layer (`src/shared`), keeping each site's distinct values; build green for both sites
-- [ ] Add a numeric type-scale + radius token set (replacing hard-coded sizes where low-risk); reflect in the DESIGN-SYSTEM docs
-- [ ] Higher-risk drift (e.g. missing `@font-face` for `--font-mono`) documented-only, not fixed
+- [x] Dedupe the duplicated `design-tokens.css` values into a real shared layer (`src/shared/design-tokens-base.css`): shared structural tokens (`--container-padding`, `--measure-narrow`, `--rule-hairline/-medium`, `--font-mono`, `--font-heading`, `color-scheme`) + four byte-identical utility classes (`.site-container`, `.rule-double`, `.card-glow`/`:hover`, `@keyframes ticker`). Imported by all three Layouts before the per-site tokens. Each site keeps its distinct values.
+- [x] Add a numeric type-scale (`--text-xs..3xl`) + radius (`--radius-sm/-md/-full`) token set in the shared base; adopted at exact-value sites (`--text-xs` for panel-label/ticker; `--radius-full` for signal-led) so the substitution is computed-identical (no visual change)
+- [x] Higher-risk drift (missing `@font-face` for `--font-mono`) documented-only, not fixed
 
 **Acceptance Criteria:**
 - [x] Both docs describe what *is* (no invented standards); cross-linked from the protocol.
-- [ ] Safe drift fixed (shared-token dedupe + type-scale/radius tokens); build green; no behavior change.
+- [x] Safe drift fixed (shared-token dedupe + type-scale/radius tokens); build green (both sites, exit 0); visually verified non-regressive (before/after homepage diff, both sites).
 
 > **Task-3 scoping note (2026-06-01).** Empirical read of both `design-tokens.css` files: token
 > *values* mostly differ legitimately per site (`--container-max-width` 1400 vs 1280, all colors,
