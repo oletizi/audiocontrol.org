@@ -122,8 +122,15 @@ this two-property repo and validate it by executing the audiocontrol homepage re
 - [ ] Choose the inaugural ACCEPTED entry subject (candidate: S-550 card-image treatment or copy-refresh approach); REJECTED for any discarded alternative
 - [ ] Update audiocontrol DESIGN-SYSTEM.md in-commit if a global pattern changed
 
+### Task 6: Fix generate-og background-image path ([#132](https://github.com/oletizi/audiocontrol.org/issues/132))
+*Pre-existing bug surfaced during Phase 3 build verification (not introduced by this feature); unblocked — can be done independently of the S3000XL/screenshot inputs.*
+- [ ] `scripts/generate-og-images.ts:233` — read backgrounds from `src/sites/audiocontrol/public` (not repo-root `public/`), matching the favicon/output paths
+- [ ] Make failure loud: set a non-zero exit code on a missing asset so `main().catch` doesn't silently pass (`npm run build` currently stays green while OG regen fails)
+- [ ] Verify OG images regenerate (build green AND `src/sites/audiocontrol/public/images/og/` refreshed)
+
 **Acceptance Criteria:**
 - [ ] S3000XL is a real `available` card with `/akai/s3000xl/editor` href + proxy `_redirects`; hero counts honest to array membership; inaugural archive entry filed. *(S-330/S-550 screenshots wired when UI-team files land.)*
+- [ ] generate-og reads from the per-site public dir and fails loudly on a missing asset; OG images regenerate (#132).
 
 ## Phase 5: Verification + retro
 
