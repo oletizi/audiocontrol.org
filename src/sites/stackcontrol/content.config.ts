@@ -30,6 +30,9 @@ const blog = defineCollection({
       socialImage: image().optional(),
       tags: z.array(z.string()).optional(),
       draft: z.boolean().default(false),
+      // deskwork binds each calendar entry to its markdown via a UUID under
+      // the `deskwork:` namespace; permit it so graduated entries validate.
+      deskwork: z.object({ id: z.string().uuid() }).passthrough().optional(),
     }),
 });
 

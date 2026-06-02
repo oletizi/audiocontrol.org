@@ -1,0 +1,18 @@
+{
+  "uuid": "c196e248-3076-4e79-b44b-842691354340",
+  "slug": "the-lifecycle-and-why-agents-need-one",
+  "title": "The Lifecycle, and Why Agents Need One",
+  "description": "The thesis of the deskwork lifecycle: unstructured agentic work skips scope, over-builds, and ships unreviewed. Define → workplan → implement → audit → ship puts gates between intent and merge — why the structure beats vibes, and what each phase actually buys you.",
+  "keywords": [
+    "agentic development lifecycle",
+    "AI coding workflow",
+    "Claude Code plugin",
+    "structured agent workflow",
+    "why agents need guardrails"
+  ],
+  "source": "manual",
+  "currentStage": "Ideas",
+  "iterationByStage": {},
+  "createdAt": "2026-06-02T17:26:57.946Z",
+  "updatedAt": "2026-06-02T17:26:57.946Z"
+}

@@ -1,0 +1,23 @@
+{
+  "kind": "entry-created",
+  "at": "2026-06-02T17:26:57.946Z",
+  "entryId": "30386c44-a28d-41cd-b07a-3c93debbd3a3",
+  "entry": {
+    "uuid": "30386c44-a28d-41cd-b07a-3c93debbd3a3",
+    "slug": "scope-discovery-catching-clones-the-workplan-missed",
+    "title": "Scope Discovery: Catching the Clones the Workplan Missed",
+    "description": "The workplan named three files to touch; a clone scan against the committed baseline found five more carrying the same shape. How deskwork’s scope discovery — clone detection, scope-widen, dispositioned clones.yaml, adopter manifests — surfaces drift before it ships.",
+    "keywords": [
+      "code clone detection",
+      "scope discovery",
+      "jscpd baseline",
+      "refactor drift",
+      "agentic code review"
+    ],
+    "source": "manual",
+    "currentStage": "Ideas",
+    "iterationByStage": {},
+    "createdAt": "2026-06-02T17:26:57.946Z",
+    "updatedAt": "2026-06-02T17:26:57.946Z"
+  }
+}

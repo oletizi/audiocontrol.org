@@ -1,19 +1,24 @@
 {
   "version": 1,
-  "author": "Orion Letizi",
   "sites": {
     "audiocontrol": {
-      "host": "audiocontrol.org",
       "contentDir": "src/sites/audiocontrol/content/blog",
       "calendarPath": "docs/editorial-calendar-audiocontrol.md",
+      "host": "audiocontrol.org",
       "channelsPath": "docs/editorial-channels-audiocontrol.json"
     },
     "editorialcontrol": {
-      "host": "editorialcontrol.org",
       "contentDir": "src/sites/editorialcontrol/content/blog",
       "calendarPath": "docs/editorial-calendar-editorialcontrol.md",
+      "host": "editorialcontrol.org",
       "channelsPath": "docs/editorial-channels-editorialcontrol.json"
+    },
+    "stackcontrol": {
+      "contentDir": "src/sites/stackcontrol/content/blog",
+      "calendarPath": "docs/editorial-calendar-stackcontrol.md",
+      "host": "stackcontrol.org"
     }
   },
-  "defaultSite": "editorialcontrol"
+  "defaultSite": "editorialcontrol",
+  "author": "Orion Letizi"
 }

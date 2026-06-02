@@ -1,0 +1,23 @@
+{
+  "kind": "entry-created",
+  "at": "2026-06-02T17:26:57.946Z",
+  "entryId": "d3cf14c9-1c10-4cac-9860-39925bd593ed",
+  "entry": {
+    "uuid": "d3cf14c9-1c10-4cac-9860-39925bd593ed",
+    "slug": "the-audit-barrage-wired-into-every-task",
+    "title": "The Audit Barrage, Wired Into Every Task",
+    "description": "The audit barrage is deskwork’s third independent audit surface — multiple model families reviewing the same diff in parallel, beyond the in-band self-audit and the two-reviewer cycle. How it became an unconditional end-of-task hook in /dwi with teeth (a single verb plus commit-msg and pre-push gates), a dampener that decides slush-vs-promote, and what the Phase 12 self-dogfood caught that the others missed.",
+    "keywords": [
+      "cross-model code review",
+      "audit barrage",
+      "multi-model auditing",
+      "end-of-task hook",
+      "Claude Codex Gemini parallel review"
+    ],
+    "source": "manual",
+    "currentStage": "Ideas",
+    "iterationByStage": {},
+    "createdAt": "2026-06-02T17:26:57.946Z",
+    "updatedAt": "2026-06-02T17:26:57.946Z"
+  }
+}
