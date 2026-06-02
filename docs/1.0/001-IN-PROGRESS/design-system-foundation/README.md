@@ -23,7 +23,7 @@ a comprehensive, operator-approved discovery pass.
 | 1 | Discovery (GATE) | ✅ Complete — approved 2026-06-01 (4 gate decisions in prd.md) |
 | 2 | Protocol + governance wiring | ✅ Complete |
 | 3 | Per-site design systems | ✅ Complete — both DESIGN-SYSTEM.md docs + shared-token dedupe / type-scale-radius fix (build green, visually verified) |
-| 4 | Homepage pilot (under the discipline) | Not started |
+| 4 | Homepage pilot (under the discipline) | Partial — #132 fixed (Task 6), /hardware audited clean (Task 4); **blocked** on akai S3000XL netlify URL + full-res screenshots |
 | 5 | Verification + retro | Not started |
 
 ## Key Links
