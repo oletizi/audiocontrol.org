@@ -52,16 +52,26 @@ const availableProjects: Project[] = [
     meta: '1987 · 16-voice · 16-bit',
     status: 'available',
     href: '/roland/s550/editor',
+    // Real S-550 editor capture (Tones/Filter view) reused from the monorepo
+    // s550-support screenshots — accurate to this editor.
+    image: '/images/s550-editor-screenshot.png',
   },
-];
-
-const pendingProjects: Project[] = [
   {
     name: 'Akai S3000XL',
     description: 'The workhorse 90s rack sampler. MIDI-over-SCSI protocol reverse-engineered; editor under construction.',
     meta: '1994 · 32-voice · 16-bit',
-    status: 'coming-soon',
+    status: 'available',
+    // STAND-IN before merge (design-system-foundation): "#" until the real
+    // /akai/s3000xl/editor link + proxy land.
+    href: '#',
+    // STAND-IN before merge: this is a real audiocontrol editor view (Roland
+    // Play screen, header cropped by object-fit) used as a credible placeholder;
+    // replace with a true Akai S3000XL editor screenshot before merge.
+    image: '/images/s3000xl-editor-screenshot.png',
   },
+];
+
+const pendingProjects: Project[] = [
   {
     name: 'Akai S5000',
     description: 'Akai’s late-generation rack sampler with USB and 24-bit audio. Shared parameter model with the S6000.',

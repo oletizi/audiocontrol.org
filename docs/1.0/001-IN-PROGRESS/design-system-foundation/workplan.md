@@ -102,20 +102,31 @@ this two-property repo and validate it by executing the audiocontrol homepage re
 > status-union change. The editor's netlify deploy is external; the link is dead until it lands
 > (risk accepted). **Gate decision 4 — inaugural archive entry subject chosen here.**
 
-### Task 1: S3000XL availability wiring (replaces the old `launching`-state task)
-- [ ] Add S3000XL to the `available` set on homepage (`availableProjects`) + `/editors` with `href`/`slug` `/akai/s3000xl/editor` (no `ProjectCard` type change required)
-- [ ] Add proxy `_redirects` in `src/sites/audiocontrol/public/_redirects` for `/akai/s3000xl/editor` (bare + trailing-slash + splat → the akai netlify app URL once known)
+> **⚠️ PRE-MERGE MUST-FIX (operator-approved stand-ins, 2026-06-02).** To keep moving without
+> the two external inputs, the operator approved temporary stand-ins. **These MUST be replaced
+> before this feature merges to `main`/live:**
+> 1. **S3000XL `href` is `"#"`** (homepage + `/editors`) — replace with `/akai/s3000xl/editor` +
+>    proxy `_redirects` once the akai netlify app URL is known. As-is, the `available` card's
+>    "Open Editor" CTA goes nowhere, and the hero "03 available" counts a non-openable editor.
+> 2. **S3000XL card image is a credible STAND-IN, not the real editor** —
+>    `s3000xl-editor-screenshot.png` is a Roland Play-view capture (header cropped by
+>    `object-fit: cover` so no device label shows). Replace with a true Akai S3000XL screenshot.
 
-### Task 2: Screenshots *(deferred per operator — UI team producing; full-res files pending)*
-- [ ] Wire S-330/S-550 editor screenshots once the UI team delivers full-res files (slot ≈ 15:4 / 656×176 CSS; deliver ~1312px+ wide PNG)
-- [ ] S3000XL: image optional (promote without an image is acceptable; never a mock)
+### Task 1: S3000XL availability wiring (replaces the old `launching`-state task)
+- [x] Add S3000XL to the `available` set on homepage (`availableProjects`) + `/editors` — **done with `href`/`slug` `"#"` stand-in** (see PRE-MERGE MUST-FIX #1)
+- [ ] Replace `"#"` with `/akai/s3000xl/editor` + proxy `_redirects` (bare + trailing-slash + splat → akai netlify app URL once known) — **blocked on the akai URL**
+
+### Task 2: Screenshots
+- [x] S-550 — wired a **real, accurate** S-550 editor capture (`s550-editor-screenshot.png`, Tones/Filter view) reused from the monorepo `s550-support` screenshots
+- [x] S3000XL — wired a **credible stand-in** (`s3000xl-editor-screenshot.png`; see PRE-MERGE MUST-FIX #2)
+- [ ] *(optional upgrade)* swap S-330/S-550 for the UI team's full-res marketing-grade shots if/when delivered (slot ≈ 15:4; ~1312px+ wide)
 
 ### Task 3: Homepage
-- [ ] Wire S-330/S-550 images (when available); refresh S-330/S-550 copy (no UI/UX trumpeting)
-- [ ] S3000XL now in available set; hero counts follow array membership ("03 available")
+- [x] Wired S-550 + S3000XL card images; **S3000XL now in the available set; hero counts follow array membership ("03 available", "02 in development")**
+- [ ] Refresh S-330/S-550 copy (no UI/UX trumpeting) — **held: needs the editorial angle from the operator** (current copy retained)
 
 ### Task 4: /editors mirror + /hardware audit
-- [ ] Mirror status/image/copy changes on `/editors` *(blocked — depends on S3000XL wiring + screenshots)*
+- [x] Mirror status/image changes on `/editors` — S3000XL → available with `"#"` slug + stand-in image; S-550 image added (matches homepage)
 - [x] Verify `/hardware`; fix only genuine staleness — **audited clean (2026-06-01): no staleness.** Lists Roland S-Series only (S-330/S-550/S-770/W-30); all four `/roland/<device>/` link targets exist; S3000XL correctly absent (Akai, not S-Series); build green. No changes needed (matches PRD "likely no change"). Specs left untouched (covered by content-verification issues #12/#16/#17/#18).
 
 ### Task 5: File archive entries + update DESIGN-SYSTEM
