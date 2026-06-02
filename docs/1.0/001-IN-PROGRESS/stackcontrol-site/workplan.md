@@ -33,15 +33,15 @@ real-world pilot of the design-decisions protocol.
 **Deliverable:** A buildable, previewable stackcontrol site skeleton.
 
 ### Task 1: Astro config + src tree
-- [ ] `astro.stackcontrol.config.mjs` (site/srcDir/outDir/adapter/sitemap, mirroring siblings)
-- [ ] `src/sites/stackcontrol/` skeleton: `brand.ts` stub, `styles/design-tokens.css`, `layouts/`, `components/`, `pages/index.astro` placeholder, `public/_redirects`
+- [x] `astro.stackcontrol.config.mjs` (site/srcDir/outDir/adapter/sitemap, mirroring siblings)
+- [x] `src/sites/stackcontrol/` skeleton: `brand.ts` stub, `styles/design-tokens.css`, `layouts/`, `components/`, `pages/index.astro` placeholder, `public/_redirects`
 
 ### Task 2: Build wiring
-- [ ] `package.json`: `dev:/build:/preview:stackcontrol`; add to top-level `build`
-- [ ] Verify: `npm run build:stackcontrol` succeeds and `preview:stackcontrol` serves the placeholder
+- [x] `package.json`: `dev:/build:/preview:stackcontrol`; add to top-level `build`
+- [x] Verify: `npm run build:stackcontrol` succeeds and `preview:stackcontrol` serves the placeholder
 
 **Acceptance Criteria:**
-- [ ] stackcontrol builds + previews as a real (placeholder) site; sibling builds unaffected.
+- [x] stackcontrol builds + previews as a real (placeholder) site; sibling builds unaffected (verified `build:stackcontrol` + `build:editorialcontrol`).
 
 ## Phase 2: Design pass (identity)
 

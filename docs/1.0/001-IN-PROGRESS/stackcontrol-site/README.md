@@ -20,7 +20,7 @@ has no public home and we want its look established under the discipline before 
 | Phase | Description | Status |
 |---|---|---|
 | 0 | Recon (dependency + domain + constraints brief) | Complete |
-| 1 | Scaffold site infra | Not started |
+| 1 | Scaffold site infra | Complete |
 | 2 | Design pass (identity) | Not started |
 | 3 | Build the four surfaces | Not started |
 | 4 | Discipline (archive entries + DESIGN-SYSTEM) | Not started |

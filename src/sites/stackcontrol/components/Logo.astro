@@ -1,0 +1,42 @@
+---
+// Phase 1 placeholder wordmark. The real mark / typographic treatment lands
+// in Phase 3 with the chosen identity.
+import { brand } from '../brand.js';
+
+interface Props {
+  variant?: 'header' | 'masthead';
+}
+
+const { variant = 'header' } = Astro.props;
+---
+
+<span class={`logo logo--${variant}`}>
+  <span class="logo-stack">stack</span><span class="logo-control">control</span><span class="logo-dot">.org</span>
+</span>
+
+<style>
+  .logo {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: hsl(var(--foreground));
+  }
+
+  .logo--header {
+    font-size: var(--text-xl);
+  }
+
+  .logo--masthead {
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+    line-height: 1;
+  }
+
+  .logo-control {
+    color: hsl(var(--primary));
+  }
+
+  .logo-dot {
+    color: hsl(var(--muted-foreground));
+    font-weight: 400;
+  }
+</style>

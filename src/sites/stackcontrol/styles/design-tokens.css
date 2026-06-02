@@ -1,0 +1,53 @@
+/*
+ * Design Tokens — stackcontrol.org — PHASE 1 STUB.
+ *
+ * ⚠️ PROVISIONAL. Mirror of src/sites/stackcontrol/brand.ts. Replaced in
+ * Phase 3 with the identity chosen in the Phase 2 /frontend-design pass.
+ * color-scheme + shared structural/scale tokens + utilities live in
+ * src/shared/design-tokens-base.css, imported BEFORE this file.
+ */
+
+:root {
+  /* Layout (site-specific) */
+  --container-max-width: 1280px;
+  --measure-reading: 34rem;
+
+  /* Background colors — provisional cool slate */
+  --background: 220 16% 8%;
+  --card: 220 14% 12%;
+  --card-hover: 220 14% 15%;
+
+  /* Foreground */
+  --foreground: 220 15% 90%;
+  --muted-foreground: 220 8% 56%;
+
+  /* Accent colors — provisional steel; NOT the chosen identity */
+  --primary: 205 60% 60%;
+  --accent: 220 12% 70%;
+
+  /* Borders — hairline weight */
+  --border: 220 12% 18%;
+  --border-hover: 220 12% 28%;
+
+  /* Typography (site-specific; --font-mono + --font-heading shared in base) */
+  --font-display: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Shadow / halo */
+  --card-glow: 0 0 0 1px hsl(var(--border)), 0 8px 32px -8px hsl(0 0% 0% / 0.55);
+  --card-glow-hover: 0 0 0 1px hsl(var(--primary) / 0.35), 0 10px 40px -8px hsl(var(--primary) / 0.12);
+}
+
+/* Rule utilities */
+.rule-single {
+  border: 0;
+  border-top: var(--rule-hairline) solid hsl(var(--border));
+  margin: 1.5rem 0;
+}
+
+.rule-accent {
+  border: 0;
+  border-top: var(--rule-medium) solid hsl(var(--primary));
+  margin: 1.5rem 0;
+  width: 3rem;
+}
