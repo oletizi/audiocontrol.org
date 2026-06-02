@@ -24,7 +24,7 @@ has no public home and we want its look established under the discipline before 
 | 2 | Design pass (identity) | Complete — direction A (Telemetry/cyan) chosen |
 | 3 | Build the four surfaces | Complete |
 | 4 | Discipline (archive entries + DESIGN-SYSTEM) | Complete |
-| 5 | Provision + deploy | Not started — operator-gated (Netlify + DNS) |
+| 5 | Provision + deploy | Netlify site created (operator); domain pending merge-to-main + deployment branch + DNS |
 | 6 | Verify | Build + visual green; live-domain check pending Phase 5 |
 
 ## Key Links

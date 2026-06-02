@@ -90,7 +90,9 @@ real-world pilot of the design-decisions protocol.
 **Deliverable:** stackcontrol.org live.
 
 ### Task 1: Netlify site (operator-confirmed)
-- [ ] Create the Netlify site; deploy `dist/stackcontrol`
+- [x] Create the Netlify site (operator, 2026-06-02). Domain `stackcontrol.org` does not resolve yet
+      (ECONNREFUSED) — it will serve only after `feature/stackcontrol-site` merges to `main` and the
+      site's deployment branch is set to `main` (the siblings deploy from `main`).
 
   **Settings (mirror the siblings; repo-root `netlify.toml` is intentionally empty so per-site UI
   settings apply):**
