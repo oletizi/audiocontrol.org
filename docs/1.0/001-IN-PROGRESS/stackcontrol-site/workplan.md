@@ -91,9 +91,9 @@ real-world pilot of the design-decisions protocol.
 
 ### Task 1: Netlify site (operator-confirmed)
 - [x] Create the Netlify site (operator, 2026-06-02). Domain `stackcontrol.org` does not resolve yet
-      (ECONNREFUSED) — it will serve only after the feature lands on `main` and stackcontrol's
-      dedicated deployment branch (see Production/deployment branch below) is created + pointed at by
-      the Netlify site, then updated to trigger the first deploy.
+      (ECONNREFUSED) — it will serve only after the feature lands and the Netlify site's deployment
+      branch + DNS are wired. The exact deploy-trigger branch is operator-to-confirm (see
+      Production/deployment branch below).
 
   **Settings (mirror the siblings; repo-root `netlify.toml` is intentionally empty so per-site UI
   settings apply):**
@@ -101,11 +101,11 @@ real-world pilot of the design-decisions protocol.
   - Publish directory: `dist/stackcontrol`
   - Base directory: repo root (default)
   - Node version: match the siblings' Netlify env (Astro 5 needs Node 18+)
-  - Production / deployment branch: each sibling **site deploys from its own dedicated branch** (NOT
-    `main`) so common updates to `main` don't trigger every site to rebuild. stackcontrol needs its
-    own dedicated deployment branch; the Netlify site's production branch points at it, and a deploy
-    is triggered by updating that branch (e.g. fast-forward it to `main` after the feature lands).
-    Exact branch name follows the operator's convention — TBD/operator-specified.
+  - Production / deployment branch: **operator to confirm.** The deploy-trigger model for this
+    repo's sites is not derivable from the repo (the only `deploy/*` branch is
+    `deploy/roland-sxx0-editor`, an editor app). Confirm whether stackcontrol deploys from `main` or
+    from a dedicated per-site branch before wiring the Netlify production branch. (Do not assume the
+    audiocontrol repo's convention applies here.)
   - `_redirects` (sitemap alias) ships from `src/sites/stackcontrol/public/_redirects`; sitemap at
     `/sitemap-index.xml`. `astro.stackcontrol.config.mjs` already sets `site: https://stackcontrol.org`.
 
