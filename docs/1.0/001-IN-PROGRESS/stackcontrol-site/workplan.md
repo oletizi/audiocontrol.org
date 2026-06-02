@@ -103,10 +103,12 @@ real-world pilot of the design-decisions protocol.
 **Deliverable:** Green build + live check.
 
 ### Task 1: Verify
-- [ ] `npm run build` (all sites); `preview:stackcontrol` visual review; live-domain check
+- [x] `npm run build` (all sites) green — audiocontrol + editorialcontrol + stackcontrol all build
+- [x] `preview:stackcontrol` visual review — home, devlog index, devlog post verified under direction A
+- [ ] live-domain check (blocked on Phase 5 deploy)
 
 **Acceptance Criteria:**
-- [ ] Build green; live site verified.
+- [x] Build green; visual review done. [ ] live site verified (after Phase 5).
 
 ## Follow-up (tracked, not in this feature)
 - Build out remaining site surfaces (product docs, lifecycle/skills reference, more devlog content).
