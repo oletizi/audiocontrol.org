@@ -91,8 +91,9 @@ real-world pilot of the design-decisions protocol.
 
 ### Task 1: Netlify site (operator-confirmed)
 - [x] Create the Netlify site (operator, 2026-06-02). Domain `stackcontrol.org` does not resolve yet
-      (ECONNREFUSED) — it will serve only after `feature/stackcontrol-site` merges to `main` and the
-      site's deployment branch is set to `main` (the siblings deploy from `main`).
+      (ECONNREFUSED) — it will serve only after the feature lands on `main` and stackcontrol's
+      dedicated deployment branch (see Production/deployment branch below) is created + pointed at by
+      the Netlify site, then updated to trigger the first deploy.
 
   **Settings (mirror the siblings; repo-root `netlify.toml` is intentionally empty so per-site UI
   settings apply):**
@@ -100,9 +101,11 @@ real-world pilot of the design-decisions protocol.
   - Publish directory: `dist/stackcontrol`
   - Base directory: repo root (default)
   - Node version: match the siblings' Netlify env (Astro 5 needs Node 18+)
-  - Production branch: deploy from `main` after `feature/stackcontrol-site` merges (it is stacked on
-    `feature/design-system-foundation`, which merges first), or point the new site at the feature
-    branch temporarily for a preview.
+  - Production / deployment branch: each sibling **site deploys from its own dedicated branch** (NOT
+    `main`) so common updates to `main` don't trigger every site to rebuild. stackcontrol needs its
+    own dedicated deployment branch; the Netlify site's production branch points at it, and a deploy
+    is triggered by updating that branch (e.g. fast-forward it to `main` after the feature lands).
+    Exact branch name follows the operator's convention — TBD/operator-specified.
   - `_redirects` (sitemap alias) ships from `src/sites/stackcontrol/public/_redirects`; sitemap at
     `/sitemap-index.xml`. `astro.stackcontrol.config.mjs` already sets `site: https://stackcontrol.org`.
 
