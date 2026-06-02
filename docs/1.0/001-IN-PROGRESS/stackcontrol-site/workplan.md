@@ -92,11 +92,28 @@ real-world pilot of the design-decisions protocol.
 ### Task 1: Netlify site (operator-confirmed)
 - [ ] Create the Netlify site; deploy `dist/stackcontrol`
 
+  **Settings (mirror the siblings; repo-root `netlify.toml` is intentionally empty so per-site UI
+  settings apply):**
+  - Build command: `npm run build:stackcontrol`
+  - Publish directory: `dist/stackcontrol`
+  - Base directory: repo root (default)
+  - Node version: match the siblings' Netlify env (Astro 5 needs Node 18+)
+  - Production branch: deploy from `main` after `feature/stackcontrol-site` merges (it is stacked on
+    `feature/design-system-foundation`, which merges first), or point the new site at the feature
+    branch temporarily for a preview.
+  - `_redirects` (sitemap alias) ships from `src/sites/stackcontrol/public/_redirects`; sitemap at
+    `/sitemap-index.xml`. `astro.stackcontrol.config.mjs` already sets `site: https://stackcontrol.org`.
+
 ### Task 2: Domain (operator-confirmed)
-- [ ] Wire the `stackcontrol.org` custom domain + DNS
+- [ ] Wire the `stackcontrol.org` custom domain + DNS (operator owns the domain)
 
 **Acceptance Criteria:**
 - [ ] Site deployed; `stackcontrol.org` resolves to the new site.
+
+### Follow-up (non-blocking, noted during Phase 3)
+- Default OG image `/images/og-image.png` (referenced in `Layout.astro`) is not yet generated for
+  stackcontrol — social-card previews will lack an image until an OG asset/generator is added (the
+  siblings use `generate-og` / committed assets). Track separately; does not block deploy.
 
 ## Phase 6: Verify
 
