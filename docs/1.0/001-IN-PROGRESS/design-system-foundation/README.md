@@ -29,6 +29,8 @@ a comprehensive, operator-approved discovery pass.
 ## Key Links
 
 - Branch: `feature/design-system-foundation`
-- PRD: `prd.md`
-- Workplan: `workplan.md`
-- Parent Issue: 
+- PR: [#133](https://github.com/oletizi/audiocontrol.org/pull/133) (**draft** — 2 PRE-MERGE MUST-FIX stand-ins; do not merge until resolved)
+- PRD: `prd.md` · Workplan: `workplan.md` · Discovery: `discovery-findings.md` · Retro: `retro.md`
+- Protocol: `../../../../DESIGN-DECISIONS-PROTOCOL.md` · Archive: `explorations/{ACCEPTED,REJECTED}/`
+- Issues: [#132](https://github.com/oletizi/audiocontrol.org/issues/132) (OG path bug — fixed, closes on merge)
+- Parent Issue: none (`/dwis` not run)
