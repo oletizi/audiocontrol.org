@@ -1,0 +1,84 @@
+---
+/**
+ * Ticker — the telemetry status bar. A scrolling mono strip of uppercase
+ * system metadata. Motion respects prefers-reduced-motion. The track is
+ * duplicated so the loop is seamless.
+ */
+interface Props {
+  items?: string[];
+}
+
+const DEFAULT_ITEMS = [
+  'LIFECYCLE TOOLING FOR AGENTIC DEVELOPMENT',
+  'SIBLING TO AUDIOCONTROL.ORG + EDITORIALCONTROL.ORG',
+  'BUILD: PRE-RELEASE',
+  'PLUGIN: deskwork',
+  'TRACKS: define · workplan · implement · audit · ship',
+];
+
+const { items = DEFAULT_ITEMS } = Astro.props;
+const runs = [0, 1];
+---
+
+<div class="statusbar" role="status" aria-label="System status">
+  <div class="statusbar-track">
+    {runs.map(() => (
+      <span class="run" aria-hidden="false">
+        <span class="live">STACKCONTROL</span>
+        {items.map((item) => (
+          <>
+            <span class="sep">//</span><span class="item">{item}</span>
+          </>
+        ))}
+        <span class="sep">//</span>
+      </span>
+    ))}
+  </div>
+</div>
+
+<style>
+  .statusbar {
+    position: relative;
+    z-index: 50;
+    border-bottom: 1px solid hsl(var(--border));
+    background: hsl(var(--background) / 0.9);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .statusbar-track {
+    display: inline-block;
+    padding-block: 8px;
+    will-change: transform;
+    animation: ticker 38s linear infinite;
+  }
+
+  .item, .live, .sep { padding-inline: 1.5ch; }
+  .sep { color: hsl(var(--primary)); }
+  .live { color: hsl(var(--primary)); }
+
+  .live::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 0.9ch;
+    border-radius: 50%;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 8px hsl(var(--primary));
+    animation: blink 1.4s steps(1) infinite;
+    vertical-align: middle;
+  }
+
+  @keyframes blink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0.25; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .statusbar-track { animation: none; }
+    .live::before { animation: none; }
+  }
+</style>

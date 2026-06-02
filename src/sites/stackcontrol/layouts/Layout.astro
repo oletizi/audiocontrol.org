@@ -47,8 +47,14 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
 
-    {/* Phase 1 placeholder uses provisional system + mono stacks; the chosen
-        display webfont is wired in Phase 3 with the accepted identity. */}
+    {/* Telemetry identity: Archivo (+ Archivo Expanded) display, IBM Plex Sans
+        body, JetBrains Mono telemetry/labels. */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Archivo+Expanded:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
@@ -88,19 +94,42 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
         min-height: 100vh;
         margin: 0;
         width: 100%;
-        background:
-          radial-gradient(
-            ellipse 90% 60% at 50% -10%,
-            hsl(var(--primary) / 0.05) 0%,
-            transparent 60%
-          ),
-          hsl(var(--background));
+        overflow-x: hidden;
+        /* Control-plane texture: faint dot/line grid + cool vignette glow. */
+        background-color: hsl(var(--background));
+        background-image:
+          radial-gradient(120% 90% at 50% -10%, hsl(var(--primary) / 0.07), transparent 60%),
+          linear-gradient(hsl(var(--border) / 0.35) 1px, transparent 1px),
+          linear-gradient(90deg, hsl(var(--border) / 0.35) 1px, transparent 1px);
+        background-size: 100% 100%, 48px 48px, 48px 48px;
+      }
+
+      /* Faint horizontal scanline overlay — the control-plane signature. */
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 200;
+        background-image: repeating-linear-gradient(
+          to bottom,
+          hsl(0 0% 0% / 0.18) 0px,
+          hsl(0 0% 0% / 0.18) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+        opacity: 0.3;
+        mix-blend-mode: multiply;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        html { scroll-behavior: smooth; }
       }
 
       :global(h1), :global(h2), :global(h3), :global(h4), :global(h5), :global(h6) {
         font-family: var(--font-heading);
         color: hsl(var(--foreground));
-        font-weight: 600;
+        font-weight: 800;
         letter-spacing: -0.015em;
         margin: 0;
       }
@@ -135,6 +164,7 @@ const jsonLd = customJsonLd ?? defaultJsonLd;
     <slot name="head" />
   </head>
   <body>
+    <slot name="banner" />
     <Header />
 
     <main>

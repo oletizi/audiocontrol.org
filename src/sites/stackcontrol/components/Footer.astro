@@ -1,56 +1,88 @@
 ---
-// Phase 1 placeholder footer.
+// Control-plane footer: wordmark + tagline, sibling links, system links, copy.
+import Logo from './Logo.astro';
 import { brand } from '../brand.js';
 
 const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
-  <div class="site-container footer-inner">
-    <p class="footer-name">{brand.name}</p>
-    <nav class="footer-siblings" aria-label="Sibling sites">
-      <a href="https://audiocontrol.org">audiocontrol.org</a>
-      <a href="https://editorialcontrol.org">editorialcontrol.org</a>
-    </nav>
-    <p class="footer-copy tabular">© {year}</p>
+  <div class="site-container foot-row">
+    <div class="foot-brand">
+      <Logo variant="footer" />
+      <p class="foot-tagline">{brand.tagline}</p>
+    </div>
+
+    <div class="foot-links">
+      <span class="foot-lbl">Siblings</span>
+      <a href="https://audiocontrol.org">audiocontrol.org →</a>
+      <a href="https://editorialcontrol.org">editorialcontrol.org →</a>
+    </div>
+
+    <div class="foot-links">
+      <span class="foot-lbl">System</span>
+      <a href="/#product">Product</a>
+      <a href="/blog/">Devlog</a>
+    </div>
+
+    <p class="foot-copy tabular">© {year} stackcontrol.org<br />// pre-release</p>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    border-top: var(--rule-hairline) solid hsl(var(--border));
-    margin-top: 4rem;
+    border-top: 1px solid hsl(var(--border));
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    margin-top: clamp(2.5rem, 6vw, 5rem);
   }
 
-  .footer-inner {
+  .foot-row {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    gap: 1rem 2rem;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+    gap: 1.5rem 2.5rem;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .foot-tagline {
+    margin: 0.75rem 0 0;
     font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    letter-spacing: 0.06em;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: hsl(var(--muted-foreground));
   }
 
-  .footer-name {
+  .foot-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .foot-lbl {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .foot-links a {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
     color: hsl(var(--foreground));
   }
 
-  .footer-siblings {
-    display: flex;
-    gap: 1.5rem;
-    margin-left: auto;
-  }
+  .foot-links a:hover { color: hsl(var(--primary)); text-decoration: none; }
 
-  .footer-siblings a {
+  .foot-copy {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
     color: hsl(var(--muted-foreground));
-  }
-
-  .footer-siblings a:hover {
-    color: hsl(var(--primary));
-    text-decoration: none;
+    margin: 0;
+    line-height: 1.6;
   }
 </style>
