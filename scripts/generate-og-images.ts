@@ -29,7 +29,7 @@ interface PageConfig {
   slug: string;
   title: string;
   subtitle?: string;
-  backgroundImage?: string; // Path relative to public/
+  backgroundImage?: string; // Path relative to src/sites/audiocontrol/public/
 }
 
 // Define pages that need OG images
@@ -230,7 +230,7 @@ async function generateOgImage(page: PageConfig, fontData: ArrayBuffer, logoData
 
   if (page.backgroundImage) {
     // Composite text overlay on top of background image
-    const backgroundPath = join(rootDir, 'public', page.backgroundImage);
+    const backgroundPath = join(rootDir, 'src/sites/audiocontrol/public', page.backgroundImage);
     const overlay = await sharp(Buffer.from(svg)).png().toBuffer();
 
     png = await sharp(backgroundPath)
@@ -263,4 +263,9 @@ async function main(): Promise<void> {
   console.log('\nDone!');
 }
 
-main().catch(console.error);
+main().catch((err) => {
+  // Fail loud: a missing background asset must break the build, not pass
+  // silently (see issue #132).
+  console.error(err);
+  process.exitCode = 1;
+});
