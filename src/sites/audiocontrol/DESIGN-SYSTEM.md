@@ -51,7 +51,10 @@ All colors are stored as **HSL components** (`H S% L%`) and consumed via `hsl(va
 - **Departure Mono** — weight **400 only** (`/fonts/departure-mono-regular.woff2`). There is no bold variant; display text cannot be made heavier.
 - **IBM Plex Sans** — weights **400, 500, 600, 700** (`/fonts/ibm-plex-sans-{400,500,600,700}.woff2`).
 
-**There is no numeric type scale.** No `--text-*`, line-height, or weight tokens exist. Font sizes are hard-coded inside individual utility classes — for example `.panel-label` is `0.75rem` / weight `400`, and `.ticker-track` is `0.75rem`. Any new sizing follows the existing per-class literal pattern; there is no token to reach for.
+**Type scale (shared).** A numeric `--text-xs … --text-3xl` scale lives in
+`src/shared/design-tokens-base.css` (imported before this file). `.panel-label` and `.ticker-track`
+consume `--text-xs` (`0.75rem`); other sizes remain per-class literals and can migrate to the scale
+over time. There are still no dedicated line-height or weight tokens.
 
 ---
 
@@ -64,7 +67,11 @@ All colors are stored as **HSL components** (`H S% L%`) and consumed via `hsl(va
 | `--measure-reading` | `36rem` | Long-form prose measure |
 | `--measure-narrow` | `28rem` | Standalone essays / pull quotes |
 
-There is **no general spacing scale** (no `--space-1..n`); spacing is hard-coded per class. **There are no radius tokens** — the only border-radius in the file is a literal `50%` on `.signal-led`.
+There is **no general spacing scale** (no `--space-1..n`); spacing is hard-coded per class. **Radius
+tokens** (`--radius-sm/-md/-full`) live in `src/shared/design-tokens-base.css`; `.signal-led` uses
+`--radius-full`. Note `--container-padding` and `--measure-narrow` also live in the shared base now
+(identical across both sites); only `--container-max-width` (1400px) and `--measure-reading` (36rem)
+are site-specific here.
 
 ---
 
@@ -156,13 +163,27 @@ The status panel-label always renders as `STATUS: <value>` (the `:` is appended 
 
 ---
 
-## 7. Known drift (documented, not yet fixed)
+## 7. Known drift
 
-These are honest gaps in the current state, flagged for the Phase 3 safe-fix task — recorded here so they are not mistaken for intentional design:
+**Resolved in Phase 3 (shared token base).** The previously-duplicated structural tokens and the
+missing scale tokens now live in `src/shared/design-tokens-base.css`, imported by every layout
+before this site's tokens:
 
-- **Per-site token duplication.** audiocontrol and editorialcontrol each re-declare the same custom-property *names* (the nine color roles, the container/measure/rule/glow families, `--font-{display,body,mono,heading}`) in their own standalone `:root`. There is no shared CSS token source. A few **structural values are identical** across both sites — `--container-padding: 2rem`, `--rule-hairline: 1px`, `--rule-medium: 2px`, and `--font-mono` (JetBrains Mono) — but they are duplicated, not shared.
-- **No numeric type-scale or radius token set.** Font sizes live as per-class literals; the only radius is a hard-coded `50%` on `.signal-led`. New work has no token to reach for.
-- **`--font-mono` has no `@font-face` in this file.** `--font-mono` references "JetBrains Mono", but no `@font-face` for it is declared in `styles/design-tokens.css` — it resolves via system fallback unless loaded elsewhere.
+- Shared structural tokens (identical across both sites): `color-scheme`, `--container-padding`,
+  `--measure-narrow`, `--rule-hairline`, `--rule-medium`, `--font-mono`, `--font-heading`.
+- Shared additive scales: `--text-xs … --text-3xl` and `--radius-sm/-md/-full`.
+- Four byte-identical utility classes (`.site-container`, `.rule-double`, `.card-glow`/`:hover`,
+  `@keyframes ticker`) live in the base too. Site-specific values (colors, display/body fonts,
+  `--container-max-width`, `--measure-reading`, glow, `--rule-heavy`, `--phosphor-glow`, badges)
+  stay in this site's `design-tokens.css`.
+
+**Still open (documented, not fixed):**
+
+- **`--font-mono` has no `@font-face`.** It references "JetBrains Mono" but no `@font-face` is
+  declared, so it resolves via system fallback unless loaded elsewhere.
+- **`brand.ts` is a partial mirror.** It carries only the nine `BrandColors` + three font stacks;
+  badge colors, rule weights, layout/measure tokens, glow tokens, and `--font-heading` exist only
+  in CSS. The mirror is a subset; the CSS (now plus the shared base) is authoritative.
 - **`brand.ts` is a partial mirror.** It carries only the nine `BrandColors` + three font stacks. Badge colors, rule-weight tokens, layout/measure tokens, glow tokens, and `--font-heading` exist only in the CSS. The mirror is a subset; the CSS is authoritative.
 
 ---

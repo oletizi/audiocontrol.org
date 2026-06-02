@@ -52,11 +52,10 @@ paper-grain dot, which uses `hsl(var(--foreground))` (see §6).
 `brand.ts` mirrors `display`, `body`, and `mono` only; `--font-heading` exists in CSS but not in the
 TS mirror.
 
-**No numeric type scale.** There are no `--text-*`, line-height, or weight tokens. Type sizes are
-hard-coded inside utility classes:
-
-- `.dropcap::first-letter` — `font-size: 3.25rem`, `line-height: 0.85`, `font-weight: 600`
-- `.ticker-track` — `font-size: 0.75rem`, `letter-spacing: 0.08em`, `text-transform: uppercase`
+**Type scale (shared).** A numeric `--text-xs … --text-3xl` scale lives in
+`src/shared/design-tokens-base.css`. `.ticker-track` consumes `--text-xs` (`0.75rem`); other sizes
+remain per-class literals (e.g. `.dropcap::first-letter` `3.25rem` / `line-height: 0.85` /
+`font-weight: 600`). No dedicated line-height or weight tokens yet.
 
 **No `@font-face` is declared in the tokens file.** Unlike audiocontrol (which self-hosts faces),
 editorialcontrol's `design-tokens.css` declares no faces — Fraunces / Inter / JetBrains Mono are
@@ -73,11 +72,11 @@ loaded elsewhere (layout, font service, or system fallback).
 | `--measure-reading` | `34rem` | Ideal prose width for long-form reading |
 | `--measure-narrow` | `28rem` | Narrow measure for standalone essays |
 
-There is **no general spacing scale** (no `--space-*` tokens) and **no radius tokens** (and no
-radius literals anywhere in the file). Spacing is set per class.
-
-`--measure-reading` / `--measure-narrow` are defined here but not consumed by any class in this file
-— they are consumed by layouts/components outside the tokens file.
+There is **no general spacing scale** (no `--space-*` tokens). **Radius tokens**
+(`--radius-sm/-md/-full`) live in `src/shared/design-tokens-base.css` (this site has no radius
+adopters yet). `--container-padding` and `--measure-narrow` now live in the shared base (identical
+across both sites); `--container-max-width` (1280px) and `--measure-reading` (34rem) stay
+site-specific here. `--measure-reading` is consumed by layouts/components outside the tokens file.
 
 ---
 
@@ -177,23 +176,25 @@ imply they ship to readers.
 
 ## 7. Known drift (documented, not yet fixed)
 
-These are honest gaps, flagged for the Phase 3 safe-fix task. Nothing here is a recommendation
-acted on by this doc; it records the present state.
+**Resolved in Phase 3 (shared token base).** The previously-duplicated structural tokens and the
+missing scale tokens now live in `src/shared/design-tokens-base.css`, imported by every layout
+before this site's tokens:
 
-- **Structural token duplication with audiocontrol.** The two sites re-declare the same
-  custom-property *names* independently (there is no shared CSS token file — only the `Brand` TS
-  interface and convention). Several values are structurally identical across both sites:
-  `--container-padding: 2rem`, `--rule-hairline: 1px`, `--rule-medium: 2px`, `--measure-narrow:
-  28rem`, `color-scheme: dark`, the `--font-mono` stack, and `--font-heading: var(--font-display)`.
-  This duplication is the gap a shared design-system foundation would consolidate.
-- **No numeric type scale.** Sizes live inline in utility classes (e.g. `.dropcap` `3.25rem`,
-  `.ticker-track` `0.75rem`) — there are no scale tokens.
-- **No radius tokens** (and no radius literals).
-- **`--font-mono` has no `@font-face`.** It is consumed by `.ticker-track`, but no JetBrains Mono
-  face is declared in this file, so it resolves via system fallback unless loaded elsewhere.
+- Shared structural tokens (identical across both sites): `color-scheme`, `--container-padding`,
+  `--measure-narrow`, `--rule-hairline`, `--rule-medium`, `--font-mono`, `--font-heading`.
+- Shared additive scales: `--text-xs … --text-3xl` (this site's `.ticker-track` uses `--text-xs`)
+  and `--radius-sm/-md/-full` (no adopters on this site yet).
+- Four byte-identical utility classes (`.site-container`, `.rule-double`, `.card-glow`/`:hover`,
+  `@keyframes ticker`) live in the base. Site-specific values (colors, Fraunces/Inter fonts,
+  `--container-max-width`, `--measure-reading`, glow) stay in this site's `design-tokens.css`.
+
+**Still open (documented, not fixed):**
+
+- **`--font-mono` has no `@font-face`.** Consumed by `.ticker-track`, but no JetBrains Mono face is
+  declared, so it resolves via system fallback unless loaded elsewhere.
 - **`brand.ts` is a strict subset of the CSS.** The TS mirror carries only the nine `BrandColors`
-  plus the three font stacks. Layout/measure tokens, rule weights, glow tokens, and `--font-heading`
-  exist only in CSS. The two are hand-mirrored by convention — there is no generator.
+  plus the three font stacks; layout/measure/rule/glow tokens and `--font-heading` exist only in CSS
+  (now plus the shared base). Hand-mirrored by convention — no generator.
 
 ---
 
