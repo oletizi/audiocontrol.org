@@ -1,0 +1,113 @@
+---
+slug: stackcontrol-site
+targetVersion: "1.0"
+date: 2026-06-02
+---
+
+# Workplan: stackcontrol.org — site foundation + design pass
+
+**Goal:** Stand up `stackcontrol.org` as a third sibling site, establish its visual identity via a
+`/frontend-design` pass, build four representative surfaces, and provision it live — as the second
+real-world pilot of the design-decisions protocol.
+
+> **Branch:** `feature/stackcontrol-site` is stacked on `feature/design-system-foundation` to
+> inherit the shared token layer + protocol. Re-sync with `git merge feature/design-system-foundation`.
+> design-system-foundation merges to main first; then this branch picks it up before its own PR.
+
+## Phase 0: Recon
+
+**Deliverable:** Go/no-go facts + a constraints brief for the design pass.
+
+### Task 1: Dependency + domain readiness
+- [ ] Confirm the shared token layer (`src/shared/design-tokens-base.css`) present on this branch (inherited from DSF)
+- [ ] Confirm `stackcontrol.org` is registered and DNS-manageable (same flow as the siblings)
+
+### Task 2: Family-DNA constraints brief
+- [ ] Write a short brief for `/frontend-design`: dark surface, mono-accent discipline, accessibility/contrast, distinct from amber (audiocontrol) and chartreuse (editorialcontrol), must implement the shared `Brand` shape and consume `design-tokens-base.css`
+
+**Acceptance Criteria:**
+- [ ] Dependency + domain status known; constraints brief written.
+
+## Phase 1: Scaffold site infra
+
+**Deliverable:** A buildable, previewable stackcontrol site skeleton.
+
+### Task 1: Astro config + src tree
+- [ ] `astro.stackcontrol.config.mjs` (site/srcDir/outDir/adapter/sitemap, mirroring siblings)
+- [ ] `src/sites/stackcontrol/` skeleton: `brand.ts` stub, `styles/design-tokens.css`, `layouts/`, `components/`, `pages/index.astro` placeholder, `public/_redirects`
+
+### Task 2: Build wiring
+- [ ] `package.json`: `dev:/build:/preview:stackcontrol`; add to top-level `build`
+- [ ] Verify: `npm run build:stackcontrol` succeeds and `preview:stackcontrol` serves the placeholder
+
+**Acceptance Criteria:**
+- [ ] stackcontrol builds + previews as a real (placeholder) site; sibling builds unaffected.
+
+## Phase 2: Design pass (identity)
+
+**Deliverable:** An operator-chosen identity direction.
+
+### Task 1: Generate directions
+- [ ] `/frontend-design` proposes 2–3 distinct identity directions per the constraints brief
+
+### Task 2: Operator pick
+- [ ] Operator selects one direction to carry forward
+
+**Acceptance Criteria:**
+- [ ] One identity direction chosen; the others recorded for the REJECTED archive entries.
+
+## Phase 3: Build the four surfaces
+
+**Deliverable:** Identity + three pages, real Astro, under the chosen direction.
+
+### Task 1: Identity tokens
+- [ ] `src/sites/stackcontrol/brand.ts` (implements shared `Brand`) + `styles/design-tokens.css`, consuming `src/shared/design-tokens-base.css`
+
+### Task 2: Homepage
+- [ ] Product + devlog hybrid landing, representative real content
+
+### Task 3: Blog index + blog post page
+- [ ] Devlog listing + a representative devlog entry page
+
+**Acceptance Criteria:**
+- [ ] All four surfaces render under the chosen identity with real content; no lorem/mock data.
+
+## Phase 4: Discipline (2nd pilot)
+
+**Deliverable:** Archive entries + DESIGN-SYSTEM doc.
+
+### Task 1: Archive entries
+- [ ] ACCEPTED entry for the chosen identity direction; REJECTED entries for the passed-over ones, under `explorations/{ACCEPTED,REJECTED}/<date>-<slug>/` per the `brief.md` contract
+
+### Task 2: DESIGN-SYSTEM
+- [ ] `src/sites/stackcontrol/DESIGN-SYSTEM.md` documenting the settled identity
+
+**Acceptance Criteria:**
+- [ ] Archive entries filed per the protocol; DESIGN-SYSTEM.md authored.
+
+## Phase 5: Provision + deploy
+
+**Deliverable:** stackcontrol.org live.
+
+### Task 1: Netlify site (operator-confirmed)
+- [ ] Create the Netlify site; deploy `dist/stackcontrol`
+
+### Task 2: Domain (operator-confirmed)
+- [ ] Wire the `stackcontrol.org` custom domain + DNS
+
+**Acceptance Criteria:**
+- [ ] Site deployed; `stackcontrol.org` resolves to the new site.
+
+## Phase 6: Verify
+
+**Deliverable:** Green build + live check.
+
+### Task 1: Verify
+- [ ] `npm run build` (all sites); `preview:stackcontrol` visual review; live-domain check
+
+**Acceptance Criteria:**
+- [ ] Build green; live site verified.
+
+## Follow-up (tracked, not in this feature)
+- Build out remaining site surfaces (product docs, lifecycle/skills reference, more devlog content).
+- Editorial pipeline for stackcontrol content if desired.
