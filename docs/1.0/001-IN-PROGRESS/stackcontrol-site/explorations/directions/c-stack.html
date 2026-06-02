@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<!--
+  stackcontrol.org — DIRECTION C: "Stack"
+  Bold typographic, layered z-depth. Mono-as-display. Single magenta accent on near-black.
+
+  PALETTE (Brand keys → HSL-component "H S% L%" strings, ready for brand.ts + design-tokens.css):
+    background      222 24% 5%      near-black, faint cool tint
+    card            224 22% 9%      raised plane
+    cardHover       224 20% 13%     hovered plane
+    foreground      300 8% 94%      near-white body / heading ink (AA on background)
+    mutedForeground 282 10% 68%     muted meta text (AA on background)
+    primary         322 90% 64%     MAGENTA / electric pink — the one chromatic accent (links, glows, button fill)
+    accent          262 16% 78%     sparing cool-neutral counter-accent (secondary labels, hairline emphasis)
+    border          250 14% 18%     hairlines / plane edges
+    borderHover     322 60% 42%     border emphasis on hover (magenta-leaning)
+    display         "Martian Mono"  (fallback "Space Mono") — monospace used AS display face
+    body            "IBM Plex Sans"
+    mono            "JetBrains Mono"
+
+  Contrast notes (target WCAG AA):
+    - foreground (94% L) on background (5% L): far exceeds 4.5:1.
+    - mutedForeground (68% L) on background (5% L): exceeds 4.5:1.
+    - primary magenta (64% L) as link text on background: exceeds 4.5:1 for normal text.
+    - On the solid magenta button fill, text is near-black (background token) → high contrast, AA pass.
+-->
+<html lang="en" style="color-scheme: dark;">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>stackcontrol.org — lifecycle tooling for agentic development</title>
+  <meta name="description" content="The public home of the deskwork lifecycle plugin for Claude Code: feature definition, workplans, scope discovery, audit barrages, and subagent orchestration. Product page and devlog." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@500;700;800&family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      /* ── Brand palette (HSL components — mirrors brand.ts convention) ── */
+      --background: 222 24% 5%;
+      --card: 224 22% 9%;
+      --card-hover: 224 20% 13%;
+      --foreground: 300 8% 94%;
+      --muted-foreground: 282 10% 68%;
+      --primary: 322 90% 64%;
+      --accent: 262 16% 78%;
+      --border: 250 14% 18%;
+      --border-hover: 322 60% 42%;
+
+      /* ── Type ── */
+      --font-display: "Martian Mono", "Space Mono", ui-monospace, monospace;
+      --font-body: "IBM Plex Sans", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+      /* ── Scale ── */
+      --maxw: 1180px;
+      --gutter: clamp(1.25rem, 4vw, 3rem);
+      --radius: 4px;
+      --plane-shadow: 8px 8px 0 0 hsl(var(--background)), 8px 8px 0 1px hsl(var(--border));
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      font-family: var(--font-body);
+      font-size: 17px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      /* faint grid texture in the very back of the stack */
+      background-image:
+        linear-gradient(hsl(var(--border) / 0.25) 1px, transparent 1px),
+        linear-gradient(90deg, hsl(var(--border) / 0.25) 1px, transparent 1px);
+      background-size: 64px 64px, 64px 64px;
+      background-position: -1px -1px;
+    }
+
+    a { color: hsl(var(--primary)); text-decoration: none; }
+    a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--gutter); }
+
+    .mono { font-family: var(--font-mono); }
+    .kicker {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: hsl(var(--primary));
+    }
+    .kicker.dim { color: hsl(var(--muted-foreground)); }
+
+    /* ───────────────────────── HEADER ───────────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: blur(10px);
+      background: hsl(var(--background) / 0.78);
+      border-bottom: 1px solid hsl(var(--border));
+    }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .wordmark {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.02rem;
+      letter-spacing: -0.02em;
+      color: hsl(var(--foreground));
+      display: inline-flex; align-items: baseline; gap: 0.1em;
+    }
+    .wordmark .dot { color: hsl(var(--primary)); }
+    .nav-links { display: flex; gap: 1.6rem; font-family: var(--font-mono); font-size: 0.82rem; }
+    .nav-links a { color: hsl(var(--muted-foreground)); letter-spacing: 0.04em; }
+    .nav-links a:hover { color: hsl(var(--primary)); text-decoration: none; }
+
+    /* ───────────────────────── HERO ───────────────────────── */
+    .hero { position: relative; padding: clamp(4rem, 11vw, 8.5rem) 0 clamp(3rem, 7vw, 6rem); }
+
+    /* ghost STACK word offset behind the hero — z-depth */
+    .hero-ghost {
+      position: absolute; top: clamp(2rem, 6vw, 4rem); left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(6rem, 28vw, 24rem);
+      letter-spacing: -0.04em;
+      color: transparent;
+      -webkit-text-stroke: 1px hsl(var(--border));
+      text-stroke: 1px hsl(var(--border));
+      opacity: 0.55;
+      user-select: none; pointer-events: none;
+      z-index: 0;
+      white-space: nowrap;
+    }
+
+    .hero-inner { position: relative; z-index: 2; max-width: 880px; }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      font-family: var(--font-mono); font-size: 0.74rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: hsl(var(--muted-foreground));
+      border: 1px solid hsl(var(--border));
+      padding: 0.4rem 0.8rem; border-radius: 999px;
+      margin-bottom: 1.6rem;
+    }
+    .hero-eyebrow .blip {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: hsl(var(--primary));
+      box-shadow: 0 0 10px 1px hsl(var(--primary) / 0.8);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+    h1.hero-title {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(2.5rem, 7.2vw, 5.6rem);
+      line-height: 0.98;
+      letter-spacing: -0.045em;
+      margin-bottom: 1.6rem;
+    }
+    h1.hero-title .hl {
+      color: hsl(var(--primary));
+      text-shadow: 0 0 38px hsl(var(--primary) / 0.45);
+    }
+    /* offset "echo" line — the stack metaphor in the headline itself */
+    h1.hero-title .echo {
+      display: block;
+      color: transparent;
+      -webkit-text-stroke: 1.4px hsl(var(--muted-foreground) / 0.55);
+    }
+
+    .hero-lede {
+      font-size: clamp(1.02rem, 1.6vw, 1.22rem);
+      color: hsl(var(--muted-foreground));
+      max-width: 640px;
+      margin-bottom: 2.2rem;
+    }
+    .hero-lede strong { color: hsl(var(--foreground)); font-weight: 600; }
+
+    .cta-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+
+    .btn {
+      font-family: var(--font-mono);
+      font-size: 0.84rem; font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 0.9rem 1.5rem;
+      border-radius: var(--radius);
+      display: inline-flex; align-items: center; gap: 0.55rem;
+      transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: hsl(var(--primary));
+      color: hsl(var(--background));
+      border: 1px solid hsl(var(--primary));
+      box-shadow: 5px 5px 0 0 hsl(var(--primary) / 0.28);
+    }
+    .btn-primary:hover {
+      text-decoration: none;
+      transform: translate(-2px, -2px);
+      box-shadow: 8px 8px 0 0 hsl(var(--primary) / 0.32);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: hsl(var(--foreground));
+      border: 1px solid hsl(var(--border-hover));
+    }
+    .btn-ghost:hover {
+      text-decoration: none;
+      border-color: hsl(var(--primary));
+      color: hsl(var(--primary));
+      transform: translate(-2px, -2px);
+    }
+
+    /* ──────────────────── SECTION FRAME ──────────────────── */
+    section { position: relative; padding: clamp(3.5rem, 8vw, 6.5rem) 0; }
+    .section-head { margin-bottom: 3rem; max-width: 720px; }
+    .section-head h2 {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(1.9rem, 4.5vw, 3.1rem);
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+      margin: 0.7rem 0 1rem;
+    }
+    .section-head p { color: hsl(var(--muted-foreground)); font-size: 1.05rem; }
+
+    /* ──────────────────── PRODUCT: STACKED PHASES ──────────────────── */
+    .stack {
+      display: grid;
+      gap: 1.1rem;
+    }
+    .phase {
+      position: relative;
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: clamp(1.4rem, 3vw, 2.2rem) clamp(1.4rem, 3vw, 2.4rem);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 1.5rem;
+      box-shadow: var(--plane-shadow);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+      overflow: hidden;
+    }
+    /* progressive horizontal offset → literal leaning stack */
+    .phase:nth-child(1) { margin-left: 0; }
+    .phase:nth-child(2) { margin-left: clamp(0px, 2vw, 28px); }
+    .phase:nth-child(3) { margin-left: clamp(0px, 4vw, 56px); }
+    .phase:nth-child(4) { margin-left: clamp(0px, 6vw, 84px); }
+    .phase:nth-child(5) { margin-left: clamp(0px, 8vw, 112px); }
+    .phase:hover {
+      transform: translate(-4px, -4px);
+      border-color: hsl(var(--border-hover));
+      background: hsl(var(--card-hover));
+      box-shadow: 12px 12px 0 0 hsl(var(--background)), 12px 12px 0 1px hsl(var(--primary) / 0.5);
+      z-index: 3;
+    }
+    .phase-num {
+      position: absolute;
+      right: clamp(0.5rem, 2vw, 1.4rem);
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(4.5rem, 14vw, 9rem);
+      line-height: 1;
+      letter-spacing: -0.06em;
+      color: transparent;
+      -webkit-text-stroke: 1.5px hsl(var(--primary) / 0.35);
+      text-stroke: 1.5px hsl(var(--primary) / 0.35);
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+    }
+    .phase:hover .phase-num {
+      -webkit-text-stroke-color: hsl(var(--primary) / 0.8);
+      text-stroke-color: hsl(var(--primary) / 0.8);
+    }
+    .phase-body { position: relative; z-index: 1; grid-column: 1; max-width: 60ch; }
+    .phase-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: hsl(var(--primary));
+      display: block; margin-bottom: 0.35rem;
+    }
+    .phase-body h3 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(1.25rem, 2.6vw, 1.75rem);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+    }
+    .phase-body p { color: hsl(var(--muted-foreground)); font-size: 0.98rem; }
+    .phase-body code {
+      font-family: var(--font-mono); font-size: 0.82em;
+      color: hsl(var(--accent));
+      background: hsl(var(--background) / 0.6);
+      padding: 0.1em 0.4em; border-radius: 3px;
+      border: 1px solid hsl(var(--border));
+    }
+
+    /* ──────────────────── WHAT / WHY / HOW ──────────────────── */
+    .wwh {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.1rem;
+    }
+    .wwh-card {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 1.8rem 1.6rem;
+      position: relative;
+      box-shadow: 5px 5px 0 0 hsl(var(--background)), 5px 5px 0 1px hsl(var(--border));
+      transition: transform 0.16s ease, border-color 0.16s ease;
+    }
+    .wwh-card:hover { transform: translate(-3px, -3px); border-color: hsl(var(--border-hover)); }
+    .wwh-card .label {
+      font-family: var(--font-display); font-weight: 800;
+      font-size: 0.78rem; letter-spacing: 0.24em; text-transform: uppercase;
+      color: hsl(var(--primary)); margin-bottom: 0.9rem; display: block;
+    }
+    .wwh-card h3 {
+      font-family: var(--font-body); font-weight: 600;
+      font-size: 1.08rem; margin-bottom: 0.5rem;
+    }
+    .wwh-card p { color: hsl(var(--muted-foreground)); font-size: 0.94rem; }
+
+    /* ──────────────────── DEVLOG ──────────────────── */
+    .devlog-head {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem; margin-bottom: 2.2rem;
+    }
+    .devlog-list { display: grid; gap: 0; border-top: 1px solid hsl(var(--border)); }
+    .devlog-item {
+      display: grid;
+      grid-template-columns: 132px minmax(0,1fr) auto;
+      gap: 1.5rem; align-items: baseline;
+      padding: 1.5rem 0.5rem;
+      border-bottom: 1px solid hsl(var(--border));
+      transition: background 0.15s ease, padding-left 0.15s ease;
+    }
+    .devlog-item:hover { background: hsl(var(--card) / 0.6); padding-left: 1.2rem; }
+    .devlog-date {
+      font-family: var(--font-mono); font-size: 0.78rem;
+      color: hsl(var(--muted-foreground)); letter-spacing: 0.03em; white-space: nowrap;
+    }
+    .devlog-main h3 {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+      letter-spacing: -0.02em; margin-bottom: 0.35rem;
+      color: hsl(var(--foreground));
+    }
+    .devlog-item:hover .devlog-main h3 { color: hsl(var(--primary)); }
+    .devlog-main p { color: hsl(var(--muted-foreground)); font-size: 0.95rem; max-width: 64ch; }
+    .devlog-arrow { font-family: var(--font-mono); color: hsl(var(--primary)); font-size: 1rem; }
+
+    /* ──────────────────── FOOTER ──────────────────── */
+    footer {
+      border-top: 1px solid hsl(var(--border));
+      padding: clamp(2.5rem, 6vw, 4rem) 0 3rem;
+      margin-top: 2rem;
+      position: relative;
+    }
+    .foot-grid {
+      display: flex; flex-wrap: wrap; justify-content: space-between;
+      gap: 2rem; align-items: flex-start;
+    }
+    .foot-brand .wordmark { font-size: 1.3rem; }
+    .foot-brand p { color: hsl(var(--muted-foreground)); font-size: 0.9rem; margin-top: 0.7rem; max-width: 34ch; }
+    .siblings { display: flex; flex-direction: column; gap: 0.6rem; }
+    .siblings .kicker { margin-bottom: 0.3rem; }
+    .siblings a {
+      font-family: var(--font-mono); font-size: 0.86rem;
+      color: hsl(var(--muted-foreground));
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .siblings a:hover { color: hsl(var(--primary)); text-decoration: none; }
+    .siblings a .swatch { width: 10px; height: 10px; border-radius: 2px; }
+    .copyright {
+      margin-top: 2.5rem; font-family: var(--font-mono);
+      font-size: 0.76rem; color: hsl(var(--muted-foreground) / 0.7);
+      letter-spacing: 0.04em;
+    }
+
+    /* ──────────────────── RESPONSIVE ──────────────────── */
+    @media (max-width: 820px) {
+      .wwh { grid-template-columns: 1fr; }
+      .phase { margin-left: 0 !important; }
+      .phase-num { font-size: clamp(3.5rem, 22vw, 6rem); opacity: 0.6; }
+      .devlog-item { grid-template-columns: 1fr; gap: 0.4rem; }
+      .devlog-arrow { display: none; }
+    }
+    @media (max-width: 560px) {
+      .nav-links { gap: 1rem; font-size: 0.74rem; }
+      body { font-size: 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ───────── HEADER ───────── -->
+  <header>
+    <div class="wrap nav">
+      <a class="wordmark" href="#" aria-label="stackcontrol.org home">stackcontrol<span class="dot">.org</span></a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#product">Product</a>
+        <a href="#devlog">Devlog</a>
+        <a href="#docs">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ───────── HERO ───────── -->
+    <section class="hero">
+      <div class="hero-ghost" aria-hidden="true">STACK</div>
+      <div class="wrap">
+        <div class="hero-inner">
+          <span class="hero-eyebrow"><span class="blip" aria-hidden="true"></span>deskwork lifecycle plugin · for claude code</span>
+          <h1 class="hero-title">
+            Lifecycle&nbsp;tooling<br />
+            for <span class="hl">agentic</span> development
+            <span class="echo" aria-hidden="true">for agentic development</span>
+          </h1>
+          <p class="hero-lede">
+            stackcontrol.org is the home of <strong>deskwork</strong> — the
+            <code class="mono">/dw-lifecycle:*</code> and <code class="mono">/deskwork:*</code> toolchain
+            that moves a feature through <strong>define → workplan → implement → audit → ship</strong>.
+            Part product page, part devlog: here's what it does, and here's it being built in the open.
+          </p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="#product">Read the lifecycle <span aria-hidden="true">→</span></a>
+            <a class="btn btn-ghost" href="#devlog">Follow the devlog</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────── PRODUCT: STACKED PHASES ───────── -->
+    <section id="product">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">// the lifecycle</span>
+          <h2>Five phases. One stack.</h2>
+          <p>
+            deskwork treats a feature as a stack of phases. Each one has a slash command, a defined
+            output, and a hand-off to the next. Work moves down the stack — never sideways into chaos.
+          </p>
+        </div>
+
+        <div class="stack">
+          <article class="phase">
+            <span class="phase-num" aria-hidden="true">01</span>
+            <div class="phase-body">
+              <span class="phase-tag">/dw-lifecycle:define</span>
+              <h3>Define</h3>
+              <p>An interview captures the problem, the scope, and the non-goals before a line is written. Scope discovery runs automatically to surface the surfaces you'd have missed.</p>
+            </div>
+          </article>
+
+          <article class="phase">
+            <span class="phase-num" aria-hidden="true">02</span>
+            <div class="phase-body">
+              <span class="phase-tag">/dw-lifecycle:setup · :issues</span>
+              <h3>Workplan</h3>
+              <p>The feature becomes a versioned PRD and a phased workplan, then fans out into a parent issue plus one GitHub issue per phase — links back-filled into the plan.</p>
+            </div>
+          </article>
+
+          <article class="phase">
+            <span class="phase-num" aria-hidden="true">03</span>
+            <div class="phase-body">
+              <span class="phase-tag">/dw-lifecycle:implement</span>
+              <h3>Implement</h3>
+              <p>Walk the workplan task by task, delegating each to the right subagent, committing at task boundaries. Scope-widen runs between tasks to catch drift early.</p>
+            </div>
+          </article>
+
+          <article class="phase">
+            <span class="phase-num" aria-hidden="true">04</span>
+            <div class="phase-body">
+              <span class="phase-tag">/dw-lifecycle:audit-barrage</span>
+              <h3>Audit</h3>
+              <p>Fire <code>claude</code>, <code>codex</code>, and <code>gemini</code> in parallel against the diff. Cross-model findings land in a durable audit log and get promoted back into the plan.</p>
+            </div>
+          </article>
+
+          <article class="phase">
+            <span class="phase-num" aria-hidden="true">05</span>
+            <div class="phase-body">
+              <span class="phase-tag">/dw-lifecycle:ship</span>
+              <h3>Ship</h3>
+              <p>Verify acceptance criteria, open the PR, and stop at the boundary — the operator owns the merge. Then <code>:complete</code> archives the docs and closes the issues.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────── WHAT / WHY / HOW ───────── -->
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker dim">// the shape of it</span>
+          <h2>What it is, why it exists, how it runs.</h2>
+        </div>
+        <div class="wwh">
+          <div class="wwh-card">
+            <span class="label">What</span>
+            <h3>A lifecycle plugin for Claude Code</h3>
+            <p>Slash commands that carry a feature from a one-line idea to a merged PR — with workplans, scope discovery, audit barrages, and an editorial pipeline all in the same toolchain.</p>
+          </div>
+          <div class="wwh-card">
+            <span class="label">Why</span>
+            <h3>Agentic work needs rails</h3>
+            <p>Subagents are fast and forgetful. deskwork imposes phases, commit boundaries, and cross-model review so the speed doesn't turn into a pile of plausible-looking debt.</p>
+          </div>
+          <div class="wwh-card">
+            <span class="label">How</span>
+            <h3>Orchestration, not autopilot</h3>
+            <p>The operator drives. Each phase delegates to specialized subagents, writes its output to disk, and hands off — so you can inspect, correct, and resume at any boundary.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────── DEVLOG ───────── -->
+    <section id="devlog">
+      <div class="wrap">
+        <div class="devlog-head">
+          <div class="section-head" style="margin-bottom:0;">
+            <span class="kicker">// devlog</span>
+            <h2>Built in the open.</h2>
+          </div>
+          <a class="mono" href="#" style="font-size:0.82rem;">all entries →</a>
+        </div>
+
+        <div class="devlog-list">
+          <a class="devlog-item" href="#">
+            <span class="devlog-date">2026-05-28</span>
+            <div class="devlog-main">
+              <h3>Scope discovery: catching the clones the workplan missed</h3>
+              <p>The workplan said "one editor." The codebase had four near-identical copies. How the scope-inventory fan-out and the jscpd clone baseline now flag the surfaces a phase plan glosses over.</p>
+            </div>
+            <span class="devlog-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a class="devlog-item" href="#">
+            <span class="devlog-date">2026-05-19</span>
+            <div class="devlog-main">
+              <h3>Audit barrages: cross-model review on every task</h3>
+              <p>One model's blind spot is another's obvious bug. Running claude, codex, and gemini in parallel against the same diff — and reconciling three opinions into a single triaged audit log.</p>
+            </div>
+            <span class="devlog-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a class="devlog-item" href="#">
+            <span class="devlog-date">2026-05-09</span>
+            <div class="devlog-main">
+              <h3>Running the editorial calendar from a terminal</h3>
+              <p>The /deskwork:* side of the stack: ideas, drafts, reviews, and shortform distribution as an append-only pipeline — driven by slash commands, backed by a single source-of-truth calendar file.</p>
+            </div>
+            <span class="devlog-arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ───────── FOOTER ───────── -->
+  <footer id="docs">
+    <div class="wrap foot-grid">
+      <div class="foot-brand">
+        <a class="wordmark" href="#">stackcontrol<span class="dot">.org</span></a>
+        <p>The public home of the deskwork lifecycle plugin for Claude Code. Product and devlog.</p>
+      </div>
+      <div class="siblings">
+        <span class="kicker dim">// sibling sites</span>
+        <a href="https://audiocontrol.org"><span class="swatch" style="background:hsl(35 90% 55%);"></span>audiocontrol.org</a>
+        <a href="https://editorialcontrol.org"><span class="swatch" style="background:hsl(74 70% 55%);"></span>editorialcontrol.org</a>
+      </div>
+    </div>
+    <div class="wrap">
+      <p class="copyright">© 2026 stackcontrol.org · built with deskwork, in the open.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

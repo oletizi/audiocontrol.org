@@ -21,7 +21,7 @@ has no public home and we want its look established under the discipline before 
 |---|---|---|
 | 0 | Recon (dependency + domain + constraints brief) | Complete |
 | 1 | Scaffold site infra | Complete |
-| 2 | Design pass (identity) | Not started |
+| 2 | Design pass (identity) | Complete — direction A (Telemetry/cyan) chosen |
 | 3 | Build the four surfaces | Not started |
 | 4 | Discipline (archive entries + DESIGN-SYSTEM) | Not started |
 | 5 | Provision + deploy | Not started |

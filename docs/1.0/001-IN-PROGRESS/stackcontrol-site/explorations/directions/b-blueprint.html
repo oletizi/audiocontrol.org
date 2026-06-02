@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<!--
+  stackcontrol.org — DIRECTION B: "Blueprint" (refined technical schematic)
+  ===========================================================================
+  Palette mapped to the shared Brand keys (HSL-component "H S% L%" strings,
+  ready to drop straight into src/sites/stackcontrol/brand.ts):
+
+    background        228 38% 6%     near-black, indigo-tinted drafting surface
+    card              228 30% 10%    raised schematic panel
+    cardHover         230 30% 14%    panel hover
+    foreground        226 28% 92%    primary text (AA on background)
+    mutedForeground   226 14% 62%    labels / secondary text (AA on background)
+    primary           255 78% 70%    INDIGO / VIOLET-BLUE accent (hue 255)
+    accent            220 16% 70%    sparing cool-neutral counter-accent
+    border            228 24% 18%    hairline rules / node outlines
+    borderHover       230 30% 30%    hover rules
+
+  Font families:
+    display  "Syne"            (600–800 weights — geometric display face)
+    body     "Hanken Grotesk"  (UI + prose)
+    mono     "JetBrains Mono"  (labels, coordinates, metadata)
+
+  Contrast notes (against background 228 38% 6%, ~L 0.06):
+    foreground L92%  -> ~16:1     (AA/AAA body)
+    mutedForeground L62% -> ~6.0:1 (AA UI text)
+    primary L70%    -> ~7.5:1     (AA link color on dark)
+    on solid primary fill, text is background near-black -> AA large+normal.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>stackcontrol.org — lifecycle tooling for agentic development</title>
+<meta name="description" content="The public home of the deskwork lifecycle plugin for Claude Code. Product and devlog." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --background: 228 38% 6%;
+    --card: 228 30% 10%;
+    --card-hover: 230 30% 14%;
+    --foreground: 226 28% 92%;
+    --muted-foreground: 226 14% 62%;
+    --primary: 255 78% 70%;
+    --accent: 220 16% 70%;
+    --border: 228 24% 18%;
+    --border-hover: 230 30% 30%;
+
+    --display: "Syne", sans-serif;
+    --body: "Hanken Grotesk", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+
+    --maxw: 1120px;
+    --gutter: clamp(1.25rem, 4vw, 3rem);
+    --hair: 1px solid hsl(var(--border));
+  }
+
+  * { box-sizing: border-box; }
+
+  html { color-scheme: dark; scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    font-family: var(--body);
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--background));
+    /* Signature device: faint dotted blueprint grid (drafting paper) */
+    background-image:
+      radial-gradient(hsl(var(--primary) / 0.10) 1px, transparent 1.4px),
+      radial-gradient(hsl(var(--foreground) / 0.035) 1px, transparent 1.4px);
+    background-size: 120px 120px, 24px 24px;
+    background-position: 0 0, 0 0;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a { color: hsl(var(--primary)); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  .wrap { max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gutter); }
+
+  /* mono labels / coordinates */
+  .mono {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* registration / crosshair detail */
+  .crosshair {
+    position: relative;
+    width: 14px; height: 14px;
+    flex: 0 0 auto;
+  }
+  .crosshair::before, .crosshair::after {
+    content: ""; position: absolute; background: hsl(var(--primary) / 0.8);
+  }
+  .crosshair::before { left: 50%; top: 0; width: 1px; height: 100%; transform: translateX(-0.5px); }
+  .crosshair::after  { top: 50%; left: 0; height: 1px; width: 100%; transform: translateY(-0.5px); }
+
+  /* corner registration marks on panels */
+  .panel {
+    position: relative;
+    background: hsl(var(--card) / 0.72);
+    border: var(--hair);
+    border-radius: 4px;
+    backdrop-filter: blur(2px);
+  }
+  .panel::before, .panel::after {
+    content: ""; position: absolute; width: 9px; height: 9px;
+    border-color: hsl(var(--border-hover)); border-style: solid;
+  }
+  .panel::before { top: 7px; left: 7px; border-width: 1px 0 0 1px; }
+  .panel::after  { bottom: 7px; right: 7px; border-width: 0 1px 1px 0; }
+
+  /* ---------- Header ---------- */
+  header.site {
+    position: sticky; top: 0; z-index: 30;
+    border-bottom: var(--hair);
+    background: hsl(var(--background) / 0.78);
+    backdrop-filter: blur(10px) saturate(120%);
+  }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .brandmark { display: flex; align-items: center; gap: 0.6rem; }
+  .brandmark .word {
+    font-family: var(--display); font-weight: 800; font-size: 1.1rem;
+    letter-spacing: -0.01em; color: hsl(var(--foreground));
+  }
+  .brandmark .word b { color: hsl(var(--primary)); font-weight: 800; }
+  .coord { font-family: var(--mono); font-size: 0.62rem; color: hsl(var(--muted-foreground)); }
+
+  nav.main { display: flex; align-items: center; gap: 1.6rem; }
+  nav.main a {
+    font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: hsl(var(--muted-foreground));
+  }
+  nav.main a:hover { color: hsl(var(--foreground)); text-decoration: none; }
+
+  /* ---------- Section scaffolding ---------- */
+  section { padding-block: clamp(3.5rem, 8vw, 6rem); }
+  .sec-label {
+    display: flex; align-items: center; gap: 0.7rem; margin-bottom: 1.4rem;
+  }
+  .sec-label .line { height: 1px; background: hsl(var(--border)); flex: 1; }
+
+  h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; margin: 0; }
+
+  /* ---------- Hero ---------- */
+  .hero { padding-block: clamp(3rem, 7vw, 5.5rem) clamp(2.5rem, 6vw, 4rem); }
+  .hero-grid {
+    display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4.1rem); font-weight: 800;
+    color: hsl(var(--foreground));
+  }
+  .hero h1 em { font-style: normal; color: hsl(var(--primary)); }
+  .lede {
+    margin-top: 1.4rem; max-width: 42ch; color: hsl(var(--foreground) / 0.84);
+    font-size: 1.06rem;
+  }
+  .lede strong { color: hsl(var(--foreground)); font-weight: 600; }
+
+  .cta-row { display: flex; gap: 0.9rem; margin-top: 2rem; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em;
+    padding: 0.72rem 1.25rem; border-radius: 3px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.16s ease;
+  }
+  .btn-primary {
+    background: hsl(var(--primary)); color: hsl(228 38% 8%); font-weight: 600;
+    border: 1px solid hsl(var(--primary));
+  }
+  .btn-primary:hover { text-decoration: none; box-shadow: 0 0 0 4px hsl(var(--primary) / 0.18); transform: translateY(-1px); }
+  .btn-ghost {
+    background: transparent; color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border-hover));
+  }
+  .btn-ghost:hover { text-decoration: none; border-color: hsl(var(--primary)); color: hsl(var(--primary)); }
+
+  /* ---------- DAG diagram (SVG node-and-edge graph) ---------- */
+  .diagram { position: relative; }
+  .diagram .panel { padding: 1.1rem 1.1rem 0.8rem; }
+  .diagram svg { display: block; width: 100%; height: auto; }
+  .dwrap-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+
+  .node rect {
+    fill: hsl(var(--card-hover)); stroke: hsl(var(--border-hover)); stroke-width: 1;
+  }
+  .node.is-loop rect { stroke: hsl(var(--primary) / 0.7); }
+  .node text.n-title {
+    font-family: var(--display); font-weight: 700; font-size: 13px; fill: hsl(var(--foreground));
+  }
+  .node text.n-id {
+    font-family: "JetBrains Mono", monospace; font-size: 8.5px; letter-spacing: 1px;
+    fill: hsl(var(--muted-foreground));
+  }
+  .edge { stroke: hsl(var(--primary) / 0.55); stroke-width: 1.4; fill: none; }
+  .edge.loop { stroke: hsl(var(--primary) / 0.85); stroke-dasharray: 4 4; }
+  .edge-flow { stroke-dasharray: 5 7; animation: dash 2.6s linear infinite; }
+  @keyframes dash { to { stroke-dashoffset: -48; } }
+  .node-dot { fill: hsl(var(--primary)); }
+  .axis-tick { stroke: hsl(var(--border)); stroke-width: 1; }
+  .axis-num { font-family: "JetBrains Mono", monospace; font-size: 8px; fill: hsl(var(--muted-foreground) / 0.7); }
+
+  /* ---------- Product / lifecycle phases ---------- */
+  .phase-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 0;
+    border: var(--hair); border-radius: 4px; overflow: hidden;
+  }
+  .phase {
+    padding: 1.5rem 1.25rem; border-right: var(--hair); position: relative;
+    background: hsl(var(--card) / 0.5); transition: background 0.18s ease;
+  }
+  .phase:last-child { border-right: none; }
+  .phase:hover { background: hsl(var(--card-hover) / 0.7); }
+  .phase .pn { font-family: var(--mono); font-size: 0.66rem; color: hsl(var(--primary)); letter-spacing: 0.14em; }
+  .phase h3 { font-size: 1.18rem; margin-top: 0.5rem; color: hsl(var(--foreground)); }
+  .phase p { font-size: 0.86rem; color: hsl(var(--muted-foreground)); margin: 0.55rem 0 0; line-height: 1.5; }
+  .phase .arrow {
+    position: absolute; right: -7px; top: 50%; transform: translateY(-50%);
+    color: hsl(var(--primary)); font-family: var(--mono); font-size: 0.8rem; z-index: 2;
+  }
+  .phase.loops .pn { color: hsl(var(--accent)); }
+
+  /* ---------- What / Why / How ---------- */
+  .wwh { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .wwh .panel { padding: 1.5rem 1.4rem; }
+  .wwh h3 { font-size: 1.05rem; color: hsl(var(--primary)); margin-bottom: 0.6rem; }
+  .wwh p { margin: 0; color: hsl(var(--foreground) / 0.82); font-size: 0.94rem; }
+  .wwh .tag { display: block; }
+
+  /* ---------- Devlog ---------- */
+  .devlog-list { display: flex; flex-direction: column; gap: 0; border-top: var(--hair); }
+  .post {
+    display: grid; grid-template-columns: 132px 1fr auto; gap: 1.5rem; align-items: baseline;
+    padding: 1.5rem 0.5rem; border-bottom: var(--hair); transition: background 0.16s ease;
+  }
+  .post:hover { background: hsl(var(--card) / 0.4); }
+  .post .date { font-family: var(--mono); font-size: 0.72rem; color: hsl(var(--muted-foreground)); letter-spacing: 0.06em; }
+  .post .body h3 { font-size: 1.22rem; color: hsl(var(--foreground)); }
+  .post .body p { margin: 0.4rem 0 0; color: hsl(var(--muted-foreground)); font-size: 0.92rem; max-width: 60ch; }
+  .post .read { font-family: var(--mono); font-size: 0.7rem; color: hsl(var(--primary)); white-space: nowrap; }
+  .post:hover .read { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ---------- Footer ---------- */
+  footer.site { border-top: var(--hair); padding-block: 3rem; margin-top: 2rem; }
+  .foot-grid { display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem; flex-wrap: wrap; }
+  footer .word { font-family: var(--display); font-weight: 800; font-size: 1rem; color: hsl(var(--foreground)); }
+  .siblings { display: flex; gap: 1.4rem; flex-wrap: wrap; }
+  .siblings a { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.06em; color: hsl(var(--muted-foreground)); }
+  .siblings a:hover { color: hsl(var(--primary)); text-decoration: none; }
+  .copy { font-family: var(--mono); font-size: 0.68rem; color: hsl(var(--muted-foreground) / 0.7); }
+
+  @media (max-width: 880px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .phase-grid { grid-template-columns: 1fr; }
+    .phase { border-right: none; border-bottom: var(--hair); }
+    .phase:last-child { border-bottom: none; }
+    .phase .arrow { display: none; }
+    .wwh { grid-template-columns: 1fr; }
+    .post { grid-template-columns: 1fr; gap: 0.4rem; }
+    .post .read { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .edge-flow { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header class="site">
+  <div class="wrap topbar">
+    <div class="brandmark">
+      <span class="crosshair" aria-hidden="true"></span>
+      <span class="word">stackcontrol<b>.org</b></span>
+      <span class="coord">[ 41.40N · 02.17E ]</span>
+    </div>
+    <nav class="main" aria-label="Primary">
+      <a href="#product">Product</a>
+      <a href="#devlog">Devlog</a>
+      <a href="#docs">Docs</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="mono" style="margin-bottom:1.1rem;">// deskwork · lifecycle plugin · v1</div>
+      <h1>Lifecycle tooling for <em>agentic</em> development.</h1>
+      <p class="lede">
+        stackcontrol.org is the home of <strong>deskwork</strong> — the
+        <code style="font-family:var(--mono);font-size:0.9em;color:hsl(var(--accent));">/dw-lifecycle:*</code>
+        and <code style="font-family:var(--mono);font-size:0.9em;color:hsl(var(--accent));">/deskwork:*</code>
+        toolchain for Claude Code. It moves a feature from definition to ship through a
+        legible pipeline — and chronicles building it in the open. Product page and devlog,
+        one surface.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#product">▸ Read the spec</a>
+        <a class="btn btn-ghost" href="#devlog">Follow the devlog</a>
+      </div>
+    </div>
+
+    <!-- Signature device: lifecycle DAG -->
+    <div class="diagram">
+      <div class="panel">
+        <div class="dwrap-head">
+          <span class="mono">fig.01 — lifecycle DAG</span>
+          <span class="mono" style="color:hsl(var(--primary));">5 nodes · 1 loop</span>
+        </div>
+        <svg viewBox="0 0 460 320" role="img" aria-label="Lifecycle directed graph: Define to Workplan to Implement to Audit to Ship, with Audit looping back to Implement.">
+          <!-- axis registration ticks -->
+          <line class="axis-tick" x1="14" y1="14" x2="22" y2="14"/>
+          <line class="axis-tick" x1="14" y1="14" x2="14" y2="22"/>
+          <text class="axis-num" x="14" y="312">x0</text>
+          <text class="axis-num" x="430" y="312">x1</text>
+
+          <!-- EDGES (drawn first, under nodes) -->
+          <!-- Define -> Workplan -->
+          <path class="edge edge-flow" d="M118,70 H172"/>
+          <!-- Workplan -> Implement -->
+          <path class="edge edge-flow" d="M236,92 V148 H118 V162"/>
+          <!-- Implement -> Audit -->
+          <path class="edge edge-flow" d="M118,200 H172"/>
+          <!-- Audit -> Ship -->
+          <path class="edge edge-flow" d="M236,222 V258 H300 V236"/>
+          <!-- Audit -> Implement  (LOOP back) -->
+          <path class="edge loop" d="M182,200 q-26,-14 0,-28" marker-end="url(#arrowL)"/>
+
+          <!-- arrowheads -->
+          <defs>
+            <marker id="arrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="hsl(255 78% 70% / 0.7)"/>
+            </marker>
+            <marker id="arrowL" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="hsl(255 78% 70%)"/>
+            </marker>
+          </defs>
+          <!-- edge endpoint dots -->
+          <circle class="node-dot" cx="172" cy="70" r="2.6"/>
+          <circle class="node-dot" cx="118" cy="162" r="2.6"/>
+          <circle class="node-dot" cx="172" cy="200" r="2.6"/>
+          <circle class="node-dot" cx="300" cy="236" r="2.6"/>
+
+          <!-- NODES -->
+          <g class="node">
+            <rect x="54" y="50" width="64" height="40" rx="3"/>
+            <text class="n-id" x="62" y="66">01</text>
+            <text class="n-title" x="62" y="81">Define</text>
+          </g>
+          <g class="node">
+            <rect x="172" y="50" width="64" height="40" rx="3"/>
+            <text class="n-id" x="180" y="66">02</text>
+            <text class="n-title" x="180" y="81">Workplan</text>
+          </g>
+          <g class="node is-loop">
+            <rect x="54" y="180" width="64" height="40" rx="3"/>
+            <text class="n-id" x="62" y="196">03</text>
+            <text class="n-title" x="62" y="211">Implement</text>
+          </g>
+          <g class="node is-loop">
+            <rect x="172" y="180" width="64" height="40" rx="3"/>
+            <text class="n-id" x="180" y="196">04</text>
+            <text class="n-title" x="180" y="211">Audit</text>
+          </g>
+          <g class="node">
+            <rect x="290" y="216" width="64" height="40" rx="3"/>
+            <text class="n-id" x="298" y="232">05</text>
+            <text class="n-title" x="298" y="247">Ship</text>
+          </g>
+
+          <!-- loop annotation -->
+          <text class="axis-num" x="138" y="178" fill="hsl(255 78% 70%)">↻ re-audit</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRODUCT / LIFECYCLE ===================== -->
+<section id="product">
+  <div class="wrap">
+    <div class="sec-label">
+      <span class="mono">02 / the pipeline</span>
+      <span class="line" aria-hidden="true"></span>
+    </div>
+    <h2 style="font-size:clamp(1.8rem,4vw,2.6rem);max-width:18ch;color:hsl(var(--foreground));">
+      Five phases. One loop. Every stage is a command.
+    </h2>
+    <p style="color:hsl(var(--muted-foreground));max-width:60ch;margin-top:0.9rem;">
+      deskwork models the work as a directed graph. Each node is a real slash command;
+      Audit feeds back into Implement until the diff is clean.
+    </p>
+
+    <div class="phase-grid" style="margin-top:2rem;">
+      <div class="phase">
+        <div class="pn">01 · DEFINE</div>
+        <h3>Define</h3>
+        <p>An interview captures the problem, scope, and approach — then writes <code style="font-family:var(--mono);font-size:0.85em;">feature-definition.md</code>.</p>
+        <span class="arrow" aria-hidden="true">→</span>
+      </div>
+      <div class="phase">
+        <div class="pn">02 · PLAN</div>
+        <h3>Workplan</h3>
+        <p>Phases become a workplan with acceptance criteria, then a parent and per-phase GitHub issues.</p>
+        <span class="arrow" aria-hidden="true">→</span>
+      </div>
+      <div class="phase loops">
+        <div class="pn">03 · BUILD ↻</div>
+        <h3>Implement</h3>
+        <p>Tasks are delegated to subagents; commits land at task boundaries — never in one blob.</p>
+        <span class="arrow" aria-hidden="true">→</span>
+      </div>
+      <div class="phase loops">
+        <div class="pn">04 · AUDIT ↻</div>
+        <h3>Audit</h3>
+        <p>Cross-model audit barrages review every task. Findings loop back to Implement before Ship.</p>
+        <span class="arrow" aria-hidden="true">→</span>
+      </div>
+      <div class="phase">
+        <div class="pn">05 · SHIP</div>
+        <h3>Ship</h3>
+        <p>Verify acceptance criteria, open the PR, stop at creation — the operator owns the merge.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== WHAT / WHY / HOW ===================== -->
+<section>
+  <div class="wrap">
+    <div class="sec-label">
+      <span class="mono">03 / orientation</span>
+      <span class="line" aria-hidden="true"></span>
+    </div>
+    <div class="wwh">
+      <div class="panel">
+        <span class="mono tag">what</span>
+        <h3>A control plane</h3>
+        <p>A plugin toolchain that watches a feature move through definition, planning, build, audit, and ship — with state you can read in the terminal.</p>
+      </div>
+      <div class="panel">
+        <span class="mono tag">why</span>
+        <h3>Agents drift</h3>
+        <p>Agentic builds wander without scaffolding. deskwork pins scope, forces commit boundaries, and runs adversarial review so the diff stays honest.</p>
+      </div>
+      <div class="panel">
+        <span class="mono tag">how</span>
+        <h3>Composable commands</h3>
+        <p>Small, UNIX-style slash commands — one per action. Scope discovery, audit barrages, and an editorial pipeline compose into the lifecycle.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DEVLOG ===================== -->
+<section id="devlog">
+  <div class="wrap">
+    <div class="sec-label">
+      <span class="mono">04 / devlog — building in the open</span>
+      <span class="line" aria-hidden="true"></span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:1rem;">
+      <h2 style="font-size:clamp(1.8rem,4vw,2.6rem);color:hsl(var(--foreground));">Recent entries</h2>
+      <a class="mono" href="#" style="color:hsl(var(--primary));">view all →</a>
+    </div>
+
+    <div class="devlog-list" style="margin-top:1.6rem;">
+      <a class="post" href="#" style="color:inherit;">
+        <span class="date">2026·05·28</span>
+        <div class="body">
+          <h3>Scope discovery: catching the clones the workplan missed</h3>
+          <p>The workplan said three files. The scope-inventory agents found eleven. How fan-out discovery against the PRD turns "I think that's all of it" into a manifest you can audit.</p>
+        </div>
+        <span class="read">read ↗</span>
+      </a>
+      <a class="post" href="#" style="color:inherit;">
+        <span class="date">2026·05·19</span>
+        <div class="body">
+          <h3>Audit barrages: cross-model review on every task</h3>
+          <p>Firing claude, codex, and gemini in parallel against the same diff, then triaging per-model findings into the workplan. One model's blind spot is another's flagged line.</p>
+        </div>
+        <span class="read">read ↗</span>
+      </a>
+      <a class="post" href="#" style="color:inherit;">
+        <span class="date">2026·05·07</span>
+        <div class="body">
+          <h3>Running the editorial calendar from a terminal</h3>
+          <p>The deskwork editorial pipeline treats blog posts like features: ideas, drafting, review, publish. Driving the whole calendar through <code style="font-family:var(--mono);font-size:0.85em;">/deskwork:*</code> without leaving the prompt.</p>
+        </div>
+        <span class="read">read ↗</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="site" id="docs">
+  <div class="wrap foot-grid">
+    <div>
+      <div style="display:flex;align-items:center;gap:0.55rem;">
+        <span class="crosshair" aria-hidden="true"></span>
+        <span class="word">stackcontrol.org</span>
+      </div>
+      <p class="mono" style="margin-top:0.7rem;text-transform:none;letter-spacing:0;max-width:34ch;">
+        Lifecycle tooling for agentic development. Product &amp; devlog for the deskwork plugin.
+      </p>
+    </div>
+    <div>
+      <div class="mono" style="margin-bottom:0.7rem;">// the family</div>
+      <div class="siblings">
+        <a href="https://audiocontrol.org">audiocontrol.org ↗</a>
+        <a href="https://editorialcontrol.org">editorialcontrol.org ↗</a>
+      </div>
+    </div>
+  </div>
+  <div class="wrap" style="margin-top:2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.6rem;border-top:var(--hair);padding-top:1.4rem;">
+    <span class="copy">© 2026 stackcontrol.org</span>
+    <span class="copy">SCALE 1:1 · DRAWN IN THE OPEN · REV B</span>
+  </div>
+</footer>
+
+</body>
+</html>

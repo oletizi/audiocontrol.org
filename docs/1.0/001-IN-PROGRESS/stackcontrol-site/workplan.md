@@ -48,13 +48,13 @@ real-world pilot of the design-decisions protocol.
 **Deliverable:** An operator-chosen identity direction.
 
 ### Task 1: Generate directions
-- [ ] `/frontend-design` proposes 2–3 distinct identity directions per the constraints brief
+- [x] `/frontend-design` proposes 2–3 distinct identity directions per the constraints brief — 3 directions in `explorations/directions/` (A telemetry/cyan, B blueprint/indigo, C stack/magenta)
 
 ### Task 2: Operator pick
-- [ ] Operator selects one direction to carry forward
+- [x] Operator selects one direction to carry forward — **A (Telemetry, electric cyan)** chosen 2026-06-01
 
 **Acceptance Criteria:**
-- [ ] One identity direction chosen; the others recorded for the REJECTED archive entries.
+- [x] One identity direction chosen (A); the others (B, C) recorded for the REJECTED archive entries (filed in Phase 4).
 
 ## Phase 3: Build the four surfaces
 
