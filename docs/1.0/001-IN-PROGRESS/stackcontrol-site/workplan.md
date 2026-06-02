@@ -19,14 +19,14 @@ real-world pilot of the design-decisions protocol.
 **Deliverable:** Go/no-go facts + a constraints brief for the design pass.
 
 ### Task 1: Dependency + domain readiness
-- [ ] Confirm the shared token layer (`src/shared/design-tokens-base.css`) present on this branch (inherited from DSF)
-- [ ] Confirm `stackcontrol.org` is registered and DNS-manageable (same flow as the siblings)
+- [x] Confirm the shared token layer (`src/shared/design-tokens-base.css`) present on this branch (inherited from DSF)
+- [x] Confirm `stackcontrol.org` is registered and DNS-manageable (same flow as the siblings) — operator owns the domain
 
 ### Task 2: Family-DNA constraints brief
-- [ ] Write a short brief for `/frontend-design`: dark surface, mono-accent discipline, accessibility/contrast, distinct from amber (audiocontrol) and chartreuse (editorialcontrol), must implement the shared `Brand` shape and consume `design-tokens-base.css`
+- [x] Write a short brief for `/frontend-design`: dark surface, mono-accent discipline, accessibility/contrast, distinct from amber (audiocontrol) and chartreuse (editorialcontrol), must implement the shared `Brand` shape and consume `design-tokens-base.css` — `explorations/brief.md`
 
 **Acceptance Criteria:**
-- [ ] Dependency + domain status known; constraints brief written.
+- [x] Dependency + domain status known; constraints brief written.
 
 ## Phase 1: Scaffold site infra
 
