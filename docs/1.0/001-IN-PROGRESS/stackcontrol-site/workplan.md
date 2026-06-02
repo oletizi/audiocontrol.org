@@ -61,16 +61,16 @@ real-world pilot of the design-decisions protocol.
 **Deliverable:** Identity + three pages, real Astro, under the chosen direction.
 
 ### Task 1: Identity tokens
-- [ ] `src/sites/stackcontrol/brand.ts` (implements shared `Brand`) + `styles/design-tokens.css`, consuming `src/shared/design-tokens-base.css`
+- [x] `src/sites/stackcontrol/brand.ts` (implements shared `Brand`) + `styles/design-tokens.css`, consuming `src/shared/design-tokens-base.css` — Telemetry direction A; Layout loads fonts + control-plane texture; PhaseRail + Ticker components
 
 ### Task 2: Homepage
-- [ ] Product + devlog hybrid landing, representative real content
+- [x] Product + devlog hybrid landing, representative real content — ticker, phase-rail hero, lifecycle grid, what/why/how, recent devlog (blog collection)
 
 ### Task 3: Blog index + blog post page
-- [ ] Devlog listing + a representative devlog entry page
+- [x] Devlog listing + a representative devlog entry page — `pages/blog/index.astro`, `pages/blog/[slug].astro`, `BlogLayout.astro`, 2 real entries
 
 **Acceptance Criteria:**
-- [ ] All four surfaces render under the chosen identity with real content; no lorem/mock data.
+- [x] All four surfaces render under the chosen identity with real content; no lorem/mock data (build green; visually verified home/devlog/post).
 
 ## Phase 4: Discipline (2nd pilot)
 
