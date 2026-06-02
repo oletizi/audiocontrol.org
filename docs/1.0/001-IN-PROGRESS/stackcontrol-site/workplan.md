@@ -77,13 +77,13 @@ real-world pilot of the design-decisions protocol.
 **Deliverable:** Archive entries + DESIGN-SYSTEM doc.
 
 ### Task 1: Archive entries
-- [ ] ACCEPTED entry for the chosen identity direction; REJECTED entries for the passed-over ones, under `explorations/{ACCEPTED,REJECTED}/<date>-<slug>/` per the `brief.md` contract
+- [x] ACCEPTED entry for the chosen identity direction; REJECTED entries for the passed-over ones, under `explorations/{ACCEPTED,REJECTED}/<date>-<slug>/` per the `brief.md` contract — ACCEPTED telemetry-cyan; REJECTED blueprint-indigo + stack-magenta (visual: relative refs to `directions/`, no duplication)
 
 ### Task 2: DESIGN-SYSTEM
-- [ ] `src/sites/stackcontrol/DESIGN-SYSTEM.md` documenting the settled identity
+- [x] `src/sites/stackcontrol/DESIGN-SYSTEM.md` documenting the settled identity. Cross-site (shared): updated `DESIGN-DECISIONS-PROTOCOL.md` + `.claude/rules/design-discipline.md` from two→three properties.
 
 **Acceptance Criteria:**
-- [ ] Archive entries filed per the protocol; DESIGN-SYSTEM.md authored.
+- [x] Archive entries filed per the protocol; DESIGN-SYSTEM.md authored.
 
 ## Phase 5: Provision + deploy
 

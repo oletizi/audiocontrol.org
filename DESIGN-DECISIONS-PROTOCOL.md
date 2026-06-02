@@ -2,10 +2,10 @@
 
 Status: load-bearing
 
-This repo hosts **two web properties** — `audiocontrol.org` and `editorialcontrol.org`. This
-document governs how design directions are explored, decided, and recorded across both. It is the
-durable record of what was *explored* — the ACCEPTED / REJECTED decision archive — so directions
-that have had their fair hearing are not silently re-proposed.
+This repo hosts **three web properties** — `audiocontrol.org`, `editorialcontrol.org`, and
+`stackcontrol.org`. This document governs how design directions are explored, decided, and recorded
+across all of them. It is the durable record of what was *explored* — the ACCEPTED / REJECTED
+decision archive — so directions that have had their fair hearing are not silently re-proposed.
 
 ## Why this exists
 
@@ -18,7 +18,7 @@ homepage design-language review would have been faster with a central index. Thi
 with the per-site DESIGN-SYSTEM docs, is the index that absence cost us.
 
 This is a **lightweight adaptation** of the discipline used by the sibling editor monorepo, scaled
-to a two-property content site. It carries the load-bearing parts — the archive, the brief
+to a multi-property content site. It carries the load-bearing parts — the archive, the brief
 contract, the read/update governance — and leaves the editor-app ceremony behind.
 
 ## The two-doc model
@@ -28,15 +28,15 @@ Design discipline runs as two complementary documents. Neither subsumes the othe
 | Doc | Records | When to read |
 |---|---|---|
 | **`src/sites/<site>/DESIGN-SYSTEM.md`** | What is *settled* — that site's tokens, typography, vocabulary, retired patterns, load-bearing contracts | Before any UI design or implementation work on that site |
-| **This `DESIGN-DECISIONS-PROTOCOL.md`** (repo root) | What was *explored* — the archive layout + brief format for ACCEPTED / REJECTED entries, governing both sites | When picking or rejecting a direction; when asking "was this already considered?" |
+| **This `DESIGN-DECISIONS-PROTOCOL.md`** (repo root) | What was *explored* — the archive layout + brief format for ACCEPTED / REJECTED entries, governing all sites | When picking or rejecting a direction; when asking "was this already considered?" |
 
-There are **two** per-site DESIGN-SYSTEM docs — one for `audiocontrol`
-(`src/sites/audiocontrol/DESIGN-SYSTEM.md`) and one for `editorialcontrol`
-(`src/sites/editorialcontrol/DESIGN-SYSTEM.md`). Each describes the tokens, typography, and
-vocabulary that already exist in that site's `brand.ts` + `design-tokens.css`. The two sites share
-layout bones but diverge by accent palette and display face, so a settled decision usually belongs
-to exactly one site's DESIGN-SYSTEM. *(The per-site DESIGN-SYSTEM docs are authored in Phase 3;
-forward references to them here are intentional.)*
+There are **three** per-site DESIGN-SYSTEM docs — one for `audiocontrol`
+(`src/sites/audiocontrol/DESIGN-SYSTEM.md`), one for `editorialcontrol`
+(`src/sites/editorialcontrol/DESIGN-SYSTEM.md`), and one for `stackcontrol`
+(`src/sites/stackcontrol/DESIGN-SYSTEM.md`). Each describes the tokens, typography, and vocabulary
+that already exist in that site's `brand.ts` + `design-tokens.css`. The sites share layout bones but
+diverge by accent palette and display face (audiocontrol amber, editorialcontrol chartreuse,
+stackcontrol cyan), so a settled decision usually belongs to exactly one site's DESIGN-SYSTEM.
 
 Briefs cite the standards they comply with (or amend); standards cite the entries that established
 them. The two docs reference each other; neither is a superset.
@@ -134,10 +134,11 @@ use `visual: N/A — non-visual decision` and keep the brief.
   implementation change. The update is part of the work, not a follow-up.
 - **When unsure whether a change is global, it is — document it.**
 
-**Two-site nuance.** A decision usually belongs to exactly ONE site's DESIGN-SYSTEM
-(`audiocontrol` or `editorialcontrol`). Update that site's doc. Cross-site or shared concerns —
-anything that touches `src/shared` or a token/vocabulary both sites consume — must be called out
-explicitly as shared, and recorded so a reader of either site's DESIGN-SYSTEM can find it.
+**Multi-site nuance.** A decision usually belongs to exactly ONE site's DESIGN-SYSTEM
+(`audiocontrol`, `editorialcontrol`, or `stackcontrol`). Update that site's doc. Cross-site or
+shared concerns — anything that touches `src/shared` or a token/vocabulary more than one site
+consumes — must be called out explicitly as shared, and recorded so a reader of any site's
+DESIGN-SYSTEM can find it.
 
 ## What this archive is NOT
 

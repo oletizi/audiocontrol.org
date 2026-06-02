@@ -1,6 +1,6 @@
 # Design Discipline
 
-This repo hosts two web properties with documented, load-bearing design discipline. Before any
+This repo hosts three web properties with documented, load-bearing design discipline. Before any
 UI, visual, or design work, follow the protocol — do not drift from settled choices silently.
 
 ## Read before UI work
@@ -8,6 +8,7 @@ UI, visual, or design work, follow the protocol — do not drift from settled ch
 1. **Read the relevant per-site `DESIGN-SYSTEM.md`** before designing or implementing any UI:
    - audiocontrol → `src/sites/audiocontrol/DESIGN-SYSTEM.md`
    - editorialcontrol → `src/sites/editorialcontrol/DESIGN-SYSTEM.md`
+   - stackcontrol → `src/sites/stackcontrol/DESIGN-SYSTEM.md`
 
    If a design choice is documented there, it is **settled** — don't re-propose it, don't offer it
    as an option in a mockup. To revisit it, update the doc; don't drift.
@@ -26,8 +27,10 @@ UI, visual, or design work, follow the protocol — do not drift from settled ch
 - File ACCEPTED / REJECTED archive entries per the protocol for decisions a future session would
   learn from (one direction beat alternatives, or a direction was retired).
 
-## Two-site nuance
+## Multi-site nuance
 
 A decision usually belongs to exactly one site's `DESIGN-SYSTEM.md`. Cross-site or shared concerns
-(anything touching `src/shared` or a token/vocabulary both sites consume) must be called out
-explicitly as shared so a reader of either site's doc can find it.
+(anything touching `src/shared` or a token/vocabulary more than one site consumes) must be called
+out explicitly as shared so a reader of any site's doc can find it. The three sites share layout
+bones but diverge by accent palette and display face: audiocontrol (amber), editorialcontrol
+(chartreuse), stackcontrol (cyan).

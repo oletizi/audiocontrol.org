@@ -23,7 +23,7 @@ has no public home and we want its look established under the discipline before 
 | 1 | Scaffold site infra | Complete |
 | 2 | Design pass (identity) | Complete — direction A (Telemetry/cyan) chosen |
 | 3 | Build the four surfaces | Complete |
-| 4 | Discipline (archive entries + DESIGN-SYSTEM) | Not started |
+| 4 | Discipline (archive entries + DESIGN-SYSTEM) | Complete |
 | 5 | Provision + deploy | Not started |
 | 6 | Verify | Not started |
 
