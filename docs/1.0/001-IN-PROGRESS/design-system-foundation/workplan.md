@@ -115,8 +115,8 @@ this two-property repo and validate it by executing the audiocontrol homepage re
 - [ ] S3000XL now in available set; hero counts follow array membership ("03 available")
 
 ### Task 4: /editors mirror + /hardware audit
-- [ ] Mirror status/image/copy changes on `/editors`
-- [ ] Verify `/hardware`; fix only genuine staleness
+- [ ] Mirror status/image/copy changes on `/editors` *(blocked — depends on S3000XL wiring + screenshots)*
+- [x] Verify `/hardware`; fix only genuine staleness — **audited clean (2026-06-01): no staleness.** Lists Roland S-Series only (S-330/S-550/S-770/W-30); all four `/roland/<device>/` link targets exist; S3000XL correctly absent (Akai, not S-Series); build green. No changes needed (matches PRD "likely no change"). Specs left untouched (covered by content-verification issues #12/#16/#17/#18).
 
 ### Task 5: File archive entries + update DESIGN-SYSTEM
 - [ ] Choose the inaugural ACCEPTED entry subject (candidate: S-550 card-image treatment or copy-refresh approach); REJECTED for any discarded alternative
