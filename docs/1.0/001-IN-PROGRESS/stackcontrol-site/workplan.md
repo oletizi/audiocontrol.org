@@ -90,10 +90,10 @@ real-world pilot of the design-decisions protocol.
 **Deliverable:** stackcontrol.org live.
 
 ### Task 1: Netlify site (operator-confirmed)
-- [x] Create the Netlify site (operator, 2026-06-02). Domain `stackcontrol.org` does not resolve yet
-      (ECONNREFUSED) — it will serve only after the feature lands and the Netlify site's deployment
-      branch + DNS are wired. The exact deploy-trigger branch is operator-to-confirm (see
-      Production/deployment branch below).
+- [x] Create the Netlify site (operator, 2026-06-02) and deploy. As of 2026-06-03 the site is live
+      and publicly reachable at `https://stackcontrol.org` (valid TLS). The Netlify deploy
+      **temporarily tracks `feature/stackcontrol-site`**; the final per-site deployment-branch model
+      (see Production/deployment branch below) is still operator-to-confirm before/at merge to main.
 
   **Settings (mirror the siblings; repo-root `netlify.toml` is intentionally empty so per-site UI
   settings apply):**
@@ -110,10 +110,10 @@ real-world pilot of the design-decisions protocol.
     `/sitemap-index.xml`. `astro.stackcontrol.config.mjs` already sets `site: https://stackcontrol.org`.
 
 ### Task 2: Domain (operator-confirmed)
-- [ ] Wire the `stackcontrol.org` custom domain + DNS (operator owns the domain)
+- [x] Wire the `stackcontrol.org` custom domain + DNS (operator, 2026-06-03) — resolves with valid TLS.
 
 **Acceptance Criteria:**
-- [ ] Site deployed; `stackcontrol.org` resolves to the new site.
+- [x] Site deployed; `stackcontrol.org` resolves to the new site (verified live 2026-06-03).
 
 ### Follow-up (non-blocking, noted during Phase 3)
 - Default OG image `/images/og-image.png` (referenced in `Layout.astro`) is not yet generated for
@@ -127,10 +127,10 @@ real-world pilot of the design-decisions protocol.
 ### Task 1: Verify
 - [x] `npm run build` (all sites) green — audiocontrol + editorialcontrol + stackcontrol all build
 - [x] `preview:stackcontrol` visual review — home, devlog index, devlog post verified under direction A
-- [ ] live-domain check (blocked on Phase 5 deploy)
+- [x] live-domain check (2026-06-03) — `/`, `/blog/`, post all 200; valid TLS; correct title; GTM live; Telemetry identity rendering
 
 **Acceptance Criteria:**
-- [x] Build green; visual review done. [ ] live site verified (after Phase 5).
+- [x] Build green; visual review done; live site verified at `https://stackcontrol.org`.
 
 ## Follow-up (tracked, not in this feature)
 - Build out remaining site surfaces (product docs, lifecycle/skills reference, more devlog content).

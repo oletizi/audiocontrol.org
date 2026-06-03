@@ -24,8 +24,8 @@ has no public home and we want its look established under the discipline before 
 | 2 | Design pass (identity) | Complete — direction A (Telemetry/cyan) chosen |
 | 3 | Build the four surfaces | Complete |
 | 4 | Discipline (archive entries + DESIGN-SYSTEM) | Complete |
-| 5 | Provision + deploy | Netlify site created (operator); domain pending merge + deployment branch (model operator-to-confirm) + DNS |
-| 6 | Verify | Build + visual green; live-domain check pending Phase 5 |
+| 5 | Provision + deploy | Live at https://stackcontrol.org (Netlify temporarily tracks this branch; final deployment-branch model operator-to-confirm at merge) |
+| 6 | Verify | Complete — build + visual + live-domain check green |
 
 ## Key Links
 
