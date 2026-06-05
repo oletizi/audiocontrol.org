@@ -56,13 +56,17 @@ Device: **git commit log + Claude Code session transcripts** as the "receipts."
 
 ## 3. Receipts — GATHERED 2026-06-05 (master timeline)
 
-Four repos mined (read-only). Detailed per-source receipts in `./research/`. The
-**pre-agentic, hand-coded roots**: `oletizi/ol_dsp` (**2023-11-08**, C — DSP libraries for
-the Daisy embedded platform; the deepest origin) → `oletizi/audio-tools` (**2024-10-11**,
-TS) — both hand-coded *before agentic coding was really available* (operator, 2026-06-05).
-audio-tools was flattened into the **monorepo 2025-09-01**, where agentic coding + the
-process begin. Local transcripts survive only from **~2026-04-27**, so Act-1 origin is
-**git-only** (pre-monorepo roots are GitHub-metadata-only unless `ol_dsp` is cloned).
+Repos mined (read-only). Detailed per-source receipts in `./research/` (incl.
+`receipts-ol_dsp.md`). The **pre-agentic, hand-coded roots**: `oletizi/ol_dsp`
+(**2023-11-08** `0073faf` "init", C/C++ — DSP for embedded hardware: synth/effects/MIDI on
+Daisy/Teensy + a Eurorack module + a JUCE host; cloned to `/Users/orion/work/ol_dsp`,
+1026 commits → 2026-02-03) → `oletizi/audio-tools` (**2024-10-11**, TS sampler stack).
+**No agent artifacts for ~2 years** — first `CLAUDE.md` 2025-09-01 (`6b4bbd0`); ~268
+hand-coded commits Nov 2023–Jan 2024, dormant Feb–Sep 2024, then a 231-commit Sept-2025
+explosion the same month agentic tooling arrives + audio-tools is pulled in. Throughline:
+same author, embedded DSP → the Roland **S-330 editor** (first built in ol_dsp, Jan 2026)
+that audiocontrol.org proxies. Local transcripts survive only from **~2026-04-27**, so
+Act-1 origin is **git-only**.
 
 | Date | Repo | SHA | Milestone | Act |
 |---|---|---|---|---|
@@ -169,7 +173,8 @@ This is the origin-era evidence the local ~/.claude transcripts don't reach.
 - [ ] **Slug rename** to match the new framing?
 - [ ] **"2,400 sessions"** — confirm vs the committed 183 / 2,122 (see §4.3).
 - [ ] **Name the Novation first editor**, or keep "the editors" generic? (§4.1)
-- [ ] **Older history** — is there anything before the 2025-09-01 audio-tools import?
+- [x] **Older history** — resolved: deepest root is `ol_dsp` (2023-11-08), then `audio-tools` (2024-10-11). See `research/receipts-ol_dsp.md`.
+- [ ] **[op] Repo lineage** — confirm how `ol_dsp` / `audio-tools` / the audiocontrol monorepo relate at the **2025-09-01 convergence** (audio-tools pulled into ol_dsp `d5e5197` AND "moving audio-tools to this repo" `465300b5` in the monorepo, same day). One lineage (renamed/forked) or distinct? Affects how precisely the origin is narrated.
 - [ ] **Session transcripts** older than ~2026-04-27 are not local; the `age`-encrypted
   archive is at `data/sessions/content/*.jsonl.age` — need the decryption flow/key if we
   want older human-voice receipts.

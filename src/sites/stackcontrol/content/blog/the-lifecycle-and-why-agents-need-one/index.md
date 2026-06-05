@@ -21,13 +21,18 @@ deskwork:
 ## Opening — from hand-coding to agents, with no playbook
 
 - The real roots are **hand-coded and pre-agentic**: **`oletizi/ol_dsp`** (**2023-11-08**,
-  C — *"dsp libraries… for use in Daisy"*, the embedded-audio platform) and
-  **`oletizi/audio-tools`** (**2024-10-11**, TypeScript). Both written by hand, **before
-  agentic coding was really available**.
-- When agentic coding arrived, audio-tools was flattened into the **monorepo**
-  (**2025-09-01**) and the work shifted to building *with* agents — starting with the
+  C/C++ — DSP for embedded audio hardware: synth voices, effects, MIDI on **Daisy/Teensy**
+  microcontrollers + a **Eurorack** module + a JUCE host). Then **`oletizi/audio-tools`**
+  (**2024-10-11**, TypeScript — the sampler stack). **No agent artifacts for ~2 years** —
+  the first `CLAUDE.md` lands **2025-09-01**.
+- The pivot is sharp: after a dormant spell, **Sept 2025** brings a 231-commit explosion
+  *the same month* agentic tooling arrives and audio-tools is pulled in / flattened into
+  the **monorepo**. The work shifts to building *with* agents — starting with the
   **audiocontrol web editors** (first: **Novation Launch Control XL 3**, workplan
   **2025-09-25**). `[op: name Novation, or "the editors"?]`
+- The throughline is one person and one obsession — *talk to real audio hardware at the
+  byte/MIDI/DSP level* — from the 2023 DSP init to the Roland **S-330 editor** (first built
+  in ol_dsp, Jan 2026) that audiocontrol.org proxies today.
 - There was no consensus I knew of for *how* to develop software with agents. Coming from
   hand-coding embedded DSP, I had to build the guardrails myself. The claim the piece
   argues: the cure for agents going sideways isn't a smarter model — it's **gates between
