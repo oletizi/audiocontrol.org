@@ -7,6 +7,7 @@ as a page (the blog collection only globs `*/index.md`).
 - **Entry slug:** `the-lifecycle-and-why-agents-need-one` (may be renamed to match the new title — TBD)
 - **Stage:** Outlining (working in chat; deskwork pipeline + studio paused 2026-06-05)
 - **deskwork id:** `c196e248-3076-4e79-b44b-842691354340`
+- **Research plan (tick-down):** `./research-plan.md`
 - **Detailed receipts:** `./research/receipts-{audiocontrol-monorepo-git, audiocontrol-git, deskwork-git, transcripts}.md`
 
 ---
