@@ -24,7 +24,7 @@ note where the finding lives. Phase 0 is already done.
 - [x] **[op→done]** **Editor lineage** — Akai S3000XL + S5000/S6000 + Roland JV-1080 SysEx (hand-coded); Novation is experimental, not the lead.
 - [x] **[op→done]** **Origin texture** — framing accepted: hand-coded DSP era → invented the process by correction; "no-consensus, rolled my own" holds.
 - [x] **[me]** **Pre-history check** — is there anything before the 2025-09-01 `audio-tools` import? (separate `audio-tools` repo? earlier editor repos?) Report what exists.
-- [x] **[op→done]** **Title** locked: "Rolling My Own: From Hand-Coded DSP Code to a Lifecycle Plugin to stack-control". Slug kept (`the-lifecycle-and-why-agents-need-one`).
+- [x] **[op→done]** **Title** locked: "Coding Agents Are Insane, Hyperintelligent Toddlers". Slug kept (`the-lifecycle-and-why-agents-need-one`).
 
 ---
 

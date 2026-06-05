@@ -1,4 +1,4 @@
-# Article: "Rolling My Own: From Hand-Coded DSP Code to a Lifecycle Plugin to stack-control"
+# Article: "Coding Agents Are Insane, Hyperintelligent Toddlers"
 
 The opener of the stackcontrol.org **"Building deskwork"** devlog series. A first-person
 account of arriving at a process for agentic development: from hand-coding audio DSP and

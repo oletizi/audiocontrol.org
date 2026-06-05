@@ -1,4 +1,4 @@
-# Research notes — "Rolling My Own: From Hand-Coded DSP Code to a Lifecycle Plugin to stack-control"
+# Research notes — "Coding Agents Are Insane, Hyperintelligent Toddlers"
 
 Working research doc for the article whose draft lives at
 `src/sites/stackcontrol/content/blog/the-lifecycle-and-why-agents-need-one/index.md`
@@ -169,9 +169,8 @@ This is the origin-era evidence the local ~/.claude transcripts don't reach.
 
 ## 5. Open questions / pending decisions
 
-- [ ] **Title** — working: "Rolling My Own: From Web Editors to a Lifecycle Plugin to
-  stack-control". Alts: "I Had to Invent My Agentic-Dev Process. Now I'm Rebuilding It." /
-  "The Process I Invented, and the One I'm Replacing It With".
+- [x] **Title — LOCKED (2026-06-05):** "Coding Agents Are Insane, Hyperintelligent Toddlers"
+  (subtitle: "So I built them a babysitter: from hand-coded DSP to stack-control"). Slug kept.
 - [ ] **Slug rename** to match the new framing?
 - [ ] **"2,400 sessions"** — confirm vs the committed 183 / 2,122 (see §4.3).
 - [ ] **Name the Novation first editor**, or keep "the editors" generic? (§4.1)

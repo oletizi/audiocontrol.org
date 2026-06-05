@@ -1,7 +1,6 @@
 # Act 1 — working outline (iterate here)
 
-Working outline for **Act 1** of "Rolling My Own: From Hand-Coded DSP Code to a Lifecycle
-Plugin to stack-control". Not built as a page. Iterate on structure here before drafting into
+Working outline for **Act 1** of "Coding Agents Are Insane, Hyperintelligent Toddlers". Not built as a page. Iterate on structure here before drafting into
 `index.md`. Corpus: `research/agentic-dev-origin/` (esp. `author-narrative.md`, `notes.md`,
 `research/quote-bank.md`).
 

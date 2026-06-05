@@ -1,6 +1,6 @@
 ---
-title: "Rolling My Own: From Hand-Coded DSP Code to a Lifecycle Plugin to stack-control"
-description: "A first-person account of arriving at a process for agentic development — from hand-coding audio DSP and sampler SysEx control, to building browser editors with agents (and inventing the guardrails by necessity), to generalizing it into the dw-lifecycle plugin, and now rebuilding it as stack-control on Spec Kit while keeping the parts that earned their keep: the audit barrage and scope discovery. With receipts from the commit log and session transcripts."
+title: "Coding Agents Are Insane, Hyperintelligent Toddlers"
+description: "So I built them a babysitter. The origin story of an agentic-development process — from hand-coding audio DSP and sampler SysEx control, through the dw-lifecycle plugin, to a rebuild as stack-control on Spec Kit, keeping the audit barrage and scope discovery. With receipts from the commit log and session transcripts."
 date: "June 2026"
 datePublished: "2026-06-05"
 dateModified: "2026-06-05"
@@ -12,7 +12,9 @@ deskwork:
   iteration: 2
 ---
 
-# Rolling My Own: From Hand-Coded DSP Code to a Lifecycle Plugin to stack-control
+# Coding Agents Are Insane, Hyperintelligent Toddlers
+
+*So I built them a babysitter: from hand-coded DSP to stack-control.*
 
 > **Outline (Outlining stage), receipts cited per beat.** Drafting turns this into prose.
 > Research corpus (notes, timeline, receipts, quote-bank, source-map) is promoted to

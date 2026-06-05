@@ -1,6 +1,6 @@
 # Act 2 — working outline (iterate here)
 
-Working outline for **Act 2** of "Rolling My Own…". Not built as a page. Built from the
+Working outline for **Act 2** of "Coding Agents Are Insane, Hyperintelligent Toddlers". Not built as a page. Built from the
 operator's narrative installment 2 (`research/agentic-dev-origin/author-narrative.md`).
 PROVISIONAL.
 
