@@ -66,11 +66,16 @@ deskwork:
 ## Act 3 — Rebuilding the babysitter on the shared crib  ·  *(detail: `outline-act3.md`)*
 *The rebuild: stack-control.*
 
-- **Why now:** the consensus arrived — **Spec Kit** is the define→plan→tasks spine I hand-built.
-- **stack-control** (`stackctl`), successor to dw-lifecycle, **integration-first against Spec
-  Kit**; front door = in-session skills `define` / `extend` / `execute`.
-- **Keep the crown jewels the consensus doesn't give:** the audit barrage (auto on
-  `after_implement`, provider-neutral — *branch on capability, never identity*) + scope discovery.
+- **Why now (the philosophy):** I always assumed the state of the art would outpace my solo
+  work — so I **continuously shed bespoke pieces for the SOTA as it matures.** The bespoke
+  PRD/workplan was getting naive; **Spec Kit** is now the define→plan→tasks spine I hand-built.
+  *Arc closure: the first fix I invented (PRD/workplan, Act 1) is the first thing I shed.*
+- **Fresh start:** replacing the spine + a new name (*"dw-lifecycle has always been a dumb
+  name"*) → **stack-control** (`stackctl`), successor to dw-lifecycle, **integration-first
+  against Spec Kit**; front door = `define` / `extend` / `execute`.
+- **The thesis:** these plugins are **opinionated but lightweight shells over state-of-the-art
+  tooling** (a "thin control plane"). The **crown jewels** (audit barrage, scope discovery) are
+  the parts the SOTA doesn't *yet* give — **kept only until it does** (same shedding schedule).
 - **Self-hosting + isolation:** every later feature built *through* it; dw-lifecycle untouched.
 
 ---
@@ -80,6 +85,8 @@ deskwork:
   is that I now have a real **babysitter** — and I'm rebuilding it on the shared crib (Spec Kit)
   while keeping the parts that actually catch the lying (audit barrage) and the boredom (scope
   discovery).
+- The deeper note: the babysitter is **built to be replaced from underneath** — its willingness
+  to be outpaced by the state of the art is what keeps it durable.
 - Forward pointer: the rest of the "Building deskwork" series drills into each kept part.
 
 ---

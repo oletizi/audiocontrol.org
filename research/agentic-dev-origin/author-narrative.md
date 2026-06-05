@@ -153,4 +153,48 @@ Tightened variants to choose from (keep his as canonical):
 - *"A coding agent is an insane, hyperintelligent toddler that lies, gets bored, and needs
   constant babysitting. This is the story of the babysitter I built for mine."*
 
+---
+
+## Installment 5 (2026-06-05) — why rebuild now, and the governing philosophy (Act 3)
+
+> Paraphrase of the operator, close to his words:
+
+- **Why I decided to rebuild:** I felt the bespoke **PRD/workplan was probably naive**, and
+  that the **state of the art had probably progressed** in the months since I started
+  dw-lifecycle. **And I was right** — there are now much more sophisticated options.
+- **The governing assumption (the philosophy):** I've **always assumed the state of the art
+  would outpace my solo development**, and that I'd **continuously shed bespoke pieces of my
+  agent workflow in favor of the state of the art as it matures.** Right now, that
+  restructuring is **replacing the bespoke PRD/workplan with Spec Kit.**
+- **Why a fresh start (and a new name):** the PRD/workplan **is the spine** of dw-lifecycle —
+  so replacing it is replacing the spine. Plus **"dw-lifecycle has always been a dumb name."**
+  So it was cleaner to **start fresh: new spine, new name, fresh assumptions based on the
+  state of the art — while simultaneously pulling the unique parts of dw-lifecycle along** into
+  the new plugin.
+- **The product vision (THE thesis of both plugins):** I've always envisioned dw-lifecycle —
+  and now stack-control — as **opinionated but lightweight shells that use the state-of-the-art
+  tooling underneath.**
+
+### Why this is the spine of Act 3 (and closes the whole arc)
+- **The first thing he invented is the first thing he sheds.** Act 1 §1.3 = inventing
+  source-of-truth docs (the PRD + workplan) to survive the memory wipe. Act 3 = handing that
+  exact job to Spec Kit. The bespoke fix graduates into a consensus tool. Beautiful symmetry —
+  call it out explicitly in the draft.
+- **Reframes "what stack-control is":** not "a better lifecycle plugin," but **an opinionated,
+  lightweight shell over the state of the art**, designed to *shed its own bespoke parts over
+  time*. The crown jewels (audit barrage, scope discovery) are simply the parts the SOTA
+  doesn't yet provide — kept only until it does.
+- **Humility as a design principle:** "the state of the art will outpace my solo work" is the
+  opposite of NIH; it makes the babysitter durable precisely because it's willing to be
+  replaced from underneath.
+
+### Receipts / corroboration
+- The spec frames stack-control as a **"thin control plane"** (`specs/003-stack-control-front-door`)
+  — the "lightweight shell" language is the project's own.
+- *"successor to dw-lifecycle, built integration-first against Spec Kit"* (spec); decision
+  *"front-door verbs define/extend/execute; fat plugin, no npm"* (`a5a0e6b8`) — "fat" =
+  packaging (self-contained, no npm deps); "lightweight shell" = architectural role over Spec Kit.
+- Durability invariant SC-004 (branch on capability, never identity) is the same humility at
+  the model layer: stack-control assumes the *tools* underneath will change.
+
 *(— more to come?)*
