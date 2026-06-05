@@ -56,9 +56,13 @@ Device: **git commit log + Claude Code session transcripts** as the "receipts."
 
 ## 3. Receipts — GATHERED 2026-06-05 (master timeline)
 
-Four repos mined (read-only). Detailed per-source receipts in `./research/`. Real start
-of the whole story: **2025-09-01** (the monorepo). Local transcripts only survive from
-**~2026-04-27** onward, so Act-1 origin is **git-only**.
+Four repos mined (read-only). Detailed per-source receipts in `./research/`. The
+**pre-agentic, hand-coded roots**: `oletizi/ol_dsp` (**2023-11-08**, C — DSP libraries for
+the Daisy embedded platform; the deepest origin) → `oletizi/audio-tools` (**2024-10-11**,
+TS) — both hand-coded *before agentic coding was really available* (operator, 2026-06-05).
+audio-tools was flattened into the **monorepo 2025-09-01**, where agentic coding + the
+process begin. Local transcripts survive only from **~2026-04-27**, so Act-1 origin is
+**git-only** (pre-monorepo roots are GitHub-metadata-only unless `ol_dsp` is cloned).
 
 | Date | Repo | SHA | Milestone | Act |
 |---|---|---|---|---|
@@ -133,9 +137,11 @@ This is the origin-era evidence the local ~/.claude transcripts don't reach.
 1. **First editor was the Novation Launch Control XL 3 (Sept 2025), not a Roland.** The
    Roland S-330/S-550/JV-1080/D-110 + Akai editors came Feb–Mar 2026. "Building the
    audiocontrol web editors" is true; just decide whether to name Novation as the first.
-> **Deep-read refinements (2026-06-05c):** (a) **True origin = 2024-10-11** — the initial
-> commit of `oletizi/audio-tools` (now archived), flattened into the monorepo 2025-09-01.
-> So "last year" = **Oct 2024**. (b) **The process was INVENTED in-repo, not imported** —
+> **Deep-read refinements (2026-06-05c):** (a) **True origin = 2023-11-08** —
+> `oletizi/ol_dsp` (hand-coded C DSP for Daisy hardware), then `oletizi/audio-tools`
+> (2024-10-11, hand-coded TS); both **pre-agentic / hand-coded**. audio-tools flattened
+> into the monorepo 2025-09-01. So the story opens in the hand-coding era and pivots to
+> "building with agents." (b) **The process was INVENTED in-repo, not imported** —
 > the old audio-tools repo had no `.claude/CLAUDE.md`; this *strengthens* the "rolled my
 > own" framing. (c) The 2025-09-24 CLAUDE.md was **module-scoped**; the *root* CLAUDE.md
 > began 2026-02-02. Detail in `research/receipts-act1-deep.md`.

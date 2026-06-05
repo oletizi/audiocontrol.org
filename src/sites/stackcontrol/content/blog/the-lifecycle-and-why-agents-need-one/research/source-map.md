@@ -7,7 +7,8 @@ article. All git access is read-only (`git -C <path> log/show/grep`).
 
 | Source | Path | Span | Role in the story |
 |---|---|---|---|
-| **audio-tools (origin)** | archived GitHub `oletizi/audio-tools` (initial commit 2024-10-11) — flattened into the monorepo | 2024-10-11 → 2025-09 | The true beginning ("last year"). No `.claude/` process yet. |
+| **ol_dsp (deepest root)** | GitHub `oletizi/ol_dsp` (not local — clone if needed) | created **2023-11-08**, C | Hand-coded DSP libraries for the Daisy embedded platform. Pre-agentic. The deepest origin. |
+| **audio-tools (origin)** | GitHub `oletizi/audio-tools` (archived; flattened into the monorepo) | **2024-10-11** → 2025-09, TS | Hand-coded audio tooling, pre-agentic. No `.claude/` process yet. |
 | **audiocontrol MONOREPO** | `/Users/orion/work/audiocontrol-work/audiocontrol` | 2025-09-01 → present (~2797 commits) | **Act 1.** Editors built + the process invented here. |
 | **audiocontrol.org HUB site** | `/Users/orion/work/audiocontrol.org` (+ this worktree) | 2026-01-24 → present (~550) | Downstream hub; where deskwork/dw-lifecycle were adopted back. |
 | **deskwork monorepo** | `/Users/orion/work/deskwork` (main) | 2026-04-21 → present (~1600) | **Act 2.** dw-lifecycle + deskwork + stack-control plugins. |

@@ -18,15 +18,20 @@ deskwork:
 > prose. `[op]` = operator decision still open (see `notes.md` §4–§5). Full receipts in
 > `./research/`; pull-quotes in `./research/quote-bank.md`.
 
-## Opening — a problem with no playbook (that I knew of)
+## Opening — from hand-coding to agents, with no playbook
 
-- The real start is **2024-10-11** — the initial commit of `oletizi/audio-tools` ("last
-  year"), flattened into the monorepo **2025-09-01**. No process yet: the old repo had no
-  `.claude/CLAUDE.md`.
-- I wanted to build the **audiocontrol web editors** with agentic coding; the first was
-  the **Novation Launch Control XL 3** (workplan **2025-09-25**). `[op: name Novation, or "the editors"?]`
-- The claim the piece argues: the cure for agents going sideways isn't a smarter model —
-  it's **gates between intent and merge**. I had to build those gates myself.
+- The real roots are **hand-coded and pre-agentic**: **`oletizi/ol_dsp`** (**2023-11-08**,
+  C — *"dsp libraries… for use in Daisy"*, the embedded-audio platform) and
+  **`oletizi/audio-tools`** (**2024-10-11**, TypeScript). Both written by hand, **before
+  agentic coding was really available**.
+- When agentic coding arrived, audio-tools was flattened into the **monorepo**
+  (**2025-09-01**) and the work shifted to building *with* agents — starting with the
+  **audiocontrol web editors** (first: **Novation Launch Control XL 3**, workplan
+  **2025-09-25**). `[op: name Novation, or "the editors"?]`
+- There was no consensus I knew of for *how* to develop software with agents. Coming from
+  hand-coding embedded DSP, I had to build the guardrails myself. The claim the piece
+  argues: the cure for agents going sideways isn't a smarter model — it's **gates between
+  intent and merge**.
 
 ## Act I — rolling my own, invented by correction
 
