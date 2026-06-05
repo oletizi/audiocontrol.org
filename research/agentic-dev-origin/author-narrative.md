@@ -41,3 +41,56 @@ corroborate it). Quote/paraphrase faithfully when drafting. Delivered in install
 These are vivid *illustrations* of steps 3–4 (the agent drifting / policy-in-a-doc being
 ignored), not separate plot points. Deploy them as evidence inside the on-task + context-haze
 beats, not as their own act.
+
+---
+
+## Installment 2 (2026-06-05) — the new failure modes that drove scope discovery + the audit barrage
+
+> Once the basic skills + workflow processes were in place, **new** failure modes appeared.
+> Paraphrase of the operator, close to his words:
+
+**a) A weird, relentless urge to carve out and defer scope.** It caused mounting tech debt
+and implementations so anemic they weren't fit for purpose. **This is where the "JUST FOR NOW
+is BULLSHIT" directive came from** — i.e. the directive's true origin is *scope-deferral →
+anemic implementations*, not merely the one `window.prompt()` fallback instance.
+
+**b) Agents would relentlessly duplicate code instead of refactoring.** And **bad habits begat
+more bad habits** — anti-patterns served as **nucleation sites** for further bad behavior.
+
+**c) Agents often would not find all the code that needed to change as codebases evolved.**
+Especially bad in **user interfaces**, where UI redesigns were extremely painful because I had
+to **brute-force the agents to make the needed updates component by component**.
+
+**→ The two mechanisms arose to combat the *quiet* bad behavior** of agents:
+- shirking their duty to **fully implement** changes,
+- failing to **fully investigate** the codebase,
+- and using **code duplication instead of refactoring**.
+- **Scope discovery** = catch the unchanged-but-should-have-changed code + the duplication.
+- **Audit barrage** = catch the shirking/anemia via independent cross-model review.
+
+The throughline of installment 2: the dangerous agent failures are **quiet** (not loud
+errors) — so the fix is **mechanized detection**, not more exhortation.
+
+### Receipts that corroborate installment 2
+- **a) scope-deferral / anemic:** [V] *"I want you to defer NOTHING. Your scope obsession is
+  BULLSHIT!!! … you will NEVER unilaterally push scope."*; the JUST-FOR-NOW directive (05-03
+  `57e0bc83`); deskwork's anti-deferral discipline ("findings are guardrails, not exceptions").
+- **b) duplication-not-refactor / nucleation:** clone-detection pilot 2026-03-18 (`cb78ab0e`,
+  jscpd, PR #59); the `contracts` feature 2026-04-12 (`719e8d42`, 55 violations incl.
+  duplicated types, built "to reduce agent corrections"); `clones.yaml`; "nucleation site."
+- **c) incomplete-change-discovery / UI redesign brute-force:** seed [V, 03-21 `27263c0e`]
+  *"Why didn't that automatically get updated?"*; [V, 05-26] *"I shouldn't have had to point
+  out the problem by brute force."*; the s550 UI-redesign pain (the slider session is
+  `s550-support`); `scope-widen`.
+- **→ the mechanisms:** scope-discovery canonized 2026-05-25 (`9ddcc6d4`); audit-barrage
+  framed in ROADMAP 05-28 + shipped 05-29 (`4ef3c09f`); [V, 06-01] *"when to run the barrage
+  should not be a matter of policy and the agent should have no discretion. It must be
+  mechanized with teeth."*
+
+### Structural implication
+Installment 2 is **Act 2 material** (dw-lifecycle's unique value = scope discovery + audit
+barrage). It also **relocates the JUST-FOR-NOW evidence**: its directive belongs to the
+scope-deferral beat here, not (only) Act 1 §1.5. Three quiet failure modes (a/b/c) → two
+mechanisms (scope discovery, audit barrage).
+
+*(— more to come?)*
