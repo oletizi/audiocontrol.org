@@ -94,6 +94,38 @@ of the whole story: **2025-09-01** (the monorepo). Local transcripts only surviv
 - The anti-deferral spine: *"Defer nothing. Deferral is the same as refusal."* / *"did you scope it into the workplan?"*
 - On plausible advice (the "no consensus" tell): *"all of your advice has been wrong… I don't want guesses based on what 'seems plausible'."*
 
+### Origin-era session receipts (decrypted summaries, 2026-02-19 → 05-21) — `research/receipts-monorepo-sessions.md`
+
+Decrypted the monorepo's 182 per-session analysis summaries (`age -d -i ~/.config/age/audiocontrol.key`).
+This is the origin-era evidence the local ~/.claude transcripts don't reach.
+
+- **By the numbers:** 182 sessions; **225 corrections**; **104 (57%) had a failure**. Top
+  projects: deskwork-plugin 41, audiocontrol-s550-support 28, studio-bridge 15.
+- **Correction taxonomy (the thesis):** **PROCESS 128** / FABRICATION 32 / UX 26 /
+  DOCUMENTATION 25 / COMPLEXITY 16 / ARCHITECTURE 3. PROCESS outweighs all else — the
+  failures were *wrong-thing / wrong-order / didn't-check*, **not bad code**. The process
+  was reverse-engineered from these failures.
+- **Disaster → rule (dated):**
+  - **2026-05-14 [21b95c31] — "the slider that didn't slide":** sliders shipped as
+    non-interactive `role="img"` behind **175 passing specs**. *"You shipped garbage… what's
+    the point of UI tests that don't exercise the UI?"* → the **test-theater rule** + a
+    three-gate doctrine (render vs wiring vs operator sign-off).
+  - **2026-05-03 [57e0bc83] — "JUST FOR NOW":** a temporary `window.prompt()` fallback never
+    restored → authored `agent-discipline.md` + "nucleation site of bad behavior."
+  - **2026-03-29 [3db928d3] — silent failover:** *"'Graceful' failover is misleading and
+    bad"* → fail-fast-on-hardware.
+- **Scope-discovery genesis:** seed **2026-03-21 [27263c0e]** (*"Why didn't that
+  automatically get updated?"*) → contracts-to-reduce-corrections **2026-04-12 [719e8d42]**
+  (55 violations) → duplication-audit gate **2026-05-09** → meta **2026-05-21 [f9ef3a4a]**
+  (built the session-analysis pipeline that produced THIS corpus).
+- **Audit-barrage genesis:** cross-model (Claude vs Codex, charted) **2026-04-13 [66875892]**;
+  rigor proven in MESA II **2026-04-16 [bc965958]** (*"this is an INFERENCE, not a finding"*);
+  everyday two-stage implementer→reviewer review through April–May.
+- **Generalize-out decision:** **2026-04-19 [d4df8ec4]** — extract the skills into
+  open-source plugins, codename **deskwork**; dw-lifecycle born/dogfooded 2026-04-29 → 05-04.
+
+(Bulk decrypted corpus kept at `/tmp/receipts/monorepo-session-summaries.md` — NOT committed.)
+
 ---
 
 ## 4. Receipts vs. framing — flags for the operator (honesty checks before drafting)

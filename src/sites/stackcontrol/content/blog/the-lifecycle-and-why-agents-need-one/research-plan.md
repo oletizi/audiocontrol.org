@@ -32,13 +32,13 @@ note where the finding lives. Phase 0 is already done.
 
 Repo: `/Users/orion/work/audiocontrol-work/audiocontrol`. Goal: concrete "before → process" receipts.
 
-- [ ] **[me]** **The "before" state** — find 2–4 earliest sessions/commits showing genuinely ad-hoc work (no workplan/journal), to open the story honestly.
-- [ ] **[me]** **Disaster → rule moments** — pin specific failures that produced a written rule, with commit/date + the resulting rule. Known candidates: the "UI test suite that tests nothing" / value-slider test-harness episode; the "bug factories" (no-fallbacks) rule's trigger. Get 3–5.
+- [ ] **[me]** **The "before" state** — find 2–4 earliest sessions/commits showing genuinely ad-hoc work (no workplan/journal), to open the story honestly. *(Partial: the correction corpus shows the texture; still want the earliest pre-process sessions.)*
+- [x] **[me]** **Disaster → rule moments** — DONE via session summaries: slider-that-didn't-slide (05-14 → test-theater rule), "JUST FOR NOW" prompt-fallback (05-03 → agent-discipline.md), silent failover (03-29 → fail-fast). See `research/receipts-monorepo-sessions.md`.
 - [ ] **[me]** **CLAUDE.md evolution** — pull 2–3 dated snapshots (line count + structure) showing accretion (~774) → distillation (~198), and what each added. *(receipts-audiocontrol-monorepo-git.md has anchors)*
 - [ ] **[me]** **Read the lifecycle-naming commit** `3e302fff` (#188, 2026-04-10) — exactly what it introduced (session-start/end, journal template, agent map).
 - [ ] **[me]** **Editor timeline detail** — for each editor (Novation, D-110, JV-1080, roland-sxx0, Akai s3k): date + one line on what it was / what it taught the process.
-- [ ] **[P2][me]** **Clone-detection pilot** `cb78ab0e` (2026-03-18) + `paper-test-s550.md` — what duplication it caught; the genesis of scope discovery in-repo.
-- [ ] **[P2][me]** **Cross-model review pilot** `9795f927` (2026-04-13) + the MESA II reverse-engineering work — the genesis of the audit barrage in-repo.
+- [x] **[P2][me]** **Clone-detection / scope-discovery pilot** — DONE: seed 03-21 [27263c0e], contracts-to-reduce-corrections 04-12 [719e8d42] (55 violations), duplication gate 05-09, meta 05-21. (jscpd `cb78ab0e` 03-18.)
+- [x] **[P2][me]** **Cross-model review (audit-barrage) pilot** — DONE: Claude-vs-Codex 04-13 [66875892], MESA II rigor 04-16 [bc965958] ("INFERENCE, not a finding").
 
 ---
 
@@ -67,8 +67,9 @@ Branch: `feature/pluggable-lifecycle-providers` (`/Users/orion/work/deskwork-wor
 
 ## Phase 5 — Transcript / archive infrastructure
 
-- [ ] **[op]** **age decryption** — provide the key/flow for `data/sessions/content/*.jsonl.age` (or confirm we skip pre-April human-voice). Origin-era (Sept 2025–Apr 2026) operator quotes live only there.
-- [ ] **[me]** **If decrypted:** extend the human-corpus extraction over the archive; mine origin-era voice for Act 1.
+- [x] **[op→done]** **age decryption** — documented method `age -d -i ~/.config/age/audiocontrol.key` (key present; `age` installed). Archive in `audiocontrol-monorepo:data/sessions/`: `content/*.jsonl.age` (183 full transcripts, from 2026-02-19) + `analysis/*.json.age` (per-session summaries); clear-text index `sessions.jsonl` + `summary.csv` + `report-all.md` (183 sessions / 2,122 commits).
+- [x] **[me]** **Decrypted + mined the 182 analysis summaries** → `research/receipts-monorepo-sessions.md` (225 corrections, PROCESS-dominant taxonomy, disaster→rule moments, scope-discovery + audit-barrage genesis dates, generalize-out 2026-04-19). Bulk corpus in `/tmp` (uncommitted).
+- [ ] **[P3][me]** **Full transcripts** — the 183 `content/*.jsonl.age` hold verbatim operator words beyond the summaries; decrypt+mine specific sessions on demand when drafting needs an exact quote.
 - [ ] **[P2][me]** **Quote-bank** — distill the strongest ~25 verbatim quotes into a reusable `research/quote-bank.md` (tagged by theme), usable across future articles.
 
 ---
@@ -89,4 +90,8 @@ Branch: `feature/pluggable-lifecycle-providers` (`/Users/orion/work/deskwork-wor
 ---
 
 ## Change log
-- 2026-06-05 — Plan created. Phase 0 complete; Phases 1–7 open.
+- 2026-06-05 (a) — Plan created. Phase 0 complete; Phases 1–7 open.
+- 2026-06-05 (b) — Decrypted + mined the monorepo session archive (Phase 5 unlocked):
+  225-correction taxonomy, disaster→rule moments, scope-discovery + audit-barrage genesis
+  dates, generalize-out date → `research/receipts-monorepo-sessions.md` + `notes.md` §3.
+  Ticked Phase 2 disaster→rule + both pilots; Phase 5 decrypt + mine.
