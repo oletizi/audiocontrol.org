@@ -1,6 +1,6 @@
 ---
-title: "The Lifecycle, and Why Agents Need One"
-description: "The thesis of the deskwork lifecycle: unstructured agentic work skips scope, over-builds, and ships unreviewed. Define → workplan → implement → audit → ship puts gates between intent and merge — why the structure beats vibes, and what each phase actually buys you."
+title: "Rolling My Own: From Web Editors to a Lifecycle Plugin to stack-control"
+description: "A first-person account of arriving at a process for agentic development — invented out of necessity building the audiocontrol web editors, generalized into the dw-lifecycle plugin, and now rebuilt as stack-control on top of Spec Kit while keeping the parts that earned their keep: the audit barrage and scope discovery. With receipts from the commit log and session transcripts."
 date: "June 2026"
 datePublished: "2026-06-05"
 dateModified: "2026-06-05"
@@ -9,65 +9,84 @@ draft: true
 deskwork:
   id: c196e248-3076-4e79-b44b-842691354340
   stage: Outlining
-  iteration: 0
+  iteration: 1
 ---
 
-# The Lifecycle, and Why Agents Need One
+# Rolling My Own: From Web Editors to a Lifecycle Plugin to stack-control
 
-> **Outline (Outlining stage).** Section skeleton + the argument each section
-> carries. The Drafting iterate turns this into prose.
+> **Outline (Outlining stage, re-framed as a first-person story).** Section
+> skeleton + the argument each section carries + where the *receipts* come from.
+> The Drafting iterate turns this into prose. Receipts = git commit log +
+> Claude Code session transcripts, cited inline at draft time.
 
-## Opening — the failure has a shape
+## Opening — a problem with no playbook (that I knew of)
 
-- Unstructured agentic work fails in a recognizable way: it skips scope,
-  over-builds, and ships unreviewed.
-- The interesting claim: the cure isn't a smarter model — it's **gates between
-  intent and merge**.
-- deskwork's answer is a five-phase lifecycle: define → workplan → implement →
-  audit → ship. The rest of the piece is what each phase actually buys.
+- Last year I set out to build the **audiocontrol web editors** — browser-based
+  editors for old samplers (Roland S-330 and friends) — and I wanted to build
+  them *with* agentic coding.
+- The catch: there wasn't a consensus I knew of for how to actually develop
+  software this way. No accepted playbook for keeping an agent on the rails
+  across a real, multi-week project.
+- So I did the only thing available: I started inventing a process as I went.
+- **Receipts:** the earliest audiocontrol commits + session transcripts, where
+  the process is visibly ad hoc — the "before" state.
 
-## What goes wrong without rails
+## Act I — Rolling my own, inside the audiocontrol repo
 
-- **Skipped scope.** The agent invents work you didn't ask for; "make this
-  change" silently becomes three changes.
-- **Over-building.** Abstractions nobody needed, because nothing said where to
-  stop.
-- **Unreviewed shipping.** Output that is confident, plausible, and wrong — the
-  worst combination, because it reads as done.
-- Tie-in: this is the same degradation surface explored in the session-fatigue
-  piece — cross-link when both ship.
+- What the process became in-repo: define-before-code, written workplans,
+  commit-at-task-boundaries, a development journal, session start/end rituals.
+- The discoveries that actually mattered — the moves that kept the work honest:
+  hard scoping up front, reviewing *every* change, refusing to trust plausible
+  output.
+- The texture of learning it the hard way — the corrections that taught the
+  rules (an agent inventing work I didn't ask for; a confident, wrong diff).
+- **Receipts:** commits/transcripts where the conventions first appear — the
+  first DEVELOPMENT-NOTES entry, the first workplan, the first "wait, did you
+  scope this?" correction.
 
-## The five phases, and what each buys you
+## Act II — Generalizing it out: the dw-lifecycle plugin
 
-- **Define** — an interview captures the problem and the scope *before* code
-  moves. The load-bearing part is writing down what's **out** of scope.
-- **Workplan** — scope becomes phases + tasks, each backed by a GitHub issue
-  with acceptance criteria you can check off. Plan and tracker can't drift.
-- **Implement** — each task is delegated to a specialized subagent and
-  committed at a clean boundary. Never one giant blob.
-- **Audit** — every task gets a cross-model audit barrage. What independent
-  reviewers *disagree* about is usually where the real bug lives.
-- **Ship** — acceptance criteria verified, PR opened, and the toolchain stops.
-  The operator owns the merge.
+- The realization: none of this was audiocontrol-specific. I had several
+  projects and kept re-implementing the same scaffolding by hand.
+- So I lifted the process *out* of the audiocontrol repo into a standalone
+  plugin — **dw-lifecycle** — so every project could run the same lifecycle.
+- Continuous improvement, and the two parts that emerged from real pain and
+  became the unique value:
+  - the **audit barrage** — fire several independent models at the same diff
+    after every task; disagreement is where the bug hides.
+  - **scope discovery** — catch the drift a workplan misses (the clones, the
+    over-reach) before it ships.
+- **Receipts:** the extraction commit (lift-out of audiocontrol), the
+  audit-barrage and scope-discovery feature commits, and the audit-log evidence
+  of findings they caught.
 
-## The framing: a control plane, not a checklist
+## Act III — The rebuild: stack-control
 
-- The lifecycle as a surface that *watches work move through phases* — the same
-  metaphor as the site's phase rail.
-- **Mechanize over policy.** The gates live in the tooling (commit-msg hooks,
-  the open-findings gate, the audit hook), not in good intentions that erode at
-  hour four.
+- What changed in the world: a consensus is finally forming. Spec-driven
+  tooling — **Spec Kit** — is now state of the art for the spec→execution
+  spine. The thing I had to invent now has a community answer for its hardest,
+  most generic part.
+- So I'm rebuilding dw-lifecycle as **stack-control** (CLI `stackctl`) — a new
+  plugin, branded to this site — built **integration-first against Spec Kit**:
+  curate a spec, run it via *native* Spec Kit execution (`/speckit-implement`),
+  with governance firing automatically afterward.
+- Front door = in-session skills **`define` / `extend` / `execute`**, mirroring
+  the lifecycle vocabulary I already had.
+- What I'm **keeping**, because the consensus doesn't give it to you: the
+  **audit barrage** and **scope discovery**. Governance rehomes first; the
+  scope-discovery/audit-barrage migrations are later features. dw-lifecycle keeps
+  working untouched while stack-control stands up beside it.
+- Self-hosting: once the front door exists, every later feature gets built
+  *through* it.
+- **Receipts:** the stack-control spec (`specs/003-stack-control-front-door`),
+  the plugin scaffold + MVP commits, the `/speckit-*` commit trail on
+  `feature/pluggable-lifecycle-providers`.
 
-## Why structure beats vibes
+## Close — what the arc actually says
 
-- Vibes-coding works until it doesn't, and the failure is silent and
-  compounding.
-- The lifecycle's job is to make the cheap, skippable disciplines (scoping,
-  review) actually happen *every* time.
-- Cost/payoff: the ceremony is bounded; the regressions it prevents are not.
-
-## Close — where this sits in the series
-
-- This is the overview. Each later entry drills into one phase or system:
-  scope discovery, the audit barrage, subagents + workflows, design discipline.
-- One-line forward pointer to the next piece.
+- You don't need permission or a finished consensus to start — you need a
+  process you'll actually follow, and the discipline to keep the parts that earn
+  their keep.
+- Adopt the consensus where it's genuinely better (the spec spine); keep what's
+  yours where it's better (audit barrage, scope discovery).
+- Forward pointer: the later entries in this devlog drill into those kept parts.
