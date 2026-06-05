@@ -12,7 +12,9 @@
   ],
   "source": "manual",
   "currentStage": "Outlining",
-  "iterationByStage": {},
+  "iterationByStage": {
+    "Outlining": 1
+  },
   "createdAt": "2026-06-02T17:26:57.946Z",
-  "updatedAt": "2026-06-05T18:42:47.502Z"
+  "updatedAt": "2026-06-05T18:47:36.853Z"
 }
