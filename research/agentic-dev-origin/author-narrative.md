@@ -124,4 +124,33 @@ Coined term — flag for the operator: keep verbatim as his coinage ("I call thi
 like 'stochastic correctness'"), and decide if it's the article's term or a one-off. Strong
 candidate for a section title or the audit-barrage devlog entry's thesis.
 
+---
+
+## Installment 4 (2026-06-05) — the opening hook + the "babysitter" motif
+
+**Operator's proposed opening line for the whole piece** (his words, "something like"):
+
+> *"Coding agents are insane, hyperintelligent toddlers that lie, get bored, and need constant
+> babysitting… which is why I built an agent babysitter plugin."*
+
+This is the **thesis-as-hook**: front-load the payoff, then rewind to the hand-coder origin and
+earn it. It also gives the piece a **through-motif** — each clause is a promise the body keeps:
+
+| Hook clause | Where the piece earns it |
+|---|---|
+| **lie** (confabulation) | Act 2 §2.6 — the audit barrage / "stochastic correctness" (multi-model scrutiny catches lies) |
+| **get bored** (laziness) | Act 2 §2.3 — scope-deferral → anemic implementations; the session-fatigue failure |
+| **need constant babysitting** | Act 1 §1.3–1.6 — source-of-truth docs + on-task protocol ("did you update the workplan?") |
+| **agent babysitter plugin** | the payoff: dw-lifecycle → stack-control |
+
+Structure implication: the **hand-coder cold open (§1.1) moves to *second*** — the babysitter
+line leads; then "but let me back up: I started as a hand-coder…". The "babysitter / toddler"
+frame can recur as a light motif and pay off in the title/close.
+
+Tightened variants to choose from (keep his as canonical):
+- *"Coding agents are insane, hyperintelligent toddlers that lie, get bored, and need constant
+  babysitting. So I built a babysitter."*
+- *"A coding agent is an insane, hyperintelligent toddler that lies, gets bored, and needs
+  constant babysitting. This is the story of the babysitter I built for mine."*
+
 *(— more to come?)*

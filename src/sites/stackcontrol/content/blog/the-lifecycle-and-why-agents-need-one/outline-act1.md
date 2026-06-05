@@ -15,12 +15,23 @@ verify (`[P]`). Session id in `[brackets]`.
 
 ---
 
-## §1.1 — Cold open: the hand-coder (pre-agentic)
-- Hand-coding embedded audio DSP — `ol_dsp` (2023-11-08, C/C++ for Daisy/Teensy + a Eurorack
-  module + a JUCE host). The obsession that's the spine: *talk to real audio hardware at the
-  byte/MIDI/SysEx/DSP level.* `audio-tools` (2024-10-11). No agent artifacts for ~2 years.
-- Optional flash-forward voicing the craftsman: [V, 03-29] *"stick with the technology
-  stack(s) at hand… node, typescript, and C++/JUCE."*
+## §1.0 — Opening hook (the whole piece in one line)
+- **Lead line** (operator's, canonical): *"Coding agents are insane, hyperintelligent
+  toddlers that lie, get bored, and need constant babysitting… which is why I built an agent
+  babysitter plugin."*
+- Thesis-as-hook: front-load the payoff, then rewind. Each clause is a promise the body keeps
+  (**lie** → audit barrage / "stochastic correctness"; **get bored** → scope-deferral &
+  session fatigue; **babysitting** → the workplan/on-task protocol; **babysitter plugin** →
+  dw-lifecycle → stack-control). The "toddler/babysitter" frame recurs as a light motif and
+  pays off at the close.
+
+## §1.1 — Rewind: the hand-coder (pre-agentic)
+- *"But let me back up."* Before the babysitting: hand-coding embedded audio DSP — `ol_dsp`
+  (2023-11-08, C/C++ for Daisy/Teensy + a Eurorack module + a JUCE host). The obsession
+  that's the spine: *talk to real audio hardware at the byte/MIDI/SysEx/DSP level.*
+  `audio-tools` (2024-10-11). No agent artifacts for ~2 years.
+- Optional craftsman voicing: [V, 03-29] *"stick with the technology stack(s) at hand…
+  node, typescript, and C++/JUCE."*
 
 ## §1.2 — The pivot, and Wall 1: the memory wipe
 - Sept 2025: agentic tooling arrives (first `CLAUDE.md` 2025-09-01); the work shifts to
@@ -91,4 +102,7 @@ verify (`[P]`). Session id in `[brackets]`.
 - v2 — added verbatim operator quotes per section.
 - v3 (2026-06-05) — **restructured around the operator's causal chain** (memory-wipe → SoT
   docs → on-task → CLAUDE.md context-haze → decompose policy into skills/process → portability
-  → plugin); disasters demoted to evidence inside Walls 2–3. Awaiting installment 2.
+  → plugin); disasters demoted to evidence inside Walls 2–3.
+- v4 (2026-06-05) — added **§1.0 opening hook** (the "agent babysitter / toddlers that lie,
+  get bored" line) as the lead; §1.1 becomes the rewind to the hand-coder. Babysitter motif
+  maps to the body (see `author-narrative.md` installment 4).
