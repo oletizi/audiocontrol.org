@@ -8,7 +8,7 @@ as a page (the blog collection only globs `*/index.md`).
 - **Stage:** Outlining (working in chat; deskwork pipeline + studio paused 2026-06-05)
 - **deskwork id:** `c196e248-3076-4e79-b44b-842691354340`
 - **Research plan (tick-down):** `./research-plan.md`
-- **Detailed receipts:** `./research/receipts-{audiocontrol-monorepo-git, audiocontrol-git, deskwork-git, transcripts}.md`
+- **Detailed receipts:** `./research/` — `receipts-{audiocontrol-monorepo-git, audiocontrol-git, deskwork-git, transcripts, monorepo-sessions, act1-deep, act2-3-deep}.md`, plus `quote-bank.md` + `source-map.md`
 
 ---
 
@@ -133,6 +133,13 @@ This is the origin-era evidence the local ~/.claude transcripts don't reach.
 1. **First editor was the Novation Launch Control XL 3 (Sept 2025), not a Roland.** The
    Roland S-330/S-550/JV-1080/D-110 + Akai editors came Feb–Mar 2026. "Building the
    audiocontrol web editors" is true; just decide whether to name Novation as the first.
+> **Deep-read refinements (2026-06-05c):** (a) **True origin = 2024-10-11** — the initial
+> commit of `oletizi/audio-tools` (now archived), flattened into the monorepo 2025-09-01.
+> So "last year" = **Oct 2024**. (b) **The process was INVENTED in-repo, not imported** —
+> the old audio-tools repo had no `.claude/CLAUDE.md`; this *strengthens* the "rolled my
+> own" framing. (c) The 2025-09-24 CLAUDE.md was **module-scoped**; the *root* CLAUDE.md
+> began 2026-02-02. Detail in `research/receipts-act1-deep.md`.
+
 2. **The process was structured early and *evolved* (~6.5 months), not invented ad hoc
    each time.** The Sept-2025 CLAUDE.md already had a 9-agent roster; the arc is
    accretion (~774 lines) → distillation (~198), with the lifecycle explicitly *named*
