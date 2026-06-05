@@ -1,6 +1,7 @@
 {
   "uuid": "77a439f2-121d-4c68-bbe2-26096cd98d24",
   "slug": "findings-are-guardrails-not-exceptions",
+  "site": "stackcontrol",
   "title": "Findings Are Guardrails, Not Exceptions",
   "description": "deskwork’s opinionated stance on review: audit findings aren’t exceptions you defer, they’re guardrails pointing you back to the happy path. The open-findings gate (no --ignore escape hatch) and the dispatch-wrapper’s forbidden-deferral phrases that enforce it.",
   "keywords": [

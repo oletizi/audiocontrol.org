@@ -1,6 +1,7 @@
 {
   "uuid": "ca1070ef-d2c5-45e6-9ad9-a98cd97e7228",
   "slug": "fanning-out-subagents-and-workflows",
+  "site": "stackcontrol",
   "title": "Fanning Out: Subagents and Workflows",
   "description": "How the implement loop delegates each task to a specialized subagent, fans work out in parallel via the workflow harness, and holds dispatched agents to a return-grammar contract so their output is auditable instead of hand-wavy.",
   "keywords": [

@@ -1,6 +1,7 @@
 {
   "uuid": "30386c44-a28d-41cd-b07a-3c93debbd3a3",
   "slug": "scope-discovery-catching-clones-the-workplan-missed",
+  "site": "stackcontrol",
   "title": "Scope Discovery: Catching the Clones the Workplan Missed",
   "description": "The workplan named three files to touch; a clone scan against the committed baseline found five more carrying the same shape. How deskwork’s scope discovery — clone detection, scope-widen, dispositioned clones.yaml, adopter manifests — surfaces drift before it ships.",
   "keywords": [
