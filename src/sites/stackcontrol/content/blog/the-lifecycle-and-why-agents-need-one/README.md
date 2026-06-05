@@ -7,7 +7,9 @@ guardrails by necessity), to generalizing it into the **dw-lifecycle** plugin, a
 rebuilding it as **stack-control** on Spec Kit — keeping the audit barrage and scope
 discovery.
 
-- **Draft / outline:** `index.md` (stage: Outlining; `draft: true`, so it is not published yet).
+- **Draft / outline:** `index.md` (the full-piece outline; stage: Outlining; `draft: true`).
+- **Deep per-act outlines** (quotes + receipts, where we iterate structure): `outline-act1.md`,
+  `outline-act2.md`, `outline-act3.md`.
 - **Slug:** `the-lifecycle-and-why-agents-need-one` (kept; pre-dates the current title).
 
 ## Research
