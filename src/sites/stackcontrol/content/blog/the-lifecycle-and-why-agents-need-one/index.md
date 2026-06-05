@@ -25,11 +25,11 @@ deskwork:
   microcontrollers + a **Eurorack** module + a JUCE host). Then **`oletizi/audio-tools`**
   (**2024-10-11**, TypeScript — the sampler stack). **No agent artifacts for ~2 years** —
   the first `CLAUDE.md` lands **2025-09-01**.
-- The pivot is sharp: after a dormant spell, **Sept 2025** brings a 231-commit explosion
-  *the same month* agentic tooling arrives and audio-tools is pulled in / flattened into
-  the **monorepo**. The work shifts to building *with* agents — starting with the
-  **audiocontrol web editors** (first: **Novation Launch Control XL 3**, workplan
-  **2025-09-25**). `[op: name Novation, or "the editors"?]`
+- The pivot is sharp: after a dormant spell, **Sept 2025** brings agentic tooling (the
+  first `CLAUDE.md`) and a 231-commit explosion. audio-tools migrates **into ol_dsp, then
+  on into the `audiocontrol` monorepo** (audio-tools → ol_dsp → audiocontrol), and the work
+  shifts to building *with* agents — starting with the **audiocontrol web editors** (first:
+  **Novation Launch Control XL 3**, workplan **2025-09-25**). `[op: name Novation, or "the editors"?]`
 - The throughline is one person and one obsession — *talk to real audio hardware at the
   byte/MIDI/DSP level* — from the 2023 DSP init to the Roland **S-330 editor** (first built
   in ol_dsp, Jan 2026) that audiocontrol.org proxies today.

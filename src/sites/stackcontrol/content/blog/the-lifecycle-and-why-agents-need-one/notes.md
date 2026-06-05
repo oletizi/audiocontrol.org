@@ -174,7 +174,7 @@ This is the origin-era evidence the local ~/.claude transcripts don't reach.
 - [ ] **"2,400 sessions"** — confirm vs the committed 183 / 2,122 (see §4.3).
 - [ ] **Name the Novation first editor**, or keep "the editors" generic? (§4.1)
 - [x] **Older history** — resolved: deepest root is `ol_dsp` (2023-11-08), then `audio-tools` (2024-10-11). See `research/receipts-ol_dsp.md`.
-- [ ] **[op] Repo lineage** — confirm how `ol_dsp` / `audio-tools` / the audiocontrol monorepo relate at the **2025-09-01 convergence** (audio-tools pulled into ol_dsp `d5e5197` AND "moving audio-tools to this repo" `465300b5` in the monorepo, same day). One lineage (renamed/forked) or distinct? Affects how precisely the origin is narrated.
+- [x] **Repo lineage (operator, 2026-06-05): `audio-tools` → `ol_dsp` → `audiocontrol`.** audio-tools was pulled into ol_dsp first (`d5e5197`, 2025-09-01), then on from ol_dsp into the audiocontrol monorepo (`465300b5`). So the monorepo is downstream of ol_dsp via audio-tools; ol_dsp continued in parallel (S-330 editor first built there, Jan 2026).
 - [ ] **Session transcripts** older than ~2026-04-27 are not local; the `age`-encrypted
   archive is at `data/sessions/content/*.jsonl.age` — need the decryption flow/key if we
   want older human-voice receipts.
