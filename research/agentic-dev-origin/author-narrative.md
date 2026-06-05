@@ -93,4 +93,35 @@ barrage). It also **relocates the JUST-FOR-NOW evidence**: its directive belongs
 scope-deferral beat here, not (only) Act 1 §1.5. Three quiet failure modes (a/b/c) → two
 mechanisms (scope discovery, audit barrage).
 
+---
+
+## Installment 3 (2026-06-05) — "stochastic correctness": why the audit barrage is the standout
+
+> Paraphrase of the operator, close to his words (this is conceptual centerpiece material):
+
+- The **audit barrage has turned out to be a standout tool** — its ability to ferret out
+  **errors and incomplete implementations** is exceptional, because the code is subjected to
+  the **genetic diversity of multi-model scrutiny that converges on the right answer.**
+- He calls this **"stochastic correctness."**
+- The metaphor (use it — it's the money line): **"Individual agents are like insane,
+  hyperintelligent toddlers with a tendency to lie. Pit multiple agents together continuously
+  and they tend to correct each other's mistakes, confabulations, and laziness."**
+
+### Why this lands / receipts
+- deskwork's own ROADMAP frames the barrage as the **third independent audit surface** that
+  *"adds genetic diversity in failure modes"* (`847ea708`) — the operator's "genetic
+  diversity" language is the project's own, not a retrofit.
+- Concrete proof of single-agent self-deception → caught by cross-model: MESA II 04-16
+  (`bc965958`) — *"this is an INFERENCE, not a finding"* (a single self-review baked an
+  inference in as evidence).
+- The Phase-12 self-dogfood: the barrage surfaced 4 cross-model HIGH findings the in-band
+  self-audit + the two-reviewer cycle both missed.
+- Multi-CLI by design: [V, 05-29] *"we won't be using model apis — we'll be using claude,
+  codex, and gemini clis, since they are usage based, not token based."*
+
+### Note on "stochastic correctness"
+Coined term — flag for the operator: keep verbatim as his coinage ("I call this something
+like 'stochastic correctness'"), and decide if it's the article's term or a one-off. Strong
+candidate for a section title or the audit-barrage devlog entry's thesis.
+
 *(— more to come?)*

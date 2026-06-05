@@ -55,6 +55,15 @@ does. `[V]` = verbatim operator quote; `[P]` = verify before publishing.
   adopter manifests). Answers Failures B + C.
 - **Audit barrage** — independent **cross-model** review (claude/codex/gemini) catching the
   quiet shirking/anemia that a single self-review misses. Answers Failure A (and the rest).
+  **The standout tool.** The concept (centerpiece): **"stochastic correctness"** — the code
+  faces the **genetic diversity of multi-model scrutiny that converges on the right answer.**
+  - [V — the money line] *"Individual agents are like insane, hyperintelligent toddlers with
+    a tendency to lie. Pit multiple agents together continuously and they tend to correct each
+    other's mistakes, confabulations, and laziness."*
+  - Proof: MESA II 04-16 (`bc965958`) — a single self-review baked an inference in as evidence
+    (*"this is an INFERENCE, not a finding"*); the Phase-12 dogfood surfaced 4 cross-model HIGH
+    findings the other two surfaces missed. deskwork's ROADMAP calls it "genetic diversity in
+    failure modes" — the operator's own framing.
 - Receipts: scope-discovery canonized 2026-05-25 (`9ddcc6d4`); audit-barrage ROADMAP 05-28
   (`847ea708`, operator attention = "the binding constraint") + ship 05-29 (`4ef3c09f`);
   MESA II rigor 04-16 (`bc965958`, *"this is an INFERENCE, not a finding"*).
@@ -75,7 +84,12 @@ does. `[V]` = verbatim operator quote; `[P]` = verify before publishing.
    mechanized detection"), or give each its own mini-arc?
 3. **How much mechanism detail** here vs. deferring to the later per-system devlog entries
    (the series drills into each)?
+4. **"Stochastic correctness" as centerpiece** — the audit barrage + this coinage may be the
+   conceptual peak of the whole piece. Give §2.6 (or just the barrage) the most weight / a
+   named section? Is "stochastic correctness" the article's term or a one-off?
 
 ## Iteration log
 - v1 (2026-06-05) — built from narrative installment 2 (quiet failures A/B/C → scope discovery
   + audit barrage). Provisional.
+- v2 (2026-06-05) — installment 3: "stochastic correctness" + the toddler metaphor folded
+  into §2.6 as the audit-barrage centerpiece.
