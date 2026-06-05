@@ -76,7 +76,7 @@ Branch: `feature/pluggable-lifecycle-providers` (`/Users/orion/work/deskwork-wor
 
 ## Phase 6 — Reuse & housekeeping (research is for many articles)
 
-- [ ] **[op]** **Research home** — keep the corpus under this article's `research/`, or promote to a shared location (e.g. a repo-level `research/` or a dedicated devlog research entry) so future articles reuse it? *(operator said this research seeds many pieces)*
+- [x] **[op→done]** **Research home** — PROMOTED to repo-root `research/agentic-dev-origin/`; linked from the top-level `README.md` and the article `README.md`.
 - [x] **[P3][me]** **Source map** — DONE → `research/source-map.md`.
 
 ---
@@ -84,7 +84,7 @@ Branch: `feature/pluggable-lifecycle-providers` (`/Users/orion/work/deskwork-wor
 ## Phase 7 — Synthesis → draft (exit criteria)
 
 - [x] **[me]** Each Act has ≥3 concrete, dated receipts + ≥2 verbatim operator quotes.
-- [ ] All Phase-1 flags resolved; title + slug locked.
+- [x] All Phase-1 flags resolved; title locked ("Hand-Coded DSP Code"); slug kept.
 - [x] **[me]** Update `index.md` outline to cite specific receipts per beat → then move to Drafting.
 
 ---

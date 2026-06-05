@@ -1,8 +1,9 @@
-# Research notes — "Rolling My Own: From Web Editors to a Lifecycle Plugin to stack-control"
+# Research notes — "Rolling My Own: From Hand-Coded DSP Code to a Lifecycle Plugin to stack-control"
 
-Working research doc for the article whose draft lives in `./index.md`. Everything
-researched for this piece (and reusable for future ones) accumulates here. Not built
-as a page (the blog collection only globs `*/index.md`).
+Working research doc for the article whose draft lives at
+`src/sites/stackcontrol/content/blog/the-lifecycle-and-why-agents-need-one/index.md`
+(promoted out of the article dir to this shared `research/` home so future articles can
+reuse it). Not built as a page.
 
 - **Entry slug:** `the-lifecycle-and-why-agents-need-one` (may be renamed to match the new title — TBD)
 - **Stage:** Outlining (working in chat; deskwork pipeline + studio paused 2026-06-05)

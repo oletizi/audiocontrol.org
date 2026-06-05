@@ -14,9 +14,9 @@ deskwork:
 
 # Rolling My Own: From Hand-Coded DSP Code to a Lifecycle Plugin to stack-control
 
-> **Outline (Outlining stage), receipts cited per beat.** Drafting turns this into
-> prose. `[op]` = operator decision still open (see `notes.md` §4–§5). Full receipts in
-> `./research/`; pull-quotes in `./research/quote-bank.md`.
+> **Outline (Outlining stage), receipts cited per beat.** Drafting turns this into prose.
+> Research corpus (notes, timeline, receipts, quote-bank, source-map) is promoted to
+> **`research/agentic-dev-origin/`** at the repo root — see `./README.md`.
 
 ## Opening — from hand-coding to agents, with no playbook
 

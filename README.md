@@ -17,6 +17,15 @@ Editorial calendar tracking blog posts from idea through publication, with analy
 
 See [CONTENT-CALENDAR.md](./CONTENT-CALENDAR.md) for the workflow, skills reference, and file layout.
 
+## Research
+
+Durable research corpora for longform devlog writing (commit-log + session-transcript receipts),
+promoted out of individual article folders so multiple pieces can reuse them.
+
+- [`research/agentic-dev-origin/`](./research/agentic-dev-origin/) — how this project's
+  agentic-development process came to be (2023 hand-coded DSP → dw-lifecycle → stack-control):
+  master timeline, source map, quote bank, and per-repo receipts. Start with its `README.md`.
+
 ## Analytics
 
 Automated analytics pipeline pulling from Umami Cloud, GA4, and Google Search Console. Run `/analytics` in Claude Code or `tsx scripts/analytics-report.ts` from the CLI.
