@@ -20,11 +20,11 @@ note where the finding lives. Phase 0 is already done.
 
 ## Phase 1 — Resolve the framing flags (gating; do before drafting)
 
-- [ ] **[op]** **"2,400 sessions"** — confirm the number. Committed report says **183 sessions / 2,122 commits**. Is 2,400 a cross-repo/cross-machine aggregate, a later count, or wrong? Decide what the article quotes. *(notes.md §4.3)*
-- [ ] **[op]** **First editor naming** — name the **Novation Launch Control XL 3** as the first editor, or keep "the editors" generic? *(§4.1)*
-- [ ] **[op]** **Origin texture** — agree the honest framing: "kept formalizing a process until it became a lifecycle" (evolution), vs "invented from zero." Macro "no-consensus, rolled my own" still holds. *(§4.2)*
+- [x] **[op→done]** **"2,400 sessions"** — DROPPED (operator doesn't recognize it). Use verified **183 / 2,122**.
+- [x] **[op→done]** **Editor lineage** — Akai S3000XL + S5000/S6000 + Roland JV-1080 SysEx (hand-coded); Novation is experimental, not the lead.
+- [x] **[op→done]** **Origin texture** — framing accepted: hand-coded DSP era → invented the process by correction; "no-consensus, rolled my own" holds.
 - [x] **[me]** **Pre-history check** — is there anything before the 2025-09-01 `audio-tools` import? (separate `audio-tools` repo? earlier editor repos?) Report what exists.
-- [ ] **[op]** **Title + slug** — lock the title; decide whether to rename the slug. *(§5)*
+- [x] **[op→done]** **Title** locked: "Rolling My Own: From Hand-Coded DSP Code to a Lifecycle Plugin to stack-control". Slug kept (`the-lifecycle-and-why-agents-need-one`).
 
 ---
 

@@ -138,9 +138,11 @@ This is the origin-era evidence the local ~/.claude transcripts don't reach.
 
 ## 4. Receipts vs. framing — flags for the operator (honesty checks before drafting)
 
-1. **First editor was the Novation Launch Control XL 3 (Sept 2025), not a Roland.** The
-   Roland S-330/S-550/JV-1080/D-110 + Akai editors came Feb–Mar 2026. "Building the
-   audiocontrol web editors" is true; just decide whether to name Novation as the first.
+1. **RESOLVED (operator, 2026-06-05): editor lineage = Akai S3000XL + S5000/S6000 + Roland
+   JV-1080 SysEx.** The web-editor lineage that became audiocontrol started with hand-coded
+   SysEx control for those samplers (same hardware ol_dsp talked to at the byte level). The
+   **Novation Launch Control XL 3 editor is experimental** — a side-quest, not the lead.
+   (The earlier "first editor = Novation" was just the earliest *workplan* in the monorepo.)
 > **Deep-read refinements (2026-06-05c):** (a) **True origin = 2023-11-08** —
 > `oletizi/ol_dsp` (hand-coded C DSP for Daisy hardware), then `oletizi/audio-tools`
 > (2024-10-11, hand-coded TS); both **pre-agentic / hand-coded**. audio-tools flattened
@@ -156,10 +158,9 @@ This is the origin-era evidence the local ~/.claude transcripts don't reach.
    only 2026-04-10. The "no consensus, rolled my own" framing holds at the macro level —
    but the honest texture is "kept formalizing it until it became a lifecycle," not "no
    process → finished process."
-3. **"2,400 sessions" is NOT a verified local count.** The committed report
-   (`data/sessions/report-all.md`) says **183 sessions / 2,122 commits** (2026-02-19 →
-   05-21); `sessions.jsonl` = 183 lines. The "2,400" title was an unverified/aggregate
-   figure. → Use 183/2,122, or confirm where 2,400 comes from, before quoting.
+3. **RESOLVED (operator, 2026-06-05): "2,400" DROPPED** — operator doesn't recognize it.
+   Use the verified committed **183 sessions / 2,122 commits** (`data/sessions/report-all.md`,
+   2026-02-19 → 05-21) where a number is needed; never use 2,400.
 4. **The monorepo (2025-09-01) is itself an import** of a pre-existing audio-tools
    project — conventions may predate even it.
 

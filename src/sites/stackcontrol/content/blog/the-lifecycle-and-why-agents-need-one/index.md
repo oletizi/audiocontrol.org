@@ -1,6 +1,6 @@
 ---
-title: "Rolling My Own: From Web Editors to a Lifecycle Plugin to stack-control"
-description: "A first-person account of arriving at a process for agentic development — invented out of necessity building the audiocontrol web editors, generalized into the dw-lifecycle plugin, and now rebuilt as stack-control on top of Spec Kit while keeping the parts that earned their keep: the audit barrage and scope discovery. With receipts from the commit log and session transcripts."
+title: "Rolling My Own: From Hand-Coded DSP Code to a Lifecycle Plugin to stack-control"
+description: "A first-person account of arriving at a process for agentic development — from hand-coding audio DSP and sampler SysEx control, to building browser editors with agents (and inventing the guardrails by necessity), to generalizing it into the dw-lifecycle plugin, and now rebuilding it as stack-control on Spec Kit while keeping the parts that earned their keep: the audit barrage and scope discovery. With receipts from the commit log and session transcripts."
 date: "June 2026"
 datePublished: "2026-06-05"
 dateModified: "2026-06-05"
@@ -12,7 +12,7 @@ deskwork:
   iteration: 2
 ---
 
-# Rolling My Own: From Web Editors to a Lifecycle Plugin to stack-control
+# Rolling My Own: From Hand-Coded DSP Code to a Lifecycle Plugin to stack-control
 
 > **Outline (Outlining stage), receipts cited per beat.** Drafting turns this into
 > prose. `[op]` = operator decision still open (see `notes.md` §4–§5). Full receipts in
@@ -28,11 +28,14 @@ deskwork:
 - The pivot is sharp: after a dormant spell, **Sept 2025** brings agentic tooling (the
   first `CLAUDE.md`) and a 231-commit explosion. audio-tools migrates **into ol_dsp, then
   on into the `audiocontrol` monorepo** (audio-tools → ol_dsp → audiocontrol), and the work
-  shifts to building *with* agents — starting with the **audiocontrol web editors** (first:
-  **Novation Launch Control XL 3**, workplan **2025-09-25**). `[op: name Novation, or "the editors"?]`
+  shifts to building *with* agents.
+- The **web-editor lineage** that became audiocontrol started with **hand-coded SysEx
+  control for the Akai S3000XL and S5000/S6000 samplers and the Roland JV-1080** — browser
+  editors for the same hardware ol_dsp had been talking to at the byte level. (The Novation
+  Launch Control XL 3 editor is an experimental side-quest, not the lead.)
 - The throughline is one person and one obsession — *talk to real audio hardware at the
-  byte/MIDI/DSP level* — from the 2023 DSP init to the Roland **S-330 editor** (first built
-  in ol_dsp, Jan 2026) that audiocontrol.org proxies today.
+  byte/MIDI/SysEx/DSP level* — from the 2023 DSP init to the Roland **S-330** and **Akai**
+  sampler editors audiocontrol.org ships today.
 - There was no consensus I knew of for *how* to develop software with agents. Coming from
   hand-coding embedded DSP, I had to build the guardrails myself. The claim the piece
   argues: the cure for agents going sideways isn't a smarter model — it's **gates between
@@ -106,5 +109,7 @@ deskwork:
 
 ---
 
-> **`[op]` open before Drafting:** title; whether to quote **"2,400 sessions"** (the
-> committed report says **183 sessions / 2,122 commits**); naming the Novation first editor.
+> **Decisions resolved (2026-06-05):** title locked ("Hand-Coded DSP Code"); editor
+> lineage = Akai S3000XL / S5000-6000 + Roland JV-1080 SysEx (Novation experimental);
+> "2,400" dropped — use the verified **183 sessions / 2,122 commits** where a number is
+> needed. Ready to draft.
