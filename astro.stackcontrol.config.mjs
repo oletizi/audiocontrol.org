@@ -16,6 +16,11 @@ export default defineConfig({
   publicDir: 'src/sites/stackcontrol/public',
   outDir: 'dist/stackcontrol',
   output: 'static',
-  ...(isDev ? {} : { adapter: netlify() }),
+  // Dev only: allow Tailscale magic-DNS hosts (*.ts.net) past Vite's host
+  // check so the dev server is viewable across the tailnet. Never applied to
+  // the production build.
+  ...(isDev
+    ? { vite: { server: { allowedHosts: ['.ts.net'] } } }
+    : { adapter: netlify() }),
   integrations: [sitemap()],
 });

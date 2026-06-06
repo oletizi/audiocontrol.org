@@ -17,35 +17,28 @@ const phases: Phase[] = [
     name: 'Define',
     blurb:
       "An interview captures the problem and the scope before any code moves — what changes, what stays, what's explicitly out.",
-    cmd: '/dw-lifecycle:define',
+    cmd: '/stack-control:define',
   },
   {
     ord: '02',
-    name: 'Workplan',
-    blurb:
-      'Scope becomes phases and tasks, each backed by a GitHub issue with acceptance criteria you can check off.',
-    cmd: '/dw-lifecycle:issues',
-  },
-  {
-    ord: '03',
     name: 'Implement',
     blurb:
       'Tasks are delegated to specialized subagents and committed at clean task boundaries — never one giant blob.',
-    cmd: '/dw-lifecycle:implement',
+    cmd: '/stack-control:implement',
   },
   {
-    ord: '04',
+    ord: '03',
     name: 'Audit',
     blurb:
       'Every task gets a cross-model audit barrage — multiple reviewers fired in parallel against the diff, findings triaged.',
-    cmd: '/dw-lifecycle:audit-barrage',
+    cmd: '',
   },
   {
-    ord: '05',
-    name: 'Ship',
+    ord: '04',
+    name: 'Repeat',
     blurb:
-      'Acceptance criteria verified, PR opened. The toolchain stops at the PR — the operator owns the merge.',
-    cmd: '/dw-lifecycle:ship',
+      'Audit findings point implementation back to the happy path. Run Implement → Audit until the diff comes back clean.',
+    cmd: '',
   },
 ];
 
@@ -70,23 +63,23 @@ function fmt(dateStr: string): string {
 ---
 
 <Layout
-  title="stackcontrol.org — lifecycle tooling for agentic development"
-  description="The home of the deskwork lifecycle plugin for Claude Code: feature definition, workplans, scope discovery, cross-model audit barrages, and subagent orchestration. Product page and devlog."
+  title="stackcontrol.org — a babysitter for your coding agents"
+  description="stack-control is a Claude Code plugin that turns agentic coding into an industrial process: heavy design up front, hands-off implementation fanned across agents, and multi-model audits on every change."
 >
   <Ticker slot="banner" />
 
   {/* ============ HERO ============ */}
   <section class="hero site-container">
-    <p class="kicker">deskwork · lifecycle plugin for claude code</p>
-    <h1 class="hero-title">Lifecycle tooling for <em>agentic</em> development.</h1>
+    <p class="kicker">stack-control · a claude code plugin</p>
+    <h1 class="hero-title">Coding agents need a <em>babysitter</em>.</h1>
     <p class="lede">
-      stackcontrol.org is the public home of <strong>deskwork</strong> — the
-      <span class="mono-accent">/dw-lifecycle:*</span> and
-      <span class="mono-accent">/deskwork:*</span> toolchain for Claude Code.
+      Coding agents are insane, hyperintelligent toddlers — they lie, they get bored, and they cut
+      corners the second you stop watching.
       <span class="lede-muted">
-        It runs the whole arc of a change: feature definition, workplans, scope discovery,
-        cross-model audit barrages, an editorial pipeline, and subagent orchestration. This is the
-        product page and the devlog, in one control plane.
+        <strong>stack-control</strong> is the babysitter: a Claude Code plugin that runs every
+        change down an industrial line — heavy design up front, implementation fanned out across
+        agents at once, and independent audits on every diff, so correctness never rides on how much
+        attention you had to spare.
       </span>
     </p>
 
@@ -97,7 +90,7 @@ function fmt(dateStr: string): string {
 
     <div class="hero-rail">
       <span class="rail-label">lifecycle · phase rail</span>
-      <PhaseRail active={2} variant="labeled" />
+      <PhaseRail active={1} variant="labeled" />
     </div>
   </section>
 
@@ -106,7 +99,7 @@ function fmt(dateStr: string): string {
     <div class="section-head">
       <span class="idx">[ 01 ]</span>
       <h2>The Lifecycle</h2>
-      <span class="meta">5 phases · one toolchain</span>
+      <span class="meta">4 phases · one loop</span>
     </div>
 
     <div class="phase-grid">
@@ -116,7 +109,7 @@ function fmt(dateStr: string): string {
           <span class="pidx"><b>{phase.ord}</b> / {phase.name.toUpperCase()}</span>
           <h3>{phase.name}</h3>
           <p>{phase.blurb}</p>
-          <div class="cmd">{phase.cmd}</div>
+          {phase.cmd && <div class="cmd">{phase.cmd}</div>}
         </article>
       ))}
     </div>
@@ -139,18 +132,18 @@ function fmt(dateStr: string): string {
     <div class="wwh">
       <div class="col">
         <span class="tag">WHAT</span>
-        <h3>A control plane for changes</h3>
-        <p>A plugin for Claude Code that turns "make this change" into a tracked lifecycle with phases, issues, audits, and a PR at the end.</p>
+        <h3>An assembly line for change</h3>
+        <p>stack-control wraps every change in a disciplined line — define once, then implement and audit on a loop until the diff is clean — instead of letting an agent freestyle from prompt to merge.</p>
       </div>
       <div class="col">
         <span class="tag">WHY</span>
-        <h3>Agents drift without rails</h3>
-        <p>Unstructured agentic work skips scope, over-builds, and ships unreviewed. The lifecycle puts gates between intent and merge.</p>
+        <h3>Brilliant, and not to be trusted</h3>
+        <p>Left unsupervised, agents drift: they skip scope, over-build, confabulate, and ship work no one checked. The line is the adult supervision — gates between intent and merge.</p>
       </div>
       <div class="col">
         <span class="tag">HOW</span>
-        <h3>Slash commands + subagents</h3>
-        <p>Each phase is a composable command. Implementation fans out to specialized subagents; audits fan out to independent models.</p>
+        <h3>Best practices, not bespoke</h3>
+        <p>Underneath, it's the state of the art — a Spec Kit spec and its dependency graph, the coding-agent CLIs, subagents — wired into one opinionated line. stack-control runs the graph in parallel where it can and in order where it must, across agents and providers, then audits every diff with independent models. A thin shell over the best tools, not a homegrown framework.</p>
       </div>
     </div>
   </section>

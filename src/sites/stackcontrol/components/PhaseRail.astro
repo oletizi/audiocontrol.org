@@ -2,9 +2,9 @@
 /**
  * PhaseRail — the Telemetry identity's signature structural device.
  *
- * A stepped progress track rendering the lifecycle as five connected nodes
- * (Define → Workplan → Implement → Audit → Ship). Two registers:
- *  - variant="labeled": ordinal (01–05) over an uppercase phase name (hero spine)
+ * A stepped progress track rendering the lifecycle as four connected nodes
+ * (Define → Implement → Audit → Repeat). Two registers:
+ *  - variant="labeled": ordinal (01–04) over an uppercase phase name (hero spine)
  *  - variant="divider":  the phase name as the sole label (section divider echo)
  * One node may be marked active (cyan-lit, glowing).
  */
@@ -21,10 +21,9 @@ interface Props {
 
 const DEFAULT_PHASES: Phase[] = [
   { ord: '01', name: 'Define' },
-  { ord: '02', name: 'Workplan' },
-  { ord: '03', name: 'Implement' },
-  { ord: '04', name: 'Audit' },
-  { ord: '05', name: 'Ship' },
+  { ord: '02', name: 'Implement' },
+  { ord: '03', name: 'Audit' },
+  { ord: '04', name: 'Repeat' },
 ];
 
 const { active, variant = 'labeled', phases = DEFAULT_PHASES } = Astro.props;
@@ -53,7 +52,7 @@ const decorative = variant === 'divider';
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     position: relative;
   }
 

@@ -21,7 +21,7 @@ import type { Brand } from '../../shared/brand.js';
 export const brand: Brand = {
   site: 'stackcontrol',
   name: 'stackcontrol.org',
-  tagline: 'Lifecycle tooling for agentic development.',
+  tagline: 'An assembly line for agentic coding.',
   colors: {
     /* Near-black with a faint cool-blue cast — control-plane surface. */
     background: '200 28% 5%',
