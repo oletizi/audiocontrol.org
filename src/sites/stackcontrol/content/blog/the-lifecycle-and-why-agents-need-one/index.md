@@ -168,10 +168,38 @@ Two tools, one idea: the dangerous failures are quiet, so stop relying on a tire
 
 These two, the audit barrage and scope discovery, are the parts of the babysitter I'm proudest of. They're also, it turns out, the only parts I'm keeping.
 
----
+## I tore it down
 
-<!--
-ACT 3 — Rebuilding the babysitter on the shared crib — DRAFTING PENDING. Outline: ./outline-act3.md
-CLOSE — craftsman → industrialist → the blacksmith kicker — DRAFTING PENDING. Outline: ./outline-act3.md §3.5
-Drafting conventions: pull quotes set apart (not woven); all-caps quotes = inflection markers.
--->
+A few weeks ago I looked hard at the bespoke spine of the whole thing — my PRD-and-workplan machinery — and I had a suspicion: that it was probably naive, and that the state of the art had moved on in the months I'd had my head down building it. I went and checked. I was right. There are much more sophisticated options now than the ones I hand-rolled.
+
+This did not upset me, because it's exactly what I expected. I've always assumed that the state of the art would outpace my solo work, and that the right posture was to *continuously shed* the bespoke pieces of my workflow in favor of the consensus as it matures. That's the opposite of not-invented-here. The bespoke parts were never the point; they were scaffolding I built because nothing better existed yet.
+
+And now something better exists. The define-plan-tasks spine I'd built by hand has a community answer: **Spec Kit**. The hardest, most generic part of my process — turning intent into a structured, runnable plan — is now state of the art, maintained by people who are not me.
+
+Here's the part that still makes me smile. The very first thing I built in this whole story — the PRD and the workplan, my answer to the toddler's thirty-second memory — is the first thing I'm throwing away. My oldest fix graduated into a tool everyone shares.
+
+## A new name, fresh assumptions
+
+Because that spine *is* the spine, replacing it meant replacing the load-bearing center of the plugin. At that point a clean rebuild was simpler than a retrofit — new spine, new assumptions drawn from the current state of the art. And a new name, because, candidly, `dw-lifecycle` was always a dumb name.
+
+The new thing is **stack-control** — CLI `stackctl`, branded to match this site. It's the successor to `dw-lifecycle`, built integration-first against Spec Kit: you curate a spec, and it runs through native Spec Kit execution. The front door is three in-session verbs that should feel familiar — `define`, `extend`, `execute`.
+
+The thesis under both plugins, the old one and the new, is the same: these are **opinionated but lightweight shells over state-of-the-art tooling**. A thin control plane. Spec Kit does the heavy lifting now; stack-control is the opinionated layer on top — the part with a point of view about how the work should go.
+
+## What survives
+
+I'm not carrying much across. The vocabulary survives. But the parts I'm genuinely keeping are the crown jewels from Act 2: the **audit barrage** and **scope discovery**. Spec Kit gives me a spine; it does not give me a babysitter's teeth.
+
+In the new world the barrage fires automatically the moment execution finishes — governance on the boundary, no manual invocation, nothing riding on my stamina. And it's built to be provider-neutral on purpose: it branches on *capability*, never on which model it happens to be talking to, so it outlives any single vendor turning off the headless mode I depend on. (The same principle runs up a level: I now point the barrage at the *spec*, not just the code — audit the blueprint before the production line starts.)
+
+And even these I'm keeping only until the state of the art provides them too. They're on the same shedding schedule as everything else. The crown jewels aren't sacred; they're just the parts nobody's standardized yet.
+
+## The babysitter, paid off
+
+So here's where it nets out. The agents are still insane, hyperintelligent toddlers that lie and get bored. Nothing about *them* changed. What changed is that I have a real babysitter now — and I'm rebuilding it on a foundation I no longer have to pour myself.
+
+I started this story hand-wrenching every byte of DSP, in love with the metal. I'm ending it as an industrialist: heavy design up front, then a production line I work very hard not to touch. That's the actual arc, and it's the actual story — not "I built a nicer dev tool," but the slow industrialization of software itself. Heavy design and tooling and planning, then automated production, for the boring industrial virtues: scale, regularity, outcomes that don't depend on how I feel that day. The babysitter is the control system for the line.
+
+And the babysitter is built to be replaced from underneath. Its willingness to be outpaced by the state of the art is exactly what keeps it useful.
+
+Out on the forums, my fellow software engineers — latter-day blacksmiths — argue about exactly how much to let the agents drive: how much should the machine be allowed to touch the horseshoe? I love the hand-wrought work too. But the horseshoe is obsolete, and so is the blacksmith. The argument was over before it started; most of us just haven't looked up yet.
