@@ -234,4 +234,31 @@ Tightened variants to choose from (keep his as canonical):
 - [V, scope] *"I want you to defer NOTHING. Your scope obsession is BULLSHIT!!! … you will
   NEVER unilaterally push scope."* → the anti-deferral / defer-nothing discipline.
 
+---
+
+## Installment 7 (2026-06-05) — the audit barrage's GENESIS: the Claude × Codex collab
+
+> Operator: **"The Claude × Codex collab is where I got the idea of the audit barrage."**
+
+- The MESA II / Akai S3000XL reverse-engineering effort (`audiocontrol-org/audiocontrol#315`)
+  wasn't *an illustration* of the audit barrage — it was its **origin**. Watching Claude and
+  Codex, in adversarial lanes, catch each other's confabulations, force evidence, and converge
+  on truth was the **proof of concept**. The audit barrage is **that dynamic, mechanized.**
+
+### Structural implication — reframe §2.6
+The MESA II thread moves from "worked example" to **genesis / seed**. The §2.6 arc becomes a
+*how-I-discovered-it* story, not an after-the-fact proof:
+1. **Accidental discovery (April, manual):** I had Claude and Codex grinding on the same brutal
+   problem in parallel — and the magic wasn't either agent; it was the *friction between them*.
+   Codex broke Claude's death spiral; each demoted the other's over-claims under a strict ledger.
+2. **The idea:** *what if I make this — adversarial, multi-model cross-examination — an automatic
+   discipline on **every** task, not a one-off heroics on a hard problem?*
+3. **The mechanization (May):** the audit barrage — fire N independent model-CLIs at every task's
+   diff, automatically, with teeth (the `/dwi` hook).
+- So the timeline is causal, not coincidental: cross-model pilot + MESA II (April) → the barrage
+  ROADMAP'd 05-28 → shipped 05-29. The hand-built manual pairing *graduated* into the mechanism.
+- Nice rhyme with Act 3: the **audit barrage itself started as a manual, bespoke thing** (me
+  shuttling between two agents) before I mechanized it — the same shed-the-bespoke arc, one level
+  down.
+
 *(— more to come?)*

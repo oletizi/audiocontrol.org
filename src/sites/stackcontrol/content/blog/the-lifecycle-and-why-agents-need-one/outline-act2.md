@@ -49,38 +49,35 @@ does. `[V]` = verbatim operator quote; `[P]` = verify before publishing.
 - [V, 05-26] *"I shouldn't have had to point out the problem by brute force."*
 - (The s550 editor redesign — same project as the slider disaster — is the worked example.)
 
-## §2.6 — The mechanisms: scope discovery + the audit barrage
+## §2.6 — The mechanisms: the audit barrage + scope discovery
+*(Lead with the audit barrage — it's the discovery centerpiece; scope discovery follows.)*
+- **The audit barrage — the standout tool and the conceptual peak. Tell it as DISCOVERY, not design.**
+  - **Genesis (where the idea came from — operator: "the Claude × Codex collab is where I got the
+    idea of the audit barrage"):** I stumbled into it on the brutal **MESA II / Akai S3000XL** SCSI
+    reverse-engineering problem (`audiocontrol-org/audiocontrol#315`, 310 comments). I had **Claude
+    and Codex grinding in parallel, adversarial lanes** (Claude = executor; Codex = "contract
+    recovery and falsification," tasked to *"independently verify or falsify Claude's
+    interpretations"*). The magic wasn't either agent — it was the **friction between them.**
+    - [pull quote — the death-spiral break] Claude: *"inferred device failure from a symptom… and
+      dressed the inference up as a measurement"* → asks Codex to *"always question it and demand proof."*
+    - [pull quote] Codex forces *"PROVED → CANDIDATE"* downgrades; the SRAW byte format
+      (`0C 00 [len] 80`) earned "MEASURED" only after both confirmed it — *"measured enough to stop
+      arguing about it"* — correcting a *shared* false belief. (detail: `receipts-mesa-claude-codex-315.md`.)
+  - **The idea:** what if this — adversarial, multi-model cross-examination — were an **automatic
+    discipline on *every* task**, not one-off heroics on a hard problem?
+  - **The concept, named — "stochastic correctness":** the **genetic diversity of multi-model
+    scrutiny converges on the right answer.**
+    - [V — the money line] *"Individual agents are like insane, hyperintelligent toddlers with a
+      tendency to lie. Pit multiple agents together continuously and they tend to correct each
+      other's mistakes, confabulations, and laziness."*
+  - **The mechanization (the barrage):** fire N independent model-CLIs (claude/codex/gemini) at
+    **every diff, automatically, with teeth** (the `/dwi` hook). Answers Failure A (and the rest).
+    deskwork's ROADMAP names it "genetic diversity in failure modes"; the Phase-12 dogfood surfaced
+    4 cross-model HIGH findings the other surfaces missed.
+  - **Rhyme with Act 3:** the barrage itself *started bespoke and manual* (me shuttling between two
+    agents) before I mechanized it — the same shed-the-bespoke arc, one level down.
 - **Scope discovery** — mechanized detection of unchanged-but-should-change code + duplication
-  (`check-clones` against a baseline, `scope-widen`, `clones.yaml` dispositions, anti-patterns,
-  adopter manifests). Answers Failures B + C.
-- **Audit barrage** — independent **cross-model** review (claude/codex/gemini) catching the
-  quiet shirking/anemia that a single self-review misses. Answers Failure A (and the rest).
-  **The standout tool.** The concept (centerpiece): **"stochastic correctness"** — the code
-  faces the **genetic diversity of multi-model scrutiny that converges on the right answer.**
-  - [V — the money line] *"Individual agents are like insane, hyperintelligent toddlers with
-    a tendency to lie. Pit multiple agents together continuously and they tend to correct each
-    other's mistakes, confabulations, and laziness."*
-  - Proof: MESA II 04-16 (`bc965958`) — a single self-review baked an inference in as evidence
-    (*"this is an INFERENCE, not a finding"*); the Phase-12 dogfood surfaced 4 cross-model HIGH
-    findings the other two surfaces missed. deskwork's ROADMAP calls it "genetic diversity in
-    failure modes" — the operator's own framing.
-  - **THE worked example — the Claude-vs-Codex MESA II thread** (`audiocontrol-org/audiocontrol#315`,
-    310 comments; detail: `research/receipts-mesa-claude-codex-315.md`). A real parallel effort to
-    reverse-engineer the SCSI conversation between MESA II and the **Akai S3000XL** — chartered
-    into **adversarial lanes** (Claude = emulator-forward executor; Codex = "contract recovery
-    and falsification," tasked to *"independently verify or falsify Claude's interpretations"*).
-    The money beats (pull quotes):
-    - **the death-spiral break:** Claude blamed silent hardware, was pressed, then self-reported
-      it *"inferred device failure from a symptom… and dressed the inference up as a
-      measurement,"* and asked Codex to *"always question it and demand proof."*
-    - Codex forces a **"PROVED → CANDIDATE" downgrade**; refuses to endorse a brief that
-      *"overstates what is MEASURED."* Claude concedes *"'force the conclusion' was too strong"* /
-      *"REFUTED by primary evidence."*
-    - **Convergence under a MEASURED / CANDIDATE / OPEN ledger:** the one genuinely MEASURED win
-      (the SRAW CDB wire format `0C 00 [len] 80`) earned the tag only after *both* agents
-      confirmed it byte-for-byte — *"measured enough to stop arguing about it"* — correcting an
-      earlier *shared* false belief. The surviving claims are the ones that survived
-      cross-examination. **That is "stochastic correctness" caught in the act.**
+  (`check-clones` vs a baseline, `scope-widen`, `clones.yaml`, anti-patterns). Answers Failures B + C.
 - Receipts: scope-discovery canonized 2026-05-25 (`9ddcc6d4`); audit-barrage ROADMAP 05-28
   (`847ea708`, operator attention = "the binding constraint") + ship 05-29 (`4ef3c09f`);
   MESA II rigor 04-16 (`bc965958`, *"this is an INFERENCE, not a finding"*).
@@ -110,6 +107,7 @@ does. `[V]` = verbatim operator quote; `[P]` = verify before publishing.
   + audit barrage). Provisional.
 - v2 (2026-06-05) — installment 3: "stochastic correctness" + the toddler metaphor folded
   into §2.6 as the audit-barrage centerpiece.
-- v3 (2026-06-05) — added THE worked example to §2.6: the Claude-vs-Codex MESA II thread
-  (audiocontrol-org/audiocontrol#315) — death-spiral break, PROVED→CANDIDATE downgrades,
-  MEASURED/CANDIDATE/OPEN ledger, SRAW byte-format convergence. Receipt: receipts-mesa-claude-codex-315.md.
+- v3 (2026-06-05) — added the Claude-vs-Codex MESA II thread (#315) to §2.6.
+- v4 (2026-06-05) — installment 7: the MESA II collab is the GENESIS of the audit barrage
+  (not just a worked example). §2.6 reframed as DISCOVERY (genesis → idea → name → mechanize),
+  audit barrage leads, scope discovery follows. Resolves open call #4 (it IS the peak).

@@ -70,9 +70,12 @@ deskwork:
 - **Failure C — incomplete change discovery** (UI-redesign brute-force; *"why didn't that
   automatically get updated?"*).
 - **The mechanisms:** **scope discovery** (answers B + C) + **the audit barrage** (answers A).
-  Centerpiece — **"stochastic correctness":** the *genetic diversity of multi-model scrutiny
-  converges on the right answer.* Money line: *"insane, hyperintelligent toddlers… pit them
-  together and they correct each other's mistakes, confabulations, and laziness."*
+  The audit barrage is the **conceptual peak**, told as **discovery, not design** — *the idea
+  came from the Claude × Codex MESA II / Akai S3000XL collab* (`#315`), where two agents in
+  adversarial lanes corrected each other's confabulations; I mechanized that friction into an
+  every-task discipline. Centerpiece — **"stochastic correctness":** the *genetic diversity of
+  multi-model scrutiny converges on the right answer.* Money line: *"insane, hyperintelligent
+  toddlers… pit them together and they correct each other's mistakes, confabulations, and laziness."*
 
 ---
 
