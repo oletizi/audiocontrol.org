@@ -20,6 +20,11 @@ deskwork:
 > outlines with quotes + receipts: `./outline-act1.md`, `./outline-act2.md`, `./outline-act3.md`.
 > Research corpus: `research/agentic-dev-origin/` (`author-narrative.md`, `notes.md`,
 > `research/quote-bank.md`).
+>
+> **Drafting conventions:** verbatim operator quotes render as **pull quotes** (blockquotes set
+> apart in their section), *not* woven into the prose. The **all-caps** quotes are **inflection
+> markers** — each one signals "stop yelling, re-architect," and is followed by the next
+> innovation (see `author-narrative.md` installment 6).
 
 ## Hook
 - **Lead line:** *"Coding agents are insane, hyperintelligent toddlers that lie, get bored, and
@@ -27,6 +32,14 @@ deskwork:
 - The clauses are promises the body keeps: **lie** → the audit barrage; **bored** →
   scope-deferral / session fatigue; **babysitting** → the workplan / on-task protocol;
   **babysitter plugin** → dw-lifecycle → stack-control.
+- **The toddler diagnosis** (sets up why exhortation fails): a toddler has a **30-second
+  memory** (→ the memory wipe / context haze) and an **underdeveloped prefrontal cortex** (→ no
+  impulse control: drift, scope-deferral, lying). *You don't fix a toddler by yelling — you
+  change the environment.* That's the whole approach: process over policy, mechanized detection
+  over exhortation. **Babysitting = engineering the crib, not raising your voice.**
+- **The all-caps rule** (recurring motif): *"Every time I caught myself typing in all caps, it
+  meant the same thing — stop yelling, re-architect."* Each all-caps pull quote in the body is
+  one of those inflection points.
 
 ---
 

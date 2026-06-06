@@ -52,10 +52,13 @@ verify (`[P]`). Session id in `[brackets]`.
 - The two drift directions:
   - didn't-actually-do-it: [V] *"did you check to see if it worked?"*
   - quietly-shrinks-the-work: [V] *"defer NOTHING… you will NEVER unilaterally push scope."*
-- **Evidence (show, don't tell) — the disasters:**
+- **Evidence (show, don't tell) — the disasters.** *Quotes render as pull quotes; the all-caps
+  ones are the inflection markers (the all-caps rule — see the Hook / `author-narrative.md` inst. 6).*
   - **slider, 05-14** [`21b95c31`]: [V] *"None of the controls are functional. You shipped
     garbage."* / *"QA theater."* / *"How would you write a test harness that PROVES the value
     slider works?"*
+  - [V — all-caps inflection → triggers the test-theater rule] *"THERE IS NOTHING TO TEST!!!!
+    THE EDITOR IS FUNCTIONALLY USELESS!!! YOU COMPLETELY BROKE IT!!! FIX IT NOW!!!!"*
 
 ## §1.5 — Wall 3: the big CLAUDE.md dissolves into the context haze
 - I accreted a huge `CLAUDE.md` of policy + standards — and learned **policy in a document

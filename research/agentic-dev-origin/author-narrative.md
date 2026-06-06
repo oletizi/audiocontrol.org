@@ -197,4 +197,41 @@ Tightened variants to choose from (keep his as canonical):
 - Durability invariant SC-004 (branch on capability, never identity) is the same humility at
   the model layer: stack-control assumes the *tools* underneath will change.
 
+---
+
+## Installment 6 (2026-06-05) — the all-caps rule + the toddler-brain mapping
+
+> Paraphrase of the operator, close to his words:
+
+- **An early insight, and a tell I learned to trust:** *whenever I found myself **yelling at
+  the agent in ALL CAPS**, I knew it was a clear sign that I needed to **re-architect how I was
+  approaching the problem.*** It's tempting to yell at toddlers — they can be damned
+  infuriating — but it doesn't solve anything. **Toddlers have 30-second memories and an
+  underdeveloped prefrontal cortex.** Those all-caps moments were **the inflection points that
+  prompted the next set of innovations.**
+
+### Why this is a structural gift
+- **The all-caps quotes ARE the plot markers.** Many of the strongest verbatim quotes are
+  literally all-caps rage (*"THERE IS NOTHING TO TEST!!!! … FIX IT NOW!!!!"*; *"defer
+  NOTHING… your scope obsession is BULLSHIT!!!"*). Each one is the moment a *wall* announced
+  itself — and each is followed by a *re-architecture*, not a louder prompt.
+- **State the rule once, explicitly, then let it recur as a motif:** *"Every time I caught
+  myself typing in all caps, it meant the same thing — stop yelling, re-architect."* It's the
+  reader's signal too: an all-caps pull quote = the next innovation is coming.
+- **The toddler-brain mapping deepens the central metaphor** and *explains why exhortation
+  fails* (the Act 2 thesis "you can't exhort quiet failure away"):
+  - **30-second memory** → the **memory wipe** at auto-compact / the context haze (Act 1 Walls
+    1 & 3). You can't lecture something that forgets.
+  - **underdeveloped prefrontal cortex** → no impulse control → **drift, scope-deferral, lying**
+    (the quiet failures). You can't appeal to better judgment it doesn't have.
+  - Conclusion: **you don't fix a toddler by yelling — you change the *environment*.** That's
+    the whole thesis: process over policy, *mechanized detection* over exhortation. Babysitting
+    = engineering the crib, not raising your voice.
+
+### Receipts (all-caps inflection moments → the innovation they triggered)
+- [V, slider 05-14] *"THERE IS NOTHING TO TEST!!!! THE EDITOR IS FUNCTIONALLY USELESS!!! YOU
+  COMPLETELY BROKE IT!!! FIX IT NOW!!!!"* → the test-theater rule + credible-testing standard.
+- [V, scope] *"I want you to defer NOTHING. Your scope obsession is BULLSHIT!!! … you will
+  NEVER unilaterally push scope."* → the anti-deferral / defer-nothing discipline.
+
 *(— more to come?)*
