@@ -301,4 +301,45 @@ The MESA II thread moves from "worked example" to **genesis / seed**. The §2.6 
 - Pairs with the **session-fatigue** piece (deskwork#408): operator stamina ↔ agent context fatigue
   — both are *quiet, discipline-eroding* failures the autonomy answers.
 
+---
+
+## Installment 9 (2026-06-05) — the governing thesis: industrializing software (craftsman → industrialist)
+
+> Paraphrase of the operator, close to his words. **This is the piece's deepest thesis** — it
+> unifies everything and pays off the §1.1 cold open.
+
+- **The two-phase guiding principle:**
+  1. **Spend a LOT of time up front** — designing what you want, researching, exploring options,
+     weighing pros and cons. *(He now runs the **audit barrage on spec definitions too, not just
+     code** — once a spec is mostly the shape he wants, he barrages it.)*
+  2. **Be as hands-off as possible during implementation** — *provided* there's **suitable guiding
+     structure and positive feedback loops** — so the **outcome is not tightly coupled to how I
+     feel that day.**
+- **The frame:** this is **turning software development into an *industrial process*** — heavy
+  **up-front design + planning + tooling**, followed by **increasingly automated production** for
+  **economies of scale and predictable, regular outcomes** — *in contrast to the craftsman-like,
+  hand-wrought code of the past.*
+
+### Why this is the spine of the whole piece
+- **It pays off the cold open (§1.1) directly.** Orion *started* as a craftsman — hand-wrought
+  embedded DSP, close to the metal. The whole arc is his **personal transformation from craftsman
+  to industrialist**, which doubles as a **claim about where software is going.** Name it in the
+  Close (and seed it early).
+- **It unifies the three acts as one move:**
+  - **Heavy up-front design** = the PRD/workplan (Act 1) → Spec Kit specs (Act 3). *(And you audit
+    the design itself — barrage on specs.)*
+  - **Hands-off automated production** = the autonomous `/dwi` loop + the audit barrage (Act 2).
+  - **Tooling** = the plugin itself (dw-lifecycle → stack-control).
+- **It re-explains the stamina insight (inst. 8) at the level of principle:** "not coupled to how
+  I feel that day" is the *industrial* reason to take the human out of the production loop — an
+  assembly line doesn't depend on the foreman's mood. Removing operator discretion isn't just
+  convenience; it's **regular, predictable output at scale.**
+- **It reframes "babysitter":** the babysitter is the **industrial control system** for an
+  unreliable but tireless workforce of toddlers — design the line, instrument it, automate the
+  production, and stop hand-wringing over each part.
+
+### Candidate framing line (draft)
+> *"I started as a craftsman, hand-wrenching every byte of DSP. I'm ending up an industrialist:
+> heavy design up front, then a production line I try very hard not to touch."*
+
 *(— more to come?)*

@@ -41,13 +41,29 @@ deskwork:
   meant the same thing — stop yelling, re-architect."* Each all-caps pull quote in the body is
   one of those inflection points.
 
+## Thesis (the thematic spine — seed early, pay off in the Close)
+- The deepest arc is a **personal transformation: craftsman → industrialist.** I *started* as a
+  craftsman (hand-wrought embedded DSP, §1.1); I'm *ending up* an industrialist.
+- **The governing principle:** spend a lot of time **up front** (design, research, weigh
+  options — I even run the audit barrage **on the spec**, not just the code), then be **as
+  hands-off as possible during production**, *given suitable guiding structure + feedback loops*,
+  so the **outcome isn't coupled to how I feel that day.**
+- **The claim:** this is **industrializing software development** — heavy up-front design +
+  planning + tooling → increasingly **automated production** for economies of scale and
+  predictable, regular outcomes — *vs. the craftsman-like, hand-wrought code of the past.* The
+  babysitter is the **industrial control system** for a tireless-but-unreliable toddler workforce.
+- It unifies the acts: **up-front design** = PRD/workplan (Act 1) → Spec Kit (Act 3);
+  **automated production** = the autonomous `/dwi` loop + audit barrage (Act 2); **tooling** = the
+  plugin (dw-lifecycle → stack-control).
+
 ---
 
 ## Act 1 — How I ended up needing a babysitter  ·  *(detail: `outline-act1.md`)*
 *Origin → the process invented by correction.*
 
-- **Rewind: the hand-coder.** Hand-coded embedded audio DSP — `ol_dsp` (2023-11-08, C/C++ for
-  Daisy/Teensy + Eurorack + a JUCE host) → `audio-tools` (2024-10-11). Pre-agentic for ~2 years.
+- **Rewind: the hand-coder (the craftsman era).** Hand-wrought embedded audio DSP — `ol_dsp`
+  (2023-11-08, C/C++ for Daisy/Teensy + Eurorack + a JUCE host) → `audio-tools` (2024-10-11).
+  Pre-agentic for ~2 years. *(This is the "craftsman" the Close pays off.)*
 - **The pivot (Sept 2025) + Wall 1: the memory wipe.** Building browser editors *with* agents
   (hand-coded SysEx for Akai S3000XL / S5000-6000, Roland JV-1080); the agent's memory wiped at
   almost every auto-compact boundary. → **Fix 1: source-of-truth docs** (PRD + workplan).
@@ -94,6 +110,9 @@ deskwork:
 - **The thesis:** these plugins are **opinionated but lightweight shells over state-of-the-art
   tooling** (a "thin control plane"). The **crown jewels** (audit barrage, scope discovery) are
   the parts the SOTA doesn't *yet* give — **kept only until it does** (same shedding schedule).
+- **Heavy up-front design** (the industrial principle in practice): Spec Kit makes the design
+  phase first-class, and **I run the audit barrage on the spec itself**, not just the code —
+  audit the *blueprint* before the *production line* starts.
 - **Self-hosting + isolation:** every later feature built *through* it; dw-lifecycle untouched.
 
 ---
@@ -103,8 +122,12 @@ deskwork:
   is that I now have a real **babysitter** — and I'm rebuilding it on the shared crib (Spec Kit)
   while keeping the parts that actually catch the lying (audit barrage) and the boredom (scope
   discovery).
-- The deeper note: the babysitter is **built to be replaced from underneath** — its willingness
-  to be outpaced by the state of the art is what keeps it durable.
+- **The deepest payoff — craftsman → industrialist:** I opened hand-wrenching every byte of DSP;
+  I'm closing as an **industrialist** — heavy design up front, then a production line I try very
+  hard not to touch. That's the real story: **the industrialization of software** — and the
+  babysitter is its control system.
+- The babysitter is **built to be replaced from underneath** — its willingness to be outpaced by
+  the state of the art is what keeps it durable.
 - Forward pointer: the rest of the "Building deskwork" series drills into each kept part.
 
 ---
