@@ -72,7 +72,7 @@ Four cards in the existing `NN / NAME` + blurb idiom:
 - **WHAT — "An assembly line for change":** stack-control wraps every change in a disciplined line
   — define once, then implement and audit on a loop until the diff is clean — instead of letting an
   agent freestyle from prompt to merge.
-- **WHY — "Brilliant, and not to be trusted":** Left unsupervised, agents drift: they skip scope,
+- **WHY — "Agents cause brilliant chaos":** Left unsupervised, agents drift: they skip scope,
   over-build, confabulate, and ship work no one checked. The line is the adult supervision — gates
   between intent and merge.
 - **HOW — "Best practices, not bespoke":** Underneath, it's the state of the art — a Spec Kit spec
