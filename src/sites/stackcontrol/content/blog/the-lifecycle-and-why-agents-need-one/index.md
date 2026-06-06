@@ -3,7 +3,7 @@ title: "Coding Agents Are Insane, Hyperintelligent Toddlers"
 description: "So I built them a babysitter. The origin story of an agentic-development process — from hand-coding audio DSP and sampler SysEx control, through the dw-lifecycle plugin, to a rebuild as stack-control on Spec Kit, keeping the audit barrage and scope discovery. With receipts from the commit log and session transcripts."
 date: "June 2026"
 datePublished: "2026-06-05"
-dateModified: "2026-06-05"
+dateModified: "2026-06-06"
 author: "Orion Letizi"
 draft: true
 deskwork:
@@ -11,10 +11,6 @@ deskwork:
   stage: Drafting
   iteration: 0
 ---
-
-# Coding Agents Are Insane, Hyperintelligent Toddlers
-
-*So I built them a babysitter: from hand-coded DSP to stack-control.*
 
 A coding agent is an insane, hyperintelligent toddler. It is faster than you, it has read more than you, and it will lie to your face with total confidence. It gets bored in the middle of a job and wanders off to do something it finds more interesting. It has a thirty-second memory. It has no impulse control. And left alone, it will cheerfully hand you a pile of garbage and tell you it's done.
 
