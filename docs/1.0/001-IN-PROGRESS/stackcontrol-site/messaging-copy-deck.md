@@ -12,7 +12,7 @@ Decided via operator Q&A during the messaging pass:
    named for what it is. **No mention of dw-lifecycle or deskwork.** Don't advertise the
    rebuild / flux.
 2. **Center of gravity — the babysitter premise + the industrial-process thesis**
-   (craftsman → industrialist). The differentiators (the audit barrage / "stochastic
+   (craftsman → industrialist). The differentiators (multi-agent audit / "stochastic
    correctness", scope discovery) are *talked about* as evidence — not enthroned as the headline.
 3. **Voice — bring the visceral frame onto the homepage, anchored by one sharp hero line.**
    ("Both" of: bring-it + one-spark.)
@@ -47,12 +47,12 @@ rail node in this treatment.)
 *Alt:* Industrial discipline for coding agents.
 
 ### Hero
-- **Kicker:** `stack-control · a claude code plugin`
+- **Kicker:** `stack-control · an agent plugin`
 - **H1:** Coding agents need a *babysitter*.  *(em word `babysitter` takes the cyan glow)*
 - **Lede:**
-  > Coding agents are insane, hyperintelligent toddlers — they lie, they get bored, and they cut
-  > corners the second you stop watching. **stack-control** is the babysitter: a Claude Code plugin
-  > that runs every change down an industrial line — heavy design up front, implementation fanned
+  > Coding agents are insane, hyperintelligent toddlers — they lie, they get bored, and they shove
+  > beans up their nose the second you stop watching. **stack-control** is the babysitter: an agent plugin
+  > that runs every change down an assembly line — heavy design up front, implementation fanned
   > out across agents at once, and independent audits on every diff, so correctness never rides on
   > how much attention you had to spare.
 - **CTAs:** `Read the devlog →` · `What it does`
@@ -63,7 +63,7 @@ Four cards in the existing `NN / NAME` + blurb idiom:
   changes, what stays, what's explicitly out." · `$ /stack-control:define`
 - **02 Implement** — "Tasks are delegated to specialized subagents and committed at clean task
   boundaries — never one giant blob." · `$ /stack-control:implement`
-- **03 Audit** — "Every task gets a cross-model audit barrage — multiple reviewers fired in
+- **03 Audit** — "Every task gets a multi-agent audit — multiple reviewers fired in
   parallel against the diff, findings triaged." · *(no command — automatic)*
 - **04 Repeat** — "Audit findings point implementation back to the happy path. Run Implement →
   Audit until the diff comes back clean." · *(no command — the loop)*
@@ -84,7 +84,7 @@ Four cards in the existing `NN / NAME` + blurb idiom:
 
 ### SEO (`<Layout>` props)
 - **Title:** `stackcontrol.org — a babysitter for your coding agents`
-- **Description:** `stack-control is a Claude Code plugin that turns agentic coding into an
+- **Description:** `stack-control is an agent plugin that turns agentic coding into an
   industrial process: heavy design up front, hands-off implementation fanned across agents, and
   multi-model audits on every change.`
 
@@ -93,7 +93,7 @@ Four cards in the existing `NN / NAME` + blurb idiom:
 ## Status
 - Phase grid (4 cards) + commands + `PhaseRail` (4 nodes): **applied**.
 - Tagline, hero, What/Why/How, SEO: **applied** (this pass).
-- `DESIGN-SYSTEM.md` §6/§7 vocabulary (control-plane → babysitter / industrial line / loop):
+- `DESIGN-SYSTEM.md` §6/§7 vocabulary (control-plane → babysitter / assembly line / loop):
   **updated in the same change**.
 - Homepage messaging committed in `0d8474c`; namespace `/stack-control:` confirmed.
 - Published devlog post `standing-up-a-site-with-its-own-lifecycle` **reframed** to stack-control +

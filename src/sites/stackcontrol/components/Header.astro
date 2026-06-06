@@ -13,7 +13,8 @@ const isActive = (href: string) =>
       <Logo variant="header" />
     </a>
     <nav class="main-nav" aria-label="Primary">
-      <a href="/#product" class:list={[{ active: false }]}>Product</a>
+      <a href="/#method">Method</a>
+      <a href="/#product">Product</a>
       <a href="/blog/" class:list={[{ active: isActive('/blog') }]}>Devlog</a>
       <a href="/#how">About</a>
     </nav>
@@ -75,7 +76,13 @@ const isActive = (href: string) =>
   .main-nav a:hover::after,
   .main-nav a.active::after { transform: scaleX(1); }
 
-  @media (max-width: 600px) {
-    .main-nav { gap: 1.1rem; font-size: 0.6875rem; }
+  @media (max-width: 560px) {
+    .header-row { flex-wrap: wrap; row-gap: 0.85rem; }
+    .main-nav {
+      flex-basis: 100%;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-size: 0.6875rem;
+    }
   }
 </style>
