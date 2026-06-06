@@ -63,17 +63,23 @@ does. `[V]` = verbatim operator quote; `[P]` = verify before publishing.
     - [pull quote] Codex forces *"PROVED → CANDIDATE"* downgrades; the SRAW byte format
       (`0C 00 [len] 80`) earned "MEASURED" only after both confirmed it — *"measured enough to stop
       arguing about it"* — correcting a *shared* false belief. (detail: `receipts-mesa-claude-codex-315.md`.)
-  - **The idea:** what if this — adversarial, multi-model cross-examination — were an **automatic
-    discipline on *every* task**, not one-off heroics on a hard problem?
   - **The concept, named — "stochastic correctness":** the **genetic diversity of multi-model
     scrutiny converges on the right answer.**
     - [V — the money line] *"Individual agents are like insane, hyperintelligent toddlers with a
       tendency to lie. Pit multiple agents together continuously and they tend to correct each
       other's mistakes, confabulations, and laziness."*
-  - **The mechanization (the barrage):** fire N independent model-CLIs (claude/codex/gemini) at
-    **every diff, automatically, with teeth** (the `/dwi` hook). Answers Failure A (and the rest).
-    deskwork's ROADMAP names it "genetic diversity in failure modes"; the Phase-12 dogfood surfaced
-    4 cross-model HIGH findings the other surfaces missed.
+  - **First attempt — the audit protocol (semi-manual):** I routinized the friction as
+    **hand-triggered Codex audits after rounds of `dwi` (`dw-lifecycle:implement`).** Structured —
+    but *I* still had to fire it.
+  - **The flaw — *I* was the binding constraint:** audit *frequency* and *remediation rigor* rode
+    on my discipline as orchestrator, which **waxed and waned with my stamina** (the human twin of
+    the session-fatigue failure). [ROADMAP `847ea708`: *"operator attention = the binding constraint."*]
+  - **The fix → the barrage:** step out of the loop — fire N independent model-CLIs at **every diff,
+    automatically, with no operator discretion** (the `/dwi` hook, *"mechanized with teeth"*). Bonus
+    insight: **agreement = a free severity/veracity signal** — the more auditor agents flag an issue,
+    the more likely it's real (HIGH = cross-model agreement; the dampener). The Phase-12 dogfood
+    caught 4 cross-model HIGH findings the other surfaces missed. (#383: autonomy *without* teeth
+    once ran burndowns with zero audit coverage — proof the teeth matter.)
   - **Rhyme with Act 3:** the barrage itself *started bespoke and manual* (me shuttling between two
     agents) before I mechanized it — the same shed-the-bespoke arc, one level down.
 - **Scope discovery** — mechanized detection of unchanged-but-should-change code + duplication
@@ -111,3 +117,6 @@ does. `[V]` = verbatim operator quote; `[P]` = verify before publishing.
 - v4 (2026-06-05) — installment 7: the MESA II collab is the GENESIS of the audit barrage
   (not just a worked example). §2.6 reframed as DISCOVERY (genesis → idea → name → mechanize),
   audit barrage leads, scope discovery follows. Resolves open call #4 (it IS the peak).
+- v5 (2026-06-05) — installment 8: the missing middle. §2.6 arc now: genesis (#315) → name
+  ("stochastic correctness") → the audit protocol (hand-triggered Codex audits) → the flaw
+  (my stamina = binding constraint) → autonomy + agreement-as-severity-signal → the barrage.

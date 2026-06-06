@@ -261,4 +261,44 @@ The MESA II thread moves from "worked example" to **genesis / seed**. The §2.6 
   shuttling between two agents) before I mechanized it — the same shed-the-bespoke arc, one level
   down.
 
+---
+
+## Installment 8 (2026-06-05) — the missing middle: the audit protocol → autonomy
+
+> Paraphrase of the operator, close to his words:
+
+- **After the MESA II collab, I developed the *audit protocol*** — a way to **structure
+  hand-triggered audits** I'd have **Codex do after rounds of `dw-lifecycle:implement` calls.**
+- **The flaw I noticed:** the **frequency of the audits, and how seriously to remediate their
+  findings, was tied to my discipline as the human orchestrator — which waxed and waned with my
+  stamina.**
+- **The fix:** it became clear I needed to **step out of the implementation-and-audit cycle and
+  make it completely autonomous.**
+- **The bonus insight:** having **multiple agents per audit cycle offers a natural signal of
+  severity AND veracity — the more auditor agents flag a particular issue, the stronger the
+  signal that it's a real problem.**
+
+### The full audit-barrage arc (use this ordering in §2.6)
+1. **Genesis** — the MESA II Claude × Codex collab (#315): friction between agents finds truth.
+2. **The audit protocol** — structured **hand-triggered Codex audits after `dwi` rounds** (semi-manual).
+3. **The flaw** — *I* was the binding constraint: audit frequency + remediation rigor rode on my
+   **stamina**, which waxed and waned. (This is the human analog of the session-fatigue failure.)
+4. **Autonomy** — step out of the loop; make it fire on its own, **with no operator discretion**
+   (the `/dwi` end-of-task hook, "mechanized with teeth").
+5. **Agreement = signal** — multiple auditors per cycle give **severity + veracity** for free: the
+   more agents flag an issue, the more likely it's real (→ HIGH = cross-model agreement; the dampener).
+6. **The barrage** — N independent model-CLIs, every diff, automatically.
+
+### Receipts
+- *"operator attention = the binding constraint"* — deskwork ROADMAP `847ea708` (2026-05-28): the
+  project's own words for "my stamina was the bottleneck."
+- *"when to run the barrage should not be a matter of policy and the agent should have no
+  discretion. It must be mechanized with teeth"* — 2026-06-01.
+- Structural bug **#383** (`c9849b61`): long autonomous burndowns once ran with *zero audit
+  coverage* — proof that autonomy without teeth fails the same way operator-stamina did.
+- The **dampener** rules (N consecutive 0-HIGH; cross-model HIGH = real) operationalize
+  "agreement = severity/veracity signal."
+- Pairs with the **session-fatigue** piece (deskwork#408): operator stamina ↔ agent context fatigue
+  — both are *quiet, discipline-eroding* failures the autonomy answers.
+
 *(— more to come?)*
