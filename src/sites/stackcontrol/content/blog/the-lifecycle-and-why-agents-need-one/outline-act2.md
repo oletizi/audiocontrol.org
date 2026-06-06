@@ -64,6 +64,23 @@ does. `[V]` = verbatim operator quote; `[P]` = verify before publishing.
     (*"this is an INFERENCE, not a finding"*); the Phase-12 dogfood surfaced 4 cross-model HIGH
     findings the other two surfaces missed. deskwork's ROADMAP calls it "genetic diversity in
     failure modes" — the operator's own framing.
+  - **THE worked example — the Claude-vs-Codex MESA II thread** (`audiocontrol-org/audiocontrol#315`,
+    310 comments; detail: `research/receipts-mesa-claude-codex-315.md`). A real parallel effort to
+    reverse-engineer the SCSI conversation between MESA II and the **Akai S3000XL** — chartered
+    into **adversarial lanes** (Claude = emulator-forward executor; Codex = "contract recovery
+    and falsification," tasked to *"independently verify or falsify Claude's interpretations"*).
+    The money beats (pull quotes):
+    - **the death-spiral break:** Claude blamed silent hardware, was pressed, then self-reported
+      it *"inferred device failure from a symptom… and dressed the inference up as a
+      measurement,"* and asked Codex to *"always question it and demand proof."*
+    - Codex forces a **"PROVED → CANDIDATE" downgrade**; refuses to endorse a brief that
+      *"overstates what is MEASURED."* Claude concedes *"'force the conclusion' was too strong"* /
+      *"REFUTED by primary evidence."*
+    - **Convergence under a MEASURED / CANDIDATE / OPEN ledger:** the one genuinely MEASURED win
+      (the SRAW CDB wire format `0C 00 [len] 80`) earned the tag only after *both* agents
+      confirmed it byte-for-byte — *"measured enough to stop arguing about it"* — correcting an
+      earlier *shared* false belief. The surviving claims are the ones that survived
+      cross-examination. **That is "stochastic correctness" caught in the act.**
 - Receipts: scope-discovery canonized 2026-05-25 (`9ddcc6d4`); audit-barrage ROADMAP 05-28
   (`847ea708`, operator attention = "the binding constraint") + ship 05-29 (`4ef3c09f`);
   MESA II rigor 04-16 (`bc965958`, *"this is an INFERENCE, not a finding"*).
@@ -93,3 +110,6 @@ does. `[V]` = verbatim operator quote; `[P]` = verify before publishing.
   + audit barrage). Provisional.
 - v2 (2026-06-05) — installment 3: "stochastic correctness" + the toddler metaphor folded
   into §2.6 as the audit-barrage centerpiece.
+- v3 (2026-06-05) — added THE worked example to §2.6: the Claude-vs-Codex MESA II thread
+  (audiocontrol-org/audiocontrol#315) — death-spiral break, PROVED→CANDIDATE downgrades,
+  MEASURED/CANDIDATE/OPEN ledger, SRAW byte-format convergence. Receipt: receipts-mesa-claude-codex-315.md.

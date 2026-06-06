@@ -25,6 +25,7 @@ folder so multiple pieces can reuse it. None of this is built as a web page.
 | `receipts-deskwork-git.md` | Act 2 — deskwork genesis, dw-lifecycle, audit-barrage + scope-discovery. |
 | `receipts-act2-3-deep.md` | Act 2/3 deep reads — extraction quote, "mechanized with teeth", #383, full stack-control spec, "why now". |
 | `receipts-transcripts.md` | Local-transcript human-voice quotes (≥ 2026-04-27). |
+| `receipts-mesa-claude-codex-315.md` | **THE "stochastic correctness" exhibit** — the Claude-vs-Codex MESA II / Akai S3000XL SCSI thread (`audiocontrol-org/audiocontrol#315`, 310 comments): adversarial lanes, mutual falsification, MEASURED/CANDIDATE/OPEN ledger. |
 
 ## Consumers
 - Draft: `src/sites/stackcontrol/content/blog/the-lifecycle-and-why-agents-need-one/index.md`

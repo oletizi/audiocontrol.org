@@ -27,6 +27,13 @@ article. All git access is read-only (`git -C <path> log/show/grep`).
 > **Privacy:** decrypted session content stays in `/tmp` (uncommitted). Only curated,
 > article-appropriate receipts/quotes land in this repo's `research/`.
 
+## Notable primary sources (issue threads)
+- **`audiocontrol-org/audiocontrol#315`** — the "Joint Charter" Claude-vs-Codex MESA II / Akai
+  S3000XL SCSI reverse-engineering thread (310 comments, operator-relayed). THE worked example
+  for "stochastic correctness." Mined → `receipts-mesa-claude-codex-315.md`. Related repos in
+  the same org: `mesa-plug-harness` (68k MESA II SCSI emulator harness), `scsi2pi`, `midi-server`
+  (HTTP-to-MIDI bridge w/ SysEx).
+
 ## Coverage gaps
 - **2024-10-11 → 2026-02-18:** git-only (no session transcripts survive — neither local nor archived).
 - The earliest *root* `.claude/CLAUDE.md` is 2026-02-02; before that the process lived in `modules/audio-control/.claude/CLAUDE.md` (from 2025-09-24).
