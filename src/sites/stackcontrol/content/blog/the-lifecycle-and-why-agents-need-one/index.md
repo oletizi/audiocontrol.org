@@ -130,11 +130,11 @@ deskwork:
   babysitter is its control system.
 - The babysitter is **built to be replaced from underneath** — its willingness to be outpaced by
   the state of the art is what keeps it durable.
-- **The kicker (last beat):** I watch my peers on the forums — **latter-day blacksmiths** — argue
-  about exactly **how much to let the agents drive the horseshoe-making.** I get it; I'm one of
-  them. But **the horseshoe, and the blacksmith, are both just about obsolete.** *(Spiciest line
-  in the piece — keep the bite, earn it via self-implication; see `author-narrative.md` inst. 10
-  for the calibration call.)*
+- **The kicker (last beat — FULL BITE, locked):** Out on the forums, my fellow software engineers
+  — **latter-day blacksmiths** — argue about exactly **how much to let the agents drive: how much
+  should the machine be allowed to touch the horseshoe?** I love the hand-wrought work too. But
+  **the horseshoe is obsolete, and so is the blacksmith. The argument was over before it started;
+  most of us just haven't looked up yet.**
 - Forward pointer: the rest of the "Building deskwork" series drills into each kept part.
 
 ---

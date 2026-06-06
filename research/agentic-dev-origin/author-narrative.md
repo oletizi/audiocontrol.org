@@ -368,15 +368,14 @@ The MESA II thread moves from "worked example" to **genesis / seed**. The §2.6 
   he loves the hand-wrought DSP. The line cuts him too. That self-implication keeps it honest
   rather than dismissive.
 
-### Calibration — OPEN CALL for the operator
-This is the **most provocative claim in the piece** (it implies the obsolescence of software
-craftsmanship — and of craftsmen). Decide the **edge**: full gut-punch as written, or hedged
-(*"about obsolete"* already hedges with "about"). Recommend keeping the bite but earning it via
-the self-implication above. Flagged so it's a deliberate choice, not an accident.
+### Calibration — RESOLVED (operator, 2026-06-05): **FULL BITE.**
+No hedging. Drop "just about"; make it declarative. Keep one beat of self-implication (he loves
+the hand-wrought work) — that's what gives him standing to swing, not a softener. End on a dagger.
 
-### Candidate kicker line (draft)
-> *"I watch my peers on the forums — latter-day blacksmiths — argue about exactly how much to
-> let the agents drive the horseshoe-making. I get it; I'm one of them. But the horseshoe, and
-> the blacksmith, are both just about obsolete."*
+### Locked kicker (full-bite draft)
+> *"Out on the forums, my fellow software engineers — latter-day blacksmiths — argue about
+> exactly how much to let the agents drive: how much should the machine be allowed to touch the
+> horseshoe? I love the hand-wrought work too. But the horseshoe is obsolete, and so is the
+> blacksmith. The argument was over before it started; most of us just haven't looked up yet."*
 
 *(— more to come?)*
