@@ -9,7 +9,7 @@ phase: "PIPELINE"
 draft: false
 ---
 
-This site is the public home of **stack-control**, a lifecycle plugin for Claude Code. It is also the
+This site is the public home of **stack-control**, a lifecycle plugin for coding agents. It is also the
 first thing built end-to-end by that plugin in front of an audience. The whole point of stack-control
 is that "make this change" should become a tracked loop rather than an unsupervised sprint, so it
 seemed dishonest to launch the product page any other way. We ran the loop on the loop.
