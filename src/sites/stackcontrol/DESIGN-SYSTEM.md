@@ -111,6 +111,13 @@ Settled patterns that encode design rules beyond single tokens.
 - **`.rule-single`** — single hairline top border, `margin: 1.5rem 0`.
 - **`.rule-accent`** — `var(--rule-medium)` (2px) cyan top border, `width: 3rem` (no glow).
 - **Phase rail** — see `components/PhaseRail.astro` (§6). The signature device.
+- **VFD readout (`.stage-ord`, `pages/index.astro`)** — the ordinal "tubes" in THE METHOD section: a
+  filled cyan digit with a three-layer bloom, seated in a darkened glass panel (radial cyan-tint
+  background, inset phosphor glow, hairline cyan bezel, multiply-blended scanlines), surging on
+  hover. A cyan vacuum-fluorescent / oscilloscope-phosphor reading — never amber nixie (that breaks
+  the mono-cyan rule); also a nod to vintage sampler/synth displays.
+- **The Method flow (`.method-flow` / `.stage` / `.stage-arrow`)** — three numbered stages joined by
+  cyan flow arrows; the assembly-line thesis made literal. Stacks vertically on mobile.
 - **Telemetry ticker** — see `components/Ticker.astro` (§6).
 - **Body grid + scanline** — see §4 (lives in the Layout's global style).
 
@@ -121,8 +128,9 @@ The `@keyframes ticker` (translateX 0 → -50%) and `.card-glow` come from the s
 ## 6. Components
 
 - **`components/Header.astro`** — sticky, blurred, hairline-bottom site header. Wordmark + mono nav
-  (Product / Devlog / About) with a cyan underline-reveal on hover and an `active` state derived
-  from `Astro.url.pathname`.
+  (Method / Product / Devlog / About — same-page jump anchors plus the Devlog page) with a cyan
+  underline-reveal on hover and an `active` state derived from `Astro.url.pathname`. On ≤560px the
+  nav wraps to its own full-width line below the wordmark (two-line header) rather than overflowing.
 - **`components/Footer.astro`** — wordmark + tagline, sibling links (audiocontrol.org,
   editorialcontrol.org), system links, mono copyline. Imports `Logo`.
 - **`components/Logo.astro`** — the wordmark `stackcontrol` + cyan separating `.` + muted `org`.
@@ -130,8 +138,10 @@ The `@keyframes ticker` (translateX 0 → -50%) and `.card-glow` come from the s
 - **`components/PhaseRail.astro`** — **the signature structural device.** Four connected nodes
   (Define → Implement → Audit → Repeat) on a hairline track with a cyan-tinted center.
   Props: `active?: number` (cyan-lit glowing node), `variant?: 'labeled' | 'divider'`,
-  `phases?: Phase[]`. `labeled` shows ordinal over uppercase name (hero spine); `divider` shows the
-  name alone and is `aria-hidden` (section-divider echo).
+  `phases?: Phase[]`. The `labeled` variant (ordinal over uppercase name) renders **beneath the
+  lifecycle phase cards** in THE LIFECYCLE section — the loop visualized below its own cards. (The
+  hero leads with the babysitter hook; THE METHOD section carries the thesis.) The `divider` variant
+  is currently unused on the homepage.
 - **`components/Ticker.astro`** — the telemetry status bar: a scrolling mono uppercase strip of
   system metadata with a blinking cyan "live" dot, duplicated track for a seamless loop. Rendered
   via the Layout's `banner` slot (above the sticky header). Motion respects
@@ -152,12 +162,15 @@ The `@keyframes ticker` (translateX 0 → -50%) and `.card-glow` come from the s
   site's organizing metaphor and its signature visual device. Define happens once up front;
   Implement and Audit repeat until the diff is clean. Audit carries no command — it fires
   automatically on the implement hook; Repeat is the loop.
-- **Babysitter / industrial line** — the homepage framing (supersedes the earlier "control plane"
+- **Babysitter / assembly line** — the homepage framing (supersedes the earlier "control plane"
   language). Coding agents are "insane, hyperintelligent toddlers" that need supervision;
-  stack-control is the babysitter that runs every change down an **industrial line** — heavy design
-  up front, hands-off parallel implementation, mechanized multi-model audit. The differentiators
-  (the audit barrage / "stochastic correctness", scope discovery) are evidence for the thesis, not
+  stack-control is the babysitter that runs every change down an **assembly line** — heavy design
+  up front, hands-off parallel implementation, mechanized multi-agent audit. The differentiators
+  (multi-agent audit / "stochastic correctness", scope discovery) are evidence for the thesis, not
   the headline. Full copy + rationale: `docs/1.0/001-IN-PROGRESS/stackcontrol-site/messaging-copy-deck.md`.
+- **The Method** — the homepage's three-move thesis, its own section `[ 01 ]` (before THE LIFECYCLE):
+  **front-load design → invest in tooling → industrialize production**, rendered as VFD-readout
+  stages. Page order: METHOD `[ 01 ]` → LIFECYCLE `[ 02 ]` → WHAT/WHY/HOW `[ 03 ]` → DEVLOG `[ 04 ]`.
 
 ---
 

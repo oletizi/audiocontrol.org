@@ -16,7 +16,7 @@ const phases: Phase[] = [
     ord: '01',
     name: 'Define',
     blurb:
-      "An interview captures the problem and the scope before any code moves — what changes, what stays, what's explicitly out.",
+      "This is where the work goes. You design the change exhaustively before any code is written — the problem, the scope, what's in and what's explicitly out.",
     cmd: '/stack-control:define',
   },
   {
@@ -30,7 +30,7 @@ const phases: Phase[] = [
     ord: '03',
     name: 'Audit',
     blurb:
-      'Every task gets a cross-model audit barrage — multiple reviewers fired in parallel against the diff, findings triaged.',
+      'Every task gets a multi-agent audit — multiple reviewers fired in parallel against the diff, findings triaged.',
     cmd: '',
   },
   {
@@ -64,20 +64,20 @@ function fmt(dateStr: string): string {
 
 <Layout
   title="stackcontrol.org — a babysitter for your coding agents"
-  description="stack-control is a Claude Code plugin that turns agentic coding into an industrial process: heavy design up front, hands-off implementation fanned across agents, and multi-model audits on every change."
+  description="stack-control is an agent plugin that turns agentic coding into an industrial process: heavy design up front, hands-off implementation fanned across agents, and multi-model audits on every change."
 >
   <Ticker slot="banner" />
 
   {/* ============ HERO ============ */}
   <section class="hero site-container">
-    <p class="kicker">stack-control · a claude code plugin</p>
+    <p class="kicker">stack-control · an agent plugin</p>
     <h1 class="hero-title">Coding agents need a <em>babysitter</em>.</h1>
     <p class="lede">
-      Coding agents are insane, hyperintelligent toddlers — they lie, they get bored, and they cut
-      corners the second you stop watching.
+      Coding agents are insane, hyperintelligent toddlers — they lie, they get bored, and they shove
+      beans up their nose the second you stop watching.
       <span class="lede-muted">
-        <strong>stack-control</strong> is the babysitter: a Claude Code plugin that runs every
-        change down an industrial line — heavy design up front, implementation fanned out across
+        <strong>stack-control</strong> is the babysitter: an agent plugin that runs every
+        change down an assembly line — heavy design up front, implementation fanned out across
         agents at once, and independent audits on every diff, so correctness never rides on how much
         attention you had to spare.
       </span>
@@ -88,16 +88,41 @@ function fmt(dateStr: string): string {
       <a class="btn btn-ghost" href="#product">What it does</a>
     </div>
 
-    <div class="hero-rail">
-      <span class="rail-label">lifecycle · phase rail</span>
-      <PhaseRail active={1} variant="labeled" />
+  </section>
+
+  {/* ============ THE METHOD ============ */}
+  <section id="method" class="site-container">
+    <div class="section-head">
+      <span class="idx">[ 01 ]</span>
+      <h2>The Method</h2>
+      <span class="meta">design · tooling · output</span>
+    </div>
+
+    <div class="method-flow">
+      <div class="stage">
+        <span class="stage-ord">01</span>
+        <h3 class="stage-name">Front-load design</h3>
+        <p class="stage-gloss">Spend the effort before any code moves. Exhaustive design up front is what makes everything downstream hands-off.</p>
+      </div>
+      <span class="stage-arrow" aria-hidden="true">→</span>
+      <div class="stage">
+        <span class="stage-ord">02</span>
+        <h3 class="stage-name">Invest in tooling</h3>
+        <p class="stage-gloss">Adopt the best machinery there is — Spec Kit, the agent CLIs, the multi-agent audit — instead of hand-rolling it.</p>
+      </div>
+      <span class="stage-arrow" aria-hidden="true">→</span>
+      <div class="stage">
+        <span class="stage-ord">03</span>
+        <h3 class="stage-name">Industrialize production</h3>
+        <p class="stage-gloss">Then step back and let the line run: automated, audited, regular — never riding on how much attention you can spare.</p>
+      </div>
     </div>
   </section>
 
   {/* ============ PRODUCT ============ */}
   <section id="product" class="site-container">
     <div class="section-head">
-      <span class="idx">[ 01 ]</span>
+      <span class="idx">[ 02 ]</span>
       <h2>The Lifecycle</h2>
       <span class="meta">4 phases · one loop</span>
     </div>
@@ -113,19 +138,18 @@ function fmt(dateStr: string): string {
         </article>
       ))}
     </div>
-  </section>
 
-  {/* divider rail echo */}
-  <div class="site-container">
-    <div class="divider-rail">
-      <PhaseRail active={3} variant="divider" />
+    {/* full lifecycle rail — the loop visualized, beneath the pipeline cards */}
+    <div class="lifecycle-rail">
+      <span class="rail-label">lifecycle · phase rail</span>
+      <PhaseRail active={1} variant="labeled" />
     </div>
-  </div>
+  </section>
 
   {/* ============ WHAT / WHY / HOW ============ */}
   <section id="how" class="site-container">
     <div class="section-head">
-      <span class="idx">[ 02 ]</span>
+      <span class="idx">[ 03 ]</span>
       <h2>What / Why / How</h2>
       <span class="meta">orientation</span>
     </div>
@@ -151,7 +175,7 @@ function fmt(dateStr: string): string {
   {/* ============ DEVLOG ============ */}
   <section id="devlog" class="site-container">
     <div class="section-head">
-      <span class="idx">[ 03 ]</span>
+      <span class="idx">[ 04 ]</span>
       <h2>Devlog</h2>
       <span class="meta">building in the open</span>
     </div>
@@ -231,8 +255,8 @@ function fmt(dateStr: string): string {
     margin-top: 2.125rem;
   }
 
-  .hero-rail {
-    margin-top: clamp(3rem, 7vw, 5.25rem);
+  .lifecycle-rail {
+    margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
     padding: 1.625rem clamp(0.5rem, 3vw, 2.5rem) 1.375rem;
     border: 1px solid hsl(var(--border));
     border-radius: var(--radius);
@@ -290,12 +314,98 @@ function fmt(dateStr: string): string {
     color: hsl(var(--muted-foreground));
   }
 
-  .divider-rail {
-    margin-block: clamp(0.5rem, 3vw, 1.75rem);
-    padding: 1.375rem clamp(0.5rem, 3vw, 2.5rem);
-    border-top: 1px solid hsl(var(--border));
-    border-bottom: 1px solid hsl(var(--border));
-    background: hsl(var(--card) / 0.3);
+  /* ---- The Method (three-stage flow) ---- */
+  .method-flow {
+    display: flex;
+    align-items: flex-start;
+    gap: clamp(1.25rem, 3vw, 2.75rem);
+  }
+
+  .stage {
+    flex: 1;
+  }
+
+  /* VFD / oscilloscope-phosphor readout "tube" */
+  .stage-ord {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.4em;
+    padding: 0.24em 0.52em;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1;
+    color: hsl(var(--primary));
+    text-shadow:
+      0 0 6px hsl(var(--primary) / 0.9),
+      0 0 16px hsl(var(--primary) / 0.55),
+      0 0 30px hsl(var(--primary) / 0.35);
+    background: radial-gradient(ellipse at 50% 42%, hsl(var(--primary) / 0.14), hsl(200 45% 4%) 72%);
+    box-shadow:
+      inset 0 0 16px hsl(var(--primary) / 0.16),
+      inset 0 0 0 1px hsl(var(--primary) / 0.22),
+      0 0 26px -8px hsl(var(--primary) / 0.45);
+    position: relative;
+    overflow: hidden;
+    transition: text-shadow 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .stage-ord::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0 2px,
+      hsl(0 0% 0% / 0.22) 2px 3px
+    );
+    mix-blend-mode: multiply;
+    pointer-events: none;
+  }
+
+  .stage:hover .stage-ord {
+    text-shadow:
+      0 0 8px hsl(var(--primary)),
+      0 0 22px hsl(var(--primary) / 0.7),
+      0 0 42px hsl(var(--primary) / 0.45);
+    box-shadow:
+      inset 0 0 22px hsl(var(--primary) / 0.26),
+      inset 0 0 0 1px hsl(var(--primary) / 0.4),
+      0 0 38px -6px hsl(var(--primary) / 0.6);
+  }
+
+  .stage-name {
+    font-family: var(--font-display-tight);
+    font-weight: 800;
+    font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground));
+    margin: 1rem 0 0.6rem;
+  }
+
+  .stage-gloss {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .stage-arrow {
+    flex: 0 0 auto;
+    margin-top: 1.05rem;
+    font-family: var(--font-display-tight);
+    font-size: clamp(1.5rem, 2.5vw, 2.1rem);
+    line-height: 1;
+    color: hsl(var(--primary));
+    text-shadow: 0 0 14px hsl(var(--primary) / 0.5);
+  }
+
+  @media (max-width: 760px) {
+    .method-flow { flex-direction: column; gap: 1.5rem; }
+    .stage-arrow { margin: 0 0 0 0.5rem; transform: rotate(90deg); transform-origin: left center; }
   }
 
   /* ---- Product phase grid ---- */
