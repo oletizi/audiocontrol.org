@@ -1,0 +1,189 @@
+---
+import '../../../shared/design-tokens-base.css';
+import '../styles/design-tokens.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { brand } from '../brand.js';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  jsonLd?: Record<string, unknown>;
+}
+
+const {
+  title = brand.name,
+  description = brand.tagline,
+  image = '/images/og-image.png',
+  type = 'website',
+  jsonLd: customJsonLd,
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const imageURL = new URL(image, Astro.site);
+
+const defaultJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: brand.name,
+  url: `https://${brand.name}`,
+  description: brand.tagline,
+  sameAs: ['https://audiocontrol.org', 'https://editorialcontrol.org'],
+};
+
+const jsonLd = customJsonLd ?? defaultJsonLd;
+---
+
+<html lang="en">
+  <head>
+    <!-- Google Tag Manager -->
+    <script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-WG8G5D95');</script>
+    <!-- End Google Tag Manager -->
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    {/* Telemetry identity: Archivo (+ Archivo Expanded) display, IBM Plex Sans
+        body, JetBrains Mono telemetry/labels. */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Archivo+Expanded:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={imageURL} />
+    <meta property="og:site_name" content={brand.name} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalURL} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageURL} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        font-family: var(--font-body);
+        font-size: 16px;
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        scrollbar-gutter: stable;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        width: 100%;
+        overflow-x: hidden;
+        /* Control-plane texture: faint dot/line grid + cool vignette glow. */
+        background-color: hsl(var(--background));
+        background-image:
+          radial-gradient(120% 90% at 50% -10%, hsl(var(--primary) / 0.07), transparent 60%),
+          linear-gradient(hsl(var(--border) / 0.35) 1px, transparent 1px),
+          linear-gradient(90deg, hsl(var(--border) / 0.35) 1px, transparent 1px);
+        background-size: 100% 100%, 48px 48px, 48px 48px;
+      }
+
+      /* Faint horizontal scanline overlay — the control-plane signature. */
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 200;
+        background-image: repeating-linear-gradient(
+          to bottom,
+          hsl(0 0% 0% / 0.18) 0px,
+          hsl(0 0% 0% / 0.18) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+        opacity: 0.3;
+        mix-blend-mode: multiply;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        html { scroll-behavior: smooth; }
+      }
+
+      :global(h1), :global(h2), :global(h3), :global(h4), :global(h5), :global(h6) {
+        font-family: var(--font-heading);
+        color: hsl(var(--foreground));
+        font-weight: 800;
+        letter-spacing: -0.015em;
+        margin: 0;
+      }
+
+      :global(p) {
+        margin: 0;
+        line-height: 1.65;
+      }
+
+      :global(a) {
+        color: hsl(var(--primary));
+        text-decoration: none;
+        text-decoration-color: hsl(var(--primary) / 0.4);
+        text-underline-offset: 0.2em;
+      }
+
+      :global(a:hover) {
+        text-decoration: underline;
+        text-decoration-color: hsl(var(--primary));
+      }
+
+      :global(::selection) {
+        background: hsl(var(--primary) / 0.35);
+        color: hsl(var(--foreground));
+      }
+
+      :global(time),
+      :global(.tabular) {
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+    <slot name="head" />
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WG8G5D95"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <slot name="banner" />
+    <Header />
+
+    <main>
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>

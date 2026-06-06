@@ -1,0 +1,502 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import Ticker from '../components/Ticker.astro';
+import PhaseRail from '../components/PhaseRail.astro';
+
+interface Phase {
+  ord: string;
+  name: string;
+  blurb: string;
+  cmd: string;
+}
+
+const phases: Phase[] = [
+  {
+    ord: '01',
+    name: 'Define',
+    blurb:
+      "An interview captures the problem and the scope before any code moves — what changes, what stays, what's explicitly out.",
+    cmd: '/dw-lifecycle:define',
+  },
+  {
+    ord: '02',
+    name: 'Workplan',
+    blurb:
+      'Scope becomes phases and tasks, each backed by a GitHub issue with acceptance criteria you can check off.',
+    cmd: '/dw-lifecycle:issues',
+  },
+  {
+    ord: '03',
+    name: 'Implement',
+    blurb:
+      'Tasks are delegated to specialized subagents and committed at clean task boundaries — never one giant blob.',
+    cmd: '/dw-lifecycle:implement',
+  },
+  {
+    ord: '04',
+    name: 'Audit',
+    blurb:
+      'Every task gets a cross-model audit barrage — multiple reviewers fired in parallel against the diff, findings triaged.',
+    cmd: '/dw-lifecycle:audit-barrage',
+  },
+  {
+    ord: '05',
+    name: 'Ship',
+    blurb:
+      'Acceptance criteria verified, PR opened. The toolchain stops at the PR — the operator owns the merge.',
+    cmd: '/dw-lifecycle:ship',
+  },
+];
+
+// Most recent devlog entries (newest first), published-only in prod.
+const entries = await getCollection('blog', ({ data }) =>
+  import.meta.env.PROD ? data.draft !== true : true,
+);
+const recent = entries
+  .map((entry) => ({
+    slug: entry.id,
+    title: entry.data.title,
+    description: entry.data.description,
+    date: entry.data.datePublished,
+    phase: entry.data.phase,
+  }))
+  .sort((a, b) => b.date.localeCompare(a.date))
+  .slice(0, 4);
+
+function fmt(dateStr: string): string {
+  return dateStr; // ISO YYYY-MM-DD reads as telemetry; keep it literal + tabular
+}
+---
+
+<Layout
+  title="stackcontrol.org — lifecycle tooling for agentic development"
+  description="The home of the deskwork lifecycle plugin for Claude Code: feature definition, workplans, scope discovery, cross-model audit barrages, and subagent orchestration. Product page and devlog."
+>
+  <Ticker slot="banner" />
+
+  {/* ============ HERO ============ */}
+  <section class="hero site-container">
+    <p class="kicker">deskwork · lifecycle plugin for claude code</p>
+    <h1 class="hero-title">Lifecycle tooling for <em>agentic</em> development.</h1>
+    <p class="lede">
+      stackcontrol.org is the public home of <strong>deskwork</strong> — the
+      <span class="mono-accent">/dw-lifecycle:*</span> and
+      <span class="mono-accent">/deskwork:*</span> toolchain for Claude Code.
+      <span class="lede-muted">
+        It runs the whole arc of a change: feature definition, workplans, scope discovery,
+        cross-model audit barrages, an editorial pipeline, and subagent orchestration. This is the
+        product page and the devlog, in one control plane.
+      </span>
+    </p>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" href="/blog/">Read the devlog <span class="arr">→</span></a>
+      <a class="btn btn-ghost" href="#product">What it does</a>
+    </div>
+
+    <div class="hero-rail">
+      <span class="rail-label">lifecycle · phase rail</span>
+      <PhaseRail active={2} variant="labeled" />
+    </div>
+  </section>
+
+  {/* ============ PRODUCT ============ */}
+  <section id="product" class="site-container">
+    <div class="section-head">
+      <span class="idx">[ 01 ]</span>
+      <h2>The Lifecycle</h2>
+      <span class="meta">5 phases · one toolchain</span>
+    </div>
+
+    <div class="phase-grid">
+      {phases.map((phase) => (
+        <article class="phase-card">
+          <span class="tick" aria-hidden="true"></span>
+          <span class="pidx"><b>{phase.ord}</b> / {phase.name.toUpperCase()}</span>
+          <h3>{phase.name}</h3>
+          <p>{phase.blurb}</p>
+          <div class="cmd">{phase.cmd}</div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  {/* divider rail echo */}
+  <div class="site-container">
+    <div class="divider-rail">
+      <PhaseRail active={3} variant="divider" />
+    </div>
+  </div>
+
+  {/* ============ WHAT / WHY / HOW ============ */}
+  <section id="how" class="site-container">
+    <div class="section-head">
+      <span class="idx">[ 02 ]</span>
+      <h2>What / Why / How</h2>
+      <span class="meta">orientation</span>
+    </div>
+    <div class="wwh">
+      <div class="col">
+        <span class="tag">WHAT</span>
+        <h3>A control plane for changes</h3>
+        <p>A plugin for Claude Code that turns "make this change" into a tracked lifecycle with phases, issues, audits, and a PR at the end.</p>
+      </div>
+      <div class="col">
+        <span class="tag">WHY</span>
+        <h3>Agents drift without rails</h3>
+        <p>Unstructured agentic work skips scope, over-builds, and ships unreviewed. The lifecycle puts gates between intent and merge.</p>
+      </div>
+      <div class="col">
+        <span class="tag">HOW</span>
+        <h3>Slash commands + subagents</h3>
+        <p>Each phase is a composable command. Implementation fans out to specialized subagents; audits fan out to independent models.</p>
+      </div>
+    </div>
+  </section>
+
+  {/* ============ DEVLOG ============ */}
+  <section id="devlog" class="site-container">
+    <div class="section-head">
+      <span class="idx">[ 03 ]</span>
+      <h2>Devlog</h2>
+      <span class="meta">building in the open</span>
+    </div>
+
+    {recent.length > 0 ? (
+      <div class="devlog">
+        {recent.map((entry) => (
+          <a class="entry" href={`/blog/${entry.slug}/`}>
+            <div class="entry-date">
+              <time class="tabular" datetime={entry.date}>{fmt(entry.date)}</time>
+              {entry.phase && <span class="entry-phase">{entry.phase}</span>}
+            </div>
+            <div class="entry-body">
+              <h3>{entry.title}</h3>
+              <p>{entry.description}</p>
+            </div>
+            <span class="go" aria-hidden="true">→</span>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="devlog-empty mono-accent">// no entries published yet — first dispatch incoming</p>
+    )}
+
+    <p class="devlog-more">
+      <a href="/blog/">All entries <span class="arr">→</span></a>
+    </p>
+  </section>
+</Layout>
+
+<style>
+  .mono-accent {
+    font-family: var(--font-mono);
+    color: hsl(var(--accent));
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    padding-top: clamp(3.5rem, 9vw, 6.5rem);
+    padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
+  }
+
+  .kicker { margin-bottom: 1.375rem; }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2.375rem, 7.2vw, 5.25rem);
+    line-height: 0.98;
+    letter-spacing: -0.015em;
+    margin: 0;
+    max-width: 16ch;
+    text-transform: uppercase;
+  }
+
+  .hero-title em {
+    font-style: normal;
+    color: hsl(var(--primary));
+    text-shadow: 0 0 32px hsl(var(--primary) / 0.4);
+  }
+
+  .lede {
+    margin: 1.75rem 0 0;
+    max-width: 60ch;
+    font-size: clamp(1rem, 1.7vw, 1.1875rem);
+    color: hsl(var(--foreground));
+  }
+
+  .lede strong { color: hsl(var(--foreground)); font-weight: 600; }
+  .lede .lede-muted { color: hsl(var(--muted-foreground)); }
+  .lede .mono-accent { font-size: 0.92em; }
+
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.875rem;
+    margin-top: 2.125rem;
+  }
+
+  .hero-rail {
+    margin-top: clamp(3rem, 7vw, 5.25rem);
+    padding: 1.625rem clamp(0.5rem, 3vw, 2.5rem) 1.375rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    background: linear-gradient(hsl(var(--card) / 0.6), hsl(var(--card) / 0.3));
+    position: relative;
+  }
+
+  .rail-label {
+    position: absolute;
+    top: -9px;
+    left: 18px;
+    background: hsl(var(--background));
+    padding-inline: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* ---- Section scaffold ---- */
+  section { padding-block: clamp(3.5rem, 8vw, 6rem); position: relative; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5ch;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid hsl(var(--border));
+    padding-bottom: 1rem;
+  }
+
+  .section-head .idx {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: hsl(var(--primary));
+    letter-spacing: 0.18em;
+  }
+
+  .section-head h2 {
+    font-family: var(--font-display-tight);
+    font-weight: 800;
+    font-size: clamp(1.375rem, 3.4vw, 2.125rem);
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .section-head .meta {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .divider-rail {
+    margin-block: clamp(0.5rem, 3vw, 1.75rem);
+    padding: 1.375rem clamp(0.5rem, 3vw, 2.5rem);
+    border-top: 1px solid hsl(var(--border));
+    border-bottom: 1px solid hsl(var(--border));
+    background: hsl(var(--card) / 0.3);
+  }
+
+  /* ---- Product phase grid ---- */
+  .phase-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: hsl(var(--border));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .phase-card {
+    background: hsl(var(--card));
+    padding: 1.5rem 1.375rem 1.75rem;
+    position: relative;
+    transition: background 0.18s ease;
+  }
+
+  .phase-card:hover { background: hsl(var(--card-hover)); }
+
+  .phase-card .pidx {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .phase-card .pidx b { color: hsl(var(--primary)); font-weight: 700; }
+
+  .phase-card h3 {
+    font-family: var(--font-display-tight);
+    font-weight: 800;
+    font-size: 1.1875rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0.875rem 0 0.5rem;
+  }
+
+  .phase-card p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.55;
+  }
+
+  .phase-card .tick {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: hsl(var(--border));
+  }
+
+  .phase-card:hover .tick {
+    background: hsl(var(--primary));
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.6);
+  }
+
+  .phase-card .cmd {
+    margin-top: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: hsl(var(--accent));
+    letter-spacing: 0.02em;
+  }
+
+  .phase-card .cmd::before { content: "$ "; color: hsl(var(--primary)); }
+
+  /* ---- What / Why / How ---- */
+  .wwh {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+  }
+
+  .wwh .col {
+    border-left: 1px solid hsl(var(--border));
+    padding-left: 1.375rem;
+  }
+
+  .wwh .tag {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+  }
+
+  .wwh h3 {
+    font-family: var(--font-display-tight);
+    font-weight: 700;
+    font-size: 1.375rem;
+    letter-spacing: -0.01em;
+    margin: 0.625rem 0;
+  }
+
+  .wwh p { margin: 0; color: hsl(var(--muted-foreground)); font-size: 0.9375rem; }
+
+  /* ---- Devlog ---- */
+  .devlog {
+    display: grid;
+    gap: 1px;
+    background: hsl(var(--border));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .entry {
+    background: hsl(var(--card));
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+    padding: 1.375rem 1.5rem;
+    transition: background 0.18s ease;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .entry:hover { background: hsl(var(--card-hover)); text-decoration: none; }
+
+  .entry:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: -2px;
+  }
+
+  .entry-date {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+  }
+
+  .entry-phase {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 2px 8px;
+    border: 1px solid hsl(var(--border-hover));
+    border-radius: var(--radius);
+    color: hsl(var(--primary));
+    font-size: 0.625rem;
+    letter-spacing: 0.16em;
+  }
+
+  .entry h3 {
+    font-family: var(--font-display-tight);
+    font-weight: 700;
+    font-size: 1.1875rem;
+    letter-spacing: -0.005em;
+    margin: 0 0 0.375rem;
+    color: hsl(var(--foreground));
+  }
+
+  .entry p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    max-width: 64ch;
+  }
+
+  .entry .go {
+    font-family: var(--font-mono);
+    font-size: 1.125rem;
+    color: hsl(var(--muted-foreground));
+    transition: color 0.18s ease, transform 0.18s ease;
+  }
+
+  .entry:hover .go { color: hsl(var(--primary)); transform: translateX(3px); }
+
+  .devlog-empty {
+    font-size: 0.875rem;
+    letter-spacing: 0.04em;
+  }
+
+  .devlog-more {
+    margin: 1.5rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .devlog-more a { color: hsl(var(--primary)); }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 760px) {
+    .wwh { grid-template-columns: 1fr; }
+    .entry { grid-template-columns: 1fr; gap: 0.625rem; }
+    .entry .go { display: none; }
+    .section-head .meta { display: none; }
+  }
+</style>

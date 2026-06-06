@@ -1,0 +1,28 @@
+---
+// stackcontrol.org wordmark — Archivo heavy, cyan separating dot, muted TLD.
+interface Props {
+  variant?: 'header' | 'footer';
+}
+
+const { variant = 'header' } = Astro.props;
+---
+
+<span class={`wordmark wordmark--${variant}`}>stackcontrol<span class="dot">.</span><span class="tld">org</span></span>
+
+<style>
+  .wordmark {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4ch;
+    font-family: var(--font-display-tight);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: hsl(var(--foreground));
+  }
+
+  .wordmark--header { font-size: 1.1875rem; }
+  .wordmark--footer { font-size: 1.0625rem; }
+
+  .dot { color: hsl(var(--primary)); }
+  .tld { color: hsl(var(--muted-foreground)); font-weight: 700; }
+</style>

@@ -1,0 +1,192 @@
+# Research notes — "Coding Agents Are Insane, Hyperintelligent Toddlers"
+
+Working research doc for the article whose draft lives at
+`src/sites/stackcontrol/content/blog/the-lifecycle-and-why-agents-need-one/index.md`
+(promoted out of the article dir to this shared `research/` home so future articles can
+reuse it). Not built as a page.
+
+- **Entry slug:** `the-lifecycle-and-why-agents-need-one` (may be renamed to match the new title — TBD)
+- **Stage:** Outlining (working in chat; deskwork pipeline + studio paused 2026-06-05)
+- **deskwork id:** `c196e248-3076-4e79-b44b-842691354340`
+- **Research plan (tick-down):** `./research-plan.md`
+- **Detailed receipts:** `./research/` — `receipts-{audiocontrol-monorepo-git, audiocontrol-git, deskwork-git, transcripts, monorepo-sessions, act1-deep, act2-3-deep}.md`, plus `quote-bank.md` + `source-map.md`
+
+---
+
+## 1. The story (operator's framing — 2026-06-05)
+
+First-person account of how Orion arrived at the discoveries that drove him to build
+the lifecycle plugin, and why he's now rebuilding it.
+
+1. **Origin.** Building the audiocontrol web editors last year, there wasn't much
+   consensus (that he knew of) about how to develop software with agentic coding — so
+   he developed his own process.
+2. **Generalize.** Realized the process needed to apply across multiple projects →
+   lifted it out of the audiocontrol repo → created the **dw-lifecycle** plugin, with
+   continuous improvement.
+3. **Rebuild.** Now rebuilding dw-lifecycle as **stack-control** (branded to this site)
+   to adopt the new state-of-the-art spec+execution tooling (e.g. **Spec Kit**), while
+   keeping dw-lifecycle's unique parts: the **audit barrage** and **scope discovery**.
+
+Device: **git commit log + Claude Code session transcripts** as the "receipts."
+
+---
+
+## 2. stack-control facts (source: branch `feature/pluggable-lifecycle-providers`, `specs/003-stack-control-front-door`)
+
+- **stack-control** (CLI `stackctl`) — new plugin, **successor to dw-lifecycle**, built
+  **integration-first against Spec Kit**.
+- **Feature 1 = self-hosting front door:** curate a Spec Kit spec + run it via *native*
+  Spec Kit execution (`/speckit-implement`), with **governance (cross-model audit-barrage)
+  firing automatically on `after_implement`**. Once it exists, every later feature is
+  built *through* it.
+- **Front-door touch points = in-session Claude skills `define` / `extend` / `execute`**
+  (mirroring the dw-lifecycle vocabulary).
+- **Kept:** audit barrage + scope discovery. **Neutrality invariant** (zero branches on
+  provider identity) survives the governance rehome. **Isolation invariant:** dw-lifecycle
+  keeps working untouched; stack-control ships as its own plugin on the repo's single
+  lockstep version.
+- **OUT OF SCOPE (later features):** the parallel multi-backend execution engine
+  (Feature 2 — front door uses only native Spec Kit, "the single-agent grinder"); the
+  fuller frontend; the dw-lifecycle **migrations** of scope-discovery / audit-barrage /
+  session skills (so for now governance reaches audit-barrage cross-plugin into
+  dw-lifecycle).
+- Spec Kit verbs in use: `/speckit-plan`, `/speckit-tasks`, `/speckit-analyze`, `/speckit-implement`.
+
+---
+
+## 3. Receipts — GATHERED 2026-06-05 (master timeline)
+
+Repos mined (read-only). Detailed per-source receipts in `./research/` (incl.
+`receipts-ol_dsp.md`). The **pre-agentic, hand-coded roots**: `oletizi/ol_dsp`
+(**2023-11-08** `0073faf` "init", C/C++ — DSP for embedded hardware: synth/effects/MIDI on
+Daisy/Teensy + a Eurorack module + a JUCE host; cloned to `/Users/orion/work/ol_dsp`,
+1026 commits → 2026-02-03) → `oletizi/audio-tools` (**2024-10-11**, TS sampler stack).
+**No agent artifacts for ~2 years** — first `CLAUDE.md` 2025-09-01 (`6b4bbd0`); ~268
+hand-coded commits Nov 2023–Jan 2024, dormant Feb–Sep 2024, then a 231-commit Sept-2025
+explosion the same month agentic tooling arrives + audio-tools is pulled in. Throughline:
+same author, embedded DSP → the Roland **S-330 editor** (first built in ol_dsp, Jan 2026)
+that audiocontrol.org proxies. Local transcripts survive only from **~2026-04-27**, so
+Act-1 origin is **git-only**.
+
+| Date | Repo | SHA | Milestone | Act |
+|---|---|---|---|---|
+| 2025-09-01 | monorepo | `465300b5` | "moving audio-tools to this repo" — IMPORT of a pre-existing audio-tools project (not greenfield) | 1 (true start) |
+| 2025-09-24 | monorepo | `940b522d` | first `.claude/CLAUDE.md` — **already structured** (9-agent roster + workflow YAMLs) | 1 |
+| 2025-09-25 | monorepo | `62947ead` | **first web editor = Novation Launch Control XL 3** (workplan) — *not* a Roland | 1 |
+| 2026-02-04 | monorepo | `0c96d759` | "no fallbacks / **mock data are bug factories**" rule + PROJECT-MANAGEMENT.md | 1 |
+| 2026-02-05 | monorepo | `a59d1601` | `docs/1.0/<status>/<slug>/` PRD convention | 1 |
+| 2026-02-10 → 03-30 | monorepo | — | Roland D-110 (02-10), JV-1080 (02-15), unified roland-sxx0 (03-28), Akai s3k (03-30) | 1 |
+| 2026-03-18 | monorepo | `cb78ab0e` | **clone/duplication detection pilot** (jscpd, PR #59) — scope-discovery precursor | 1 |
+| 2026-04-10 | monorepo | `3e302fff` | the **lifecycle named**: session-start/end, playbooks, journal template, agent mapping (#188) | 1 |
+| 2026-04-13 | monorepo | `9795f927` | **cross-model / Codex review pilot** (exercised in MESA II) — audit-barrage precursor | 1 |
+| 2026-04-14 | monorepo | `31319e1c` | CLAUDE.md **distilled** (~774 → ~198 path-scoped lines) | 1 |
+| **2026-04-21** | **deskwork** | `4108e5ff` / `7311d842` | **THE EXTRACTION** — deskwork repo genesis; body: *"Ported from audiocontrol.org's .claude tooling"* | 1→2 |
+| 2026-04-29 | deskwork | `c7931cbf`… | **dw-lifecycle plugin forms** (design spec → skeleton → 15 skills → ported templates) | 2 |
+| 2026-05-05 | monorepo | `432b9b8b` | deskwork **adopted back** into audiocontrol (rules ported both ways) | 2 |
+| 2026-05-21 | monorepo | `c834e44b` / `295cea80` | scope-discovery-protocol canonized in monorepo (`clones.yaml`, `paper-test-s550.md`) | 2 |
+| 2026-05-25 | deskwork | `9ddcc6d4` | **scope discovery** canonized into the dw-lifecycle plugin (#298) | 2 |
+| 2026-05-28 | deskwork | `847ea708` | **audit barrage** framed in ROADMAP (operator attention = "the binding constraint") | 2 |
+| 2026-05-29 | deskwork | `4ef3c09f` | **audit barrage ships** (claude/codex/gemini CLI verb; Phases 12-14) | 2 |
+| 2026-05-29 | hub | `0a465cd` | in-house editorial pipeline mothballed (deskwork-replaced) | 2 |
+| 2026-05-30 | hub | `c9d56b8` | lifecycle re-enters the hub site as the **dw-lifecycle** plugin | 2 |
+| 2026-06-04 | deskwork (branch) | `8226e1e0` | **stack-control rebuild begins** (`feature/pluggable-lifecycle-providers`) | 3 |
+| 2026-06-05 | deskwork (branch) | `48295090` | stack-control **plugin scaffold + `stackctl` dispatcher**; front-door verbs `a5a0e6b8` | 3 |
+
+### Strongest operator pull-quotes (verbatim, from transcripts ≥ 2026-04-27)
+- On test theater: *"you burned days building a UI test suite that tests nothing… How would you write a test harness that PROVES the value slider works?"*
+- The extraction, said plainly: *"I want to canonize the scope and duplication discovery tooling that was piloted in the audiocontrol repository into deskwork lifecycle."*
+- Audit-barrage tooling choice: *"we won't be using model apis—we'll be using claude, codex, and gemini clis, since they are usage based, not token based."*
+- Audit-barrage as mechanism: *"when to run the barrage should not be a matter of policy and the agent should have no discretion. It must be mechanized with teeth."*
+- Scope-discovery birth: *"I shouldn't have had to point out the problem by brute force."*
+- The throughline rule: *"policy embedded in rules is far less effective than policy enforced in process … didn't gain teeth until converted to process."*
+- The anti-deferral spine: *"Defer nothing. Deferral is the same as refusal."* / *"did you scope it into the workplan?"*
+- On plausible advice (the "no consensus" tell): *"all of your advice has been wrong… I don't want guesses based on what 'seems plausible'."*
+
+### Origin-era session receipts (decrypted summaries, 2026-02-19 → 05-21) — `research/receipts-monorepo-sessions.md`
+
+Decrypted the monorepo's 182 per-session analysis summaries (`age -d -i ~/.config/age/audiocontrol.key`).
+This is the origin-era evidence the local ~/.claude transcripts don't reach.
+
+- **By the numbers:** 182 sessions; **225 corrections**; **104 (57%) had a failure**. Top
+  projects: deskwork-plugin 41, audiocontrol-s550-support 28, studio-bridge 15.
+- **Correction taxonomy (the thesis):** **PROCESS 128** / FABRICATION 32 / UX 26 /
+  DOCUMENTATION 25 / COMPLEXITY 16 / ARCHITECTURE 3. PROCESS outweighs all else — the
+  failures were *wrong-thing / wrong-order / didn't-check*, **not bad code**. The process
+  was reverse-engineered from these failures.
+- **Disaster → rule (dated):**
+  - **2026-05-14 [21b95c31] — "the slider that didn't slide":** sliders shipped as
+    non-interactive `role="img"` behind **175 passing specs**. *"You shipped garbage… what's
+    the point of UI tests that don't exercise the UI?"* → the **test-theater rule** + a
+    three-gate doctrine (render vs wiring vs operator sign-off).
+  - **2026-05-03 [57e0bc83] — "JUST FOR NOW":** a temporary `window.prompt()` fallback never
+    restored → authored `agent-discipline.md` + "nucleation site of bad behavior."
+  - **2026-03-29 [3db928d3] — silent failover:** *"'Graceful' failover is misleading and
+    bad"* → fail-fast-on-hardware.
+- **Scope-discovery genesis:** seed **2026-03-21 [27263c0e]** (*"Why didn't that
+  automatically get updated?"*) → contracts-to-reduce-corrections **2026-04-12 [719e8d42]**
+  (55 violations) → duplication-audit gate **2026-05-09** → meta **2026-05-21 [f9ef3a4a]**
+  (built the session-analysis pipeline that produced THIS corpus).
+- **Audit-barrage genesis:** cross-model (Claude vs Codex, charted) **2026-04-13 [66875892]**;
+  rigor proven in MESA II **2026-04-16 [bc965958]** (*"this is an INFERENCE, not a finding"*);
+  everyday two-stage implementer→reviewer review through April–May.
+- **Generalize-out decision:** **2026-04-19 [d4df8ec4]** — extract the skills into
+  open-source plugins, codename **deskwork**; dw-lifecycle born/dogfooded 2026-04-29 → 05-04.
+
+(Bulk decrypted corpus kept at `/tmp/receipts/monorepo-session-summaries.md` — NOT committed.)
+
+---
+
+## 4. Receipts vs. framing — flags for the operator (honesty checks before drafting)
+
+1. **RESOLVED (operator, 2026-06-05): editor lineage = Akai S3000XL + S5000/S6000 + Roland
+   JV-1080 SysEx.** The web-editor lineage that became audiocontrol started with hand-coded
+   SysEx control for those samplers (same hardware ol_dsp talked to at the byte level). The
+   **Novation Launch Control XL 3 editor is experimental** — a side-quest, not the lead.
+   (The earlier "first editor = Novation" was just the earliest *workplan* in the monorepo.)
+> **Deep-read refinements (2026-06-05c):** (a) **True origin = 2023-11-08** —
+> `oletizi/ol_dsp` (hand-coded C DSP for Daisy hardware), then `oletizi/audio-tools`
+> (2024-10-11, hand-coded TS); both **pre-agentic / hand-coded**. audio-tools flattened
+> into the monorepo 2025-09-01. So the story opens in the hand-coding era and pivots to
+> "building with agents." (b) **The process was INVENTED in-repo, not imported** —
+> the old audio-tools repo had no `.claude/CLAUDE.md`; this *strengthens* the "rolled my
+> own" framing. (c) The 2025-09-24 CLAUDE.md was **module-scoped**; the *root* CLAUDE.md
+> began 2026-02-02. Detail in `research/receipts-act1-deep.md`.
+
+2. **The process was structured early and *evolved* (~6.5 months), not invented ad hoc
+   each time.** The Sept-2025 CLAUDE.md already had a 9-agent roster; the arc is
+   accretion (~774 lines) → distillation (~198), with the lifecycle explicitly *named*
+   only 2026-04-10. The "no consensus, rolled my own" framing holds at the macro level —
+   but the honest texture is "kept formalizing it until it became a lifecycle," not "no
+   process → finished process."
+3. **RESOLVED (operator, 2026-06-05): "2,400" DROPPED** — operator doesn't recognize it.
+   Use the verified committed **183 sessions / 2,122 commits** (`data/sessions/report-all.md`,
+   2026-02-19 → 05-21) where a number is needed; never use 2,400.
+4. **The monorepo (2025-09-01) is itself an import** of a pre-existing audio-tools
+   project — conventions may predate even it.
+
+---
+
+## 5. Open questions / pending decisions
+
+- [x] **Title — LOCKED (2026-06-05):** "Coding Agents Are Insane, Hyperintelligent Toddlers"
+  (subtitle: "So I built them a babysitter: from hand-coded DSP to stack-control"). Slug kept.
+- [ ] **Slug rename** to match the new framing?
+- [ ] **"2,400 sessions"** — confirm vs the committed 183 / 2,122 (see §4.3).
+- [ ] **Name the Novation first editor**, or keep "the editors" generic? (§4.1)
+- [x] **Older history** — resolved: deepest root is `ol_dsp` (2023-11-08), then `audio-tools` (2024-10-11). See `research/receipts-ol_dsp.md`.
+- [x] **Repo lineage (operator, 2026-06-05): `audio-tools` → `ol_dsp` → `audiocontrol`.** audio-tools was pulled into ol_dsp first (`d5e5197`, 2025-09-01), then on from ol_dsp into the audiocontrol monorepo (`465300b5`). So the monorepo is downstream of ol_dsp via audio-tools; ol_dsp continued in parallel (S-330 editor first built there, Jan 2026).
+- [ ] **Session transcripts** older than ~2026-04-27 are not local; the `age`-encrypted
+  archive is at `data/sessions/content/*.jsonl.age` — need the decryption flow/key if we
+  want older human-voice receipts.
+
+---
+
+## 6. Change log
+
+- 2026-06-05 (a) — Created. Operator framing + stack-control facts (spec 003). Index.md
+  re-framed to the 5-beat story (`1d6565e`).
+- 2026-06-05 (b) — **Receipts gathered** from 4 repos via parallel agents → `./research/`
+  (audiocontrol monorepo, audiocontrol hub, deskwork, transcripts). Built master timeline
+  (§3), strongest pull-quotes, and receipts-vs-framing flags (§4). Human-message corpus
+  extracted to `/tmp/receipts/{audiocontrol,deskwork}-human.tsv` (transient).

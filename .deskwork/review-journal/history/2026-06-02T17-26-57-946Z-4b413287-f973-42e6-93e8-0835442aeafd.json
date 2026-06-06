@@ -1,0 +1,23 @@
+{
+  "kind": "entry-created",
+  "at": "2026-06-02T17:26:57.946Z",
+  "entryId": "4077b8c8-ccd1-409a-9438-1e6724cb9d4b",
+  "entry": {
+    "uuid": "4077b8c8-ccd1-409a-9438-1e6724cb9d4b",
+    "slug": "designing-under-discipline-the-decisions-archive",
+    "title": "Designing Under Discipline: The Decisions Archive",
+    "description": "Establishing a site’s visual identity without relitigating it — told through stackcontrol’s own design pass. The design-decisions protocol: the ACCEPTED/REJECTED archive, the brief contract, and the two-doc model that separates what’s explored from what’s settled.",
+    "keywords": [
+      "design decisions protocol",
+      "design system discipline",
+      "ACCEPTED REJECTED archive",
+      "frontend-design pass",
+      "agentic design workflow"
+    ],
+    "source": "manual",
+    "currentStage": "Ideas",
+    "iterationByStage": {},
+    "createdAt": "2026-06-02T17:26:57.946Z",
+    "updatedAt": "2026-06-02T17:26:57.946Z"
+  }
+}

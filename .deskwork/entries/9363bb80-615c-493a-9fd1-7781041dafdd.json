@@ -1,0 +1,21 @@
+{
+  "uuid": "9363bb80-615c-493a-9fd1-7781041dafdd",
+  "slug": "session-fatigue-and-why-compaction-makes-it-worse",
+  "site": "stackcontrol",
+  "title": "Session Fatigue: Why Long Agent Loops Degrade — and Why Compaction Makes It Worse",
+  "description": "After a 38-commit, four-hour /dwi loop, agent output degraded in a repeatable, non-human shape — context-window dilution, self-confirmation loops, pattern-match-substitute, and recursive meta-findings. Why context compaction amplifies the worst of them, why session-end → clear → session-start is the better reset, and the value-inflection point where the audit-barrage stops finding substantive defects. Grounded in deskwork#408.",
+  "keywords": [
+    "agent session fatigue",
+    "context window dilution",
+    "context compaction tradeoffs",
+    "long agentic coding sessions",
+    "AI agent quality degradation",
+    "session checkpointing",
+    "audit barrage meta-pattern"
+  ],
+  "source": "manual",
+  "currentStage": "Ideas",
+  "iterationByStage": {},
+  "createdAt": "2026-06-03T21:56:42.219Z",
+  "updatedAt": "2026-06-03T21:56:42.219Z"
+}

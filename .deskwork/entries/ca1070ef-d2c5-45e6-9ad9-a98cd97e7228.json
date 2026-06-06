@@ -1,0 +1,19 @@
+{
+  "uuid": "ca1070ef-d2c5-45e6-9ad9-a98cd97e7228",
+  "slug": "fanning-out-subagents-and-workflows",
+  "site": "stackcontrol",
+  "title": "Fanning Out: Subagents and Workflows",
+  "description": "How the implement loop delegates each task to a specialized subagent, fans work out in parallel via the workflow harness, and holds dispatched agents to a return-grammar contract so their output is auditable instead of hand-wavy.",
+  "keywords": [
+    "subagent orchestration",
+    "parallel agents",
+    "workflow harness",
+    "dispatch grammar",
+    "Claude Code subagents"
+  ],
+  "source": "manual",
+  "currentStage": "Ideas",
+  "iterationByStage": {},
+  "createdAt": "2026-06-02T17:26:57.946Z",
+  "updatedAt": "2026-06-02T17:26:57.946Z"
+}

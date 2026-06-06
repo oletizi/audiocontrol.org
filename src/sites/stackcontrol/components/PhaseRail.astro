@@ -1,0 +1,142 @@
+---
+/**
+ * PhaseRail — the Telemetry identity's signature structural device.
+ *
+ * A stepped progress track rendering the lifecycle as five connected nodes
+ * (Define → Workplan → Implement → Audit → Ship). Two registers:
+ *  - variant="labeled": ordinal (01–05) over an uppercase phase name (hero spine)
+ *  - variant="divider":  the phase name as the sole label (section divider echo)
+ * One node may be marked active (cyan-lit, glowing).
+ */
+interface Phase {
+  ord: string;
+  name: string;
+}
+
+interface Props {
+  active?: number; // index of the active node, or omit for none
+  variant?: 'labeled' | 'divider';
+  phases?: Phase[];
+}
+
+const DEFAULT_PHASES: Phase[] = [
+  { ord: '01', name: 'Define' },
+  { ord: '02', name: 'Workplan' },
+  { ord: '03', name: 'Implement' },
+  { ord: '04', name: 'Audit' },
+  { ord: '05', name: 'Ship' },
+];
+
+const { active, variant = 'labeled', phases = DEFAULT_PHASES } = Astro.props;
+const decorative = variant === 'divider';
+---
+
+<ol class="rail" aria-hidden={decorative ? 'true' : undefined}>
+  {phases.map((phase, i) => (
+    <li class:list={['rail-step', { active: i === active }]}>
+      <span class="node" aria-hidden="true"></span>
+      {variant === 'labeled' ? (
+        <>
+          <span class="ord">{phase.ord}</span>
+          <span class="name">{phase.name}</span>
+        </>
+      ) : (
+        <span class="ord ord--name">{phase.name}</span>
+      )}
+    </li>
+  ))}
+</ol>
+
+<style>
+  .rail {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: relative;
+  }
+
+  /* connecting track */
+  .rail::before {
+    content: "";
+    position: absolute;
+    top: 9px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      hsl(var(--border)),
+      hsl(var(--primary) / 0.55),
+      hsl(var(--border))
+    );
+  }
+
+  .rail-step {
+    position: relative;
+    text-align: center;
+    padding-top: 24px;
+  }
+
+  .node {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    display: grid;
+    place-items: center;
+  }
+
+  .node::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: hsl(var(--muted-foreground));
+  }
+
+  .rail-step.active .node {
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.12), 0 0 14px hsl(var(--primary) / 0.5);
+  }
+
+  .rail-step.active .node::after { background: hsl(var(--primary)); }
+
+  .ord {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.22em;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .ord--name {
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+
+  .name {
+    display: block;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground));
+    margin-top: 3px;
+  }
+
+  .rail-step.active .name,
+  .rail-step.active .ord--name { color: hsl(var(--primary)); }
+
+  @media (max-width: 760px) {
+    .name { font-size: 0.625rem; letter-spacing: 0.06em; }
+    .ord--name { font-size: 0.5rem; letter-spacing: 0.06em; }
+  }
+</style>

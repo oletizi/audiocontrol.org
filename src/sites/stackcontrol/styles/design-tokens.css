@@ -1,0 +1,128 @@
+/*
+ * Design Tokens — stackcontrol.org — identity "Telemetry".
+ *
+ * Mirror of src/sites/stackcontrol/brand.ts. See that file for palette and
+ * type rationale. color-scheme + shared structural/scale tokens + utilities
+ * (.site-container, .rule-double, .card-glow, @keyframes ticker) live in
+ * src/shared/design-tokens-base.css, imported BEFORE this file.
+ */
+
+:root {
+  /* Layout (site-specific) — override the shared base container width + gutter. */
+  --container-max-width: 1200px;
+  --container-padding: clamp(20px, 4vw, 56px);
+  --measure-reading: 38rem; /* prose width for devlog long-form reading */
+
+  /* Background colors — near-black, faint cool-blue cast */
+  --background: 200 28% 5%;
+  --card: 202 24% 9%;
+  --card-hover: 202 22% 13%;
+
+  /* Foreground — cool off-white */
+  --foreground: 195 18% 92%;
+  --muted-foreground: 200 12% 62%;
+
+  /* Accent colors */
+  --primary: 190 92% 56%;          /* electric cyan */
+  --accent: 200 14% 74%;            /* cool neutral counter-accent */
+
+  /* Borders — hairline weight; border-hover doubles as focus/active cyan-ward */
+  --border: 200 18% 18%;
+  --border-hover: 190 40% 34%;
+
+  /* Typography (site-specific; --font-mono + --font-heading shared in base).
+   * --font-display-tight is the non-expanded Archivo cut used for section
+   * heads, card titles, and footer wordmark; --font-display (Archivo Expanded)
+   * carries the largest hero/section display type. */
+  --font-display: "Archivo Expanded", "Archivo", system-ui, sans-serif;
+  --font-display-tight: "Archivo", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Corner radius — control-plane favors near-sharp corners. */
+  --radius: 3px;
+
+  /* Shadow / halo */
+  --card-glow: 0 0 0 1px hsl(var(--border)), 0 8px 32px -8px hsl(0 0% 0% / 0.6);
+  --card-glow-hover: 0 0 0 1px hsl(var(--primary) / 0.35), 0 10px 40px -8px hsl(var(--primary) / 0.18);
+}
+
+/* --- Rule utilities ------------------------------------------------------ */
+.rule-single {
+  border: 0;
+  border-top: var(--rule-hairline) solid hsl(var(--border));
+  margin: 1.5rem 0;
+}
+
+.rule-accent {
+  border: 0;
+  border-top: var(--rule-medium) solid hsl(var(--primary));
+  margin: 1.5rem 0;
+  width: 3rem;
+}
+
+/* --- Buttons (shared across homepage + devlog CTAs) ----------------------
+ * Mono, uppercase, tracked. Primary is a solid cyan fill with near-black text
+ * (AA-legible in both link and fill roles); ghost is a hairline outline. */
+.btn {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.8125rem 1.375rem;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9ch;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--background));
+  box-shadow: 0 0 0 1px hsl(var(--primary)), 0 0 24px hsl(var(--primary) / 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 1px hsl(var(--primary)), 0 0 36px hsl(var(--primary) / 0.55);
+  text-decoration: none;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border-hover));
+}
+
+.btn-ghost:hover {
+  background: hsl(var(--card-hover));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary));
+  text-decoration: none;
+}
+
+.btn .arr { opacity: 0.7; }
+
+/* --- Kicker (mono eyebrow with a leading cyan tick) ---------------------- */
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  display: flex;
+  align-items: center;
+  gap: 1.2ch;
+  margin: 0;
+}
+
+.kicker::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: hsl(var(--primary));
+}

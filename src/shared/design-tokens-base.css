@@ -1,0 +1,80 @@
+/*
+ * Shared design-token base — audiocontrol.org + editorialcontrol.org
+ *
+ * Holds ONLY what is genuinely identical across both sites: a handful of
+ * structural tokens, the additive type-scale + radius token sets, and the
+ * utility classes that were byte-identical in both per-site design-tokens.css.
+ *
+ * Each site's src/sites/<site>/styles/design-tokens.css layers its own :root
+ * values (colors, display/body fonts, container width, reading measure, glow,
+ * and any site-only tokens) on top. This file is imported by each site's
+ * Layout BEFORE the per-site tokens so its :root and utilities are in scope.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Structural tokens shared by both sites (identical values). */
+  --container-padding: 2rem;
+  --measure-narrow: 28rem;
+  --rule-hairline: 1px;
+  --rule-medium: 2px;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-heading: var(--font-display); /* both sites alias heading → display */
+
+  /* Type scale (additive). rem-based modular set. --text-xs matches the
+   * 0.75rem literal both sites already use for panel labels / ticker text. */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+
+  /* Radius scale (additive). The current aesthetic favors sharp corners, so
+   * adoption is intentionally minimal; --radius-full backs circular dots
+   * (e.g. the audiocontrol signal LED). --radius-sm/-md are available for
+   * future rounded surfaces. */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-full: 50%;
+}
+
+/* --- Shared container --------------------------------------------------- */
+
+.site-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: var(--container-padding);
+}
+
+/* --- Shared rule utility ------------------------------------------------ */
+
+.rule-double {
+  border: 0;
+  border-top: var(--rule-hairline) solid hsl(var(--border));
+  border-bottom: var(--rule-hairline) solid hsl(var(--border));
+  height: 5px;
+  margin: 2rem 0;
+}
+
+/* --- Shared card glow --------------------------------------------------- */
+
+.card-glow {
+  box-shadow: var(--card-glow);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.card-glow:hover {
+  box-shadow: var(--card-glow-hover);
+}
+
+/* --- Shared ticker keyframes -------------------------------------------- */
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}

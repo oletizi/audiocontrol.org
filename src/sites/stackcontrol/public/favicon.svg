@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="stackcontrol mark">
+  <!-- Telemetry identity: stacked phase bars, electric-cyan active row. -->
+  <rect width="32" height="32" rx="4" fill="hsl(200 28% 5%)"/>
+  <rect x="7" y="8" width="18" height="4" rx="1" fill="hsl(200 14% 74%)"/>
+  <rect x="7" y="14" width="18" height="4" rx="1" fill="hsl(190 92% 56%)"/>
+  <rect x="7" y="20" width="18" height="4" rx="1" fill="hsl(200 18% 30%)"/>
+</svg>
