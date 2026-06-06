@@ -52,6 +52,8 @@ deskwork:
   planning + tooling → increasingly **automated production** for economies of scale and
   predictable, regular outcomes — *vs. the craftsman-like, hand-wrought code of the past.* The
   babysitter is the **industrial control system** for a tireless-but-unreliable toddler workforce.
+- **The clash is public** — the Reddit/forums fight over "how much to let agents drive" *is* this
+  craftsman-vs-industrialist clash. Pays off in the **Close kicker** (blacksmiths / horseshoes).
 - It unifies the acts: **up-front design** = PRD/workplan (Act 1) → Spec Kit (Act 3);
   **automated production** = the autonomous `/dwi` loop + audit barrage (Act 2); **tooling** = the
   plugin (dw-lifecycle → stack-control).
@@ -128,6 +130,11 @@ deskwork:
   babysitter is its control system.
 - The babysitter is **built to be replaced from underneath** — its willingness to be outpaced by
   the state of the art is what keeps it durable.
+- **The kicker (last beat):** I watch my peers on the forums — **latter-day blacksmiths** — argue
+  about exactly **how much to let the agents drive the horseshoe-making.** I get it; I'm one of
+  them. But **the horseshoe, and the blacksmith, are both just about obsolete.** *(Spiciest line
+  in the piece — keep the bite, earn it via self-implication; see `author-narrative.md` inst. 10
+  for the calibration call.)*
 - Forward pointer: the rest of the "Building deskwork" series drills into each kept part.
 
 ---

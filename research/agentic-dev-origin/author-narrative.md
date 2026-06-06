@@ -342,4 +342,41 @@ The MESA II thread moves from "worked example" to **genesis / seed**. The §2.6 
 > *"I started as a craftsman, hand-wrenching every byte of DSP. I'm ending up an industrialist:
 > heavy design up front, then a production line I try very hard not to touch."*
 
+---
+
+## Installment 10 (2026-06-05) — the kicker: blacksmiths arguing about horseshoes
+
+> Operator (close to his words — this is the **contrarian gut-punch**, the spiciest line in the
+> piece):
+
+- **The craftsman-vs-industrialist clash is happening in the open** — on Reddit and other
+  forums, software engineers argue about **how much to let agents drive the process.**
+- **The metaphor (the kicker):** they're like **latter-day blacksmiths arguing about how much to
+  let agents drive the process of horseshoe making… when both horseshoes and blacksmiths are
+  just about obsolete.**
+
+### How to use it
+- **Placement: the Close kicker.** After the reader has followed the craftsman → industrialist
+  transformation, *widen the lens* and drop this. Earned, it lands as a mic-drop; up front, it
+  reads as a hot take. Likely the **last beat** (or just before the forward-pointer).
+- It gives the piece a **stake in a live debate** — devlog/Reddit-shareable, opinionated, the
+  kind of line people quote and fight about.
+- **Connects back to §1.2** ("no consensus *I knew of*"): now there's a loud, contested
+  consensus *forming* — but, the piece argues, much of the debate is the **wrong** debate
+  (technique on a dying craft), not the real shift (industrialization).
+- **Self-aware angle to keep it from being smug:** the author *is* one of those blacksmiths —
+  he loves the hand-wrought DSP. The line cuts him too. That self-implication keeps it honest
+  rather than dismissive.
+
+### Calibration — OPEN CALL for the operator
+This is the **most provocative claim in the piece** (it implies the obsolescence of software
+craftsmanship — and of craftsmen). Decide the **edge**: full gut-punch as written, or hedged
+(*"about obsolete"* already hedges with "about"). Recommend keeping the bite but earning it via
+the self-implication above. Flagged so it's a deliberate choice, not an accident.
+
+### Candidate kicker line (draft)
+> *"I watch my peers on the forums — latter-day blacksmiths — argue about exactly how much to
+> let the agents drive the horseshoe-making. I get it; I'm one of them. But the horseshoe, and
+> the blacksmith, are both just about obsolete."*
+
 *(— more to come?)*
