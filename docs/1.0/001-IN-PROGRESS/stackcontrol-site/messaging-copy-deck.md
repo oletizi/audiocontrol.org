@@ -35,7 +35,7 @@ rail node in this treatment.)
 - `/stack-control:define` — on the Define card
 - `/stack-control:implement` — on the Implement card
 - Helpers (not lifecycle phases, kept off the phase grid): `session-start`, `session-end`
-- **Open:** confirm the `/stack-control:` namespace prefix (operator gave bare names).
+- Namespace prefix **confirmed**: `/stack-control:` (operator, 2026-06-06).
 
 ---
 
@@ -95,4 +95,7 @@ Four cards in the existing `NN / NAME` + blurb idiom:
 - Tagline, hero, What/Why/How, SEO: **applied** (this pass).
 - `DESIGN-SYSTEM.md` §6/§7 vocabulary (control-plane → babysitter / industrial line / loop):
   **updated in the same change**.
-- Not yet committed pending operator review + namespace confirmation.
+- Homepage messaging committed in `0d8474c`; namespace `/stack-control:` confirmed.
+- Published devlog post `standing-up-a-site-with-its-own-lifecycle` **reframed** to stack-control +
+  the four-phase loop (deskwork / dw-lifecycle / five-phase walk removed; planning folded into
+  Define; "operator owns the merge" kept as the exit).
