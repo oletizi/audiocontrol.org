@@ -127,8 +127,8 @@ The `@keyframes ticker` (translateX 0 → -50%) and `.card-glow` come from the s
   editorialcontrol.org), system links, mono copyline. Imports `Logo`.
 - **`components/Logo.astro`** — the wordmark `stackcontrol` + cyan separating `.` + muted `org`.
   Props: `variant?: 'header' | 'footer'` (font size only).
-- **`components/PhaseRail.astro`** — **the signature structural device.** Five connected nodes
-  (Define → Workplan → Implement → Audit → Ship) on a hairline track with a cyan-tinted center.
+- **`components/PhaseRail.astro`** — **the signature structural device.** Four connected nodes
+  (Define → Implement → Audit → Repeat) on a hairline track with a cyan-tinted center.
   Props: `active?: number` (cyan-lit glowing node), `variant?: 'labeled' | 'divider'`,
   `phases?: Phase[]`. `labeled` shows ordinal over uppercase name (hero spine); `divider` shows the
   name alone and is `aria-hidden` (section-divider echo).
@@ -148,9 +148,16 @@ The `@keyframes ticker` (translateX 0 → -50%) and `.card-glow` come from the s
 - **Devlog** — the blog. Entries are tagged with the **phase** they're about (SCOPE, AUDIT,
   PIPELINE, …), surfaced as a cyan-bordered chip. (`phase` is a stackcontrol-specific content field;
   see `content.config.ts`.)
-- **Lifecycle / phase rail** — the five-phase arc (Define → Workplan → Implement → Audit → Ship) is
-  the site's organizing metaphor and its signature visual device.
-- **Control plane** — the framing for the homepage: a surface that watches work move through phases.
+- **Lifecycle / phase rail** — the four-phase **loop** (Define → Implement → Audit → Repeat) is the
+  site's organizing metaphor and its signature visual device. Define happens once up front;
+  Implement and Audit repeat until the diff is clean. Audit carries no command — it fires
+  automatically on the implement hook; Repeat is the loop.
+- **Babysitter / industrial line** — the homepage framing (supersedes the earlier "control plane"
+  language). Coding agents are "insane, hyperintelligent toddlers" that need supervision;
+  stack-control is the babysitter that runs every change down an **industrial line** — heavy design
+  up front, hands-off parallel implementation, mechanized multi-model audit. The differentiators
+  (the audit barrage / "stochastic correctness", scope discovery) are evidence for the thesis, not
+  the headline. Full copy + rationale: `docs/1.0/001-IN-PROGRESS/stackcontrol-site/messaging-copy-deck.md`.
 
 ---
 

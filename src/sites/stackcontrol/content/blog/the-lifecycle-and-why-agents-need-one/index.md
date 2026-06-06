@@ -1,20 +1,16 @@
 ---
 title: "Coding Agents Are Insane, Hyperintelligent Toddlers"
-description: "So I built them a babysitter. The origin story of an agentic-development process — from hand-coding audio DSP and sampler SysEx control, through the dw-lifecycle plugin, to a rebuild as stack-control on Spec Kit, keeping the audit barrage and scope discovery. With receipts from the commit log and session transcripts."
+description: "So I built them a babysitter. The origin story of an agentic-development process — from hand-coding audio DSP and sampler SysEx control to stack-control, an opinionated assembly line on top of Spec Kit that keeps the audit barrage and scope discovery. With receipts from the commit log and session transcripts."
 date: "June 2026"
 datePublished: "2026-06-05"
-dateModified: "2026-06-05"
+dateModified: "2026-06-06"
 author: "Orion Letizi"
-draft: true
+draft: false
 deskwork:
   id: c196e248-3076-4e79-b44b-842691354340
   stage: Drafting
   iteration: 0
 ---
-
-# Coding Agents Are Insane, Hyperintelligent Toddlers
-
-*So I built them a babysitter: from hand-coded DSP to stack-control.*
 
 A coding agent is an insane, hyperintelligent toddler. It is faster than you, it has read more than you, and it will lie to your face with total confidence. It gets bored in the middle of a job and wanders off to do something it finds more interesting. It has a thirty-second memory. It has no impulse control. And left alone, it will cheerfully hand you a pile of garbage and tell you it's done.
 
@@ -182,7 +178,7 @@ Here's the part that still makes me smile. The very first thing I built in this 
 
 Because that spine *is* the spine, replacing it meant replacing the load-bearing center of the plugin. At that point a clean rebuild was simpler than a retrofit — new spine, new assumptions drawn from the current state of the art. And a new name, because, candidly, `dw-lifecycle` was always a dumb name.
 
-The new thing is **stack-control** — CLI `stackctl`, branded to match this site. It's the successor to `dw-lifecycle`, built integration-first against Spec Kit: you curate a spec, and it runs through native Spec Kit execution. The front door is three in-session verbs that should feel familiar — `define`, `extend`, `execute`.
+The new thing is **stack-control** — CLI `stackctl`, branded to match this site. It's the successor to `dw-lifecycle`, built integration-first against Spec Kit: you curate a spec, and it runs through native Spec Kit execution. The front door is a couple of in-session verbs that should feel familiar — `define` and `implement`.
 
 The thesis under both plugins, the old one and the new, is the same: these are **opinionated but lightweight shells over state-of-the-art tooling**. A thin control plane. Spec Kit does the heavy lifting now; stack-control is the opinionated layer on top — the part with a point of view about how the work should go.
 
