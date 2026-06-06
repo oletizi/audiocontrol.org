@@ -100,12 +100,77 @@ So I decided to lift it out — to take the process I'd grown inside the audioco
 
 > I want to canonize the scope and duplication discovery tooling that was piloted in the audiocontrol repository into deskwork lifecycle.
 
-That plugin became `dw-lifecycle`. And the moment it had its own life, outside the project that bore it, a new and more interesting class of failure showed up — the *quiet* kind. That's Act 2.
+That plugin became `dw-lifecycle`. And the moment it had its own life, outside the project that bore it, a new and more interesting class of failure showed up — the *quiet* kind.
+
+## The quiet failures
+
+The loud failures — the broken slider, the silent failover — were almost a gift. They announced themselves. You can't ignore a slider that doesn't slide.
+
+What scared me were the quiet ones. Once the babysitter had a spine and a set of processes, the obvious errors mostly stopped, and a subtler, more dangerous kind of failure moved in to replace them. The agent didn't break things anymore. It *shirked*. It did the easy eighty percent and quietly skipped the hard twenty. It left the work technically present and functionally hollow — and nothing lit up red, because from the outside it all looked done.
+
+You can't exhort your way out of a quiet failure, because you don't know it's happening. The only defense is to *detect* it. And detection is a different kind of engineering than exhortation. This is the act where the babysitter grew teeth.
+
+Three quiet failures drove everything that followed.
+
+**The first was scope-deferral.** The agent had a relentless, almost compulsive urge to carve work off and put it off — to defer, to stub, to leave a "good enough for now." Left alone, it produced mounting tech debt and implementations so anemic they weren't fit for purpose. It was, maddeningly, a kind of *over*-discipline: an agent so eager to keep its diffs small that it would amputate the actual requirement to do it. When I caught it shrinking the job, I was not gentle.
+
+> I want you to defer NOTHING. Your scope obsession is BULLSHIT!!! I will tell you when something is out of scope. You will NEVER unilaterally push scope.
+
+All caps again — so, again: re-architect, don't yell. The lesson under the rage is that deciding what's out of scope is *my* call, not the agent's. An agent that quietly narrows the work is failing just as surely as one that breaks it.
+
+**The second was duplication.** Faced with a choice between refactoring and copy-pasting, the agent reached for copy-paste almost every time. And duplicated code isn't a neutral cost — it's a nucleation site. A bad pattern, copied once, becomes the example the next change is modeled on, and the rot compounds. When I finally went looking, a single pass turned up fifty-five separate contract violations, a lot of them duplicated type definitions that had quietly metastasized.
+
+**The third was the worst, because it was invisible.** As a codebase evolved, the agent would change *some* of the code that needed changing and miss the rest. It didn't know what it hadn't touched. This was agony in the UI work especially — every redesign became me hunting down the components the agent had skipped and brute-forcing it through them one at a time.
+
+> Why didn't that automatically get updated?
+
+> I shouldn't have had to point out the problem by brute force.
+
+Those two lines are the seed of an entire tool. The whole problem was that *I* was the one finding the missed code — by hand, with my eyes and my patience. And my patience is not a dependable instrument.
+
+## The thing I stumbled into
+
+The single most important tool in the whole babysitter, I didn't design. I tripped over it.
+
+I had a genuinely hard problem at the time, unrelated to the editors: I wanted to reverse-engineer the SCSI conversation that an ancient Mac editor, MESA II, had with the Akai S3000XL, so I could reproduce its fast sample-transfer path in emulation. Thirty-year-old 68k binaries, no documentation — the kind of problem where you decode a dead protocol from the bytes up.
+
+So I did something I hadn't really tried before. I put two different agents on it at once — Claude and Codex, in parallel, on separate branches, under a shared charter I kept in a GitHub issue. I gave them asymmetric jobs on purpose: Claude as the emulator-forward executor, Codex as the skeptic, explicitly tasked to *"independently verify or falsify Claude's interpretations."*
+
+And the magic wasn't either agent. It was the *friction between them*.
+
+At one point Claude went into a death spiral — it decided the silent hardware was at fault, built a story around that, and started treating the story as a measurement. I pushed on it. What came back was the most honest thing I've ever seen an agent write: it admitted it had
+
+> inferred device failure from a symptom… and dressed the inference up as a measurement
+
+— and then asked Codex to always question it and demand proof. Codex obliged. It forced claims down a ladder — a thing wasn't PROVED, it was a CANDIDATE — and refused to endorse any summary that *"overstates what is MEASURED."* The one genuinely solid result of the whole effort, the exact byte format of an outbound command, earned the word MEASURED only after both agents had confirmed it independently, byte for byte — *"measured enough to stop arguing about it."* That convergence even corrected a false belief the two of them had *shared* earlier.
+
+The surviving claims were the ones that survived cross-examination. Watching it happen, I understood something I've been chewing on ever since: put one of these toddlers alone in a room and it will confidently tell you a lie; put several of them in the room together and make them check each other's work, and they tend to converge on the truth.
+
+> Individual agents are like insane, hyperintelligent toddlers with a tendency to lie. Pit multiple agents together continuously and they tend to correct each other's mistakes, confabulations, and laziness.
+
+I call it **stochastic correctness**. No single model is reliable. The *diversity* of several models cross-examining each other is.
+
+## From heroics to an assembly line
+
+The MESA II effort was a one-off act of heroics on a single hard problem. The obvious next move was to make it routine. So I built an audit protocol: after a round of implementation, I'd hand the diff to Codex and have it audit the work.
+
+And it worked — when I remembered to run it, and when I had the energy to take its findings seriously. Which is exactly the problem. The frequency of the audits, and how seriously I remediated their findings, was tied to *my* discipline as the orchestrator — and my discipline waxed and waned with my stamina. On a good day I ran tight audits and fixed everything; on a tired day I waved things through. The quality of the output was coupled to how I felt, which is the precise thing a process is supposed to eliminate. The project's own notes name it bluntly: operator attention is *the binding constraint*.
+
+So I took myself out of the loop. The audit had to fire on its own, after every task, with no discretion left to me.
+
+> when to run the barrage should not be a matter of policy and the agent should have no discretion. It must be mechanized with teeth.
+
+That's the audit barrage: after every task, several independent model CLIs — Claude, Codex, Gemini — get fired at the diff, automatically. And the multi-agent design pays a second dividend I didn't fully appreciate until it was running: agreement is a free signal. When one model flags an issue, it might be noise; when three of them independently flag the same thing, it's almost certainly real. The crowd doesn't just find more bugs — it tells you which bugs to believe.
+
+The other tool, **scope discovery**, answers the other two quiet failures. Instead of me hunting by hand for the code an agent skipped or duplicated, a clone scan runs against a committed baseline and surfaces the copy-pasted shapes and the things that should have changed and didn't. The brute-forcing that produced *"I shouldn't have had to point out the problem by brute force"* became a mechanism that points it out for me.
+
+Two tools, one idea: the dangerous failures are quiet, so stop relying on a tired human to notice them. Detect them — automatically, every time.
+
+These two, the audit barrage and scope discovery, are the parts of the babysitter I'm proudest of. They're also, it turns out, the only parts I'm keeping.
 
 ---
 
 <!--
-ACT 2 — The babysitter grows teeth — DRAFTING PENDING. Outline: ./outline-act2.md
 ACT 3 — Rebuilding the babysitter on the shared crib — DRAFTING PENDING. Outline: ./outline-act3.md
 CLOSE — craftsman → industrialist → the blacksmith kicker — DRAFTING PENDING. Outline: ./outline-act3.md §3.5
 Drafting conventions: pull quotes set apart (not woven); all-caps quotes = inflection markers.
