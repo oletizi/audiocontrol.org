@@ -165,10 +165,9 @@ human's discipline out of the loop.
    open on §0, pay the why immediately in §1.
 2. **Mechanics altitude (§3):** how much plumbing? Keep it to the two-verbs + parallel + run-dir
    + CLI-not-API; push everything else to a footnote or cut. Risk: §3 turning into a manual.
-3. **One arc or two?** §0–§7 (dw-lifecycle: why + proof + teeth) is a complete post on its own.
-   §8–§9 (stack-control: specs + recursion) is a strong second movement but doubles the length.
-   Decision needed: **single long post** vs. **post 1 ends at §7, stack-control becomes a
-   sequel.** Leaning single post with §8–§9 compressed — the recursion is the best ending.
+3. ~~**One arc or two?**~~ **RESOLVED (operator, 2026-06-07): single long post (§0–§10).** The
+   full arc stays in one piece — the recursive "fiction cascade → DRY" ending (§9) is the kicker
+   and is worth the length. Draft §8–§9 at full weight, not compressed.
 4. **AUDIT-01 placement:** standalone §7 (current) vs. folded into §4 as a second proof point.
    Standalone keeps the "real-world, post-merge, security" punch distinct from the dogfood.
 5. **Numbers discipline:** only the figures in `research.md` "Numbers & receipts." No invented
@@ -178,3 +177,4 @@ human's discipline out of the loop.
 - v1 (2026-06-07) — initial 11-section spine (§0–§10) from `research.md`'s three-act structure;
   front-loaded the self-audit hook; mapped pull quotes; 5 open structural calls. Biggest
   unresolved: call #3 (single post vs. sequel at §7).
+- v2 (2026-06-07) — call #3 RESOLVED: single long post, full arc §0–§10, §8–§9 at full weight.
