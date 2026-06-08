@@ -62,6 +62,26 @@ feature being described. Concretely:
   **once**, near the close, in his voice; never as a product brag. (Per house rules: don't editorialize
   it into "production-ready.")
 
+**DEVLOG, NOT A PITCH (operator, 2026-06-07).** This site is a **devlog** — we are developing and
+writing about it *contemporaneously*, so **we do not have all the answers.** Voice = present-tense,
+provisional, in-flight (match the sibling lifecycle post: "the only parts I'm keeping"). The open
+questions are **features of the form, not failures to hide** — surface them in the body, don't bury
+them in footnotes. No triumphalism; no "we solved it"; "so far" is load-bearing. The honest live
+uncertainties to keep *visible* in the piece:
+- **The thesis is a bet still being tested.** Do different model families actually fail
+  *independently*, or do shared training corpora make them a partial monoculture too? We don't know;
+  it's why we trust *agreement* and never one model. (This is the §0/§1 question left genuinely open.)
+- **The panel is flaky right now.** gemini was failing ~94% of runs and is disabled in practice — the
+  "battery" is effectively 2-of-3 some days (`research-raw/01`). Say so.
+- **The audit posture is still shifting** — the two-reviewer surface is mid-retirement in favor of
+  the barrage (#387 open); `promote-findings` doesn't fit non-code findings (#392 open).
+- **Is two-consecutive-0-HIGH *enough*?** The operator calls it "a stability heuristic, not a
+  determinism proof." Open by admission.
+- **The stack-control chapter is happening now,** not in the past tense — on a feature branch, not
+  merged; AUDIT-48 was left *open* at the last session; the fiction cascade was last week. Write §9–§10
+  as "where we are," not "what we shipped."
+- The MESA II emulation goal itself stayed **OPEN** — the win was the *method*, not a solved problem.
+
 ---
 
 ## §0 — Opening hook: the evolution cold-open (see file 05; run it LIGHT)
@@ -226,6 +246,8 @@ feature being described. Concretely:
   - Field test: 5/5 genuine cross-model HIGHs, 0 phantom. (`0c388aea`)
 - ⚠️ writer note: branch is `feature/stack-control` but internals say `feature/pluggable-lifecycle-
   providers` — same work.
+- *Devlog tense: this chapter is happening **now** — feature branch, not merged; AUDIT-48 open; the
+  fiction cascade was last week. Write it as "where we are," not "what we shipped."*
 
 ## §10 — The recursive payoff (the thematic close-setup)
 - The barrage audited **its own spec** — and triggered a *"fiction cascade"*: round after round, the
@@ -249,6 +271,11 @@ feature being described. Concretely:
 - The one allowed nod to the end result, in the operator's own modest voice: it turned out to be *"the
   most effective tool we've built so far."* — but the point of the piece is that it was **found, not
   designed**; nobody set out to build it. Close on the *process*, not the product.
+- **Devlog ending — end open, not closed.** Don't tie a bow. End on what we *don't* yet know: whether
+  the model families are diverse enough to escape the monoculture, whether the dampener is really
+  enough, the fact that we're still mid-flight on governing specs. The barrage is the best tool we've
+  built *so far* — and "so far" is the whole point of a devlog. The next entry will probably say we
+  had something wrong here. That's the form working as intended.
 
 ---
 
@@ -284,3 +311,8 @@ feature being described. Concretely:
   (operator). Detective story, not product tour — weight the discovery/surprise beats, starve the
   feature tour; "most effective tool" line used once, modestly, at the close. Rhymes with the
   discover-don't-design frame.
+- v7 (2026-06-07) — **added DEVLOG-NOT-A-PITCH principle** (operator): contemporaneous, present-tense,
+  provisional voice; open questions surfaced in-body not hidden; end open, not closed. Listed the live
+  uncertainties to keep visible (model-family independence still a bet; gemini ~94% failing; review
+  surface mid-retirement; dampener "heuristic not proof"; stack-control mid-flight, AUDIT-48 open;
+  MESA emulation goal stayed OPEN). Marked §9 present-tense.
