@@ -3,7 +3,7 @@ title: "Coding Agents Are Insane, Hyperintelligent Toddlers"
 description: "So I built them a babysitter. The origin story of an agentic-development process — from hand-coding audio DSP and sampler SysEx control to stack-control, an opinionated assembly line on top of Spec Kit that keeps the audit barrage and scope discovery. With receipts from the commit log and session transcripts."
 date: "June 2026"
 datePublished: "2026-06-05"
-dateModified: "2026-06-06"
+dateModified: "2026-06-08"
 author: "Orion Letizi"
 draft: false
 deskwork:
@@ -11,6 +11,13 @@ deskwork:
   stage: Drafting
   iteration: 0
 ---
+
+## TL;DR
+
+- **What kicked it off.** I set out to build browser-based editors for vintage samplers with AI coding agents, and they kept losing the plot — forgetting the plan mid-session, drifting off task, ignoring rules I'd written down, and handing me confident garbage with a straight face. The title isn't hyperbole; it's a job description.
+- **What I built to fix it.** A babysitter: an opinionated development process that engineers the *environment* instead of nagging the agent. Source-of-truth docs it can't forget, processes in place of rules it won't follow, and — the parts I'm proudest of — two tools that catch the *quiet* failures automatically: the **audit barrage** (rival AI models cross-examining every change) and **scope discovery** (surfacing the code the agent skipped or copy-pasted).
+- **Why it matters.** This isn't a nicer dev tool; it's the slow industrialization of software — heavy design up front, then a production line whose quality doesn't ride on how disciplined or awake I happen to be that day. And it's deliberately built to be *replaced from underneath* as the state of the art catches up. It just was: I tore out my hand-rolled planning spine and rebuilt on Spec Kit.
+- **And here's the story.** How I went from hand-wrenching audio DSP one byte at a time to running an assembly line — the walls I hit, the fixes that compounded into a lifecycle, and why the latest version is called **stack-control**.
 
 A coding agent is an insane, hyperintelligent toddler. It is faster than you, it has read more than you, and it will lie to your face with total confidence. It gets bored in the middle of a job and wanders off to do something it finds more interesting. It has a thirty-second memory. It has no impulse control. And left alone, it will cheerfully hand you a pile of garbage and tell you it's done.
 
