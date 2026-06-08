@@ -5,7 +5,7 @@ date: "June 2026"
 datePublished: "2026-06-07"
 dateModified: "2026-06-07"
 author: "Orion Letizi"
-draft: true
+draft: false
 deskwork:
   id: d3cf14c9-1c10-4cac-9860-39925bd593ed
   stage: Drafting
