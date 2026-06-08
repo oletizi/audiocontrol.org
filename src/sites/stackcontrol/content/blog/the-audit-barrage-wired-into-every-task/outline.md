@@ -14,22 +14,47 @@ The audit barrage is the structural answer to *lie*. Keep the throughline tight:
 trust one model plus a green test suite; so make a different model look, and make it
 unconditional.**
 
+**Framing motif — EVOLUTION (diversity + selective pressure).** See
+`scrapbook/research-raw/05-opening-framing-evolution.md` for the full development. How do you
+control a powerful generator you *know* is wildly unreliable (a population of lying, hyperintelligent
+toddlers)? Evolution's answer: **inject genetic diversity** + **apply relentless selective
+pressure**. The barrage = directed evolution for code (Arnold's "you can't design it, so you breed
+it"); a single model auditing itself = a **monoculture** (one banana, one potato → total correlated
+collapse). The metaphor is *endogenous* — the operator's own term is "genetic diversity in failure
+modes" — and the title is half of it ("wired into every task" = selection pressure at every
+generation). N-version programming / Knight-Leveson are demoted to a one-line passing aside (the
+formal echo under the monoculture image), NOT the hook. Thread the motif through the body: §1
+monoculture, §2 diversity payoff, §5–6 selection pressure, §6/§9 fitness-peak convergence (honest
+"local, not proven-correct" caveat), §10 bookend. Strain points to respect are listed in file 05.
+
 **Thesis (one line).** A green test suite is weak evidence of correctness; genetic diversity in
 who audits is strong evidence; and the only way to get that diversity reliably is to take the
 human's discipline out of the loop.
 
 ---
 
-## §0 — Opening hook (the whole piece in one image)
-- **Lead image, front-loaded:** the first time the audit barrage ever ran, it ran against *its
-  own code* — and surfaced **13 real bugs that 1,966 passing tests, a clean type-check, and a
-  live round-trip had all waved through.** (`scope-discovery/audit-log.md:349,520`)
-- The uncomfortable question the post answers: *if the tests are green and the model that wrote
-  the code says it's clean — how would you ever know it isn't?*
-- Connect to the sibling frame in one beat: the toddlers **lie**; this is the babysitter that
-  catches the lie. Then rewind: *but back up — why would you point an auditor at your own tool?*
+## §0 — Opening hook: the evolution cold-open (see file 05 for the full sketch)
+- **Beat 1 — the problem, as a problem not a product:** you are responsible for a generator you
+  *know* lies — regularly, fluently, confidently, several times a day. You can't make it reliable;
+  that's how it works. The question isn't "how do I fix it," it's "how do I run a thing I can't trust
+  without it burning everything down?" (Toddlers-that-lie callback.)
+- **Beat 2 — nature already shipped this product:** every organism is an unreliable copier; life's
+  answer was never a perfect copier, it was **diversity + selection**. Directed evolution as the
+  on-purpose version — ‖ PULL idea [Arnold]: *when you can't design it, you breed it.*
+- **Beat 3 — the failure mode that names the stakes — monoculture:** one model checking its own work
+  is one Gros Michel banana, one lumper potato — productive and doomed, because the blind spot is
+  shared, so collapse is total. (Knight-Leveson = the one-line formal echo, not the lead.)
+- **Beat 4 — the turn:** so you do what evolution does — inject diversity (a panel of different-minded
+  auditors) and apply relentless selective pressure (fire them at *every* task, let nothing broken
+  survive). The operator's own word for the first half was **"genetic diversity."** The rest of the
+  piece is what the second half — selection pressure, *wired into every task* — took to build.
+- **Hand-off to §4 payoff:** the self-audit-paradox image (first barrage found **13 bugs past 1,966
+  green tests**, `audit-log.md:349,520`) is no longer the cold-open — it lands as the first concrete
+  *proof* in §4. Keep it; just don't open on it.
 
 ## §1 — The habit that didn't scale (the why)
+- *Motif: the **monoculture** — self-audit is a clone checking a clone; the blind spot is shared, so
+  when it fails it fails totally.*
 - The origin is one operator habit: after the in-loop self-audit called the work clean, he
   re-ran it *by hand* through a second model (Codex) — and Codex kept catching things.
 - ‖ PULL [V, `SD/2b49c58f`]: *"I currently run a codex audit by hand, in addition to the
@@ -44,6 +69,9 @@ human's discipline out of the loop.
   removed.**
 
 ## §2 — Genetic diversity (the idea, and its name)
+- *Motif payoff: this is beat 4 of the cold-open landing — diversity as the first of the two
+  evolutionary forces. One-line aside here for N-version programming / Knight-Leveson (the old human
+  attempt at design diversity that correlated anyway); don't dwell.*
 - The operator's own metaphor: different training corpora fail differently; fire several model
   families independently and treat the bugs *more than one* of them flags as high-confidence.
   ("genetic diversity" is his coinage, `SD/2b49c58f`.)
@@ -172,9 +200,17 @@ human's discipline out of the loop.
    Standalone keeps the "real-world, post-merge, security" punch distinct from the dogfood.
 5. **Numbers discipline:** only the figures in `research.md` "Numbers & receipts." No invented
    precision/perf stats.
+6. **Evolution-motif dosage:** how hard to run it past §0? Options: (a) cold-open + light bookend
+   only; (b) load-bearing spine threaded through every section (current outline tags). Risk of (b):
+   cutesy / over-extended metaphor. Respect the four strain points in file 05 — esp. don't imply the
+   convergence loop *proves* correctness, and keep "directed/artificial," not blind-Darwinian.
 
 ## Iteration log
 - v1 (2026-06-07) — initial 11-section spine (§0–§10) from `research.md`'s three-act structure;
   front-loaded the self-audit hook; mapped pull quotes; 5 open structural calls. Biggest
   unresolved: call #3 (single post vs. sequel at §7).
 - v2 (2026-06-07) — call #3 RESOLVED: single long post, full arc §0–§10, §8–§9 at full weight.
+- v3 (2026-06-07) — **reframed §0 to the EVOLUTION cold-open** (diversity + selective pressure;
+  directed evolution + monoculture), per `research-raw/05`. Self-audit-paradox image moved from hook
+  to §4 proof. N-version/Knight-Leveson demoted to a passing aside. Motif threaded into §1
+  (monoculture) and §2 (diversity payoff). New open call #6 below.
