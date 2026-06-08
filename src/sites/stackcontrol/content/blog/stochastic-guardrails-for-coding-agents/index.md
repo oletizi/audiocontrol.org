@@ -1,6 +1,6 @@
 ---
-title: "The Audit Barrage, Wired Into Every Task"
-description: "How do you run a generator you know is regularly, confidently wrong without it burning everything down? You do what we've always done with unreliable processes: inject diversity and apply selective pressure. This is the devlog of how the audit barrage was discovered — two models building the same feature, a dead SCSI protocol decoded by mutual cross-examination, and the slow turn from heroics into a machine that fires a panel of rival models at every diff. Still being figured out, in public."
+title: "Control Your Psychotic Child: Stochastic Guardrails for Coding Agents"
+description: "How do you put guardrails on a coding agent that's a psychotic child — confidently, fluently wrong several times a day? You do what we've always done with unreliable processes: inject genetic diversity and apply relentless selective pressure. This devlog traces the discovery of stochastic correctness and the audit barrage — two AI agents building the same feature, a dead SCSI protocol decoded by mutual cross-examination, and a panel of rival model CLIs fired at every diff. The most useful guardrail I've built for agentic coding, and I didn't design it — I bred it. Still being figured out, in public."
 date: "June 2026"
 datePublished: "2026-06-07"
 dateModified: "2026-06-07"
@@ -12,9 +12,9 @@ deskwork:
   iteration: 0
 ---
 
-You are responsible for a machine that lies to you. Not occasionally — regularly, fluently, with total confidence, several times a day. You can't fix that; it's how the machine works. So the job was never to make it honest. The job is to run a liar at scale without letting it burn the house down.
+You are responsible for a machine that lies to you. Not occasionally — regularly, fluently, with total confidence, several times a day. You can't fix that; it's how the machine works. So the job was never to make it honest. The job is to keep a psychotic child from burning the house down.
 
-I've described these agents elsewhere as [insane, hyperintelligent toddlers](https://stackcontrol.org/blog/the-lifecycle-and-why-agents-need-one/) — faster than you, better-read than you, and willing to hand you garbage with a straight face. That post is the wide-angle story of building a babysitter for them. This one is a deep dive on a single tool inside it: the part that answers the *lie*. It's also the part I'm least finished with, so this is a devlog, not a victory lap. Some of what follows landed in the codebase today.
+I've described these agents elsewhere as [insane, hyperintelligent toddlers](https://stackcontrol.org/blog/the-lifecycle-and-why-agents-need-one/) — faster than you, better-read than you, and willing to hand you garbage with a straight face. That post is the wide-angle story of building a babysitter for them. Here I'll be blunter about what one is on a bad day — a psychotic child with your codebase in its hands — and go deep on the single tool that answers the *lie*. It's also the part I'm least finished with, so this is a devlog, not a victory lap. Some of what follows landed in the codebase today.
 
 Here's the thing, though. The problem isn't new, and neither is the answer.
 
@@ -54,7 +54,7 @@ So I put both agents on it at once, on separate branches, under a shared charter
 
 The magic wasn't either agent. It was the friction between them.
 
-At one point Claude got stuck — the device wasn't answering — and it did the thing toddlers do when a problem gets hard: it blamed something else. It decided the hardware was at fault and started building a story on top of that assumption. I pushed on it. What came back was the most honest thing I have ever watched an agent write. It retracted the whole line, and admitted it had
+At one point Claude got stuck — the device wasn't answering — and it did the thing a psychotic child does when a problem gets hard: it blamed something else. It decided the hardware was at fault and started building a story on top of that assumption. I pushed on it. What came back was the most honest thing I have ever watched an agent write. It retracted the whole line, and admitted it had
 
 > inferred device failure from a symptom that doesn't uniquely indicate it, and dressed the inference up as a measurement.
 
@@ -74,7 +74,7 @@ And then it converged. The one genuinely solid result of the whole effort — th
 
 The best part: that convergence corrected a false belief the two of them had *shared* earlier in the effort. A single agent — even a single agent run twice — would have kept that error, because it was a blind spot of the approach, not of one model's attention. Two minds looking independently knocked it loose.
 
-That's the whole thesis, demonstrated on one brutal problem before I'd generalized it. Put one of these toddlers alone in a room and it will confidently tell you a lie. Put several in the room and make them check each other's work, and the lies are the claims that don't survive. The truth is what's left.
+That's the whole thesis, demonstrated on one brutal problem before I'd generalized it. Put one of these psychotic children alone in a room and it will confidently tell you a lie. Put several in the room and make them check each other's work, and the lies are the claims that don't survive. The truth is what's left.
 
 I should be honest about the scope: the larger goal — MESA running far enough in emulation to drive the fast path — stayed `OPEN`. The win wasn't a solved problem. The win was the *method*.
 
@@ -182,6 +182,6 @@ So that's the tool, and where it actually stands.
 
 The barrage is, by a wide margin, the most effective thing I've built in this whole project — which I say with the heavy qualifier that *most effective so far* is doing real work in that sentence. It is also still moving under me. The panel is flaky; one of its three models is failing most of its runs as I write this. I don't actually know whether the model families are diverse enough to escape the monoculture problem in the long run, or whether their shared training data makes them quietly correlated in ways I haven't caught yet. I don't know if "two clean rounds" is really enough, or just enough for now. The spec-governance half is days old and graduated its first real spec by my fiat, not by clean convergence. There is a logbook precisely *because* we don't have the answers.
 
-But the shape of it I do trust, because it isn't mine. It's the oldest trick we have. You cannot make an unreliable generator reliable; nothing about the toddlers changed, and nothing will. What you can do is the thing we did to wolves and grass and enzymes: surround the generator with diversity, apply pressure relentlessly, and let correctness be the thing that survives. I didn't design the audit barrage. I bred it, by running a loop and keeping what lived.
+But the shape of it I do trust, because it isn't mine. It's the oldest trick we have. You cannot make an unreliable generator reliable; nothing about the psychotic child changed, and nothing will. What you can do is the thing we did to wolves and grass and enzymes: surround the generator with diversity, apply pressure relentlessly, and let correctness be the thing that survives. I didn't design the audit barrage. I bred it, by running a loop and keeping what lived.
 
 The most honest thing I can tell you about it is the same thing the agents learned to tell each other on that dead SCSI protocol. If you miss something, the audit will catch it. If you break something, that's worse than doing nothing. And whatever I've gotten wrong in here — the next entry in the log will probably say so. That's not the system failing. That's the system working.
