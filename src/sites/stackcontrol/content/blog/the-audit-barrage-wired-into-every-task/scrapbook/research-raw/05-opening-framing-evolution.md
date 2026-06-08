@@ -69,6 +69,76 @@ until the one blind spot it shares with itself meets the one bug it can't see �
 is total and correlated, not scattered. That is the whole case for a *diverse* audit panel in one
 image.
 
+## Deep time: this is humanity's oldest engineering, not a software trick
+
+**Lead with the ancient version.** The single most important framing decision (operator, 2026-06-07):
+controlling an unreliable generator by diversity + selection is **not** a CS idea or a chemistry idea
+— it is **the oldest engineering humans have.** We have been deliberate genetic engineers for
+**millennia**: teosinte into maize over ~9,000 years (a scrawny grass with a few hard kernels bred
+into the most-grown crop on Earth); wolves into the whole range of dogs over 15,000+ years; every
+staple grain, every livestock breed. Long before anyone could read a gene, we ran the algorithm —
+keep the best, breed it, repeat — on processes we did not understand and could not design.
+
+So the cold-open should land the move as **familiar and proven, not novel**: *we have always tamed
+powerful, unreliable generators this way; here it is again, pointed at a coding agent.* Arnold's
+directed evolution is then the **modern, on-purpose, "abandon rational design"** punch on top of the
+ancient image — two examples doing two jobs (the old ones carry familiarity; Arnold carries the
+thesis).
+
+## Same in kind, different in degree — and the hybrid (answering "how is this different from dog breeding?")
+
+Dog breeding, teosinte→maize, and Arnold's directed evolution are the **same thing in kind** —
+artificial selection (variation + selection + iteration). They differ only in **degree/substrate**:
+whole organism vs. single protein; millennia vs. days; small populations vs. millions of screened
+variants; and **who makes the variation** — classic breeding selects among **standing natural
+variation** (recombination does the mixing; the breeder authors no mutations), while directed
+evolution **manufactures** fresh diversity each round (error-prone PCR, DNA shuffling). Arnold's
+Nobel was for *applying* the principle to molecules, fast — not a new principle.
+
+**The honest limit of the whole frame — name it, don't hide it.** Arnold's mutations are **random**;
+her "direction" comes entirely from the *selection screen* (that was her insight: stop predicting
+which change helps, let selection find it). The audit barrage is **not** like that on the variation
+side: the finding *names the defect*, and the agent makes a **targeted, intelligent repair**. So:
+
+> The barrage is a **hybrid — a Darwinian selection environment with Lamarckian (intelligent)
+> variation.** Its evolutionary content lives in the **selection** (a diverse, relentless,
+> hard-to-fool screen), *not* in the mutation (which has foresight). That is not a flaw; it is **why
+> it converges in a handful of rounds instead of needing millions of blind tries** — you keep
+> diversity-and-selection robustness but pay nothing for random search.
+
+Draft guidance: get to this hybrid point *before* a sharp reader does ("but the fix isn't a random
+mutation"). Concede the one place the barrage is **better than** blind evolution (guided variation),
+and keep the frame load-bearing only where it actually holds: **diversity beats monoculture;
+relentless selection culls the unfit; you settle on a *local* fitness peak (not a proof of
+correctness).**
+
+## "Stochastic correctness" — the thesis term to introduce here
+
+Introduce this phrase in the opening; it is the bridge from the metaphor to the engineering reality,
+and it's literal (a real claim about the system), not decorative — so unlike the evolution motif, it
+can recur in the body as needed.
+
+**Definition.** You give up on **per-run, designed correctness** (a single deterministic guarantee
+that the code is right) and trade up to **stochastic correctness**: correctness as an *emergent,
+statistical, population-level property* of running an unreliable generator many times under diverse
+selective pressure. No single run is trustworthy; the aggregate — selected over rounds by a diverse
+panel — trends toward correct.
+
+**Why it belongs in the evolution beat.** Evolution never produces a "correct" organism by guarantee;
+fitness is statistical and only visible across a population over generations. Stochastic correctness
+is the same bargain for code. The operator already argues exactly this way (population-level, not
+per-run):
+- ‖ PULL [V, `SD/011b8860`]: *"the audit barrage is stochastic—it doesn't have to be perfect every
+  time. As long as at least 1 audit is successfully executed, that should count... Auditing as a
+  practice should **statistically** yield better code."*
+- It is also the sibling post's mapping for the **lie** clause ("lie → audit barrage / stochastic
+  correctness"), so it ties the two posts together.
+
+**Placement.** Name it at the turn of the cold-open (the thing you trade *up to* when you stop trying
+to design reliability into the generator), then let it pay off literally in §6(c) (the stochastic /
+"1 audit counts" reliability beat) and at the convergence beat (§6 dampener / §9) — settling on a
+fitness peak *is* stochastic correctness reached, with the honest "stable, not proven" caveat.
+
 ## Faithful metaphor → mechanism map
 
 | Evolution | Audit barrage (the real mechanism) | Source |
@@ -151,15 +221,36 @@ Demoted from "the hook" to "a one-paragraph aside," and recast through the new f
 > A coding agent is a generator with the same defect and none of the patience. Here is what it took
 > to point the same two forces at it.
 
-## Threading the motif through the body (don't drop it after §0)
-- **§1 (why one model fails)** → the **monoculture** image: self-audit = a clone checking a clone.
-- **§2 (genetic diversity)** → the operator's coinage lands here as the literal payoff of beat 4.
-- **§5–§6 (teeth / unconditional hook)** → **selection pressure**: intensity = firing every
-  generation; HIGHs = lethal alleles purged; slush = neutral variation tolerated.
-- **§6 dampener + §9 convergence** → **fitness peak / equilibrium**, with the honest "local, not
-  proven-correct" caveat (strain #4).
-- **§10 close** → bookend: you didn't make the toddler honest; you built the selection environment
-  that makes the *output* trustworthy even though the generator never will be.
+## Dosage: LIGHT (operator call, 2026-06-07)
+
+> "Let's use the framing device lightly. Over-fitting the framing device will seem forced and weird
+> and smart readers will get the point without us cramming it down their eyes." — operator
+
+So the evolution motif is a **cold-open + a closing bookend, and otherwise gone.** Do **not** thread
+"lethal allele / neutral variation / fitness peak" labels through every section — that's the
+over-fit to avoid. The mechanics carry the body on their own; a reader who got the cold-open will
+hear the rhythm without being told.
+
+- **§0** — run the frame (deep time → directed evolution → monoculture → the turn; name *stochastic
+  correctness* and *genetic diversity*).
+- **§1** — at most a *glancing* monoculture echo (a clone checking a clone), one phrase, then move on.
+- **§2** — the operator's "genetic diversity" coinage lands naturally; no need to re-explain the
+  metaphor, just use his word.
+- **§6 / §9** — "stochastic correctness" (literal term, fine to use) does the work that "fitness
+  peak" would have; you don't need the biology label.
+- **§10** — one clean bookend: you didn't make the toddler honest; you built the selection
+  environment that makes the *output* trustworthy even though the generator never will be. Earn it,
+  then stop.
+
+Exception: **"stochastic correctness" is not the motif** — it's a literal thesis term and may recur
+freely. The *light* rule applies to the **biology metaphor**, not to the engineering vocabulary.
+
+## Voice / tone target
+
+Operator approved the sketch lede above as the register. House voice = the sibling post ("insane,
+hyperintelligent toddlers") + stackcontrol `DESIGN-SYSTEM.md`: plain, declarative, second-person,
+unshowy; pull quotes set apart; no breathless adjectives; let the facts and the operator's verbatim
+lines carry weight. Match that, not a glossier "tech essay" tone.
 
 ## Sources
 - Directed evolution / Arnold 2018 Nobel: https://www.nobelprize.org/prizes/chemistry/2018/arnold/facts/ ; https://www.caltech.edu/about/news/frances-arnold-wins-2018-nobel-prize-chemistry-83926 ; https://www.chemistryworld.com/news/what-is-directed-evolution-and-why-did-it-win-the-chemistry-nobel-prize/3009584.article

@@ -268,6 +268,7 @@ repeating itself.
 |---|---|---|
 | **Audit barrage** | Fire N model-family CLIs in parallel at one diff/spec; capture all stdout; treat cross-model agreement as high-confidence. | 01, 02 |
 | **Genetic diversity** | Different training corpora = independent failure modes. Operator's coinage. | 03 |
+| **Stochastic correctness** | Correctness as a statistical, population-level property of diversity + selection + iteration — not a per-run guarantee. The thesis term; the trade you make when you stop designing reliability into the generator. | 03, 05 |
 | **Three audit surfaces** | in-band self-audit + SDD two-reviewer + cross-model barrage (additive, not replacements). *See caveat below.* | 01 |
 | **The dampener** | Stop the loop when it converges: single clean run (0 HIGH + 0 MED) OR two consecutive 0-HIGH runs. | 02, 03 |
 | **Slush pile** | Residual MED/LOW flipped to `acknowledged-slush-pile-<date>` once the dampener engages. HIGHs are *never* slushed. | 02, 03 |
