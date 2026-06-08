@@ -12,6 +12,12 @@ deskwork:
   iteration: 0
 ---
 
+Picture asking a chatbot to plan a road trip. It hands you a clean, confident itinerary — turn here, take this road, cut through there. Would you just *drive* it, without checking whether one of those roads is a 4×4-only Jeep trail in the hottest place on Earth?
+
+In July 1996, a family of four from Dresden — two adults, an eleven-year-old, and a four-year-old — drove a rented minivan into Death Valley on a route that looked fine on the map. It wasn't. The pass they aimed for is impassable for a two-wheel-drive van; the rocks tore apart three of their four tires and left them stranded in 120-degree heat. They set out on foot. Their van was found that October. The adults' remains weren't found until 2009 — thirteen years later.
+
+They didn't have a chatbot. They had a map that was confidently, fatally wrong about one thing that mattered — and nobody checked it against the ground. That's the whole failure mode. An AI doesn't need to be *usually* wrong to wreck you. It needs to be *plausibly* wrong once, about something that matters, while you're not looking.
+
 You are responsible for a machine that lies to you. Not occasionally — regularly, fluently, with total confidence, several times a day. You can't fix that; it's how the machine works. So the job was never to make it honest. The job is to keep a psychotic child from burning the house down.
 
 I've described these agents elsewhere as [insane, hyperintelligent toddlers](https://stackcontrol.org/blog/the-lifecycle-and-why-agents-need-one/) — faster than you, better-read than you, and willing to hand you garbage with a straight face. That post is the wide-angle story of building a babysitter for them. Here I'll be blunter about what one is on a bad day — a psychotic child with your codebase in its hands — and go deep on the single tool that answers the *lie*. It's also the part I'm least finished with, so this is a devlog, not a victory lap. Some of what follows landed in the codebase today.
