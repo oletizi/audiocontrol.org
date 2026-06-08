@@ -3,7 +3,7 @@ title: "Control Your Psychotic Child: Stochastic Guardrails for Coding Agents"
 description: "How do you put guardrails on a coding agent that's a psychotic child — confidently, fluently wrong several times a day? You do what we've always done with unreliable processes: inject genetic diversity and apply relentless selective pressure. This devlog traces the discovery of stochastic correctness and the audit barrage — two AI agents building the same feature, a dead SCSI protocol decoded by mutual cross-examination, and a panel of rival model CLIs fired at every diff. The most useful guardrail I've built for agentic coding, and I didn't design it — I bred it. Still being figured out, in public."
 date: "June 2026"
 datePublished: "2026-06-07"
-dateModified: "2026-06-07"
+dateModified: "2026-06-08"
 author: "Orion Letizi"
 draft: false
 deskwork:
@@ -11,6 +11,13 @@ deskwork:
   stage: Drafting
   iteration: 0
 ---
+
+## TL;DR
+
+- **What kicked it off.** I needed to trust the output of coding agents that lie fluently and confidently — and I noticed something useful: put two *different* AI models on the same problem and they fail in different ways, catching each other's mistakes. On one brutal reverse-engineering job, two models cross-examining each other converged on a truth neither reached alone.
+- **What I built.** The **audit barrage**: after every change, a panel of rival model CLIs (Claude, Codex, Gemini) audits the diff automatically, and what they *independently agree on* is the high-confidence signal. Its very first run found thirteen real bugs in its own code — every one of them past a green 1,966-test suite.
+- **Why it matters.** A passing test suite is weak evidence of correctness, and a single model checking its own work is a monoculture: its blind spots are shared, so the bugs it misses are the ones it *can't* see. The fix is the oldest trick we have — diversity plus relentless selective pressure — and what it buys is **stochastic correctness**: not a guarantee on any one run, but correctness that emerges from many rival checks. It's the most useful guardrail I've built, and I didn't design it — I bred it.
+- **And here's the story.** How it grew from a two-model bake-off and a dead SCSI protocol into an auditor wired into every task — and where it's still half-figured-out, now that I've pointed it at *specifications* and watched it plateau instead of converge. A devlog, not a victory lap.
 
 Picture asking a chatbot to plan a road trip. It hands you a clean, confident itinerary — turn here, take this road, cut through there. Would you just *drive* it, without checking whether one of those roads is a 4×4-only Jeep trail in the hottest place on Earth?
 
