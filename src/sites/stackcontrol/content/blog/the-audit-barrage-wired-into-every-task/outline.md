@@ -4,7 +4,7 @@ Working outline for **"The Audit Barrage, Wired Into Every Task."** Not built as
 iterate on structure here, then draft into `index.md`. Corpus: `research.md` (synthesized spine +
 accuracy flags) and `scrapbook/research-raw/`: `01` origin-mechanics, `02` stack-control, `03`
 transcripts, `04` redundancy/voting precedent, `05` evolution framing, `06` **origin story
-(bake-off + MESA II)**.
+(bake-off + MESA II)**, `07` **spec-vs-code lens (the live discovery, this week)**.
 
 Quote convention: `[V]` = **verbatim** operator words (session id in brackets — `SD/2b49c58f`,
 `SD/011b8860` — keyed in `research-raw/03`); `[A]` = verbatim **assistant** line; facts cite a commit
@@ -81,6 +81,10 @@ uncertainties to keep *visible* in the piece:
   merged; AUDIT-48 was left *open* at the last session; the fiction cascade was last week. Write §9–§10
   as "where we are," not "what we shipped."
 - The MESA II emulation goal itself stayed **OPEN** — the win was the *method*, not a solved problem.
+- **Spec-auditing is still being figured out, this week.** Code converges; specs *plateau*; there's no
+  crisp stop rule yet, only heuristics; 005 graduated by **override**, not clean convergence. The team
+  literally just started *"a log of our discoveries"* (`research-raw/07`). Perfect devlog material —
+  the meta-tie: the post is a devlog; the tooling now keeps its own devlog of what it's learning.
 
 ---
 
@@ -244,10 +248,35 @@ uncertainties to keep *visible* in the piece:
   spec with no human to catch a wrong reading.
   - ‖ PULL [prompt]: *"Calibrate by consequence, not by alarm."* (`audit-barrage-prompt.md`)
   - Field test: 5/5 genuine cross-model HIGHs, 0 phantom. (`0c388aea`)
+- **THE LIVE DISCOVERY (this week — see `research-raw/07`): a spec needs a different lens than code.**
+  Same barrage, same principles — but the substrate is different, and pointing the *code* lens at a
+  spec made it **plateau instead of converge**, with the critiques drifting *down* into implementation
+  detail (the auditors started demanding the spec *be the code*).
+  - The crux: **code has a crisp convergence floor (0 findings = clean); a spec doesn't** — prose is
+    inherently incomplete, so the barrage can always find another gap. Knowing when to *stop* is fuzzy.
+    (This is stochastic correctness at its starkest — a spec's honest terminal state is an **override**,
+    not "converged.")
+  - The concrete image: the 005 dogfood HIGH trajectory **`7 → 5 → 2 → 1 → 5 → 5 → 1`** — *the bounce
+    back up is the plateau made visible.* Cause (FM-2, "the mechanism generator"): the spec tried to
+    promise a two-file *atomic* write that can't exist, so every prose patch resurfaced (AUDIT-29→39→40).
+  - The break — *remove the generator, don't feed it*: delete the mechanism from the spec, state the
+    **promise** instead ("an interrupted apply never silently loses content; it's version-controlled
+    and recoverable"), defer the protocol to contracts + RED tests. **HIGH dropped 5→1 in one round.**
+    ‖ PULL [log]: *"The plateau **was** the generator; removing it (not feeding it) converged it."*
+    The line under it: the **"promises before mechanism"** litmus — WHAT the spec promises (in scope)
+    vs HOW it's built (defer). (commit `ea7993e2`, mode-aware lens.)
+  - ⚠️ devlog honesty: this is **days old and still fuzzy** — there's *no crisp rule* for the plateau,
+    only heuristics; 005 graduated by **override**, not clean convergence, today.
+- **The meta-move = the devlog principle inside the machine.** The response wasn't just a code fix —
+  they started an **append-only log of the discoveries** (`SPEC-AUDIT-FAILURE-MODES.md`, commit
+  `1694b113`). ‖ PULL [operator]: *"We should be keeping a log… of our discoveries."* → land it: the
+  post is a devlog about discovering the barrage; the team is *simultaneously* keeping a devlog of what
+  the barrage keeps teaching them. The work and the writing-about-it are the same practice.
 - ⚠️ writer note: branch is `feature/stack-control` but internals say `feature/pluggable-lifecycle-
   providers` — same work.
 - *Devlog tense: this chapter is happening **now** — feature branch, not merged; AUDIT-48 open; the
-  fiction cascade was last week. Write it as "where we are," not "what we shipped."*
+  spec-lens discovery + 005 override landed today (2026-06-07). Write it as "where we are," not "what
+  we shipped."*
 
 ## §10 — The recursive payoff (the thematic close-setup)
 - The barrage audited **its own spec** — and triggered a *"fiction cascade"*: round after round, the
@@ -316,3 +345,8 @@ uncertainties to keep *visible* in the piece:
   uncertainties to keep visible (model-family independence still a bet; gemini ~94% failing; review
   surface mid-retirement; dampener "heuristic not proof"; stack-control mid-flight, AUDIT-48 open;
   MESA emulation goal stayed OPEN). Marked §9 present-tense.
+- v8 (2026-06-07) — **folded in the live spec-vs-code-lens discovery** (`research-raw/07`, commits
+  `ea7993e2`/`1694b113`, same day): deepened §9 from "extending left" into a real discovery beat —
+  code converges, specs plateau; the `7→5→2→1→5→5→1` bounce; FM-2 "mechanism generator"; "remove the
+  generator, state the promise" (5→1); spec lens vs code lens; override as the honest terminal state.
+  Added the meta-tie to the devlog frame: the team started "a log of our discoveries."
