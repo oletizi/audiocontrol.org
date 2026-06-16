@@ -4,6 +4,61 @@ Session journal for audiocontrol.org. Each entry records what was tried, what wo
 
 ---
 
+## 2026-06-02: Design discipline foundation + homepage pilot (Phases 1–5; draft PR #133)
+
+### Feature: design-system-foundation
+### Worktree: audiocontrol.org-design-system-foundation (branch `feature/design-system-foundation`)
+
+**Goal:** Port design-decision discipline into this two-property repo (shared protocol + per-site DESIGN-SYSTEM) and validate it by running the audiocontrol homepage refresh under it as the pilot. All concrete work gated behind an operator-approved discovery pass.
+
+**Accomplished:**
+
+- **Phase 1 (Discovery, gated).** Fanned 5 parallel discovery agents over both sites + the sibling monorepo; ran a live Playwright screenshot-viability probe (editors render populated UI only with hardware; the CONNECT tab is the only no-hardware-credible view; S-330/S-550 share one path-driven app). Synthesized `discovery-findings.md`; operator approved with four scope decisions.
+- **Phase 2 (Protocol).** Authored repo-root `DESIGN-DECISIONS-PROTOCOL.md` (lightweight two-site adaptation — kept the ACCEPTED/REJECTED archive + `brief.md` contract + read/update rule; dropped the monorepo's decision table + change-log). Wired `.claude/rules/design-discipline.md` + CLAUDE.md pointers (commit needed explicit operator auth — self-modification guard).
+- **Phase 3 (Design systems).** Both per-site `DESIGN-SYSTEM.md` docs (grounded in tokens + discovery). Shared token base `src/shared/design-tokens-base.css` deduping genuinely-identical tokens + 4 byte-identical utility classes, plus additive `--text-*`/`--radius-*` scales; verified visually non-regressive (before/after, both sites).
+- **Phase 4 (Homepage pilot).** S3000XL promoted to a real `available` card (operator-approved `#` + stand-in-image stand-ins); S-550 wired with its real editor screenshot (stolen from monorepo s550-support shots); copy refresh in the audiocontrol voice; inaugural ACCEPTED (`s3000xl-available-card`) + REJECTED (`s3000xl-launching-state`) archive entries; `/hardware` audited clean. Found + fixed a pre-existing OG-path bug (#132).
+- **Phase 5 (Verify + retro).** Build green both sites; `retro.md`. Opened **draft PR #133** (stopped at PR creation; operator owns merge).
+
+**Didn't Work / had to correct:**
+
+- **`generate-og` was silently failing** since the multi-site migration (read repo-root `public/`, swallowed by `main().catch`). Fixed path + made it fail loud (#132).
+- **The "dedupe tokens" assumption was wrong.** Token *values* legitimately differ per site; only structural tokens + 4 utility classes are genuinely shared. Surfaced this before executing rather than over-merging.
+- **Missed the same-commit DESIGN-SYSTEM update** when the Phase-3 refactor changed a global pattern; caught and fixed it during Phase-5 completion. Flagged in the retro as the one real protocol-friction point.
+
+**Course Corrections:**
+
+- **[PROCESS]** `.claude/` governance commit blocked by the self-modification guard — needed explicit per-commit operator authorization. Agent-config edits aren't covered by feature-level approval.
+- **[UX]** Operator redirected the missing-screenshot approach twice: image-less → obvious placeholder → **credible real screenshot stolen from the monorepo** ("credible, not accurate"). Landed on real S-550 shot + a credible Roland stand-in for S3000XL (header cropped by `object-fit`).
+- **[FABRICATION]** Caught a pre-existing factual error — homepage listed S-550 as 16-bit; the device + the site's own `/editors`+`/hardware` say 12-bit. Fixed.
+
+**Quantitative:**
+
+- Commits this session: 11 (+ this session-end commit). Draft PR: #133. Issues: #132 filed + fixed (closes on merge).
+- Phases completed: 5/5 (Phase 4 carries 2 operator-approved PRE-MERGE MUST-FIX stand-ins).
+- Tests: 173/175 pass (2 pre-existing network-dependent editor-proxy failures, unrelated to this branch).
+
+**Insights:**
+
+- The discovery gate earned its keep: the S3000XL available-vs-launching flip, the narrower-than-assumed dedupe, and the screenshot-viability reality all surfaced before code, not during it.
+- The protocol's value showed up immediately — the available-vs-launching decision is exactly the relitigation-prone call the archive exists to pin down.
+
+### Hygiene observations
+
+- **Draft PR #133 is open and must NOT merge** until 2 tracked stand-ins are resolved: S3000XL `#` link (needs akai netlify URL → `/akai/s3000xl/editor` + proxy `_redirects`) and `s3000xl-editor-screenshot.png` (needs a real Akai shot). Both are checklisted in the PR + workplan.
+- **#132** filed + fixed on this branch (closes on merge).
+- **Uncommitted dev-only change:** `astro.audiocontrol.config.mjs` `allowedHosts` wildcard (Tailscale review affordance) — intentionally NOT in the PR; left in the working tree for operator keep/revert decision.
+- **2 pre-existing editor-proxy test failures** (network/live-editor dependent) — unrelated to this branch; matches the 2026-05-29 note.
+- **No parent feature issue** exists (`/dwis` never run); #132 is the only linked issue.
+- A **dev server** was left running for review (Tailscale URL); stopped at session-end.
+
+### Next session recommendation (hygiene)
+
+- **Resume** when the akai netlify app URL + a real Akai S3000XL screenshot arrive: clear the 2 PRE-MERGE MUST-FIX items, wire the real `/akai/s3000xl/editor` link + proxy `_redirects`, undraft PR #133, hand to operator to merge.
+- **Decide** keep-vs-revert on the `astro.config` `allowedHosts` dev tweak.
+- **Optional:** run `/dwis` to create tracking issues; consider the retro's "same-commit-update pre-commit nudge" before the editorialcontrol rollout.
+
+---
+
 ## 2026-05-29: Mothball the in-house editorial pipeline (PR-A + PR-B both merged)
 
 ### Feature: editorial-calendar (Phase 20 — mothball)

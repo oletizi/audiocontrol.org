@@ -102,49 +102,60 @@ this two-property repo and validate it by executing the audiocontrol homepage re
 > status-union change. The editor's netlify deploy is external; the link is dead until it lands
 > (risk accepted). **Gate decision 4 — inaugural archive entry subject chosen here.**
 
-### Task 1: S3000XL availability wiring (replaces the old `launching`-state task)
-- [ ] Add S3000XL to the `available` set on homepage (`availableProjects`) + `/editors` with `href`/`slug` `/akai/s3000xl/editor` (no `ProjectCard` type change required)
-- [ ] Add proxy `_redirects` in `src/sites/audiocontrol/public/_redirects` for `/akai/s3000xl/editor` (bare + trailing-slash + splat → the akai netlify app URL once known)
+> **⚠️ PRE-MERGE MUST-FIX (operator-approved stand-ins, 2026-06-02).** To keep moving without
+> the two external inputs, the operator approved temporary stand-ins. **These MUST be replaced
+> before this feature merges to `main`/live:**
+> 1. **S3000XL `href` is `"#"`** (homepage + `/editors`) — replace with `/akai/s3000xl/editor` +
+>    proxy `_redirects` once the akai netlify app URL is known. As-is, the `available` card's
+>    "Open Editor" CTA goes nowhere, and the hero "03 available" counts a non-openable editor.
+> 2. **S3000XL card image is a credible STAND-IN, not the real editor** —
+>    `s3000xl-editor-screenshot.png` is a Roland Play-view capture (header cropped by
+>    `object-fit: cover` so no device label shows). Replace with a true Akai S3000XL screenshot.
 
-### Task 2: Screenshots *(deferred per operator — UI team producing; full-res files pending)*
-- [ ] Wire S-330/S-550 editor screenshots once the UI team delivers full-res files (slot ≈ 15:4 / 656×176 CSS; deliver ~1312px+ wide PNG)
-- [ ] S3000XL: image optional (promote without an image is acceptable; never a mock)
+### Task 1: S3000XL availability wiring (replaces the old `launching`-state task)
+- [x] Add S3000XL to the `available` set on homepage (`availableProjects`) + `/editors` — **done with `href`/`slug` `"#"` stand-in** (see PRE-MERGE MUST-FIX #1)
+- [ ] Replace `"#"` with `/akai/s3000xl/editor` + proxy `_redirects` (bare + trailing-slash + splat → akai netlify app URL once known) — **blocked on the akai URL**
+
+### Task 2: Screenshots
+- [x] S-550 — wired a **real, accurate** S-550 editor capture (`s550-editor-screenshot.png`, Tones/Filter view) reused from the monorepo `s550-support` screenshots
+- [x] S3000XL — wired a **credible stand-in** (`s3000xl-editor-screenshot.png`; see PRE-MERGE MUST-FIX #2)
+- [ ] *(optional upgrade)* swap S-330/S-550 for the UI team's full-res marketing-grade shots if/when delivered (slot ≈ 15:4; ~1312px+ wide)
 
 ### Task 3: Homepage
-- [ ] Wire S-330/S-550 images (when available); refresh S-330/S-550 copy (no UI/UX trumpeting)
-- [ ] S3000XL now in available set; hero counts follow array membership ("03 available")
+- [x] Wired S-550 + S3000XL card images; **S3000XL now in the available set; hero counts follow array membership ("03 available", "02 in development")**
+- [x] Refresh S-330/S-550 copy (no UI/UX trumpeting) — refreshed S-550 + S3000XL descriptions in the audiocontrol voice; **fixed S-550 bit-depth** (homepage said 16-bit; the device and the site's own `/editors`+`/hardware` say 12-bit). S-330 copy retained (it is the voice exemplar).
 
 ### Task 4: /editors mirror + /hardware audit
-- [ ] Mirror status/image/copy changes on `/editors`
-- [ ] Verify `/hardware`; fix only genuine staleness
+- [x] Mirror status/image changes on `/editors` — S3000XL → available with `"#"` slug + stand-in image; S-550 image added (matches homepage)
+- [x] Verify `/hardware`; fix only genuine staleness — **audited clean (2026-06-01): no staleness.** Lists Roland S-Series only (S-330/S-550/S-770/W-30); all four `/roland/<device>/` link targets exist; S3000XL correctly absent (Akai, not S-Series); build green. No changes needed (matches PRD "likely no change"). Specs left untouched (covered by content-verification issues #12/#16/#17/#18).
 
 ### Task 5: File archive entries + update DESIGN-SYSTEM
-- [ ] Choose the inaugural ACCEPTED entry subject (candidate: S-550 card-image treatment or copy-refresh approach); REJECTED for any discarded alternative
-- [ ] Update audiocontrol DESIGN-SYSTEM.md in-commit if a global pattern changed
+- [x] Inaugural ACCEPTED + REJECTED entries filed (the `available`-vs-`launching` S3000XL card decision): `explorations/ACCEPTED/2026-06-02-s3000xl-available-card/` + `explorations/REJECTED/2026-06-02-s3000xl-launching-state/`
+- [x] Updated **both** per-site `DESIGN-SYSTEM.md` docs to reflect the Phase-3 shared token base (governance catch-up — the refactor commit had missed the same-commit update; flagged in the retro)
 
 ### Task 6: Fix generate-og background-image path ([#132](https://github.com/oletizi/audiocontrol.org/issues/132))
 *Pre-existing bug surfaced during Phase 3 build verification (not introduced by this feature); unblocked — can be done independently of the S3000XL/screenshot inputs.*
-- [ ] `scripts/generate-og-images.ts:233` — read backgrounds from `src/sites/audiocontrol/public` (not repo-root `public/`), matching the favicon/output paths
-- [ ] Make failure loud: set a non-zero exit code on a missing asset so `main().catch` doesn't silently pass (`npm run build` currently stays green while OG regen fails)
-- [ ] Verify OG images regenerate (build green AND `src/sites/audiocontrol/public/images/og/` refreshed)
+- [x] `scripts/generate-og-images.ts` — read backgrounds from `src/sites/audiocontrol/public` (not repo-root `public/`), matching the favicon/output paths
+- [x] Make failure loud: `main().catch` now sets `process.exitCode = 1` so a missing asset breaks the build instead of passing silently
+- [x] Verify OG images regenerate (build green; all 11 background OG images regenerated + composited correctly, e.g. roland-s550.png visually confirmed)
 
 **Acceptance Criteria:**
-- [ ] S3000XL is a real `available` card with `/akai/s3000xl/editor` href + proxy `_redirects`; hero counts honest to array membership; inaugural archive entry filed. *(S-330/S-550 screenshots wired when UI-team files land.)*
-- [ ] generate-og reads from the per-site public dir and fails loudly on a missing asset; OG images regenerate (#132).
+- [x] S3000XL is an `available` card; hero counts honest to array membership ("03"/"02"); inaugural archive entry filed. **Caveat:** the real `/akai/s3000xl/editor` href + proxy is a `#` stand-in (PRE-MERGE MUST-FIX) pending the akai netlify URL.
+- [x] generate-og reads from the per-site public dir and fails loudly on a missing asset; OG images regenerate (#132).
 
 ## Phase 5: Verification + retro
 
 **Deliverable:** Green build, visual review, and a protocol-validation note.
 
 ### Task 1: Verify
-- [ ] `npm run build` succeeds (both sites); `npm run preview` visual review of card states/screenshots
-- [ ] Confirm the S3000XL `/akai/s3000xl/editor` proxy is wired; **note** the link stays dead until the external netlify deploy lands (accepted risk, not a build failure)
+- [x] `npm run build` succeeds (both sites, exit 0). Visual review via the **dev server** (`astro preview` is unsupported by the netlify adapter) — homepage + `/editors` cards render; hero counts "03"/"02"; the Phase-3 token refactor is visually non-regressive (before/after diff).
+- [x] S3000XL link is the operator-approved `#` stand-in (PRE-MERGE MUST-FIX), not the real proxy — recorded, not a build failure.
 
 ### Task 2: Retro
-- [ ] Write the validation note: did the protocol help or add friction? What does editorialcontrol rollout need?
+- [x] `retro.md` written — verdict: the discipline helped (gate caught the scope change; archive captured the available-vs-launching decision; docs absorbed the drift). One real friction: the same-commit-update rule isn't self-enforcing → editorialcontrol rollout needs a pre-commit nudge.
 
 **Acceptance Criteria:**
-- [ ] Build green, visual review done, retro note written.
+- [x] Build green (both sites), visual review done, retro note written.
 
 ## Follow-up (tracked, not in this feature)
 - **Stand up the `akai-s3k-editor` Netlify app + deploy** (external repo `audiocontrol-org/audiocontrol`). This is the dependency that makes the `/akai/s3000xl/editor` link (proxy added in Phase 4) actually resolve — until then it is a known dead link.

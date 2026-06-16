@@ -26,12 +26,19 @@ const editors: Editor[] = [
     status: "available",
     meta: "12-bit · Web MIDI",
     slug: "/roland/s550/editor",
+    // Real S-550 editor capture (accurate); reused from monorepo s550-support screenshots.
+    image: "/images/s550-editor-screenshot.png",
   },
   {
     name: "Akai S3000XL",
     description: "Web-based editor for the Akai S3000XL sampler. Edit programs, keygroups, and samples via MIDI-over-SCSI.",
-    status: "coming-soon",
+    status: "available",
     meta: "16-bit · MIDI-over-SCSI",
+    // STAND-IN before merge (design-system-foundation): "#" until /akai/s3000xl/editor
+    // + proxy land; image is a credible Roland editor stand-in — replace with a real
+    // Akai S3000XL screenshot before merge.
+    slug: "#",
+    image: "/images/s3000xl-editor-screenshot.png",
   },
   {
     name: "Akai S5000",
