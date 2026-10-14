@@ -81,7 +81,7 @@ When two independent scans of two physical copies agree, you can trust the drawi
 
 ## Why I needed them
 
-My Tascam 38 has eight amplifier cards — one per channel, all interchangeable — plugged into a motherboard through eight connectors per card. The cards and their card-edge contacts are the failure-prone part of the machine. The plan is a pin-compatible replacement card that keeps the original motherboard, transport, heads and bias oscillator. Get one channel working on the bench before touching anything else.
+The Tascam 38 has eight amplifier cards — one per channel, all interchangeable — plugged into a motherboard through eight connectors per card. The cards and their card-edge contacts are the failure-prone part of the machine. The plan is a pin-compatible replacement card that keeps the original motherboard, transport, heads and bias oscillator. Get one channel working on the bench before touching anything else.
 
 That plan needs every contact accounted for. J101–J108 carry 50 contacts per card. I traced them by hand first, from the drawing into a spreadsheet: source pin, destination, voltage, components, function. Where I couldn't tell, I wrote `X`.
 
