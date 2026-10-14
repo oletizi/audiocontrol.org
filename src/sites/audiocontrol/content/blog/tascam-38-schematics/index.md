@@ -93,6 +93,6 @@ A hand trace is a hypothesis until it's checked against the drawing, and checkin
 
 ## What's next
 
-The trace work, the spreadsheet audit and the verification notes live in the [audio-circuits repository](https://github.com/oletizi/audio-circuits/tree/feature/tascam-38-electronics/docs/tascam-38). The 50-contact netlist is not verified end to end, and no replacement card has been built or powered. Until it is, treat every pin assignment as a candidate.
+The trace work, the spreadsheet audit and the verification notes live in the [audio-circuits repository](https://github.com/oletizi/audio-circuits/tree/main/docs/tascam-38). The 50-contact netlist is not verified end to end, and no replacement card has been built or powered. Until it is, treat every pin assignment as a candidate.
 
 If you're working on a 38 and find a disagreement between these scans, the peel.dk scan, and your machine, I'd like to hear about it. The machine wins.
