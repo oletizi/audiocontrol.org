@@ -4,7 +4,7 @@ description: "Free downloads of the Tascam 38 amplifier and tape transport schem
 date: "October 2026"
 datePublished: "2026-10-13"
 dateModified: "2026-10-13"
-state: "draft"
+state: "published"
 author: "Orion Letizi"
 image: "./tascam-38-amplifier-detail.png"
 socialImage: "./tascam-38-amplifier-detail.png"
